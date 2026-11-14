@@ -16,14 +16,14 @@ import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
+import com.yenaly.han1meviewer.util.browse
+import com.yenaly.han1meviewer.util.copyToClipboard
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
-import com.yenaly.han1meviewer.util.browse
-import com.yenaly.han1meviewer.util.copyToClipboard
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

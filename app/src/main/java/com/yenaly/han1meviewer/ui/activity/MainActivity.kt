@@ -100,12 +100,12 @@ import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
 import com.yenaly.han1meviewer.ui.navigation.main.AccountRoute
 import com.yenaly.han1meviewer.ui.navigation.main.UnifiedMainNavHost
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.han1meviewer.util.textFromClipboard
 import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard

@@ -70,7 +70,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -101,6 +100,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(
     ExperimentalMaterial3Api::class,
@@ -243,7 +243,7 @@ fun SearchScreen(
     @OptIn(FlowPreview::class)
     LaunchedEffect(searchQuery) {
         if (searchQuery.isNotBlank()) {
-            delay(300); viewModel.loadAllSearchHistories(searchQuery).collect { histories = it }
+            delay(300.milliseconds); viewModel.loadAllSearchHistories(searchQuery).collect { histories = it }
         } else {
             viewModel.loadAllSearchHistories().collect { histories = it.take(10) }
         }

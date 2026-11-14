@@ -7,7 +7,11 @@ import android.os.Process
 import android.util.Log
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
-import com.google.android.material.color.DynamicColors
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.memory.MemoryCache
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import com.developer.crashx.config.CrashConfig
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
 import com.google.firebase.crashlytics.crashlytics
@@ -21,23 +25,21 @@ import com.yenaly.han1meviewer.HentaiMama.settings.HentaiMamaCardSettings
 import com.yenaly.han1meviewer.OnAir.data.local.OnAirHistoryRepo
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
 import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.base.AppLocale
+import com.yenaly.han1meviewer.base.BaseApplication
+import com.yenaly.han1meviewer.logic.network.HDns
 import com.yenaly.han1meviewer.logic.network.HProxySelector
-import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
+import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
-import com.developer.crashx.config.CrashConfig
-import com.yenaly.han1meviewer.base.BaseApplication
-import com.yenaly.han1meviewer.base.AppLocale
-import coil3.ImageLoader
-import coil3.SingletonImageLoader
-import coil3.memory.MemoryCache
 import `is`.xyz.mpv.MPVLib
+import okhttp3.OkHttpClient
 import java.net.ProxySelector
 import com.yenaly.han1meviewer.MissAV.data.remote.MissAvNetwork
 import com.yenaly.han1meviewer.MissAV.ui.video.MissAvSubtitleHelper
 import com.yenaly.han1meviewer.SupJav.common.SupJavImageLoader
+import java.util.concurrent.TimeUnit
 
 /**
  * @project Hanime1
@@ -64,6 +66,19 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
                 MemoryCache.Builder()
                     .maxSizeBytes(IMAGE_MEMORY_CACHE_BYTES)
                     .build()
+            }
+            // 下载封面等非 Compose 场景统一走全局 ImageLoader，
+            // 在这里挂上 HDns 与超时等网络配置；手动注册的组件排在
+            // ServiceLoader 默认组件之前，会优先生效。
+            .components {
+                add(
+                    OkHttpNetworkFetcherFactory(
+                        OkHttpClient.Builder()
+                            .connectTimeout(5, TimeUnit.SECONDS)
+                            .dns(HDns())
+                            .build()
+                    )
+                )
             }
             .build()
     }
@@ -122,9 +137,6 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
 
         initCrashX()
         ThemeUtils.applyDarkModeFromPreferences(this)
-        if (ThemeColorPreset.fromKey(Preferences.themeColor) == ThemeColorPreset.SYSTEM) {
-            DynamicColors.applyToActivitiesIfAvailable(this)
-        }
         ProxySelector.setDefault(HProxySelector())
         HProxySelector.rebuildNetwork()
         initFirebase()

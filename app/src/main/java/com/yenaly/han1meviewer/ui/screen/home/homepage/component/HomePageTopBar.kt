@@ -104,9 +104,9 @@ fun HomePageTopBar(
                         when(clickCount){
                             3 -> {GlobalToasts.show(message = meow, level = GlobalToasts.ToastLevel.INFO)}
                             6 -> {GlobalToasts.show(message = "$meow $meow", level = GlobalToasts.ToastLevel.SUCCESS)}
-                            9 -> {GlobalToasts.show(message = hiss, level = GlobalToasts.ToastLevel.WARNING)}
+                            9 -> {GlobalToasts.show(message = growl, level = GlobalToasts.ToastLevel.WARNING)}
                             12 -> {
-                                GlobalToasts.show(message = growl, level = GlobalToasts.ToastLevel.ERROR)
+                                GlobalToasts.show(message = hiss, level = GlobalToasts.ToastLevel.ERROR)
                                 scope.launch {
                                     delay(1000.milliseconds)
                                     activity?.finish()

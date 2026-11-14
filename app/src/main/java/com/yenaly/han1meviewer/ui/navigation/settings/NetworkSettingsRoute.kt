@@ -59,9 +59,9 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.screen.runAfterUiSettles
 import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DohTestResultUi
-import com.yenaly.han1meviewer.ui.screen.runAfterUiSettles
 import com.yenaly.han1meviewer.ui.screen.settings.MirrorRowUi
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState

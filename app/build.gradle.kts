@@ -36,7 +36,7 @@ android {
         applicationId = "com.yenaly.hani.extended"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 2, minor = 3, patch = 3)
+        val (code, name) = createVersion(major = 2, minor = 3, patch = 4)
         versionCode = code
         versionName = name
 
@@ -185,21 +185,14 @@ dependencies {
 
     // pic
 
-    implementation(libs.coil)
-
+    // (图片加载统一使用 coil3，见 compose 依赖)
 
     // video
 
-    implementation(libs.jiaozi.video.player)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.datasource.okhttp)
     implementation(libs.mpv.lib)
-
-    // view
-
-    implementation(libs.base.recyclerview.adapter.helper4)
-    implementation(libs.spannable.x)
 
     // firebase
 
@@ -217,7 +210,6 @@ dependencies {
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.test.junit)
-    androidTestImplementation(libs.test.espresso.core)
 
     implementation(libs.crashx)
     // debugImplementation(libs.leak.canary)

@@ -1,6 +1,12 @@
 package com.yenaly.han1meviewer.logic.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
+import androidx.room.Update
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import kotlinx.coroutines.flow.Flow
 

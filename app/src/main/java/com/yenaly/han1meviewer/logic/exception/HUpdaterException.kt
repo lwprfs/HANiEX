@@ -15,11 +15,12 @@ sealed class HUpdaterException(
     class VersionCheck(
         message: String,
         cause: Throwable? = null,
-        reason: Reason,
+        /**
+         * 细分原因，便于日志与埋点区分失败类型。
+         */
+        val reason: Reason,
         statusCode: Int? = null,
     ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
-
-        val reason: Reason = reason
 
         enum class Reason(val errorMessageRes: Int) {
 
@@ -40,11 +41,12 @@ sealed class HUpdaterException(
     class Download(
         message: String,
         cause: Throwable? = null,
-        reason: Reason,
+        /**
+         * 细分原因，便于日志与埋点区分失败类型。
+         */
+        val reason: Reason,
         statusCode: Int? = null,
     ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
-
-        val reason: Reason = reason
 
         enum class Reason(val errorMessageRes: Int) {
 

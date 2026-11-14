@@ -3,34 +3,12 @@ package com.yenaly.han1meviewer.util
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import androidx.preference.SeekBarPreference
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 import java.net.URLDecoder
 import java.net.URLEncoder
-
-/**
- * 为 [SeekBarPreference] 设置数值与摘要之间的转换逻辑。
- *
- * @param defValue 默认值
- * @param converter 将数值转换为摘要文本
- * @param action 数值变化时的额外回调
- */
-fun SeekBarPreference.setSummaryConverter(
-    defValue: Int,
-    converter: (Int) -> CharSequence?,
-    action: ((Int) -> Unit)? = null
-) {
-    setDefaultValue(defValue)
-    summary = converter(value)
-    setOnPreferenceChangeListener { _, newValue ->
-        summary = converter(newValue as Int)
-        action?.invoke(newValue)
-        true
-    }
-}
 
 private fun Context.sp(
     name: String = packageName,

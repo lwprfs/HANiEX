@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 fun Modifier.verticalScrollbar(
     state: LazyListState,
@@ -33,7 +34,7 @@ fun Modifier.verticalScrollbar(
         if (state.isScrollInProgress) {
             alpha.snapTo(1f)
         } else {
-            delay(fadeDelayMillis)
+            delay(fadeDelayMillis.milliseconds)
             alpha.animateTo(
                 targetValue = 0f,
                 animationSpec = tween(durationMillis = fadeOutDurationMillis)

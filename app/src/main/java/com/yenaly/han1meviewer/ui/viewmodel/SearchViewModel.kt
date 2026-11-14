@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.DatabaseRepo.HanimeAdvancedSearchRepo.toSearchOptionSet
 import com.yenaly.han1meviewer.logic.NetworkRepo
@@ -18,7 +19,6 @@ import com.yenaly.han1meviewer.logic.model.HanimeSearchResult
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.util.loadAssetAs
-import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.util.unsafeLazy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow

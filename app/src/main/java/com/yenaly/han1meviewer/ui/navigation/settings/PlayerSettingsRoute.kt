@@ -24,10 +24,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.player.PlayerDefaults
+import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsUiState
-import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
-import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
 
 private const val PLAYER_SWITCH_PLAYER_KERNEL = "switch_player_kernel"
 private const val PLAYER_SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
@@ -56,8 +56,8 @@ fun PlayerSettingsRouteScreen(
         Box(modifier = Modifier.weight(1f)) {
     PlayerSettingsScreen(
         state = uiState,
-        kernelOptions = HMediaKernel.Type.entries.map { it.name to it.name },
-        speedOptions = HJzvdStd.speedStringArray.zip(HJzvdStd.speedArray.map { it.toString() }),
+        kernelOptions = KernelType.entries.map { it.name to it.name },
+        speedOptions = PlayerDefaults.speedStringArray.zip(PlayerDefaults.speedArray.map { it.toString() }),
         longPressSpeedOptions = listOf(
             stringResource(R.string.d_speed_times, 1f) to "1",
             stringResource(R.string.d_speed_times, 1.5f) to "1.5",
@@ -133,13 +133,13 @@ private fun FullscreenOrientationSetting() {
 
 private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState {
     val kernel = Preferences.switchPlayerKernel
-    val isMpvPlayer = kernel == HMediaKernel.Type.MpvPlayer.name
+    val isMpvPlayer = kernel == KernelType.MpvPlayer.name
     val currentSpeed = Preferences.playerSpeed
     val currentLongPressSpeed = Preferences.longPressSpeedTime
-    val speedDisplay = HJzvdStd.speedStringArray.getOrElse(
-        HJzvdStd.speedArray.indexOfFirst { it == currentSpeed }.takeIf { it >= 0 }
-            ?: HJzvdStd.DEF_SPEED_INDEX
-    ) { HJzvdStd.speedStringArray[HJzvdStd.DEF_SPEED_INDEX] }
+    val speedDisplay = PlayerDefaults.speedStringArray.getOrElse(
+        PlayerDefaults.speedArray.indexOfFirst { it == currentSpeed }.takeIf { it >= 0 }
+            ?: PlayerDefaults.DEF_SPEED_INDEX
+    ) { PlayerDefaults.speedStringArray[PlayerDefaults.DEF_SPEED_INDEX] }
     val longPressDisplay = context.getString(R.string.d_speed_times, currentLongPressSpeed)
     return PlayerSettingsUiState(
         kernel = kernel,

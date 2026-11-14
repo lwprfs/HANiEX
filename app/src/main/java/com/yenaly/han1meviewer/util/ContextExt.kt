@@ -37,6 +37,12 @@ val appScreenWidth: Int
     get() = applicationContext.resources.displayMetrics.widthPixels
 
 /**
+ * 应用可用屏幕高度，单位像素。
+ */
+val appScreenHeight: Int
+    get() = applicationContext.resources.displayMetrics.heightPixels
+
+/**
  * 系统状态栏高度，单位像素。
  */
 @get:SuppressLint("DiscouragedApi", "InternalInsetResource")

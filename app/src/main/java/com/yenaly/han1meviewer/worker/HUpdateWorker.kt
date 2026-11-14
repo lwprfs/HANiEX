@@ -40,7 +40,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.updateFile
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import java.io.File
 import java.util.Locale
 

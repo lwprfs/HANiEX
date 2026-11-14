@@ -9,7 +9,6 @@ import androidx.room.TypeConverter
 import androidx.room.TypeConverters
 import com.yenaly.han1meviewer.logic.model.MultiItemEntity
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 interface HKeyframeType : MultiItemEntity {

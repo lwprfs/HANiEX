@@ -103,10 +103,12 @@ fun VideoTabsContent(
             }
         }
 
+        // 不设 beyondViewportPageCount：相邻页（评论页较重：Scaffold + PTR + 列表）
+        // 预组合会把整页塞进进场帧，造成导航动画掉帧；各页滚动状态经
+        // pager 的 SaveableStateHolder 保留，首次切换时才组合。
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
-            beyondViewportPageCount = 1,
         ) { page ->
             Box(modifier = Modifier.fillMaxSize()) {
                 pageContent(page)

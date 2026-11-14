@@ -31,7 +31,11 @@
 
 🔞 R18 警告：未满 18 岁禁止下载和使用。
 
+<<<<<<< HEAD
 HANiEX（Han1meViewer Extended）是基于 Han1meViewer 的扩展分支，应用名称为 **HANiEX**，应用包名（applicationId）为 `com.yenaly.hani.extended`。它是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理 hanime 相关公开视频页面内容。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3/JZVD/MPV 为主要技术栈，围绕视频浏览、详情播放、搜索、用户列表、下载管理、评论、订阅、设置和隐私保护等功能组织。
+=======
+Han1meViewer 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理 hanime 相关公开视频页面内容。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3/MPV（Compose 播放器）为主要技术栈，围绕视频浏览、详情播放、搜索、用户列表、下载管理、评论、订阅、设置和隐私保护等功能组织。
+>>>>>>> upstream
 
 本应用没有任何官方网站。本分支仓库 [lwprfs/HANiEX](https://github.com/lwprfs/HANiEX) 的 GitHub Release 与 CI 构建产物是唯一下载及更新渠道。
 
@@ -287,7 +291,7 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 - Room + KSP
 - WorkManager 后台任务
 - Coil 3 Compose 图片加载
-- Media3 ExoPlayer、JZVD、MPV Android
+- Media3 ExoPlayer、MPV Android（Compose 播放器）
 - Firebase Analytics、Crashlytics、Performance、Remote Config、Realtime Database
 - AndroidX Window、Biometric、SplashScreen、Preference
 - Apache Commons Compress（bzip2，用于增量补丁解压）

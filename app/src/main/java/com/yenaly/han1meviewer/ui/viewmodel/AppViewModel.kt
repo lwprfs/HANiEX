@@ -8,14 +8,14 @@ import com.google.firebase.crashlytics.crashlytics
 import com.google.firebase.crashlytics.setCustomKeys
 import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.util.application
 import com.yenaly.han1meviewer.worker.HUpdateWorker
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
-import com.yenaly.han1meviewer.base.BaseViewModel
-import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * @project Han1meViewer
@@ -90,7 +91,7 @@ object AppViewModel : BaseViewModel(application), IHCsrfToken {
         silent: Boolean = false,
     ) {
         viewModelScope.launch {
-            delay(delayMillis)
+            delay(delayMillis.milliseconds)
             getLatestVersionSuspend(forceCheck, forceShow, silent)
         }
     }

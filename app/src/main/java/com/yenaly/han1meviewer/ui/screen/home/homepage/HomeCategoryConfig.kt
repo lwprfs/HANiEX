@@ -2,8 +2,8 @@ package com.yenaly.han1meviewer.ui.screen.home.homepage
 
 import androidx.annotation.StringRes
 import androidx.core.content.edit
-import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 
 const val HOME_CATEGORY_LATEST_HANIME = "latest_hanime"

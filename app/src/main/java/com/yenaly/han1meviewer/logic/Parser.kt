@@ -11,11 +11,11 @@ import com.yenaly.han1meviewer.Preferences.isAlreadyLogin
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.exception.ParseException
+import com.yenaly.han1meviewer.logic.model.CreatorUploadingItem
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimePreview
 import com.yenaly.han1meviewer.logic.model.HanimeSearchResult
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
-import com.yenaly.han1meviewer.logic.model.CreatorUploadingItem
 import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.logic.model.MyListItems
 import com.yenaly.han1meviewer.logic.model.MySubscriptions
@@ -1225,7 +1225,7 @@ object Parser {
     }
 
     private inline fun Elements.forEachStep2(action: (Element) -> Unit) {
-        for (i in 0 until size step 2) {
+        for (i in indices step 2) {
             action(get(i))
         }
     }

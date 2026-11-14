@@ -10,12 +10,12 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
 import com.yenaly.han1meviewer.HANIME_LOGIN_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
@@ -25,10 +25,10 @@ import com.yenaly.han1meviewer.base.BaseActivity
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.login
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.login.LoginDialog
 import com.yenaly.han1meviewer.ui.screen.login.LoginScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import kotlinx.coroutines.launch
 
 class LoginActivity : BaseActivity() {
@@ -61,9 +61,7 @@ class LoginActivity : BaseActivity() {
             }
         }
 
-        val composeView = ComposeView(this)
-        setContentView(composeView)
-        composeView.setContent {
+        setContent {
             HanimeTheme {
                 if (showLoginDialog) {
                     LoginDialog(
