@@ -21,6 +21,9 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import coil3.SingletonImageLoader
+import coil3.request.ImageRequest
+import coil3.toBitmap
 import com.yenaly.han1meviewer.DOWNLOAD_NOTIFICATION_CHANNEL
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HFileManager
@@ -32,7 +35,6 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.util.HImageMeower
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.await
 import com.yenaly.han1meviewer.util.createFileIfNotExists
@@ -560,11 +562,13 @@ class HanimeDownloadWorker(
 
     private fun CoroutineScope.updateCoverImage(entity: HanimeDownloadEntity) {
         launch {
-            val imgRes = HImageMeower.execute(entity.coverUrl)
+            val imgRes = SingletonImageLoader.get(context).execute(
+                ImageRequest.Builder(context).data(entity.coverUrl).build()
+            )
             val (os, uri) = SafFileManager.openOutputStreamForCover(
                 context, entity.videoCode, entity.title
             )
-            val isSuccess = os?.use { out -> imgRes.drawable?.saveTo(out) == true } ?: false
+            val isSuccess = os?.use { out -> imgRes.image?.toBitmap()?.saveTo(out) == true } ?: false
             if (isSuccess && uri != null) {
                 val coverUriStr = uri.toString()
                 withContext(Dispatchers.IO) {

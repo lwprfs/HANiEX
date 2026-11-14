@@ -10,12 +10,12 @@ import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.lifecycleScope
 import com.yenaly.han1meviewer.HANIME_LOGIN_URL
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
@@ -61,9 +61,7 @@ class LoginActivity : BaseActivity() {
             }
         }
 
-        val composeView = ComposeView(this)
-        setContentView(composeView)
-        composeView.setContent {
+        setContent {
             HanimeTheme {
                 if (showLoginDialog) {
                     LoginDialog(

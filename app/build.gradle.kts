@@ -184,19 +184,13 @@ dependencies {
 
     // pic
 
-    implementation(libs.coil)
-
+    // (图片加载统一使用 coil3，见 compose 依赖)
 
     // video
 
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.mpv.lib)
-
-    // view
-
-    implementation(libs.base.recyclerview.adapter.helper4)
-    implementation(libs.spannable.x)
 
     // firebase
 
@@ -214,7 +208,6 @@ dependencies {
     testImplementation(libs.junit)
 
     androidTestImplementation(libs.test.junit)
-    androidTestImplementation(libs.test.espresso.core)
 
     implementation(libs.crashx)
     // debugImplementation(libs.leak.canary)

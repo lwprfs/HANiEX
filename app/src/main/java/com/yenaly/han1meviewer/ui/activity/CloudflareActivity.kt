@@ -8,9 +8,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.compose.setContent
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.platform.ComposeView
 import com.yenaly.han1meviewer.Preferences.cloudFlareCookie
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.USER_AGENT
@@ -39,9 +39,7 @@ class CloudflareActivity : BaseActivity() {
 
         tipTextState.value = getString(R.string.complete_cloudflare_verification_with_warning)
 
-        val composeView = ComposeView(this)
-        setContentView(composeView)
-        composeView.setContent {
+        setContent {
             HanimeTheme {
                 CloudflareScreen(
                     progress = progressState.intValue,

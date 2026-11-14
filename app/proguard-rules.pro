@@ -25,8 +25,10 @@
 -keepnames class * extends android.app.Activity
 -keepnames class * extends androidx.fragment.app.Fragment
 
--keep class com.google.android.gms.** { *; }
--keep interface com.google.android.gms.** { *; }
+# Firebase / Play Services 不需要手动 keep：
+# BoM 34.x 起，各 play-services / firebase AAR 自带 consumer 混淆规则（proguard.txt），
+# R8 会自动合并，官方文档也明确 R8 下无需额外 keep。
+# 旧的 -keep class com.google.android.gms.** { *; } 已删除，避免全量禁用混淆与优化。
 -keep class androidx.appcompat.view.** { *; }
 -keep class androidx.window.extensions.embedding.** { *; }
 -keep class is.xyz.mpv.** { *; }
