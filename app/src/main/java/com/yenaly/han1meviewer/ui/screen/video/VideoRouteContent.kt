@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.ui.screen.video
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -10,8 +11,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
@@ -48,19 +51,34 @@ fun VideoRouteContent(
     pageHost: VideoPageHost,
 ) {
     val hostUiState by videoViewModel.videoHostUiStateFlow.collectAsStateWithLifecycle()
+    val commentBadgeCount by videoViewModel.commentBadgeCount.collectAsStateWithLifecycle()
     val disableComments = remember {
         PreferenceManager.getDefaultSharedPreferences(application)
             .getBoolean("disable_comments", false)
     }
     val relatedAsTab = !fromDownload && com.yenaly.han1meviewer.Preferences.relatedVideoAsTab
-    val tabs = remember(disableComments, hostUiState.commentBadgeCount, fromDownload, relatedAsTab) {
+    val tabs = remember(disableComments, commentBadgeCount, fromDownload, relatedAsTab) {
         buildList {
             add(VideoTabItem(VideoTabKind.INTRODUCTION, R.string.introduction))
             if (!fromDownload && !disableComments) {
-                add(VideoTabItem(VideoTabKind.COMMENT, R.string.comment, badgeCount = hostUiState.commentBadgeCount))
+                add(VideoTabItem(VideoTabKind.COMMENT, R.string.comment, badgeCount = commentBadgeCount))
             }
             if (relatedAsTab) {
                 add(VideoTabItem(VideoTabKind.RELATED, R.string.related_video))
+            }
+        }
+    }
+
+    // 评论预取上提到 tabs 层：评论页不再预组合（见 VideoTabsContent），
+    // 这里在进场时即请求评论数据并更新角标，首次切到评论 tab 时数据已就绪。
+    // 用 getCommentIfNeeded：全屏切换等导致的子树重组重跑本效应时不重拉
+    // （同码已成功加载过即跳过），评论区不再闪加载。
+    LaunchedEffect(commentViewModel.code) {
+        commentViewModel.getCommentIfNeeded(VIDEO_COMMENT_PREFIX, commentViewModel.code)
+        commentViewModel.videoCommentStateFlow.collect { state ->
+            if (state is WebsiteState.Success) {
+                commentViewModel.currentUserId = state.info.currentUserId
+                videoViewModel.setCommentBadgeCount(state.info.videoComment.size)
             }
         }
     }
@@ -73,14 +91,7 @@ fun VideoRouteContent(
             tabs = tabs,
             selectedTabIndex = hostUiState.selectedTabIndex,
             onSelectedTabChange = { videoViewModel.setSelectedTabIndex(videoCode, it) },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    bottom = with(LocalDensity.current)
-                    {
-                        hostUiState.appBarBottomInsetPx.coerceAtLeast(0).toDp()
-                    }
-                ),
+            modifier = Modifier.fillMaxSize(),
         ) { page ->
             when (tabs.getOrNull(page)?.kind) {
                 VideoTabKind.INTRODUCTION -> {
@@ -128,7 +139,6 @@ fun VideoRouteContent(
                                 application.getString(message.resId)
                             }
                         },
-                        pageHost = pageHost,
                     )
                 }
             }

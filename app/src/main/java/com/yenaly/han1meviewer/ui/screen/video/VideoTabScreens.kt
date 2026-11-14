@@ -31,7 +31,6 @@ import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
-import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.content.LoadingContent
@@ -201,7 +200,6 @@ fun RenderVideoCommentContent(
     viewModel: CommentViewModel,
     reportMessages: MutableSharedFlow<CommentMessage>,
     getMessageText: (CommentViewModel.Message) -> String,
-    pageHost: VideoPageHost? = null,
 ) {
     val commentUiState = remember(viewModel.code) {
         viewModel.getCommentUiState(viewModel.code)
@@ -218,18 +216,8 @@ fun RenderVideoCommentContent(
     val scope = rememberCoroutineScope()
 
     HanimeTheme {
-        LaunchedEffect(viewModel.code) {
-            viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
-        }
-
-        LaunchedEffect(Unit) {
-            viewModel.videoCommentStateFlow.collect { state ->
-                if (state is WebsiteState.Success) {
-                    viewModel.currentUserId = state.info.currentUserId
-                    pageHost?.showCommentBadge(state.info.videoComment.size)
-                }
-            }
-        }
+        // 评论数据请求与角标收集已上提到 VideoRouteContent：
+        // 评论页不随播放页进场预组合，请求在 tabs 层进场即发出。
 
         childCommentId?.let { currentCommentId ->
             ModalBottomSheet(

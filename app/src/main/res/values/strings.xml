@@ -967,4 +967,14 @@
     <string name="meow">喵~</string>
     <string name="hiss">哈——</string>
     <string name="growl">嗚——</string>
+
+    <!-- Compose 播放器 -->
+    <string name="gesture_brightness">亮度</string>
+    <string name="gesture_volume">音量</string>
+    <string name="gesture_progress">進度</string>
+    <string name="player_video_load_failed">影片載入失敗</string>
+    <string name="player_click_retry">點擊重試</string>
+    <string name="player_replay">重播</string>
+    <string name="not_wifi_tips">當前使用行動網路，繼續播放將消耗流量</string>
+    <string name="not_wifi_confirm">繼續播放</string>
 </resources>

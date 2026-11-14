@@ -36,7 +36,7 @@ android {
         applicationId = "com.yenaly.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 1, minor = 3, patch = 0)
+        val (code, name) = createVersion(major = 1, minor = 4, patch = 0)
         versionCode = code
         versionName = name
 
@@ -189,7 +189,6 @@ dependencies {
 
     // video
 
-    implementation(libs.jiaozi.video.player)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.mpv.lib)

@@ -1,7 +1,7 @@
 package com.yenaly.han1meviewer.ui.component
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeTagList2
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 /**
@@ -55,17 +57,27 @@ fun TagChipGroup(
         collapsible,
         collapsedMaxLines
     ) { mutableIntStateOf(0) }
-//    val collapseText = stringResource(R.string.collapse)
-//    val expandText = stringResource(R.string.expand)
+    // 高度补间用 Animatable 手动驱动：首次出现直接 snap 到位——
+    // animateIntAsState 的 0→h 入场动画会让所在列表在数据到达后的每一帧
+    // 都重排（播放页进场的连续掉帧来源之一）；仅展开/收起时播放补间。
+    val heightAnimatable = remember(tags, collapsible, collapsedMaxLines) {
+        Animatable(-1f)
+    }
+    LaunchedEffect(chipContentHeightTarget) {
+        if (chipContentHeightTarget <= 0) return@LaunchedEffect
+        if (heightAnimatable.value < 0f) {
+            heightAnimatable.snapTo(chipContentHeightTarget.toFloat())
+        } else {
+            heightAnimatable.animateTo(
+                chipContentHeightTarget.toFloat(),
+                animationSpec = tween(durationMillis = 240),
+            )
+        }
+    }
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = tween(durationMillis = 240),
         label = "tag-arrow-rotation",
-    )
-    val animatedChipContentHeight by animateIntAsState(
-        targetValue = chipContentHeightTarget,
-        animationSpec = tween(durationMillis = 240),
-        label = "tag-content-height",
     )
 
     SubcomposeLayout(modifier = modifier.fillMaxWidth()) { constraints ->
@@ -178,24 +190,28 @@ fun TagChipGroup(
                 contentPlaceables = chipPlaceables + togglePlaceable
                 contentLayout = calculateFlowLayout(contentPlaceables)
             } else {
-                var visibleChipCount = chipPlaceables.size
-                var bestPlaceables: List<Placeable>? = null
-                var bestLayout: FlowLayoutResult? = null
-
-                while (visibleChipCount >= 0) {
-                    val candidatePlaceables =
-                        chipPlaceables.take(visibleChipCount) + togglePlaceable
+                // 二分查找折叠态最多能放下的 chip 数（线性逐个回退为 O(n²)，
+                // 且「行数随 chip 数单调不减」，二分安全）
+                var lo = 0
+                var hi = chipPlaceables.size
+                var bestCount = -1
+                while (lo <= hi) {
+                    val mid = (lo + hi) / 2
+                    val candidatePlaceables = chipPlaceables.take(mid) + togglePlaceable
                     val candidateLayout = calculateFlowLayout(candidatePlaceables)
                     if (candidateLayout.lineCount <= collapsedMaxLines) {
-                        bestPlaceables = candidatePlaceables
-                        bestLayout = candidateLayout
-                        break
+                        bestCount = mid
+                        lo = mid + 1
+                    } else {
+                        hi = mid - 1
                     }
-                    visibleChipCount -= 1
                 }
-
-                contentPlaceables = bestPlaceables ?: listOf(togglePlaceable)
-                contentLayout = bestLayout ?: calculateFlowLayout(contentPlaceables)
+                contentPlaceables = if (bestCount >= 0) {
+                    chipPlaceables.take(bestCount) + togglePlaceable
+                } else {
+                    listOf(togglePlaceable)
+                }
+                contentLayout = calculateFlowLayout(contentPlaceables)
             }
         } else {
             contentPlaceables = chipPlaceables
@@ -205,6 +221,13 @@ fun TagChipGroup(
         val chipContentHeight = contentLayout.height
         if (chipContentHeightTarget != chipContentHeight) {
             chipContentHeightTarget = chipContentHeight
+        }
+
+        // 首次出现（动画尚未就位）直接用目标高度，之后用补间值
+        val displayChipHeight = if (heightAnimatable.value >= 0f) {
+            heightAnimatable.value.roundToInt()
+        } else {
+            chipContentHeight
         }
 
         val headerPlaceables = if (!headerTitle.isNullOrBlank()) {
@@ -220,13 +243,13 @@ fun TagChipGroup(
 
         val headerHeight = headerPlaceables.maxOfOrNull { it.height } ?: 0
         val headerSpacing =
-            if (headerPlaceables.isNotEmpty() && animatedChipContentHeight > 0) spacingY else 0
+            if (headerPlaceables.isNotEmpty() && displayChipHeight > 0) spacingY else 0
         val contentWidth = contentLayout.contentWidth
         val headerWidth = headerPlaceables.maxOfOrNull { it.width } ?: 0
         val layoutWidth = (constraints.maxWidth.takeUnless { it == Constraints.Infinity }
             ?: maxOf(contentWidth, headerWidth))
             .coerceAtLeast(constraints.minWidth)
-        val layoutHeight = (headerHeight + headerSpacing + animatedChipContentHeight)
+        val layoutHeight = (headerHeight + headerSpacing + displayChipHeight)
             .coerceAtLeast(constraints.minHeight)
 
         layout(layoutWidth, layoutHeight) {
@@ -283,6 +306,8 @@ private fun rememberTagChipColors(tags: List<String>): Map<String, ChipColors> {
     val assignedPalette = remember(tags, palette) {
         assignPaletteWithoutAdjacentRepeats(tags.distinct(), palette)
     }
+    // assistChipColors 是 @Composable 工厂，无法整体 remember；
+    // ChipColors 为轻量数据类，逐次创建开销可忽略。
     return assignedPalette.mapValues { (_, pair) ->
         AssistChipDefaults.assistChipColors(
             containerColor = pair.first,
