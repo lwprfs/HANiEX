@@ -9,7 +9,6 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,12 +40,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -71,6 +70,7 @@ import com.yenaly.han1meviewer.ui.player.PlayerState
 import com.yenaly.han1meviewer.ui.player.PlayerUtils
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Compose 视频播放器主组件。
@@ -171,7 +171,7 @@ fun HanimeVideoPlayer(
     var sliderDragging by remember { mutableStateOf(false) }
 
     /** 进度条拖动中的最新值（0..1），松手时 seek。 */
-    var sliderDragValue by remember { mutableStateOf(0f) }
+    var sliderDragValue by remember { mutableFloatStateOf(0f) }
 
     // 播放中（含准备/缓冲）保持屏幕常亮，暂停/结束/出错后恢复
     DisposableEffect(uiState.state) {
@@ -193,7 +193,7 @@ fun HanimeVideoPlayer(
         if (showControls && uiState.state == PlayerState.PLAYING &&
             currentSheet == null && bubble == null && !sliderDragging && !uiState.isGestureLocked
         ) {
-            delay(3_000)
+            delay(3_000.milliseconds)
             showControls = false
         }
     }
@@ -224,7 +224,7 @@ fun HanimeVideoPlayer(
     // 「从头开始」5 秒后自动隐藏
     LaunchedEffect(resumeVisible) {
         if (resumeVisible) {
-            delay(5_000)
+            delay(5_000.milliseconds)
             resumeVisible = false
         }
     }
@@ -431,7 +431,6 @@ fun HanimeVideoPlayer(
         // 6. 中部控件（loading / 播放暂停）
         PlayerCenterArea(
             state = uiState.state,
-            hasMedia = uiState.hasMedia,
             controlsVisible = controlsVisible,
             onPlayClick = {
                 when {
@@ -647,7 +646,6 @@ fun HanimeVideoPlayer(
 @Composable
 private fun PlayerCenterArea(
     state: PlayerState,
-    hasMedia: Boolean,
     controlsVisible: Boolean,
     onPlayClick: () -> Unit,
     onPauseClick: () -> Unit,
@@ -655,21 +653,21 @@ private fun PlayerCenterArea(
     modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        when {
+        when (state) {
             // 加载中
-            state == PlayerState.PREPARING || state == PlayerState.BUFFERING -> {
+            PlayerState.PREPARING, PlayerState.BUFFERING -> {
                 LoadingIndicator()
             }
 
             // 出错重试
-            state == PlayerState.ERROR -> {
+            PlayerState.ERROR -> {
                 RetryCard(onRetry = onRetry)
             }
 
             // 暂停/完成/未开始：大播放键
-            state == PlayerState.PAUSED ||
-                    state == PlayerState.COMPLETED ||
-                    state == PlayerState.IDLE -> {
+            PlayerState.PAUSED,
+            PlayerState.COMPLETED,
+            PlayerState.IDLE -> {
                 FilledIconButton(
                     onClick = onPlayClick,
                     modifier = Modifier.size(84.dp),
@@ -697,14 +695,16 @@ private fun PlayerCenterArea(
             }
 
             // 播放中：控件可见时显示小暂停键
-            state == PlayerState.PLAYING && controlsVisible -> {
-                IconButton(onClick = onPauseClick) {
-                    Icon(
-                        imageVector = Icons.Outlined.Pause,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(56.dp),
-                    )
+            PlayerState.PLAYING -> {
+                if (controlsVisible) {
+                    IconButton(onClick = onPauseClick) {
+                        Icon(
+                            imageVector = Icons.Outlined.Pause,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(56.dp),
+                        )
+                    }
                 }
             }
         }

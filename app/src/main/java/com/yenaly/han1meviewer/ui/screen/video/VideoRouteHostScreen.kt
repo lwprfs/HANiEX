@@ -5,9 +5,8 @@ import android.app.PictureInPictureParams
 import android.app.RemoteAction
 import android.content.Intent
 import android.content.pm.ActivityInfo
-import android.graphics.Rect
+import android.content.res.Configuration
 import android.graphics.drawable.Icon
-import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -22,9 +21,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -39,10 +36,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -54,14 +54,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toAndroidRect
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ShareCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -72,9 +70,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.window.core.layout.WindowSizeClass
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
-import androidx.core.app.ShareCompat
+import com.google.firebase.Firebase
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.analytics
+import com.google.firebase.analytics.logEvent
 import com.yenaly.han1meviewer.FirebaseConstants
+import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.getHanimeVideoLink
@@ -103,24 +104,19 @@ import com.yenaly.han1meviewer.ui.player.video.HanimeVideoPlayer
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.OrientationManager
+import com.yenaly.han1meviewer.util.OrientationManager.ScreenOrientation
 import com.yenaly.han1meviewer.util.appScreenWidth
 import com.yenaly.han1meviewer.util.browse
 import com.yenaly.han1meviewer.util.checkBadGuy
 import com.yenaly.han1meviewer.util.copyToClipboard
-import com.yenaly.han1meviewer.util.dp as dpToPx
 import com.yenaly.han1meviewer.util.loadAssetAs
-import com.yenaly.han1meviewer.util.OrientationManager.ScreenOrientation
-import com.google.firebase.Firebase
-import com.google.firebase.analytics.FirebaseAnalytics
-import com.google.firebase.analytics.analytics
-import com.google.firebase.analytics.logEvent
-import com.yenaly.han1meviewer.PermissionRequester
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import android.content.res.Configuration
+import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
+import com.yenaly.han1meviewer.util.dp as dpToPx
 
 /**
  * 播放页宿主（纯 Compose）。
@@ -147,7 +143,7 @@ fun VideoRouteHostScreen(
         viewModel.hanimeVideoFlow.collectAsStateWithLifecycle().value?.relatedHanimes.orEmpty()
 
     val genres by produceState(
-        initialValue = emptyList<com.yenaly.han1meviewer.logic.model.SearchOption>(),
+        initialValue = emptyList(),
         key1 = Preferences.baseUrl,
     ) {
         // 资产 JSON 读取 + 解析移到 IO：避免在组合期间占用主线程
@@ -211,10 +207,10 @@ fun VideoRouteHostScreen(
     }
 
     /** 进入全屏前的窗口亮度（退出时恢复）。 */
-    var brightnessBackup by remember { mutableStateOf(-1f) }
+    var brightnessBackup by remember { mutableFloatStateOf(-1f) }
 
     /** 重力自动全屏防抖时间戳。 */
-    var lastAutoFullscreenTime by remember { mutableStateOf(0L) }
+    var lastAutoFullscreenTime by remember { mutableLongStateOf(0L) }
 
     fun enterFullscreen() {
         if (isFullscreen) return
@@ -321,7 +317,14 @@ fun VideoRouteHostScreen(
                     intent,
                 )
                 val params = PictureInPictureParams.Builder()
-                    .setSourceRectHint(playerWindowBounds.toAndroidRect())
+                    .setSourceRectHint(
+                        android.graphics.Rect(
+                            playerWindowBounds.left.roundToInt(),
+                            playerWindowBounds.top.roundToInt(),
+                            playerWindowBounds.right.roundToInt(),
+                            playerWindowBounds.bottom.roundToInt(),
+                        ),
+                    )
                     .setAspectRatio(android.util.Rational(16, 9))
                     .setActions(listOf(action))
                     .build()
@@ -349,13 +352,13 @@ fun VideoRouteHostScreen(
 
     // ---------------- 媒体加载与进度恢复 ----------------
 
-    val currentOnNoVideoUrl by rememberUpdatedState({
+    val currentOnNoVideoUrl by rememberUpdatedState {
         GlobalToasts.show(
             activity.getString(R.string.fail_to_get_video_link),
             level = GlobalToasts.ToastLevel.ERROR,
         )
         activity.browse(getHanimeVideoLink(route.videoCode))
-    })
+    }
 
     LaunchedEffect(route.videoCode, route.localUri, viewModel.fromDownload) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {

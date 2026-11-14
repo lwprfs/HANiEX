@@ -6,7 +6,6 @@ import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.graphics.SurfaceTexture
-import android.os.Build
 import android.util.Log
 import android.view.Surface
 import com.yenaly.han1meviewer.Preferences
@@ -31,6 +30,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 播放器状态中枢。
@@ -48,7 +48,8 @@ import kotlinx.coroutines.launch
  */
 class HanimePlayerController(
     context: Context,
-    kernelType: KernelType,
+    /** 内核类型（UI 判断 MPV 专属功能显隐用）。 */
+    val kernelType: KernelType,
 ) : KernelListener {
 
     companion object {
@@ -62,9 +63,6 @@ class HanimePlayerController(
     }
 
     private val appContext = context.applicationContext
-
-    /** 内核类型（UI 判断 MPV 专属功能显隐用）。 */
-    val kernelType: KernelType = kernelType
 
     /** 进度 ticker 等内部协程作用域，[release] 时取消。 */
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -457,7 +455,7 @@ class HanimePlayerController(
                     durationMs = kernel.durationMs,
                     bufferedPercent = _progress.value.bufferedPercent,
                 )
-                delay(PROGRESS_INTERVAL_MS)
+                delay(PROGRESS_INTERVAL_MS.milliseconds)
             }
         }
     }
@@ -471,30 +469,14 @@ class HanimePlayerController(
 
     private fun requestAudioFocus() {
         if (audioFocusRequest != null) return
-        audioFocusRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
-                .setOnAudioFocusChangeListener(audioFocusChangeListener)
-                .build()
-                .also { audioManager.requestAudioFocus(it) }
-        } else {
-            @Suppress("DEPRECATION")
-            audioManager.requestAudioFocus(
-                audioFocusChangeListener,
-                AudioManager.STREAM_MUSIC,
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
-            )
-            null
-        }
+        audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT)
+            .setOnAudioFocusChangeListener(audioFocusChangeListener)
+            .build()
+            .also { audioManager.requestAudioFocus(it) }
     }
 
     private fun abandonAudioFocus() {
-        val request = audioFocusRequest
-        if (request != null) {
-            audioManager.abandonAudioFocusRequest(request)
-        } else {
-            @Suppress("DEPRECATION")
-            audioManager.abandonAudioFocus(audioFocusChangeListener)
-        }
+        audioFocusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
         audioFocusRequest = null
         pausedByAudioFocusLoss = false
     }

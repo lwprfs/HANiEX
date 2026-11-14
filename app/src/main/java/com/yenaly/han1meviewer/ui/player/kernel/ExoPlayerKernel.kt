@@ -177,6 +177,10 @@ class ExoPlayerKernel(
                 Player.STATE_ENDED -> {
                     mainHandler.post { listener?.onCompleted() }
                 }
+
+                // STATE_IDLE：出错/停止后的空闲态，错误由 onPlayerError 上报，
+                // 这里无需向控制器转发任何状态
+                Player.STATE_IDLE -> Unit
             }
         }
 
@@ -251,14 +255,14 @@ class ExoPlayerKernel(
                 thread.quitSafely()
                 return@post
             }
-            val player = buildPlayer(request) ?: return@post
+            val player = buildPlayer(request)
             _exoPlayer = player
             pendingSurface?.let { player.setVideoSurface(it) }
             pendingSurface = null
         }
     }
 
-    private fun buildPlayer(request: MediaRequest): ExoPlayer? {
+    private fun buildPlayer(request: MediaRequest): ExoPlayer {
         val trackSelector = DefaultTrackSelector(
             context,
             AdaptiveTrackSelection.Factory(),
@@ -392,8 +396,7 @@ class ExoPlayerKernel(
      * 供 `isPlaying` / 位置 / 时长等同步查询使用。
      */
     private inline fun <T> runOnPlayerThread(crossinline block: () -> T?): T? {
-        val handler = mediaHandler
-        if (handler == null) return null
+        val handler = mediaHandler ?: return null
         if (Looper.myLooper() == handler.looper) {
             return block()
         }
