@@ -1275,7 +1275,7 @@ object Parser {
      * 這個網站的網頁結構真的很奇怪，所以我寫了一個 forEachStep2 來處理
      */
     private inline fun Elements.forEachStep2(action: (Element) -> Unit) {
-        for (i in 0 until size step 2) {
+        for (i in indices step 2) {
             action(get(i))
         }
     }

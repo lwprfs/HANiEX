@@ -12,13 +12,12 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.lang.ref.WeakReference
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.coroutines.Continuation
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlin.system.exitProcess
 
 /**
@@ -83,19 +82,21 @@ suspend fun <I, O> Context.awaitActivityResult(
 
     return withContext(Dispatchers.Main) {
         lifecycle.addObserver(observer)
-        suspendCoroutine(object : Function1<Continuation<O>, Unit> {
-            private var resumed = false
-            override fun invoke(cont: Continuation<O>) {
-                launcher = activity.activityResultRegistry.register(key, contract) {
-                    if (!resumed) {
-                        resumed = true
-                        launcher?.unregister()
-                        lifecycle.removeObserver(observer)
-                        cont.resume(it)
-                    }
-                }.apply { launch(input) }
+        suspendCancellableCoroutine { cont: CancellableContinuation<O> ->
+            launcher = activity.activityResultRegistry.register(key, contract) {
+                if (cont.isActive) {
+                    launcher?.unregister()
+                    lifecycle.removeObserver(observer)
+                    cont.resume(it) { _, _, _ -> }
+                }
+            }.apply { launch(input) }
+            // 协程被取消时（如页面销毁、作用域结束）清理 launcher 与生命周期观察者，
+            // 避免泄漏与向已取消的 continuation resume
+            cont.invokeOnCancellation {
+                launcher.unregister()
+                lifecycle.removeObserver(observer)
             }
-        })
+        }
     }
 }
 

@@ -55,9 +55,9 @@ private fun firstLetterComparator(): Comparator<VideoWithCategories> {
 private fun sortKey(title: String): String {
     val sb = StringBuilder(title.length)
     for (ch in title) {
-        when {
-            ch == '\u3000' -> sb.append(' ')
-            ch in '\uFF01'..'\uFF5E' -> sb.append((ch.code - 0xFEE0).toChar())
+        when (ch) {
+            '\u3000' -> sb.append(' ')
+            in '\uFF01'..'\uFF5E' -> sb.append((ch.code - 0xFEE0).toChar())
             else -> sb.append(KANA_TO_ROMAJI[ch] ?: ch)
         }
     }

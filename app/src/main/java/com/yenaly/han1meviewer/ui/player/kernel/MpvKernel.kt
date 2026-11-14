@@ -400,8 +400,7 @@ class MpvKernel(
         Log.i(TAG, "URL Link = ${request.url}")
         MPVLib.setOptionString("force-window", "yes")
 
-        val path = prepareUri(request.url.toUri())
-        if (path == null) return
+        val path = prepareUri(request.url.toUri()) ?: return
         if (currentSurface != null) {
             loadFile(path, request)
         } else {

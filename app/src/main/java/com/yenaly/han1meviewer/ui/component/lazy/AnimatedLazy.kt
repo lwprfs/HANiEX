@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import kotlin.time.Duration.Companion.milliseconds
 import androidx.compose.foundation.lazy.LazyColumn as FoundationLazyColumn
 import androidx.compose.foundation.lazy.LazyRow as FoundationLazyRow
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid as FoundationLazyVerticalGrid
@@ -375,7 +376,7 @@ private fun AnimatedLazyItemContainer(
         val clampedIndex = animationIndex.coerceIn(0, maxStaggerIndex)
         val delayMillis = (clampedIndex * staggerStepMillis).coerceAtLeast(0)
         if (delayMillis > 0) {
-            kotlinx.coroutines.delay(delayMillis.toLong())
+            kotlinx.coroutines.delay(delayMillis.toLong().milliseconds)
         }
         visible = true
     }

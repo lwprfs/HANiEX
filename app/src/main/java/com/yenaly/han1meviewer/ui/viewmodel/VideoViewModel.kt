@@ -83,9 +83,6 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
     }
     private val videoIntroUiStateMap = mutableMapOf<String, VideoIntroUiState>()
     var videoCode: String = EMPTY_STRING
-        set(value) {
-            field = value
-        }
 
     var fromDownload = false
 

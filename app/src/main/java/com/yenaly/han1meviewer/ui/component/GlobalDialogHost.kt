@@ -57,7 +57,7 @@ object GlobalDialogs {
      */
     fun show(request: Request): Long {
         val id = ++nextId
-        _queue.value = _queue.value + QueuedRequest(id, request)
+        _queue.value += QueuedRequest(id, request)
         return id
     }
 
@@ -74,14 +74,14 @@ fun GlobalDialogHost() {
         is GlobalDialogs.ConfirmRequest -> {
             AlertDialog(
                 onDismissRequest = {
-                    GlobalDialogs.dismiss(head.id)
+                    dismiss(head.id)
                     req.onDismissRequest()
                 },
                 title = { Text(req.title) },
                 text = req.message?.let { { Text(it) } },
                 confirmButton = {
                     TextButton(onClick = {
-                        GlobalDialogs.dismiss(head.id)
+                        dismiss(head.id)
                         req.onConfirm()
                     }) {
                         Text(req.confirmText)
@@ -90,7 +90,7 @@ fun GlobalDialogHost() {
                 dismissButton = req.dismissText?.let { dismissText ->
                     {
                         TextButton(onClick = {
-                            GlobalDialogs.dismiss(head.id)
+                            dismiss(head.id)
                             req.onCancel()
                         }) {
                             Text(dismissText)
@@ -108,11 +108,11 @@ fun GlobalDialogHost() {
                 confirmText = req.confirmText,
                 dismissText = req.dismissText,
                 onConfirm = { values ->
-                    GlobalDialogs.dismiss(head.id)
+                    dismiss(head.id)
                     req.onConfirm(values)
                 },
                 onDismiss = {
-                    GlobalDialogs.dismiss(head.id)
+                    dismiss(head.id)
                     req.onDismiss()
                 },
             )

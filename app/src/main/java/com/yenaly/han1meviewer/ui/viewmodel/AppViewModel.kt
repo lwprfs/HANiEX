@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * @project Han1meViewer
@@ -88,7 +89,7 @@ object AppViewModel : BaseViewModel(application), IHCsrfToken {
 
     fun getLatestVersion(forceCheck: Boolean = true, delayMillis: Long = 0, forceShow: Boolean = false) {
         viewModelScope.launch {
-            delay(delayMillis)
+            delay(delayMillis.milliseconds)
             getLatestVersionSuspend(forceCheck, forceShow)
         }
     }

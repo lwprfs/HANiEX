@@ -60,6 +60,7 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * 玻璃拟态背景容器（顶栏/底栏共享视觉）。
@@ -158,7 +159,7 @@ internal fun BatteryTimeChip(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         while (true) {
             timeText = formatCurrentTime()
-            delay(30_000)
+            delay(30_000.milliseconds)
         }
     }
 

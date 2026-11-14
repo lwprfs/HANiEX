@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun UsageNoticeDialog(
@@ -65,7 +66,7 @@ fun UsageNoticeDialog(
 
     LaunchedEffect(visible, isResumed, resetVersion) {
         while (visible && isResumed && remainingSeconds > 0) {
-            delay(1_000L)
+            delay(1_000L.milliseconds)
             remainingSeconds--
         }
     }

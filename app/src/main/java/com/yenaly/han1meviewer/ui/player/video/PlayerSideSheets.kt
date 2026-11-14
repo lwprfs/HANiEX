@@ -125,7 +125,6 @@ private fun BubbleOptionItem(
  * @param playerWidthPx 播放器宽度（px，用于水平钳制）
  * @param itemCount 选项数量（用于预算高度）
  * @param maxVisibleItems 气泡最多同时展示的行数，超出部分滚动查看
- * @param anchorOffsetX 锚点相对气泡左缘的 x 偏移提示，null 时三角居中
  * @param content 气泡内容
  */
 @Composable
@@ -345,38 +344,6 @@ fun PlayerSideSheet(
     }
 }
 
-/**
- * 侧边面板的列表行。
- *
- * @param text 文本
- * @param selected 是否选中（主色高亮）
- * @param onClick 点击回调
- */
-@Composable
-private fun PlayerSheetItem(
-    text: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = text,
-            color = if (selected) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                Color.White
-            },
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-        )
-    }
-}
 
 /**
  * 关键 H 帧面板。
