@@ -7,6 +7,10 @@ import android.os.Process
 import android.util.Log
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.memory.MemoryCache
+import com.developer.crashx.config.CrashConfig
 import com.google.android.material.color.DynamicColors
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
@@ -15,18 +19,14 @@ import com.google.firebase.crashlytics.setCustomKeys
 import com.google.firebase.database.database
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
+import com.yenaly.han1meviewer.base.AppLocale
+import com.yenaly.han1meviewer.base.BaseApplication
 import com.yenaly.han1meviewer.logic.network.HProxySelector
-import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
+import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.ThemeUtils
-import com.developer.crashx.config.CrashConfig
-import com.yenaly.han1meviewer.base.BaseApplication
-import com.yenaly.han1meviewer.base.AppLocale
-import coil3.ImageLoader
-import coil3.SingletonImageLoader
-import coil3.memory.MemoryCache
 import `is`.xyz.mpv.MPVLib
 import java.net.ProxySelector
 

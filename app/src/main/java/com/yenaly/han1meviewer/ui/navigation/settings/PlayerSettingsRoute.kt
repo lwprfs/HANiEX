@@ -11,10 +11,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
-import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsUiState
 import com.yenaly.han1meviewer.ui.player.PlayerDefaults
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
+import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsUiState
 
 private const val PLAYER_SWITCH_PLAYER_KERNEL = "switch_player_kernel"
 private const val PLAYER_SHOW_BOTTOM_PROGRESS = "show_bottom_progress"

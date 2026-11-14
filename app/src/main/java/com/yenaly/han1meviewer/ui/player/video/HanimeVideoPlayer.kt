@@ -242,7 +242,7 @@ fun HanimeVideoPlayer(
         PlayerDefaults.speedStringArray[uiState.speedIndex]
     }
     val superResLabel = if (uiState.superResolutionIndex == PlayerDefaults.DEF_SUPER_RESOLUTION_INDEX) {
-        "Anime 4K"
+        stringResource(R.string.anime_4k)
     } else {
         stringResource(superResLabels[uiState.superResolutionIndex])
     }

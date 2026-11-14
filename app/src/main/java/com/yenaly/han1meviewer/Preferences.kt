@@ -5,6 +5,8 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
+import com.yenaly.han1meviewer.Preferences.loginCookie
+import com.yenaly.han1meviewer.Preferences.videoLanguage
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
@@ -12,10 +14,10 @@ import com.yenaly.han1meviewer.ui.player.PlayerDefaults
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import com.yenaly.han1meviewer.util.CookieString
 import com.yenaly.han1meviewer.util.SafFileManager
-import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.getSpValue
 import com.yenaly.han1meviewer.util.putSpValue
+import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime

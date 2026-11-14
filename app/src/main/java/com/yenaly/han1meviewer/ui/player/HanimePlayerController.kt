@@ -1,15 +1,16 @@
 package com.yenaly.han1meviewer.ui.player
 
 import android.content.Context
+import android.graphics.SurfaceTexture
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.graphics.SurfaceTexture
 import android.util.Log
 import android.view.Surface
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.ResolutionLinkMap
+import com.yenaly.han1meviewer.ui.player.HanimePlayerController.Companion.RESUME_THRESHOLD_MS
 import com.yenaly.han1meviewer.ui.player.kernel.KernelListener
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import com.yenaly.han1meviewer.ui.player.kernel.MediaRequest

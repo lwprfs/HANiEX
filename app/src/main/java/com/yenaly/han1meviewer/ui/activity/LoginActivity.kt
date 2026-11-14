@@ -25,10 +25,10 @@ import com.yenaly.han1meviewer.base.BaseActivity
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.login
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.screen.login.LoginDialog
 import com.yenaly.han1meviewer.ui.screen.login.LoginScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import kotlinx.coroutines.launch
 
 class LoginActivity : BaseActivity() {

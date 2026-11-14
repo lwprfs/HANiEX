@@ -38,9 +38,9 @@ import com.yenaly.han1meviewer.util.SafFileManager.ImportFailureReason
 import com.yenaly.han1meviewer.util.SafFileManager.ImportResult
 import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
+import com.yenaly.han1meviewer.util.application
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
-import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

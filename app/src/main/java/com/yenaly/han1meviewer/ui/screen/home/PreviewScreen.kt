@@ -25,9 +25,6 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.preview.fakeNewHanimeInfo
-import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
-import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
-import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewContent
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewEvent
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerDialog
@@ -35,10 +32,13 @@ import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewMonthHeaderState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewRouteUiState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewUiState
-import com.yenaly.han1meviewer.ui.screen.home.preview.currentDateCode as currentMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.shiftMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.toNormalDateLabel
+import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
+import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
+import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import kotlinx.coroutines.launch
+import com.yenaly.han1meviewer.ui.screen.home.preview.currentDateCode as currentMonthCode
 
 /**
  * 预览页面 Screen 层。

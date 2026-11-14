@@ -10,8 +10,8 @@ import androidx.work.workDataOf
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
-import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.applicationContext
+import com.yenaly.han1meviewer.util.runSuspendCatching
 import java.util.Queue
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue

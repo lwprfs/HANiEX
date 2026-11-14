@@ -10,7 +10,6 @@ import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import java.util.regex.Pattern
-import kotlin.runCatching
 
 object GetchuParser {
     fun getchuPreview(body: String, dateCode: String): WebsiteState<GetchuPreview> {

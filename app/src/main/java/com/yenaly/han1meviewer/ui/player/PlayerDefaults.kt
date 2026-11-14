@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.player
 
 import androidx.annotation.IntRange
+import com.yenaly.han1meviewer.ui.player.PlayerDefaults.speedArray
 
 /**
  * 播放器默认参数与常量。

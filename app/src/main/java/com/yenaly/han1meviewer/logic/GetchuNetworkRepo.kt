@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.flowOn
 import okhttp3.ResponseBody
 import retrofit2.Response
 import java.nio.charset.Charset
-import kotlin.runCatching
 
 object GetchuNetworkRepo {
     val GETCHU_CHARSET: Charset = Charset.forName("EUC-JP")

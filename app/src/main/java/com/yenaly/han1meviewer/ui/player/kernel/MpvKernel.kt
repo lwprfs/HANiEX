@@ -9,8 +9,8 @@ import android.util.Log
 import android.view.Surface
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.BuildConfig
-import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.AnimeShaders

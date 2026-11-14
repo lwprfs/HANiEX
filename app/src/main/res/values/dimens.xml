@@ -8,8 +8,6 @@
     <dimen name="view_view_and_time_icon_size">14dp</dimen>
     <dimen name="video_view_and_time_and_duration">12sp</dimen>
     <dimen name="err_tip_text_size">24sp</dimen>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="player_control_bar_margin">15dp</dimen>
     <!-- 覆写Material slider左右padding -->
     <dimen name="mtrl_slider_track_side_padding" tools:override="true" tools:ignore="UnusedResources">0dp</dimen>
 </resources>

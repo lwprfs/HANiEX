@@ -9,10 +9,12 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.exception.HUpdaterException
 import com.yenaly.han1meviewer.logic.model.github.CommitComparison
 import com.yenaly.han1meviewer.logic.model.github.Latest
+import com.yenaly.han1meviewer.logic.network.HUpdater.checkForUpdate
+import com.yenaly.han1meviewer.logic.network.HUpdater.injectUpdate
+import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.checkNeedUpdate
 import com.yenaly.han1meviewer.util.copyTo
 import com.yenaly.han1meviewer.util.runSuspendCatching
-import com.yenaly.han1meviewer.util.applicationContext
 import okio.use
 import java.io.File
 import java.util.zip.ZipInputStream
