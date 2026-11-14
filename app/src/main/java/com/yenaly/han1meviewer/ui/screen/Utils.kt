@@ -142,7 +142,22 @@ fun rememberCardResponsiveWidth(
  *   避免三列甚至更多列被挤进狭窄的详情面板。
  */
 @Composable
-fun rememberVideoGridColumns(minCardWidth: Dp = VideoNormalCardMinWidth): Int {
+fun rememberVideoGridColumns(minCardWidth: Dp = VideoNormalCardMinWidth): Int =
+    rememberGridColumns(minCardWidth, search = false)
+
+/**
+ * Same as [rememberVideoGridColumns] but driven by the independent "Search Grid Columns"
+ * preference. Use it for search-result grids only.
+ */
+@Composable
+fun rememberSearchGridColumns(minCardWidth: Dp = VideoNormalCardMinWidth): Int =
+    rememberGridColumns(minCardWidth, search = true)
+
+/** Hard floor so a user-chosen column count can never squeeze cards too narrow. */
+private val MinUserGridCardWidth = 112.dp
+
+@Composable
+private fun rememberGridColumns(minCardWidth: Dp, search: Boolean): Int {
     val windowWidthDp = currentWindowWidthDp()
     val availableWidthDp = LocalVideoGridAvailableWidth.current ?: windowWidthDp
     val isPreview = LocalInspectionMode.current
@@ -160,13 +175,15 @@ fun rememberVideoGridColumns(minCardWidth: Dp = VideoNormalCardMinWidth): Int {
             WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND
     if (!useTabletColumns) return maxOf(2, maxFittingColumns)
 
-    val preferredColumns = Preferences.searchGridColumnsConfig
+    val config = if (search) Preferences.searchGridColumnsConfig else Preferences.videoGridColumnsConfig
+    val preferredColumns = config
         .columnsForWidthDp(availableWidthDp.value.toInt())
         .coerceAtLeast(1)
+    val absoluteMaxColumns = videoGridColumnsForWidth(availableWidthDp, MinUserGridCardWidth)
     return if (isNarrowedContainer) {
         minOf(preferredColumns, maxFittingColumns).coerceAtLeast(1)
     } else {
-        preferredColumns
+        minOf(preferredColumns, absoluteMaxColumns).coerceAtLeast(1)
     }
 }
 

@@ -1,9 +1,15 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
-import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.DrawerValue
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Subscriptions
+import com.yenaly.han1meviewer.ui.navigation.site.SITE_LIBRARY_ROUTE_NAME
+import com.yenaly.han1meviewer.ui.navigation.site.SITE_PROFILE_ROUTE_NAME
+import com.yenaly.han1meviewer.ui.navigation.site.SITE_SUBSCRIPTION_ROUTE_NAME
+import com.yenaly.han1meviewer.ui.navigation.site.SiteLibraryRoute
+import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
+import com.yenaly.han1meviewer.ui.navigation.site.SiteSubscriptionRoute
+import com.yenaly.han1meviewer.ui.navigation.site.navigateSiteTopLevel
 import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.Icons
 import android.content.Intent
@@ -101,7 +107,6 @@ fun MainActivityContent(
             NavigationManager.initialize(composeNavController, Preferences.siteType)
         }
 
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
@@ -140,24 +145,17 @@ fun MainActivityContent(
                 else -> false
             }
         }
+        val atSubscription = remember(backStackEntry) {
+            backStackEntry?.destination.isRoute(SITE_SUBSCRIPTION_ROUTE_NAME)
+        }
         val atLibrary = remember(backStackEntry) {
-            val d = backStackEntry?.destination
-            d.isRoute("com.yenaly.han1meviewer.ui.navigation.settings.LocalPlaylistsRoute") ||
-                    d.isRoute("com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterLibraryRoute")
+            backStackEntry?.destination.isRoute(SITE_LIBRARY_ROUTE_NAME)
         }
-        val atSiteSettings = remember(backStackEntry, currentSite) {
-            val d = backStackEntry?.destination
-            when (currentSite) {
-                SiteType.MISSAV -> d.isRoute("com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvSettingsHubRoute")
-                SiteType.HENTAIMAMA -> d.isRoute("com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaSettingsHubRoute")
-                SiteType.ONAIR -> d.isRoute("com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirSettingsRoute")
-                SiteType.FAPFOLDER -> d.isRoute("com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSettingsRoute")
-                SiteType.SUPJAV -> d.isRoute("com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSettingsHubRoute")
-                SiteType.ROUVIDEO -> d.isRoute("com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSettingsHubRoute")
-                SiteType.XHAMSTER -> d.isRoute("com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSettingsHubRoute")
-                else -> false
-            }
+        val atProfile = remember(backStackEntry) {
+            backStackEntry?.destination.isRoute(SITE_PROFILE_ROUTE_NAME)
         }
+        // Every non-Hanime site shares the same four primary items. The bar is only shown on
+        // those four destinations; video players and other secondary pages stay full screen.
         val siteNavItems: List<SiteNavItem>? = if (isHanimeFamilySite) null else listOf(
             SiteNavItem(
                 key = "home",
@@ -167,58 +165,27 @@ fun MainActivityContent(
                 onClick = { NavigationManager.navigateToHome() },
             ),
             SiteNavItem(
-                key = "library",
-                icon = Icons.Filled.VideoLibrary,
-                title = stringResource(R.string.nav_library),
-                selected = atLibrary,
-                onClick = {
-                    if (currentSite == SiteType.XHAMSTER) {
-                        composeNavController.navigateSafely(
-                            com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterLibraryRoute("FAVORITES"),
-                        )
-                    } else {
-                        composeNavController.navigateSafely(
-                            com.yenaly.han1meviewer.ui.navigation.settings.LocalPlaylistsRoute,
-                        )
-                    }
-                },
+                key = "subscription",
+                icon = Icons.Filled.Subscriptions,
+                title = stringResource(R.string.my_subscribe),
+                selected = atSubscription,
+                onClick = { composeNavController.navigateSiteTopLevel(SiteSubscriptionRoute) },
             ),
             SiteNavItem(
-                key = "settings",
-                icon = Icons.Filled.Settings,
-                title = stringResource(R.string.nav_settings),
-                selected = atSiteSettings,
-                onClick = {
-                    val route: Any? = when (currentSite) {
-                        SiteType.MISSAV -> com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvSettingsHubRoute
-                        SiteType.HENTAIMAMA -> com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaSettingsHubRoute
-                        SiteType.ONAIR -> com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirSettingsRoute
-                        SiteType.FAPFOLDER -> com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSettingsRoute
-                        SiteType.SUPJAV -> com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSettingsHubRoute
-                        SiteType.ROUVIDEO -> com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSettingsHubRoute
-                        SiteType.XHAMSTER -> com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSettingsHubRoute
-                        else -> null
-                    }
-                    if (route != null) composeNavController.navigateSafely(route)
-                },
+                key = "library",
+                icon = Icons.Filled.VideoLibrary,
+                title = stringResource(R.string.content_library),
+                selected = atLibrary,
+                onClick = { composeNavController.navigateSiteTopLevel(SiteLibraryRoute) },
+            ),
+            SiteNavItem(
+                key = "profile",
+                icon = Icons.Filled.Person,
+                title = stringResource(R.string.my_account),
+                selected = atProfile,
+                onClick = { composeNavController.navigateSiteTopLevel(SiteProfileRoute) },
             ),
         )
-        val drawerAvailable = if (isHanimeFamilySite) {
-            false
-        } else {
-            isAtSiteHome
-        }
-
-        val isDrawerOpen = drawerState.currentValue == DrawerValue.Open ||
-                drawerState.targetValue == DrawerValue.Open
-        val drawerEnabledNow = drawerAvailable
-        LaunchedEffect(siteChangeKey, Preferences.siteType, drawerEnabledNow) {
-            if (drawerState.currentValue == DrawerValue.Open ||
-                drawerState.targetValue == DrawerValue.Open
-            ) {
-                drawerState.snapTo(DrawerValue.Closed)
-            }
-        }
 
         LaunchedEffect(Unit) {
             pendingNavigationRequests.collect { intent ->
@@ -255,23 +222,9 @@ fun MainActivityContent(
         MainActivityScaffold(
             selectedDestination = selectedTopLevelDestination,
             showNavigationSuite = if (isHanimeFamilySite) currentMainDestination.showNavigationSuite
-            else (isAtSiteHome || atLibrary || atSiteSettings),
+            else (isAtSiteHome || atSubscription || atLibrary || atProfile),
             siteItems = siteNavItems,
             snackbarHostState = snackbarHostState,
-            drawerState = drawerState,
-            drawerEnabled = drawerAvailable,
-            siteDrawerContent = if (isHanimeFamilySite) null else ({
-                SiteDrawerContent(
-                    site = currentSite,
-                    navController = composeNavController,
-                    refreshKey = drawerState.currentValue,
-                    onClose = { scope.launch { drawerState.close() } },
-                    onSwitchSiteClick = {
-                        scope.launch { drawerState.close() }
-                        onSwitchSiteClick()
-                    },
-                )
-            }),
             onDestinationSelected = { destination ->
                 composeNavController.navigateTopLevelDestination(
                     destination = destination,
@@ -284,12 +237,6 @@ fun MainActivityContent(
                 UnifiedMainNavHost(
                     activity = activity,
                     navController = composeNavController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = {
-                        if (drawerAvailable) {
-                            scope.launch { drawerState.open() }
-                        }
-                    },
                     isLoggedIn = isLoggedIn,
                     avatarUrl = headerAvatarUrl,
                     username = headerUsername,

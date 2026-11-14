@@ -22,8 +22,6 @@ import kotlinx.coroutines.delay
 fun UnifiedMainNavHost(
     activity: MainActivity,
     navController: NavHostController,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     isLoggedIn: Boolean,
     avatarUrl: String?,
     username: String?,
@@ -65,8 +63,6 @@ fun UnifiedMainNavHost(
                 MissAvNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
@@ -74,8 +70,6 @@ fun UnifiedMainNavHost(
                 HentaiMamaNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
@@ -83,8 +77,6 @@ fun UnifiedMainNavHost(
                 OnAirNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
@@ -92,8 +84,6 @@ fun UnifiedMainNavHost(
                 FapFolderNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
@@ -101,8 +91,6 @@ fun UnifiedMainNavHost(
                 SupJavNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
@@ -110,8 +98,6 @@ fun UnifiedMainNavHost(
                 RouVideoNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
@@ -119,8 +105,6 @@ fun UnifiedMainNavHost(
                 XHamsterNavHost(
                     activity = activity,
                     navController = navController,
-                    isDrawerOpen = isDrawerOpen,
-                    onOpenDrawer = onOpenDrawer,
                     onDestinationChanged = onDestinationChanged,
                 )
             }

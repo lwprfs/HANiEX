@@ -91,7 +91,7 @@ import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.screen.rememberRandomLoadingHint
-import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
+import com.yenaly.han1meviewer.ui.screen.rememberSearchGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.ui.theme.VideoNormalCardMinWidth
 import com.yenaly.han1meviewer.ui.theme.VideoSimplifiedCardMinWidth
@@ -602,7 +602,7 @@ fun SearchResultsGrid(
     LaunchedEffect(state) { if (state !is PageLoadingState.Loading) isLoadingMore = false }
     Box(modifier = modifier.fillMaxSize()) {
         val useNormalGrid = videos.firstOrNull()?.itemType == NORMAL
-        val columns = rememberVideoGridColumns(
+        val columns = rememberSearchGridColumns(
             minCardWidth = if (useNormalGrid) {
                 VideoNormalCardMinWidth
             } else {

@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -59,14 +60,14 @@ import com.yenaly.han1meviewer.HentaiMama.ui.components.HentaiMamaSeriesCardView
 import com.yenaly.han1meviewer.HentaiMama.ui.components.HentaiMamaVideoCard
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.component.SiteWelcomeHeader
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
 import com.yenaly.han1meviewer.ui.component.SiteSectionHeader
 import com.yenaly.han1meviewer.ui.component.SiteSkeletonBox
 import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.util.applicationContext
@@ -78,10 +79,8 @@ fun HentaiMamaHomeScreen(
     onNavigateToSearch: (query: String?) -> Unit,
     onNavigateToCategorySearch: (categoryKey: String) -> Unit = {},
     onNavigateToGenre: (genreSlug: String) -> Unit = {},
-    onNavigateToSettings: () -> Unit = {},
-    onNavigateToHistory: () -> Unit = {},
+    onNavigateToUpcoming: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
-    onSwitchSite: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: HentaiMamaViewModel = viewModel(),
 ) {
@@ -101,23 +100,16 @@ fun HentaiMamaHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.HENTAIMAMA,
                 hint = applicationContext.getString(R.string.hm_search_hentaimama),
                 onSearchClick = { onNavigateToSearch(null) },
-                leading = {
+                action = {
                     SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onNavigateToSettings,
+                        imageVector = Icons.Default.CalendarMonth,
+                        contentDescription = stringResource(R.string.drawer_upcoming),
+                        onClick = onNavigateToUpcoming,
                     )
-                },
-                actions = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.History,
-                        contentDescription = stringResource(R.string.watch_history),
-                        onClick = onNavigateToHistory,
-                    )
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         }
@@ -135,14 +127,14 @@ fun HentaiMamaHomeScreen(
                 if (categoryRows.isEmpty()) {
                     HomeLoadingState(onRetry = { viewModel.refreshAllCategories() })
                 } else {
+                    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+                    Box(Modifier.fillMaxSize()) {
                     LazyColumn(
+                        state = listState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(SpacingNormal),
                     ) {
-                        item(key = "welcome") {
-                            SiteWelcomeHeader(siteName = "HentaiMama")
-                        }
                         categoryRows.forEach { row ->
                             val key = row.category.key
                             val hasContent = row.videos.isNotEmpty() ||
@@ -203,6 +195,8 @@ fun HentaiMamaHomeScreen(
                                 }
                             }
                         }
+                    }
+                    SiteScrollToTopButton(listState)
                     }
                 }
             }

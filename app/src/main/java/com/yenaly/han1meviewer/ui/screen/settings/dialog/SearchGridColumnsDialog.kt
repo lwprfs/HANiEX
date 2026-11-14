@@ -21,6 +21,7 @@ fun SearchGridColumnsDialog(
     initialConfig: SearchGridColumnsConfig,
     onDismiss: () -> Unit,
     onConfirm: (SearchGridColumnsConfig) -> Unit,
+    title: String? = null,
 ) {
     val density = LocalDensity.current
     val containerSize = LocalWindowInfo.current.containerSize
@@ -94,7 +95,7 @@ fun SearchGridColumnsDialog(
     )
 
     BaseGridConfigDialog(
-        title = stringResource(R.string.search_grid_columns_title),
+        title = title ?: stringResource(R.string.search_grid_columns_title),
         hintText = stringResource(R.string.search_grid_columns_dialog_hint),
         widthHintText = stringResource(
             R.string.search_grid_columns_current_width_hint,

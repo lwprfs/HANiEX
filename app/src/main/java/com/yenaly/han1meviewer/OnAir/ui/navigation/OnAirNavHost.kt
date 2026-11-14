@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.OnAir.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
+import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
@@ -71,8 +73,6 @@ import kotlinx.coroutines.delay
 fun OnAirNavHost(
     activity: MainActivity,
     navController: NavHostController,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
 ) {
     var gateState by rememberSaveable(stateSaver = OnAirGateState.Saver) {
@@ -190,8 +190,6 @@ fun OnAirNavHost(
                     onOpenUser = { u -> navController.navigateSafely(OnAirUserRoute(u)) },
                     onOpenHistory = { navController.navigateSafely(OnAirHistoryRoute) },
                     onOpenAnnouncement = { navController.navigateSafely(OnAirAnnouncementsRoute) },
-                    onOpenSettings = onOpenDrawer,
-                    onSwitchSite = { activity.requestSiteSwitch() },
                     onLoadFailure = recoverableError,
                     viewModel = homeViewModel,
                 )
@@ -361,10 +359,16 @@ fun OnAirNavHost(
                 )
             }
 
+            registerSiteHubRoutes(
+                navController = navController,
+                site = SiteType.ONAIR,
+                config = { onAirHubConfig(navController, activity) },
+            )
+
             registerGlobalSettingsRoutes(
                 activity = activity,
                 navController = navController,
-                homeFallback = OnAirSettingsRoute,
+                homeFallback = SiteProfileRoute,
             )
         }
     } else {

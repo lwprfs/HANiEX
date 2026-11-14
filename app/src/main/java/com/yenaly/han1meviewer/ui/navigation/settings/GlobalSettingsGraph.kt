@@ -25,6 +25,7 @@ import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.history.UnifiedHistoryScreen
 import com.yenaly.han1meviewer.ui.screen.settings.SitePlayerSettingsPage
+import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
 import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
 import kotlinx.serialization.Serializable
 
@@ -76,6 +77,16 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
                 onNavigateToTranslationSettings = { navController.navigateSafely(TranslationSettingsRoute) },
                 onNavigateToUpdateStatus = { navController.navigateSafely(UpdateSettingsRoute) },
             )
+        }
+    }
+    // AboutAppRoute was navigated to from the settings category screen but never registered
+    // for the per-site graphs, which crashed with "destination cannot be found".
+    composable<AboutAppRoute> {
+        SettingsScaffold(
+            navController = navController,
+            fallbackDestination = HomeSettingsRoute,
+        ) {
+            AboutAppScreen()
         }
     }
     composable<UpdateSettingsRoute> {

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hub_section_quick_actions">クイック操作</string>
+    <string name="hub_site_settings_title">%1$s の設定</string>
+    <string name="hub_site_settings_desc">このサイト専用の設定</string>
+    <string name="hub_check_in_desc">毎日のチェックイン</string>
+    <string name="hub_switch_site_desc">別のサイトに切り替える</string>
+    <string name="hub_customize_title">カスタマイズ</string>
+    <string name="hub_customize_desc">ホーム、レイアウト、プレーヤー</string>
+    <string name="hub_all_history_desc">すべてのサイトの視聴履歴</string>
+    <string name="hub_offline_playlist">オフラインプレイリスト</string>
+    <string name="hub_offline_playlist_desc">この端末に保存されたプレイリスト</string>
+    <string name="hub_downloads">ダウンロード</string>
+    <string name="hub_downloads_desc">ダウンロード済みの動画</string>
+    <string name="hub_section_on_device">この端末</string>
+    <string name="hub_section_history">履歴</string>
+    <string name="hub_subscription_unavailable_title">%1$s には購読機能がありません</string>
+    <string name="hub_subscription_unavailable_message">このサイトには現在購読機能がありません。対応した場合はここに表示されます。</string>
+    <string name="hub_horizontal_cards_title">横スクロールのカード数</string>
+    <string name="hub_video_grid_columns_desc">ホームや一覧の縦型動画グリッドの列数</string>
+    <string name="hub_search_grid_columns_title">検索グリッドの列数</string>
+    <string name="hub_search_grid_columns_desc">検索結果グリッドの列数</string>
+    <string name="hub_scroll_to_top">先頭へ戻る</string>
+    <string name="hub_xhamster_home_sections">ホームのセクション</string>
+    <string name="hub_xhamster_show_channels">チャンネルを表示</string>
+    <string name="hub_xhamster_show_channels_desc">ホームにチャンネル欄を表示</string>
+    <string name="hub_xhamster_show_top_creators">人気クリエイターを表示</string>
+    <string name="hub_xhamster_show_top_creators_desc">ホームに人気クリエイター欄を表示</string>
+</resources>

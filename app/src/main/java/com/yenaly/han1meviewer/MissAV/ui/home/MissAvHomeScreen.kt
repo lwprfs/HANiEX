@@ -50,14 +50,14 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.component.SiteWelcomeHeader
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
 import com.yenaly.han1meviewer.ui.component.SiteSectionHeader
 import com.yenaly.han1meviewer.ui.component.SiteSkeletonBox
 import com.yenaly.han1meviewer.ui.component.SiteEmptyContent
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 import com.yenaly.han1meviewer.ui.screen.rememberCardResponsiveWidth
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
@@ -69,9 +69,7 @@ import com.yenaly.han1meviewer.MissAV.data.model.MissAvHomePage
 fun MissAvHomeScreen(
     onNavigateToVideo: (String, String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
-    onSwitchSite: () -> Unit,
     onNavigateToHistory: () -> Unit,
-    onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: MissAvHomeViewModel,
 ) {
@@ -90,23 +88,16 @@ fun MissAvHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.MISSAV,
                 hint = stringResource(R.string.missav_search_missav, hostLabel),
                 onSearchClick = { onNavigateToSearch(null) },
-                leading = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onNavigateToSettings,
-                    )
-                },
-                actions = {
+                action = {
                     SiteBarIconButton(
                         imageVector = Icons.Default.History,
                         contentDescription = stringResource(R.string.watch_history),
                         onClick = onNavigateToHistory,
                     )
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         }
@@ -147,8 +138,6 @@ fun MissAvHomeScreen(
                         onRetryCategory = viewModel::retryCategory,
                         onNavigateToVideo = onNavigateToVideo,
                         onNavigateToSearch = onNavigateToSearch,
-                        onNavigateToHistory = onNavigateToHistory,
-                        onNavigateToSettings = onNavigateToSettings,
                     )
                 }
             }
@@ -163,9 +152,7 @@ private fun HomeContent(
     onRetryCategory: (MissAvHomeCategory) -> Unit,
     onNavigateToVideo: (String, String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
-    onNavigateToHistory: () -> Unit,
-    onNavigateToSettings: () -> Unit,
-) {
+    ) {
     val (cardWidth, _) = rememberCardResponsiveWidth()
     val popular = (homeState as? WebsiteState.Success)?.info?.popularVideos.orEmpty()
 
@@ -184,14 +171,14 @@ private fun HomeContent(
         return
     }
 
+    val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+    Box(Modifier.fillMaxSize()) {
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(SpacingNormal),
     ) {
-        item(key = "welcome") {
-            SiteWelcomeHeader(siteName = "MissAV")
-        }
         if (popular.isNotEmpty()) {
             item(key = "popular_header") {
                 SiteSectionHeader(
@@ -263,6 +250,8 @@ private fun HomeContent(
                 }
             }
         }
+    }
+    SiteScrollToTopButton(listState)
     }
 }
 

@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.XHamster.ui.home
 
+import androidx.compose.foundation.layout.Column
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
@@ -47,14 +48,28 @@ fun XHamsterVideoGrid(
 ) {
     val imageLoader = XHamsterImageLoader.get(LocalContext.current)
     when {
-        state.isLoading && state.items.isEmpty() -> SiteLoadingContent(modifier = modifier)
-        state.error != null && state.items.isEmpty() -> SiteErrorContent(
-            message = state.error,
-            onRetry = onRetry,
-            modifier = modifier,
-        )
+        state.items.isEmpty() -> {
+            // Keep the header (filter chips) visible while loading / failed / empty, otherwise
+            // the user could not switch filters out of a bad state.
+            Column(modifier = modifier.fillMaxSize()) {
+                if (header != null) {
+                    Box(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
+                        header()
+                    }
+                }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    when {
+                        state.isLoading -> SiteLoadingContent()
+                        state.error != null -> SiteErrorContent(
+                            message = state.error,
+                            onRetry = onRetry,
+                        )
 
-        state.items.isEmpty() -> SiteEmptyContent(hint = emptyHint)
+                        else -> SiteEmptyContent(hint = emptyHint)
+                    }
+                }
+            }
+        }
         else -> {
             val nearEnd by remember(gridState) {
                 derivedStateOf {

@@ -67,7 +67,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteOverflowMenu
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
@@ -87,8 +88,6 @@ fun OnAirHomeScreen(
     onOpenUser: (String) -> Unit,
     onOpenHistory: () -> Unit,
     onOpenAnnouncement: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onSwitchSite: () -> Unit,
     onLoadFailure: (String) -> Unit = {},
     viewModel: OnAirHomeViewModel = viewModel(),
 ) {
@@ -132,29 +131,16 @@ fun OnAirHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.ONAIR,
                 hint = applicationContext.getString(R.string.onair_search_onair),
                 onSearchClick = { onOpenSearch(null) },
-                leading = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onOpenSettings,
-                    )
-                },
-                actions = {
+                action = {
                     SiteBarIconButton(
                         imageVector = Icons.Default.History,
                         contentDescription = applicationContext.getString(R.string.site_history),
                         onClick = onOpenHistory,
                     )
-                    currentUser?.let { profile ->
-                        CurrentUserAvatar(
-                            profile = profile,
-                            onClick = { onOpenUser(profile.username) },
-                        )
-                    }
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         },
@@ -213,6 +199,7 @@ fun OnAirHomeScreen(
                     }
                 }
             }
+            SiteScrollToTopButton(gridState)
         }
     }
 }

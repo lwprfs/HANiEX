@@ -278,35 +278,8 @@ fun SiteSettingsHubScreen(
                 )
             }
 
-            item { HubSectionTitle(stringResource(R.string.site_layout_column_count)) }
-            item {
-                SettingNavigationItem(
-                    title = stringResource(R.string.site_video_grid_columns),
-                    iconRes = R.drawable.ic_settings_grid_view_24,
-                    summary = stringResource(R.string.site_columns_of_search_list_grids_by),
-                    valueText = listOf(
-                        gridConfig.compactColumns,
-                        gridConfig.mediumColumns,
-                        gridConfig.expandedColumns,
-                        gridConfig.largeColumns,
-                    ).joinToString(" / "),
-                    onClick = { dialog = HubDialog.GridColumns },
-                )
-            }
-            item {
-                SettingNavigationItem(
-                    title = stringResource(R.string.site_cards_per_row),
-                    iconRes = R.drawable.ic_settings_view_carousel_24,
-                    summary = stringResource(R.string.site_number_of_cards_visible_in_horizontal),
-                    valueText = listOf(
-                        cardConfig.narrowCount,
-                        cardConfig.compactCount,
-                        cardConfig.mediumCount,
-                        cardConfig.expandedCount,
-                    ).joinToString(" / "),
-                    onClick = { dialog = HubDialog.CardCount },
-                )
-            }
+            // Card layout controls (horizontal cards / video grid / search grid) now live on the
+            // dedicated Customize page so there is a single place to change them.
 
             item { HubSectionTitle(stringResource(R.string.site_all_app_settings)) }
             item {

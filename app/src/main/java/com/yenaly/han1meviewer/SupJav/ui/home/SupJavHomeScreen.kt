@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.SupJav.ui.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,20 +29,18 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.component.SiteWelcomeHeader
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.SupJav.common.SupJavConstants
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
 
 @Composable
 fun SupJavHomeScreen(
     onNavigateToVideo: (String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
     onNavigateToHistory: () -> Unit,
-    onOpenDrawer: () -> Unit,
-    onSwitchSite: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SupJavListViewModel = viewModel(),
 ) {
@@ -56,55 +55,49 @@ fun SupJavHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.SUPJAV,
                 hint = stringResource(R.string.supjav_search_hint),
                 onSearchClick = { onNavigateToSearch(null) },
-                leading = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onOpenDrawer,
-                    )
-                },
-                actions = {
+                action = {
                     SiteBarIconButton(
                         imageVector = Icons.Default.History,
                         contentDescription = stringResource(R.string.watch_history),
                         onClick = onNavigateToHistory,
                     )
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         },
     ) { padding ->
-        Column(modifier = modifier
+        val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+        Box(modifier = modifier
             .fillMaxSize()
             .padding(padding)) {
-            SiteChipRow(
-                options = SupJavConstants.CATEGORIES,
-                selected = selected,
-                label = { it.title },
-                onSelect = { selectedKey = it.key },
-                key = { it.key },
-            )
             SitePullToRefresh(
                 loading = state.isLoading,
                 onRefresh = { viewModel.refresh() },
-                modifier = Modifier.weight(1f).fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 SupJavVideoGrid(
+                    // Filters live INSIDE the scrolling grid so they scroll away with the page.
                     header = {
-                        SiteWelcomeHeader(
-                            siteName = "SupJav",
+                        SiteChipRow(
+                            options = SupJavConstants.CATEGORIES,
+                            selected = selected,
+                            label = { it.title },
+                            onSelect = { selectedKey = it.key },
+                            key = { it.key },
                             horizontalPadding = 0.dp,
                         )
                     },
                     state = state,
+                    gridState = gridState,
                     onRetry = { viewModel.refresh() },
                     onLoadMore = { viewModel.loadMore() },
                     onOpenVideo = onNavigateToVideo,
                 )
             }
+            SiteScrollToTopButton(gridState)
         }
     }
 }

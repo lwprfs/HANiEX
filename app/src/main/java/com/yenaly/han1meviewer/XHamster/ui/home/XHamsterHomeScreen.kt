@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.XHamster.ui.home
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,24 +24,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.component.SiteWelcomeHeader
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.XHamster.common.XHamsterConstants
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
 import com.yenaly.han1meviewer.XHamster.ui.discover.XHamsterDiscoverActions
 import com.yenaly.han1meviewer.XHamster.ui.discover.XHamsterDiscoverStrips
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
 
 @Composable
 fun XHamsterHomeScreen(
     onNavigateToVideo: (String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
-    onNavigateToHistory: () -> Unit,
     onNavigateToCategories: () -> Unit,
-    onOpenDrawer: () -> Unit,
-    onSwitchSite: () -> Unit,
-    onNavigateToLibrary: (String) -> Unit,
     discover: XHamsterDiscoverActions,
     modifier: Modifier = Modifier,
     viewModel: XHamsterListViewModel = viewModel(),
@@ -56,65 +53,54 @@ fun XHamsterHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.XHAMSTER,
                 hint = stringResource(R.string.xhamster_search_hint),
                 onSearchClick = { onNavigateToSearch(null) },
-                leading = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onOpenDrawer,
-                    )
-                },
-                actions = {
+                action = {
                     SiteBarIconButton(
                         imageVector = Icons.Default.Category,
                         contentDescription = stringResource(R.string.xhamster_categories),
                         onClick = onNavigateToCategories,
                     )
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.History,
-                        contentDescription = stringResource(R.string.watch_history),
-                        onClick = onNavigateToHistory,
-                    )
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         },
     ) { padding ->
-        Column(
+        val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            SiteChipRow(
-                options = XHamsterConstants.TABS,
-                selected = selected,
-                label = { it.title },
-                onSelect = { selectedKey = it.key },
-                key = { it.key },
-            )
             SitePullToRefresh(
                 loading = state.isLoading,
                 onRefresh = { viewModel.refresh() },
-                modifier = Modifier.weight(1f).fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 XHamsterVideoGrid(
+                    // Filter chips and discover strips scroll together with the videos.
                     header = {
                         Column {
-                            SiteWelcomeHeader(
-                                siteName = "XHamster",
+                            SiteChipRow(
+                                options = XHamsterConstants.TABS,
+                                selected = selected,
+                                label = { it.title },
+                                onSelect = { selectedKey = it.key },
+                                key = { it.key },
                                 horizontalPadding = 0.dp,
                             )
                             XHamsterDiscoverStrips(discover)
                         }
                     },
                     state = state,
+                    gridState = gridState,
                     onRetry = { viewModel.refresh() },
                     onLoadMore = { viewModel.loadMore() },
                     onOpenVideo = onNavigateToVideo,
                 )
             }
+            SiteScrollToTopButton(gridState)
         }
     }
 }

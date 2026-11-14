@@ -76,7 +76,7 @@ import com.yenaly.han1meviewer.OnAir.ui.components.OnAirVideoCardItem
 import com.yenaly.han1meviewer.OnAir.ui.home.InfiniteScrollFooter
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
-import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
+import com.yenaly.han1meviewer.ui.screen.rememberSearchGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -110,7 +110,7 @@ fun OnAirSearchScreen(
     val focusRequester = remember { FocusRequester() }
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
-    val columns = rememberVideoGridColumns()
+    val columns = rememberSearchGridColumns()
 
     var showFilterSheet by rememberSaveable { mutableStateOf(false) }
     var showHistorySheet by rememberSaveable { mutableStateOf(false) }

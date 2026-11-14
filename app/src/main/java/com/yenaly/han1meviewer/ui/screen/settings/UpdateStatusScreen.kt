@@ -6,6 +6,8 @@ import android.content.Context
 import android.text.format.Formatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -364,6 +366,7 @@ private fun DownloadProgress(ui: UpdateUiState) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ActionRow(
     ui: UpdateUiState,
@@ -377,9 +380,12 @@ private fun ActionRow(
     onStopWaiting: () -> Unit,
     onCopyDetails: () -> Unit,
 ) {
-    Row(
+    // FlowRow so that long localized labels wrap onto a new line instead of squashing
+    // neighbouring buttons into each other.
+    FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         when (ui.phase) {
             UpdatePhase.DOWNLOADING -> {

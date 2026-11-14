@@ -62,7 +62,8 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SelectableTag
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -80,8 +81,6 @@ fun FapFolderHomeScreen(
     onOpenGroup: (slug: String) -> Unit,
     onOpenAlbum: (albumId: String) -> Unit,
     onOpenHistory: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onSwitchSite: () -> Unit,
     viewModel: FapFolderHomeViewModel,
     onSessionExpired: () -> Unit = {},
     onLoadFailure: (String) -> Unit = {},
@@ -145,23 +144,16 @@ fun FapFolderHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.FAPFOLDER,
                 hint = applicationContext.getString(R.string.fap_search_fapfolder),
                 onSearchClick = { onOpenSearch(null) },
-                leading = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onOpenSettings,
-                    )
-                },
-                actions = {
+                action = {
                     SiteBarIconButton(
                         imageVector = Icons.Default.History,
                         contentDescription = stringResource(R.string.watch_history),
                         onClick = onOpenHistory,
                     )
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         },
@@ -171,29 +163,34 @@ fun FapFolderHomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
+        // Filter rows live in the scrolling content (and above the status states) so they scroll
+        // away with the feed instead of staying pinned.
+        val filterHeader: @Composable () -> Unit = {
+            Column {
             HomeTabRow(
-                activeTab = uiState.activeTab,
-                onSelect = { tab ->
-                    if (tab == uiState.activeTab) {
-                        isRefreshing = true
-                        scope.launch { listState.scrollToItem(0) }
-                        viewModel.refresh()
-                    } else {
-                        viewModel.switchTab(tab)
-                    }
-                },
-            )
-
-            if (uiState.activeTab == FapFolderHomeTab.HOT) {
-                HotRangeRow(
-                    selected = uiState.hotRange,
-                    onSelect = { range ->
-                        scope.launch { listState.scrollToItem(0) }
-                        viewModel.changeHotRange(range)
+                    activeTab = uiState.activeTab,
+                    onSelect = { tab ->
+                        if (tab == uiState.activeTab) {
+                            isRefreshing = true
+                            scope.launch { listState.scrollToItem(0) }
+                            viewModel.refresh()
+                        } else {
+                            viewModel.switchTab(tab)
+                        }
                     },
                 )
-            }
 
+                if (uiState.activeTab == FapFolderHomeTab.HOT) {
+                    HotRangeRow(
+                        selected = uiState.hotRange,
+                        onSelect = { range ->
+                            scope.launch { listState.scrollToItem(0) }
+                            viewModel.changeHotRange(range)
+                        },
+                    )
+                }
+            }
+        }
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = {
@@ -205,6 +202,15 @@ fun FapFolderHomeScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
+                    val feedVisible = !(
+                        (uiState.firstLoad && uiState.items.isEmpty()) ||
+                            (uiState.errorMessage != null && uiState.items.isEmpty()) ||
+                            (uiState.items.isEmpty() && uiState.trending.isEmpty() &&
+                                uiState.suggested.isEmpty())
+                        )
+                    Column(modifier = Modifier.fillMaxSize()) {
+                    if (!feedVisible) filterHeader()
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                     when {
                         uiState.firstLoad && uiState.items.isEmpty() -> {
                             Box(
@@ -258,6 +264,7 @@ fun FapFolderHomeScreen(
                                 activeTab = uiState.activeTab,
                                 items = uiState.items,
                                 listState = listState,
+                                header = filterHeader,
                                 isLoadingMore = uiState.isLoadingMore,
                                 trending = uiState.trending,
                                 suggested = uiState.suggested,
@@ -277,6 +284,9 @@ fun FapFolderHomeScreen(
                             )
                         }
                     }
+                    }
+                    }
+                    if (feedVisible) SiteScrollToTopButton(listState)
                 }
             }
         }
@@ -356,6 +366,7 @@ private fun FeedList(
     activeTab: FapFolderHomeTab,
     items: List<FapFolderFeedItem>,
     listState: LazyListState,
+    header: @Composable () -> Unit,
     isLoadingMore: Boolean,
     trending: List<FapFolderTrendingTag>,
     suggested: List<FapFolderSuggestedCommunity>,
@@ -378,6 +389,7 @@ private fun FeedList(
         ),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        item(key = "__filters__") { header() }
         if (activeTab == FapFolderHomeTab.DISCOVER || activeTab == FapFolderHomeTab.HOT) {
             if (trending.isNotEmpty()) {
                 item(key = "__trending__") {

@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.HentaiMama.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
+import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
@@ -106,8 +108,6 @@ object HentaiMamaHomeSettingsRoute
 fun HentaiMamaNavHost(
     activity: MainActivity,
     navController: NavHostController,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
 ) {
     LaunchedEffect(Unit) {
@@ -155,16 +155,14 @@ fun HentaiMamaNavHost(
                         )
                     }
                 },
-                onNavigateToSettings = onOpenDrawer,
-                onNavigateToHistory = {
+                onNavigateToUpcoming = {
                     if (navController.canNavigateSafely()) {
-                        navController.navigateSafely(HentaiMamaHistoryRoute)
+                        navController.navigateSafely(HentaiMamaUpcomingRoute)
                     }
                 },
                 onNavigateToHome = {
                     navController.popBackStack(HentaiMamaHomeRoute, inclusive = false)
                 },
-                onSwitchSite = { activity.requestSiteSwitch() },
             )
         }
 
@@ -475,10 +473,16 @@ fun HentaiMamaNavHost(
             )
         }
 
+        registerSiteHubRoutes(
+            navController = navController,
+            site = SiteType.HENTAIMAMA,
+            config = { hentaiMamaHubConfig(navController, activity) },
+        )
+
         registerGlobalSettingsRoutes(
             activity = activity,
             navController = navController,
-            homeFallback = HentaiMamaSettingsHubRoute,
+            homeFallback = SiteProfileRoute,
         )
     }
 }

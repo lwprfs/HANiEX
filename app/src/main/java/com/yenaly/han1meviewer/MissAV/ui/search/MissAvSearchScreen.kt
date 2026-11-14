@@ -1425,7 +1425,7 @@ private fun DisplayResults(
     onNavigateToVideo: (String, String) -> Unit,
 ) {
     val uniqueVideos = allVideos.distinctBy { it.videoCode }
-    val gridColumns = com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns()
+    val gridColumns = com.yenaly.han1meviewer.ui.screen.rememberSearchGridColumns()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),

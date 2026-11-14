@@ -67,6 +67,7 @@ fun HomeSettingsScreen(
     onShowExitConfirmChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
+    onVideoGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
     onHorizontalCardCountConfigChange: (HorizontalCardCountConfig) -> Unit,
     onUseCIUpdateChannelChange: (Boolean) -> Unit,
     onUpdateInstallerChange: (String) -> Unit,
@@ -96,6 +97,7 @@ fun HomeSettingsScreen(
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<HomeSettingsChoiceDialog?>(null) }
     var showSearchGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
+    var showVideoGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
     var showHorizontalCardCountDialog by rememberSaveable { mutableStateOf(false) }
     var showHomeCategoryDialog by rememberSaveable { mutableStateOf(false) }
 
@@ -187,6 +189,18 @@ fun HomeSettingsScreen(
         },
     )
 
+    if (showVideoGridColumnsDialog) {
+        SearchGridColumnsDialog(
+            initialConfig = state.videoGridColumnsConfig,
+            title = stringResource(R.string.site_video_grid_columns),
+            onDismiss = { showVideoGridColumnsDialog = false },
+            onConfirm = {
+                showVideoGridColumnsDialog = false
+                onVideoGridColumnsConfigChange(it)
+            },
+        )
+    }
+
     if (showSearchGridColumnsDialog) {
         SearchGridColumnsDialog(
             initialConfig = state.searchGridColumnsConfig,
@@ -265,6 +279,15 @@ fun HomeSettingsScreen(
                         ),
                         iconRes = R.drawable.baseline_sort_24,
                         onClick = { showHomeCategoryDialog = true },
+                    )
+                }
+                item {
+                    SettingNavigationItem(
+                        title = stringResource(R.string.site_video_grid_columns),
+                        summary = stringResource(R.string.hub_video_grid_columns_desc),
+                        valueText = state.videoGridColumnsSummary,
+                        iconRes = R.drawable.baseline_grid_24,
+                        onClick = { showVideoGridColumnsDialog = true },
                     )
                 }
                 item {

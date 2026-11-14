@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.FapFolder.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
+import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.util.applicationContext
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
@@ -103,8 +105,6 @@ import kotlinx.coroutines.delay
 fun FapFolderNavHost(
     activity: MainActivity,
     navController: NavHostController,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
 ) {
     var gateState by rememberSaveable(stateSaver = FapFolderGateState.Saver) {
@@ -214,10 +214,6 @@ fun FapFolderNavHost(
                     navController.navigateSafely(FapFolderAlbumRoute(albumId))
                 },
                 onOpenHistory = { navController.navigateSafely(FapFolderHistoryRoute) },
-                onOpenSettings = onOpenDrawer,
-                onSwitchSite = {
-                    activity.requestSiteSwitch()
-                },
                 onSessionExpired = {
                     retryTick = System.currentTimeMillis()
                 },
@@ -502,10 +498,16 @@ fun FapFolderNavHost(
             )
         }
 
+        registerSiteHubRoutes(
+            navController = navController,
+            site = SiteType.FAPFOLDER,
+            config = { fapFolderHubConfig(navController, activity) },
+        )
+
         registerGlobalSettingsRoutes(
             activity = activity,
             navController = navController,
-            homeFallback = FapFolderSettingsRoute,
+            homeFallback = SiteProfileRoute,
         )
     }
 }

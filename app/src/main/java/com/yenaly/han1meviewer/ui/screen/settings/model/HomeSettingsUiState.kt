@@ -41,6 +41,8 @@ data class HomeSettingsUiState(
     val pureBlackDarkMode: Boolean,
     val searchGridColumnsSummary: String,
     val searchGridColumnsConfig: SearchGridColumnsConfig,
+    val videoGridColumnsSummary: String,
+    val videoGridColumnsConfig: SearchGridColumnsConfig,
     val horizontalCardCountSummary: String,
     val horizontalCardCountConfig: HorizontalCardCountConfig,
     val homeCategoryItems: List<HomeCategoryPreferenceItem>,

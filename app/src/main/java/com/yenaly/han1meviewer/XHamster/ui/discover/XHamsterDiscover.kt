@@ -114,8 +114,14 @@ fun XHamsterDiscoverStrips(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val loader = XHamsterImageLoader.get(LocalContext.current)
+    val showCreators = com.yenaly.han1meviewer.XHamster.common.rememberXHamsterFlag(
+        com.yenaly.han1meviewer.XHamster.common.XHamsterSettings.KEY_SHOW_TOP_CREATORS,
+    )
+    val showChannels = com.yenaly.han1meviewer.XHamster.common.rememberXHamsterFlag(
+        com.yenaly.han1meviewer.XHamster.common.XHamsterSettings.KEY_SHOW_CHANNELS,
+    )
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        if (state.creators.isNotEmpty()) {
+        if (showCreators && state.creators.isNotEmpty()) {
             StripTitle(stringResource(R.string.xhamster_top_creators), actions.onSeeCreators)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(state.creators, key = { it.path }) { c ->
@@ -141,7 +147,7 @@ fun XHamsterDiscoverStrips(
                 }
             }
         }
-        if (state.channels.isNotEmpty()) {
+        if (showChannels && state.channels.isNotEmpty()) {
             StripTitle(stringResource(R.string.xhamster_channels), actions.onSeeChannels)
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(state.channels, key = { it.path }) { ch ->

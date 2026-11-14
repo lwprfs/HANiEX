@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.RouVideo.ui.home
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,7 +25,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.component.SiteWelcomeHeader
+import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
+import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.SeriesFilter
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.SeriesSort
@@ -33,7 +35,6 @@ import com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.ui.component.SiteSearchTopBar
-import com.yenaly.han1meviewer.ui.component.SiteSwitchButton
 
 private val LIST_SORTS = listOf(Sort.NEWEST, Sort.VIEWS, Sort.LIKES)
 
@@ -47,10 +48,7 @@ private fun defaultSort(tab: RouVideoConstants.HomeTab): Sort = when (val source
 fun RouVideoHomeScreen(
     onNavigateToVideo: (String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
-    onNavigateToHistory: () -> Unit,
     onNavigateToCategories: () -> Unit,
-    onOpenDrawer: () -> Unit,
-    onSwitchSite: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: RouVideoListViewModel = viewModel(),
 ) {
@@ -87,86 +85,80 @@ fun RouVideoHomeScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            SiteSearchTopBar(
+            SiteHomeTopBar(
+                site = com.yenaly.han1meviewer.SiteType.ROUVIDEO,
                 hint = stringResource(R.string.rouvideo_search_hint),
                 onSearchClick = { onNavigateToSearch(null) },
-                leading = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Menu,
-                        contentDescription = stringResource(R.string.open_menu),
-                        onClick = onOpenDrawer,
-                    )
-                },
-                actions = {
+                action = {
                     SiteBarIconButton(
                         imageVector = Icons.Default.Category,
                         contentDescription = stringResource(R.string.rouvideo_categories),
                         onClick = onNavigateToCategories,
                     )
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.History,
-                        contentDescription = stringResource(R.string.watch_history),
-                        onClick = onNavigateToHistory,
-                    )
-                    SiteSwitchButton(onClick = onSwitchSite)
                 },
             )
         },
     ) { padding ->
-        Column(
+        val gridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState()
+        Box(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            SiteChipRow(
-                options = tabs,
-                selected = tab,
-                label = { it.title },
-                onSelect = { selectedKey = it.key },
-                key = { it.key },
-            )
-            when (tab.source) {
-                is RouVideoConstants.TabSource.Series -> {
-                    SiteChipRow(
-                        options = SeriesFilter.entries.toList(),
-                        selected = filter,
-                        label = { filterLabels.getValue(it) },
-                        onSelect = { filterName = it.name },
-                    )
-                    SiteChipRow(
-                        options = SeriesSort.entries.toList(),
-                        selected = seriesSort,
-                        label = { seriesSortLabels.getValue(it) },
-                        onSelect = { seriesSortName = it.name },
-                    )
-                }
-
-                else -> SiteChipRow(
-                    options = LIST_SORTS,
-                    selected = if (sort in LIST_SORTS) sort else Sort.NEWEST,
-                    label = { sortLabels.getValue(it) },
-                    onSelect = { sortName = it.name },
-                )
-            }
             SitePullToRefresh(
                 loading = state.isLoading,
                 onRefresh = { viewModel.refresh() },
-                modifier = Modifier.weight(1f).fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 RouVideoVideoGrid(
+                    // Tab / sort / filter chips scroll together with the videos.
                     header = {
-                        SiteWelcomeHeader(
-                            siteName = "RouVideo",
-                            horizontalPadding = 0.dp,
-                        )
+                        Column {
+                            SiteChipRow(
+                                options = tabs,
+                                selected = tab,
+                                label = { it.title },
+                                onSelect = { selectedKey = it.key },
+                                key = { it.key },
+                                horizontalPadding = 0.dp,
+                            )
+                            when (tab.source) {
+                                is RouVideoConstants.TabSource.Series -> {
+                                    SiteChipRow(
+                                        options = SeriesFilter.entries.toList(),
+                                        selected = filter,
+                                        label = { filterLabels.getValue(it) },
+                                        onSelect = { filterName = it.name },
+                                        horizontalPadding = 0.dp,
+                                    )
+                                    SiteChipRow(
+                                        options = SeriesSort.entries.toList(),
+                                        selected = seriesSort,
+                                        label = { seriesSortLabels.getValue(it) },
+                                        onSelect = { seriesSortName = it.name },
+                                        horizontalPadding = 0.dp,
+                                    )
+                                }
+
+                                else -> SiteChipRow(
+                                    options = LIST_SORTS,
+                                    selected = if (sort in LIST_SORTS) sort else Sort.NEWEST,
+                                    label = { sortLabels.getValue(it) },
+                                    onSelect = { sortName = it.name },
+                                    horizontalPadding = 0.dp,
+                                )
+                            }
+                        }
                     },
                     state = state,
+                    gridState = gridState,
                     onRetry = { viewModel.refresh() },
                     onLoadMore = { viewModel.loadMore() },
                     onOpenVideo = onNavigateToVideo,
                     skipTag = (tab.source as? RouVideoConstants.TabSource.Tag)?.tag,
                 )
             }
+            SiteScrollToTopButton(gridState)
         }
     }
 }

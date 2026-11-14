@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hub_section_quick_actions">快捷操作</string>
+    <string name="hub_site_settings_title">%1$s 设置</string>
+    <string name="hub_site_settings_desc">此站点专属的设置</string>
+    <string name="hub_check_in_desc">每日签到</string>
+    <string name="hub_switch_site_desc">切换到其他站点</string>
+    <string name="hub_customize_title">自定义</string>
+    <string name="hub_customize_desc">首页、布局与播放器</string>
+    <string name="hub_all_history_desc">所有站点的观看记录</string>
+    <string name="hub_offline_playlist">离线播放列表</string>
+    <string name="hub_offline_playlist_desc">保存在此设备上的播放列表</string>
+    <string name="hub_downloads">下载</string>
+    <string name="hub_downloads_desc">已下载的视频</string>
+    <string name="hub_section_on_device">此设备</string>
+    <string name="hub_section_history">记录</string>
+    <string name="hub_subscription_unavailable_title">%1$s 没有订阅功能</string>
+    <string name="hub_subscription_unavailable_message">此站点目前没有可用的订阅功能，日后支持时会显示在这里。</string>
+    <string name="hub_horizontal_cards_title">横向卡片每行数量</string>
+    <string name="hub_video_grid_columns_desc">首页与列表中垂直视频网格的列数</string>
+    <string name="hub_search_grid_columns_title">搜索网格列数</string>
+    <string name="hub_search_grid_columns_desc">搜索结果网格的列数</string>
+    <string name="hub_scroll_to_top">回到顶部</string>
+    <string name="hub_xhamster_home_sections">首页板块</string>
+    <string name="hub_xhamster_show_channels">显示频道</string>
+    <string name="hub_xhamster_show_channels_desc">在首页显示频道板块</string>
+    <string name="hub_xhamster_show_top_creators">显示热门创作者</string>
+    <string name="hub_xhamster_show_top_creators_desc">在首页显示热门创作者板块</string>
+</resources>

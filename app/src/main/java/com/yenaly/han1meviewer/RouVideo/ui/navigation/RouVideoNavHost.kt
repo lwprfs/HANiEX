@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.RouVideo.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
+import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -83,8 +85,6 @@ object RouVideoTranslationCacheRoute
 fun RouVideoNavHost(
     activity: MainActivity,
     navController: NavHostController,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -106,10 +106,7 @@ fun RouVideoNavHost(
                     onNavigateToSearch = { query ->
                         navController.navigateSafely(RouVideoSearchRoute(query))
                     },
-                    onNavigateToHistory = { navController.navigateSafely(RouVideoHistoryRoute) },
                     onNavigateToCategories = { navController.navigateSafely(RouVideoCategoriesRoute) },
-                    onOpenDrawer = onOpenDrawer,
-                    onSwitchSite = { activity.requestSiteSwitch() },
                 )
             }
         }
@@ -230,10 +227,16 @@ fun RouVideoNavHost(
             )
         }
 
+        registerSiteHubRoutes(
+            navController = navController,
+            site = SiteType.ROUVIDEO,
+            config = { rouVideoHubConfig(navController, activity) },
+        )
+
         registerGlobalSettingsRoutes(
             activity = activity,
             navController = navController,
-            homeFallback = RouVideoSettingsHubRoute,
+            homeFallback = SiteProfileRoute,
         )
     }
 }

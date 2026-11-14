@@ -45,6 +45,8 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.DropdownMenu
@@ -797,10 +799,11 @@ fun <T> SiteChipRow(
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
     key: ((T) -> Any)? = null,
+    horizontalPadding: androidx.compose.ui.unit.Dp = 12.dp,
 ) {
     LazyRow(
         modifier = modifier,
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+        contentPadding = PaddingValues(horizontal = horizontalPadding, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(options, key = key) { item ->
@@ -822,4 +825,107 @@ fun <T> SiteChipRow(
             )
         }
     }
+}
+
+/** Site identity badge shown at the left of every site home header. */
+@Composable
+fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifier) {
+    val res = when (site) {
+        com.yenaly.han1meviewer.SiteType.MISSAV -> R.drawable.s_switch_missav
+        com.yenaly.han1meviewer.SiteType.HENTAIMAMA -> R.drawable.s_switch_hentaimama
+        com.yenaly.han1meviewer.SiteType.ONAIR -> R.drawable.s_switch_onair
+        com.yenaly.han1meviewer.SiteType.FAPFOLDER -> R.drawable.s_switch_fapfolder
+        com.yenaly.han1meviewer.SiteType.XHAMSTER -> R.drawable.s_switch_xhamster
+        com.yenaly.han1meviewer.SiteType.ROUVIDEO -> R.drawable.s_switch_rouvideo
+        com.yenaly.han1meviewer.SiteType.SUPJAV -> R.drawable.s_switch_supjav
+        else -> R.drawable.ic_baseline_h_chan_single_color
+    }
+    Image(
+        painter = painterResource(res),
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .padding(horizontal = 8.dp)
+            .size(36.dp)
+            .clip(RoundedCornerShape(10.dp)),
+    )
+}
+
+/**
+ * Shared home header, following Hanime's HomePageTopBar: site logo, a rounded clickable search
+ * field and ONE contextual shortcut on the right. There is no menu button and no site-switch
+ * button; switching sites lives in My Profile.
+ */
+@Composable
+fun SiteHomeTopBar(
+    site: com.yenaly.han1meviewer.SiteType,
+    hint: String,
+    onSearchClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    action: (@Composable () -> Unit)? = null,
+) {
+    SiteSearchTopBar(
+        hint = hint,
+        onSearchClick = onSearchClick,
+        modifier = modifier,
+        leading = { SiteLogo(site) },
+        actions = { action?.invoke() },
+    )
+}
+
+@Composable
+private fun SiteScrollToTopFab(
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier,
+) {
+    androidx.compose.animation.AnimatedVisibility(
+        visible = visible,
+        enter = androidx.compose.animation.fadeIn() + androidx.compose.animation.scaleIn(),
+        exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut(),
+        modifier = modifier,
+    ) {
+        androidx.compose.material3.SmallFloatingActionButton(onClick = onClick) {
+            Icon(
+                imageVector = Icons.Filled.ArrowUpward,
+                contentDescription = stringResource(R.string.hub_scroll_to_top),
+            )
+        }
+    }
+}
+
+/**
+ * Floating "back to top" button anchored at the bottom-LEFT of a home page, so it never covers
+ * the cards or the controls on the right. Hidden near the top, animated scroll on click.
+ */
+@Composable
+fun androidx.compose.foundation.layout.BoxScope.SiteScrollToTopButton(
+    state: androidx.compose.foundation.lazy.LazyListState,
+    modifier: Modifier = Modifier,
+) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val show by remember { androidx.compose.runtime.derivedStateOf { state.firstVisibleItemIndex > 2 } }
+    SiteScrollToTopFab(
+        visible = show,
+        onClick = { scope.launch { state.animateScrollToItem(0) } },
+        modifier = modifier
+            .align(Alignment.BottomStart)
+            .padding(start = 16.dp, bottom = 16.dp),
+    )
+}
+
+@Composable
+fun androidx.compose.foundation.layout.BoxScope.SiteScrollToTopButton(
+    state: androidx.compose.foundation.lazy.grid.LazyGridState,
+    modifier: Modifier = Modifier,
+) {
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val show by remember { androidx.compose.runtime.derivedStateOf { state.firstVisibleItemIndex > 4 } }
+    SiteScrollToTopFab(
+        visible = show,
+        onClick = { scope.launch { state.animateScrollToItem(0) } },
+        modifier = modifier
+            .align(Alignment.BottomStart)
+            .padding(start = 16.dp, bottom = 16.dp),
+    )
 }

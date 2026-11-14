@@ -257,6 +257,31 @@ object Preferences {
             ),
         )
 
+    /**
+     * Column counts for vertical video grids. Stored under its own keys so changing it never
+     * affects [searchGridColumnsConfig]. Until the user saves it once, every bucket falls back to
+     * the legacy search-grid value, which is what used to drive these grids before the split, so
+     * existing users keep the layout they had.
+     */
+    val videoGridColumnsConfig: SearchGridColumnsConfig
+        get() {
+            val legacy = searchGridColumnsConfig
+            return SearchGridColumnsConfig(
+                compactColumns = preferenceSp.getInt(
+                    SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_COMPACT, legacy.compactColumns,
+                ),
+                mediumColumns = preferenceSp.getInt(
+                    SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_MEDIUM, legacy.mediumColumns,
+                ),
+                expandedColumns = preferenceSp.getInt(
+                    SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_EXPANDED, legacy.expandedColumns,
+                ),
+                largeColumns = preferenceSp.getInt(
+                    SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_LARGE, legacy.largeColumns,
+                ),
+            )
+        }
+
     val horizontalCardCountConfig: HorizontalCardCountConfig
         get() = HorizontalCardCountConfig(
             narrowCount = preferenceSp.getString(

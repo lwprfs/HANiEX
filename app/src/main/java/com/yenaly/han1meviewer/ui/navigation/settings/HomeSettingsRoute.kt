@@ -342,6 +342,13 @@ fun SettingsCategoryRouteScreen(
             saveBoolean(HOME_DISABLE_COMMENTS, it)
             refreshKey++
         },
+        onVideoGridColumnsConfigChange = { config ->
+            saveInt(SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_COMPACT, config.compactColumns)
+            saveInt(SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_MEDIUM, config.mediumColumns)
+            saveInt(SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_EXPANDED, config.expandedColumns)
+            saveInt(SettingsPreferenceKeys.VIDEO_GRID_COLUMNS_LARGE, config.largeColumns)
+            refreshKey++
+        },
         onSearchGridColumnsConfigChange = { config ->
             saveInt(HOME_SEARCH_GRID_COLUMNS_COMPACT, config.compactColumns)
             saveInt(HOME_SEARCH_GRID_COLUMNS_MEDIUM, config.mediumColumns)
@@ -692,6 +699,7 @@ private fun buildHomeSettingsUiState(
         else -> appLanguageValue
     }
     val searchGridColumnsConfig = Preferences.searchGridColumnsConfig
+    val videoGridColumnsConfig = Preferences.videoGridColumnsConfig
     val horizontalCardCountConfig = Preferences.horizontalCardCountConfig
     return HomeSettingsUiState(
         videoLanguage = Preferences.videoLanguage,
@@ -741,6 +749,13 @@ private fun buildHomeSettingsUiState(
             searchGridColumnsConfig.largeColumns,
         ).joinToString(" / "),
         searchGridColumnsConfig = searchGridColumnsConfig,
+        videoGridColumnsSummary = listOf(
+            videoGridColumnsConfig.compactColumns,
+            videoGridColumnsConfig.mediumColumns,
+            videoGridColumnsConfig.expandedColumns,
+            videoGridColumnsConfig.largeColumns,
+        ).joinToString(" / "),
+        videoGridColumnsConfig = videoGridColumnsConfig,
         horizontalCardCountSummary = listOf(
             horizontalCardCountConfig.narrowCount,
             horizontalCardCountConfig.compactCount,

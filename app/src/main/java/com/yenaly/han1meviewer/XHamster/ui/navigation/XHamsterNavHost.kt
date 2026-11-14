@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.XHamster.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
+import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
@@ -125,8 +127,6 @@ private fun isProfilePath(path: String): Boolean =
 fun XHamsterNavHost(
     activity: MainActivity,
     navController: NavHostController,
-    isDrawerOpen: Boolean,
-    onOpenDrawer: () -> Unit,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -159,13 +159,9 @@ fun XHamsterNavHost(
                     onNavigateToSearch = { query ->
                         navController.navigateSafely(XHamsterSearchRoute(query))
                     },
-                    onNavigateToHistory = { navController.navigateSafely(XHamsterHistoryRoute) },
                     onNavigateToCategories = {
                         navController.navigateSafely(XHamsterCategoriesRoute)
                     },
-                    onOpenDrawer = onOpenDrawer,
-                    onSwitchSite = { activity.requestSiteSwitch() },
-                    onNavigateToLibrary = { navController.navigateSafely(XHamsterLibraryRoute(it)) },
                     discover = discover,
                 )
             }
@@ -424,10 +420,16 @@ fun XHamsterNavHost(
             )
         }
 
+        registerSiteHubRoutes(
+            navController = navController,
+            site = SiteType.XHAMSTER,
+            config = { xHamsterHubConfig(navController, activity) },
+        )
+
         registerGlobalSettingsRoutes(
             activity = activity,
             navController = navController,
-            homeFallback = XHamsterSettingsHubRoute,
+            homeFallback = SiteProfileRoute,
         )
     }
 }

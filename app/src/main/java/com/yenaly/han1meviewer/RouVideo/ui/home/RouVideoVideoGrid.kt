@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.RouVideo.ui.home
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -73,14 +74,28 @@ fun RouVideoVideoGrid(
     gridState: LazyGridState = rememberLazyGridState(),
 ) {
     when {
-        state.isLoading && state.items.isEmpty() -> SiteLoadingContent(modifier = modifier)
-        state.error != null && state.items.isEmpty() -> SiteErrorContent(
-            message = state.error,
-            onRetry = onRetry,
-            modifier = modifier,
-        )
+        state.items.isEmpty() -> {
+            // Keep the header (filter chips) visible while loading / failed / empty, otherwise
+            // the user could not switch filters out of a bad state.
+            Column(modifier = modifier.fillMaxSize()) {
+                if (header != null) {
+                    Box(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {
+                        header()
+                    }
+                }
+                Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    when {
+                        state.isLoading -> SiteLoadingContent()
+                        state.error != null -> SiteErrorContent(
+                            message = state.error,
+                            onRetry = onRetry,
+                        )
 
-        state.items.isEmpty() -> SiteEmptyContent(hint = emptyHint)
+                        else -> SiteEmptyContent(hint = emptyHint)
+                    }
+                }
+            }
+        }
         else -> {
             val nearEnd by remember(gridState) {
                 derivedStateOf {

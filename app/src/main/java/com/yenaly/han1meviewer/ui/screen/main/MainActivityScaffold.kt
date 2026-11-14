@@ -1,8 +1,5 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
-import kotlinx.coroutines.launch
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.DrawerState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -336,8 +333,9 @@ private fun MainActivityScaffoldTabletPreview() {
 /**
  * 主界面外壳（多站点版）。
  *
- * Hanime 系站点使用上游的底部导航 / 导航轨外壳；其它站点通过 [siteDrawerContent]
- * 提供站点专属抽屉，抽屉内容包含站点导航与（仅当前站点可见的）站点设置入口。
+ * Every site now uses the same adaptive bottom bar / navigation rail. Hanime-family sites
+ * drive it from [MainTopLevelDestination]; every other site supplies its four primary items
+ * through [siteItems]. There is intentionally no navigation drawer any more.
  */
 @Composable
 fun MainActivityScaffold(
@@ -345,44 +343,15 @@ fun MainActivityScaffold(
     showNavigationSuite: Boolean,
     snackbarHostState: SnackbarHostState,
     onDestinationSelected: (MainTopLevelDestination) -> Boolean,
-    drawerState: DrawerState = androidx.compose.material3.rememberDrawerState(DrawerValue.Closed),
-    drawerEnabled: Boolean = false,
-    siteDrawerContent: (@Composable () -> Unit)? = null,
     siteItems: List<SiteNavItem>? = null,
     content: @Composable () -> Unit,
 ) {
-    if (siteDrawerContent == null) {
-        MainActivityScaffoldInner(
-            selectedDestination = selectedDestination,
-            showNavigationSuite = showNavigationSuite,
-            snackbarHostState = snackbarHostState,
-            onDestinationSelected = onDestinationSelected,
-            siteItems = siteItems,
-            content = content,
-        )
-        return
-    }
-    val scope = androidx.compose.runtime.rememberCoroutineScope()
-    androidx.compose.material3.ModalNavigationDrawer(
-        gesturesEnabled = drawerEnabled,
-        drawerState = drawerState,
-        drawerContent = {
-            androidx.compose.material3.ModalDrawerSheet(
-                drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ) { siteDrawerContent() }
-        },
-    ) {
-        MainActivityScaffoldInner(
-            selectedDestination = selectedDestination,
-            showNavigationSuite = showNavigationSuite,
-            snackbarHostState = snackbarHostState,
-            onDestinationSelected = onDestinationSelected,
-            siteItems = siteItems,
-            content = content,
-        )
-    }
-    androidx.activity.compose.BackHandler(
-        enabled = drawerState.currentValue == DrawerValue.Open ||
-                drawerState.targetValue == DrawerValue.Open,
-    ) { scope.launch { drawerState.close() } }
+    MainActivityScaffoldInner(
+        selectedDestination = selectedDestination,
+        showNavigationSuite = showNavigationSuite,
+        snackbarHostState = snackbarHostState,
+        onDestinationSelected = onDestinationSelected,
+        siteItems = siteItems,
+        content = content,
+    )
 }

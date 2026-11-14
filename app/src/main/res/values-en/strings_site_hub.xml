@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hub_section_quick_actions">Quick actions</string>
+    <string name="hub_site_settings_title">%1$s settings</string>
+    <string name="hub_site_settings_desc">Settings specific to this site</string>
+    <string name="hub_check_in_desc">Daily check-in</string>
+    <string name="hub_switch_site_desc">Switch to another site</string>
+    <string name="hub_customize_title">Customize</string>
+    <string name="hub_customize_desc">Home, layout and player</string>
+    <string name="hub_all_history_desc">Watch history across every site</string>
+    <string name="hub_offline_playlist">Offline playlists</string>
+    <string name="hub_offline_playlist_desc">Playlists stored on this device</string>
+    <string name="hub_downloads">Downloads</string>
+    <string name="hub_downloads_desc">Downloaded videos</string>
+    <string name="hub_section_on_device">On this device</string>
+    <string name="hub_section_history">History</string>
+    <string name="hub_subscription_unavailable_title">No subscriptions on %1$s</string>
+    <string name="hub_subscription_unavailable_message">This site doesn\'t offer subscriptions right now. They will show up here if support is added.</string>
+    <string name="hub_horizontal_cards_title">Horizontal cards per row</string>
+    <string name="hub_video_grid_columns_desc">Columns used by vertical video grids on home and list pages</string>
+    <string name="hub_search_grid_columns_title">Search grid columns</string>
+    <string name="hub_search_grid_columns_desc">Columns used by search result grids</string>
+    <string name="hub_scroll_to_top">Back to top</string>
+    <string name="hub_xhamster_home_sections">Home sections</string>
+    <string name="hub_xhamster_show_channels">Show channels</string>
+    <string name="hub_xhamster_show_channels_desc">Show the Channels strip on the home page</string>
+    <string name="hub_xhamster_show_top_creators">Show top creators</string>
+    <string name="hub_xhamster_show_top_creators_desc">Show the Top Creators strip on the home page</string>
+</resources>

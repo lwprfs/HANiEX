@@ -65,6 +65,8 @@ import com.yenaly.han1meviewer.ui.navigation.settings.registerUnifiedHistoryRout
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
 import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
+import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.UpdateSettingsRoute
 import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import kotlinx.serialization.json.Json
@@ -281,6 +283,14 @@ fun MainNavHost(
                 },
             )
         }
+        composable<UpdateSettingsRoute> {
+            SettingsScaffold(
+                navController = navController,
+                fallbackDestination = HomeSettingsRoute,
+            ) {
+                UpdateStatusScreen(activity = activity)
+            }
+        }
         composable<AboutAppRoute> {
             SettingsScaffold(
                 navController = navController,
@@ -323,6 +333,9 @@ fun MainNavHost(
                     },
                     onNavigateToAboutPage = {
                         navController.navigateSettingsDestination(AboutAppRoute)
+                    },
+                    onNavigateToUpdateStatus = {
+                        navController.navigateSettingsDestination(UpdateSettingsRoute)
                     },
                     onNavigateToHKeyframeSettings = { navController.navigateSettingsDestination(HKeyframeSettingsRoute) },
                     onNavigateToDownloadSettings = { navController.navigateSettingsDestination(DownloadSettingsRoute) },
