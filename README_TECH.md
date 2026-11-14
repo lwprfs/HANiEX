@@ -18,7 +18,7 @@ Han1meViewer 当前是以 Kotlin + Jetpack Compose 为主的 Android 应用，�
 - Room + KSP。
 - WorkManager 后台下载和更新任务。
 - Coil 3 Compose 图片加载。
-- Media3 ExoPlayer、JZVD、MPV Android 播放链路。
+- Media3 ExoPlayer、MPV Android 播放链路。
 - Firebase Analytics、Crashlytics、Performance、Remote Config、Realtime Database。
 
 当前代码仍有少量历史 View/XML 组件，例如 JZVD 自定义 View 和播放器相关布局，但主业务页面已经以 Compose 为主。
@@ -265,22 +265,25 @@ VideoRoute(videoCode = "-1", localUri) -> VideoViewModel.buildLocalPlayInfo -> H
 
 ## 8. 播放器链路
 
-项目保留了历史 JZVD 播放器封装，同时引入 Media3 和 MPV 能力。
+播放器为纯 Compose 实现（`ui/player/`），按内核（Media3 ExoPlayer / MPV）与 UI 分层，JZVD 依赖已彻底移除。
 
 关键文件：
 
-- `ui/view/video/HJzvdStd.kt`
-- `ui/view/video/HMediaKernel.kt`
-- `ui/view/video/HanimeDataSource.kt`
-- `ui/screen/video/VideoPlayerUi.kt`
+- `ui/player/HanimePlayerController.kt`（状态中枢：状态机、进度 ticker、音频焦点、恢复进度）
+- `ui/player/PlayerUiState.kt`（低频 UI 状态 + 高频进度两条流）
+- `ui/player/kernel/`（`PlayerKernel` 接口 + `ExoPlayerKernel` + `MpvKernel`）
+- `ui/player/surface/PlayerSurface.kt`（movableContent 视频 Surface，跨布局移动不中断）
+- `ui/player/video/`（控件、手势、侧边弹窗、关键帧倒计时等 Compose 组件）
+- `ui/screen/video/VideoCollapsingHeader.kt`（折叠头部，取代 CoordinatorLayout/AppBar）
+- `ui/screen/video/VideoRouteHostScreen.kt`（播放页宿主：全屏覆盖层、PiP、分栏）
 - `util/Videos.kt`
 - `HanimeResolution.kt`
 
 播放相关约定：
 
 - 画质信息由 `HanimeResolution` 解析后提供给播放器。
-- 播放器 UI 状态不要直接写入网络模型，应通过 ViewModel 或播放器状态对象同步。
-- PIP、屏幕方向、播放器高度、滚动禁用等与页面布局相关的状态归 `VideoViewModel.VideoHostUiState` 管理。
+- 播放器 UI 状态不要直接写入网络模型，应通过 ViewModel 或 `HanimePlayerController` 状态流同步。
+- PIP、播放器高度等页面级状态归 `VideoViewModel.VideoHostUiState` 管理；播放器内部状态（含滚动锁定）由 `HanimePlayerController.uiState` 驱动。
 - MPV 相关设置归 `MpvPlayerSettingsRouteScreen` 和偏好设置管理。
 
 ## 9. 下载架构
