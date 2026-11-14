@@ -6,8 +6,11 @@ import android.app.RemoteAction
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
+import android.os.Build
 import android.graphics.drawable.Icon
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -54,6 +57,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.util.lerp
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -213,6 +219,48 @@ fun VideoRouteHostScreen(
     /** 重力自动全屏防抖时间戳。 */
     var lastAutoFullscreenTime by remember { mutableLongStateOf(0L) }
 
+    // ---------------- 全屏切换过渡 ----------------
+    //
+    // 覆盖层从小窗矩形（playerWindowBounds，与 PiP sourceRectHint 同源）
+    // 扩展/收缩到全屏；动画期间小窗槽位保持黑色占位，surface 由 movableContent
+    // 留在覆盖层，动画结束后才归还小窗，避免画面闪跳。进度只在 graphicsLayer
+    //（draw 阶段）读取，不引发逐帧重组。
+
+    /** 全屏过渡进度：0 = 小窗矩形，1 = 全屏。 */
+    val fullscreenAnim = remember { Animatable(0f) }
+
+    /** 覆盖层是否在组合中（含退出动画期间；结束后才移除）。 */
+    var fullscreenOverlayVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isFullscreen, isInPipMode) {
+        when {
+            isInPipMode -> {
+                fullscreenOverlayVisible = false
+                fullscreenAnim.snapTo(0f)
+            }
+
+            isFullscreen -> {
+                fullscreenOverlayVisible = true
+                fullscreenAnim.snapTo(0f)
+                fullscreenAnim.animateTo(1f, tween(280, easing = FastOutSlowInEasing))
+            }
+
+            else -> {
+                // 只有覆盖层真展示过才播放退出动画
+                if (fullscreenOverlayVisible) {
+                    fullscreenAnim.animateTo(0f, tween(240, easing = FastOutSlowInEasing))
+                }
+                fullscreenOverlayVisible = false
+            }
+        }
+    }
+
+    /**
+     * 全屏覆盖层是否应顶替小窗槽位：进入/退出动画全程为 true——
+     * 小窗槽位在覆盖层彻底消失前保持黑色占位。
+     */
+    val showFullscreenOverlay = fullscreenOverlayVisible && !isInPipMode
+
     fun enterFullscreen() {
         if (isFullscreen) return
         isFullscreen = true
@@ -270,27 +318,104 @@ fun VideoRouteHostScreen(
 
     // ---------------- PiP ----------------
 
-    fun updatePipAction() {
-        if (!activity.isInPictureInPictureMode) return
-        val isPlaying = controller.isPlaying
-        val icon = if (isPlaying) {
-            Icon.createWithResource(activity, R.drawable.ic_pip_pause_24)
+    /** PiP 是否允许（与 MainActivity.onUserLeaveHint 读取同一偏好）。 */
+    val pipAllowed = remember(activity) {
+        android.preference.PreferenceManager
+            .getDefaultSharedPreferences(activity)
+            .getBoolean("allow_pip_mode", true)
+    }
+
+    /** PiP 是否满足进入条件（播放或暂停中）。 */
+    val pipEligible = playerUiState.state == PlayerState.PLAYING ||
+            playerUiState.state == PlayerState.PAUSED
+
+    /**
+     * PiP 窗口宽高比：按视频实际比例（PiP 支持范围外时收敛到边界），
+     * 未知时回落 16:9——窗口形状与视频一致，配合 sourceRectHint 才能无缝。
+     */
+    fun pipAspectRatio(): android.util.Rational {
+        val w = playerUiState.videoWidth
+        val h = playerUiState.videoHeight
+        val ratio = if (w > 0 && h > 0) {
+            (w.toFloat() / h).coerceIn(0.41841f, 2.39f)
         } else {
-            Icon.createWithResource(activity, R.drawable.ic_pip_play_arrow_24)
+            16f / 9f
         }
-        val title = if (isPlaying) "Pause Video" else "Play Video"
+        return android.util.Rational((ratio * 10_000).roundToInt(), 10_000)
+    }
+
+    /**
+     * 统一构建 PiP 参数（进入/更新/autoEnter 共用）：
+     * - 宽高比按视频实际比例，避免窗口形状跳变；
+     * - [includeSourceHint] 携带 sourceRectHint（进入动画从小窗矩形起）；
+     * - S+ 上按 [eligible] 设置 autoEnterEnabled——手势上滑回主页时
+     *   系统直接把播放器动画进 PiP，全程无缝。
+     */
+    fun buildPipParams(includeSourceHint: Boolean, eligible: Boolean): PictureInPictureParams {
         val intent = PendingIntent.getBroadcast(
             activity,
             0,
             Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(activity.packageName),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
-        val action = RemoteAction(icon, title, activity.getString(R.string.play_pause), intent)
-        val params = PictureInPictureParams.Builder()
-            .setAspectRatio(android.util.Rational(16, 9))
+        val icon = if (controller.isPlaying) {
+            Icon.createWithResource(activity, R.drawable.ic_pip_pause_24)
+        } else {
+            Icon.createWithResource(activity, R.drawable.ic_pip_play_arrow_24)
+        }
+        val action = RemoteAction(
+            icon,
+            activity.getString(R.string.play_pause),
+            activity.getString(R.string.play_pause),
+            intent,
+        )
+        val builder = PictureInPictureParams.Builder()
+            .setAspectRatio(pipAspectRatio())
             .setActions(listOf(action))
-            .build()
-        activity.setPictureInPictureParams(params)
+        if (includeSourceHint && playerWindowBounds.width > 0) {
+            builder.setSourceRectHint(
+                android.graphics.Rect(
+                    playerWindowBounds.left.roundToInt(),
+                    playerWindowBounds.top.roundToInt(),
+                    playerWindowBounds.right.roundToInt(),
+                    playerWindowBounds.bottom.roundToInt(),
+                ),
+            )
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            builder.setAutoEnterEnabled(eligible && pipAllowed)
+        }
+        return builder.build()
+    }
+
+    // 播放状态/视频尺寸/全屏态/PiP 模式变化时刷新 PiP 参数——autoEnter 依赖
+    // 最近一次 setPictureInPictureParams。关键：isInPipMode 也作为键——
+    // 从 PiP 展开回来时必须重设（PiP 期间 updatePipAction 刷新过按钮，
+    // 否则 autoEnter=false 的旧参数会留驻系统，导致第二次回桌面不再进 PiP）
+    LaunchedEffect(
+        pipEligible,
+        playerUiState.videoWidth,
+        playerUiState.videoHeight,
+        isFullscreen,
+        pipAllowed,
+        isInPipMode,
+    ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !isInPipMode) {
+            runCatching { activity.setPictureInPictureParams(buildPipParams(true, pipEligible)) }
+        }
+    }
+
+    fun updatePipAction() {
+        if (!activity.isInPictureInPictureMode) return
+        // 刷新播放/暂停按钮；保留 sourceRectHint 与 autoEnter（展开回 app 后
+        // 系统仍用这套参数，重置 autoEnter 会让下一次回桌面进不了 PiP）
+        runCatching { activity.setPictureInPictureParams(buildPipParams(true, pipEligible)) }
+    }
+
+    // PiP 小窗按钮图标随播放状态同步——播完/出错/音频焦点丢失等
+    // 非按钮路径的状态变化也要刷新 RemoteAction 图标
+    LaunchedEffect(isInPipMode, playerUiState.state) {
+        if (isInPipMode) updatePipAction()
     }
 
     val pageHost = remember(activity, controller, viewModel) {
@@ -304,32 +429,7 @@ fun VideoRouteHostScreen(
             }
 
             override fun enterPipMode() {
-                val intent = PendingIntent.getBroadcast(
-                    activity,
-                    0,
-                    Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(activity.packageName),
-                    PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-                )
-                val icon = Icon.createWithResource(activity, R.drawable.ic_pip_pause_24)
-                val action = RemoteAction(
-                    icon,
-                    activity.getString(R.string.play_pause),
-                    activity.getString(R.string.play_pause),
-                    intent,
-                )
-                val params = PictureInPictureParams.Builder()
-                    .setSourceRectHint(
-                        android.graphics.Rect(
-                            playerWindowBounds.left.roundToInt(),
-                            playerWindowBounds.top.roundToInt(),
-                            playerWindowBounds.right.roundToInt(),
-                            playerWindowBounds.bottom.roundToInt(),
-                        ),
-                    )
-                    .setAspectRatio(android.util.Rational(16, 9))
-                    .setActions(listOf(action))
-                    .build()
-                activity.enterPictureInPictureMode(params)
+                activity.enterPictureInPictureMode(buildPipParams(includeSourceHint = true, eligible = true))
             }
 
             override fun onPipModeChanged(isInPip: Boolean) {
@@ -756,8 +856,8 @@ fun VideoRouteHostScreen(
                         .statusBarsPadding()
                         .navigationBarsPadding(),
                     headerContent = {
-                        if (isFullscreen) {
-                            // 播放器已移至全屏覆盖层，占位避免高度塌陷
+                        if (showFullscreenOverlay) {
+                            // 播放器已移至全屏覆盖层（含切换动画期间），占位避免高度塌陷
                             Box(modifier = Modifier.fillMaxSize().background(Color.Black))
                         } else {
                             PlayerSlot(modifier = Modifier.fillMaxSize(), fullscreen = false)
@@ -807,7 +907,7 @@ fun VideoRouteHostScreen(
                                     .background(Color.Black),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                if (isFullscreen) {
+                                if (showFullscreenOverlay) {
                                     Box(modifier = Modifier.fillMaxWidth())
                                 } else {
                                     PlayerSlot(
@@ -864,8 +964,8 @@ fun VideoRouteHostScreen(
                                                 .fillMaxSize()
                                                 .background(Color.Black),
                                         ) {
-                                            if (isFullscreen) {
-                                                // 播放器已移至全屏覆盖层，占位避免高度塌陷
+                                            if (showFullscreenOverlay) {
+                                                // 播放器已移至全屏覆盖层（含切换动画期间），占位避免高度塌陷
                                                 Box(modifier = Modifier.fillMaxSize())
                                             } else {
                                                 PlayerSlot(
@@ -933,11 +1033,30 @@ fun VideoRouteHostScreen(
             }
         }
 
-        // 全屏覆盖层（后声明，天然覆盖其它内容）
-        if (isFullscreen && !isInPipMode) {
+        // 全屏覆盖层（后声明，天然覆盖其它内容）。
+        // 过渡：从小窗矩形扩展到全屏（退出反向收缩），进度仅在 draw 阶段读取；
+        // 小窗矩形来自 PiP 用途的 playerWindowBounds，若其不在当前屏内
+        // （如全屏同时发生了旋转）则退化为纯淡入淡出。
+        if (showFullscreenOverlay) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
+                    .graphicsLayer {
+                        val p = fullscreenAnim.value
+                        val b = playerWindowBounds
+                        val rectValid = b.width > 0 && b.height > 0 &&
+                                b.right <= size.width && b.bottom <= size.height
+                        val sx0 = if (rectValid) b.width / size.width.toFloat() else 1f
+                        val sy0 = if (rectValid) b.height / size.height.toFloat() else 1f
+                        transformOrigin = TransformOrigin(0f, 0f)
+                        scaleX = lerp(sx0, 1f, p)
+                        scaleY = lerp(sy0, 1f, p)
+                        translationX = if (rectValid) lerp(b.left, 0f, p) else 0f
+                        translationY = if (rectValid) lerp(b.top, 0f, p) else 0f
+                        // 快速淡入（前 1/4 达到不透明），退出时接近收完才淡出，
+                        // 与黑色占位衔接避免闪烁
+                        alpha = (p * 4f).coerceIn(0f, 1f)
+                    }
                     .background(Color.Black),
             ) {
                 PlayerSlot(modifier = Modifier.fillMaxSize(), fullscreen = true)
