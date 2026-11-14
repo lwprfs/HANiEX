@@ -105,6 +105,7 @@ import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.OrientationManager
 import com.yenaly.han1meviewer.util.OrientationManager.ScreenOrientation
+import com.yenaly.han1meviewer.util.appScreenHeight
 import com.yenaly.han1meviewer.util.appScreenWidth
 import com.yenaly.han1meviewer.util.browse
 import com.yenaly.han1meviewer.util.checkBadGuy
@@ -572,6 +573,10 @@ fun VideoRouteHostScreen(
 
     // ---------------- 播放器层 ----------------
 
+    /** 页面视频信息是否仍在加载（加载期间中键显示 loading，不触发跳浏览器兜底）。 */
+    val videoInfoLoading =
+        viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle().value is VideoLoadingState.Loading
+
     /** 播放器槽位：surface + 控件整体，可被放置在折叠头部 / 分栏左栏 / 全屏覆盖层。 */
     @Composable
     fun PlayerSlot(modifier: Modifier, fullscreen: Boolean) {
@@ -582,6 +587,7 @@ fun VideoRouteHostScreen(
             keyframeEntity = keyframeEntity,
             modifier = modifier
                 .onGloballyPositioned { playerWindowBounds = it.boundsInRoot() },
+            videoInfoLoading = videoInfoLoading,
             onBack = {
                 if (fullscreen) exitFullscreen()
                 else activity.onBackPressedDispatcher.onBackPressed()
@@ -677,6 +683,9 @@ fun VideoRouteHostScreen(
     }
 
     // 播放器高度（px，沿用 VideoHostUiState.playerHeightDp 的像素语义）
+    // 竖屏小窗高度上限：屏高的 60%——竖屏/方形视频按宽换算的高度会超过
+    // 屏高（如 1080x1920 → 宽×1.78），点播放瞬间会撑满整个页面
+    val maxSmallWindowHeightPx = (appScreenHeight * 0.6f).toInt()
     LaunchedEffect(isInPipMode, isSidePaneCollapsed, showSplitLayout) {
         if (isInPipMode) return@LaunchedEffect
         val height = if (showSplitLayout) {
@@ -684,7 +693,7 @@ fun VideoRouteHostScreen(
         } else {
             // 竖屏（折叠布局）的基础高度按屏宽 16:9、下限 250dp：
             // 平板竖屏不再显矮，手机维持原值；起播后由视频真实比例覆盖
-            maxOf(250.dpToPx, appScreenWidth * 9 / 16)
+            minOf(maxOf(250.dpToPx, appScreenWidth * 9 / 16), maxSmallWindowHeightPx)
         }
         if (hostUiState.playerHeightDp != height) {
             viewModel.setPlayerHeightDp(height)
@@ -699,12 +708,15 @@ fun VideoRouteHostScreen(
         0f
     }
 
-    // 手机折叠布局：视频加载后按「宽满屏」的比例调整小窗高度（对齐旧版 JZVD resize 行为）
+    // 手机折叠布局：视频加载后按「宽满屏」的比例调整小窗高度（对齐旧版 JZVD resize 行为），
+    // 同样受 60% 屏高上限约束
     LaunchedEffect(playerUiState.videoWidth, playerUiState.videoHeight, showSplitLayout, isInPipMode) {
         val w = playerUiState.videoWidth
         val h = playerUiState.videoHeight
         if (w > 0 && h > 0 && !showSplitLayout && !isFullscreen && !isInPipMode) {
-            viewModel.setPlayerHeightDp(appScreenWidth * h / w)
+            viewModel.setPlayerHeightDp(
+                minOf(appScreenWidth * h / w, maxSmallWindowHeightPx)
+            )
         }
     }
 

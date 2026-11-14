@@ -93,6 +93,8 @@ import kotlin.time.Duration.Companion.milliseconds
  * @param onBack 顶栏返回
  * @param onGoHome 回到首页（普通窗口）
  * @param onToggleFullscreen 切换全屏
+ * @param videoInfoLoading 页面视频信息仍在加载（此时无可播链接，中键显示
+ *   loading 而非播放键，避免点击触发「跳转浏览器」兜底）
  * @param onNoVideoUrl 无可播放链接时点击中键
  * @param onAddHKeyframeAt 长按🥵在当前时刻添加关键帧（页面校验暂停状态）
  * @param onEditKeyframe 编辑关键帧
@@ -106,6 +108,7 @@ fun HanimeVideoPlayer(
     isFullscreen: Boolean,
     keyframeEntity: HKeyframeEntity?,
     modifier: Modifier = Modifier,
+    videoInfoLoading: Boolean = false,
     onBack: () -> Unit,
     onGoHome: () -> Unit,
     onToggleFullscreen: () -> Unit,
@@ -430,10 +433,13 @@ fun HanimeVideoPlayer(
 
         // 6. 中部控件（loading / 播放暂停）
         PlayerCenterArea(
-            state = uiState.state,
+            state = if (videoInfoLoading) PlayerState.PREPARING else uiState.state,
             controlsVisible = controlsVisible,
             onPlayClick = {
                 when {
+                    // 视频信息尚未加载完成：无可播链接，且 loading 态下中键
+                    // 不会出现——这里兜底忽略，绝不触发跳转浏览器
+                    videoInfoLoading -> Unit
                     !uiState.hasMedia -> onNoVideoUrl()
                     uiState.state == PlayerState.IDLE -> controller.startVideo()
                     else -> controller.play()

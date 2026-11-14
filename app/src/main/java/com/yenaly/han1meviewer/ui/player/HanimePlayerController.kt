@@ -501,11 +501,11 @@ class HanimePlayerController(
     val durationMs: Long
         get() = kernel.durationMs
 
-    /** 视频是否为竖屏视频（决定全屏方向锁定）。 */
+    /** 视频是否为竖屏/方形视频（决定全屏方向锁定：此类视频全屏保持竖屏，提高空间利用率）。 */
     val isPortraitVideo: Boolean
         get() = _uiState.value.videoWidth > 0 &&
                 _uiState.value.videoHeight > 0 &&
-                _uiState.value.videoWidth < _uiState.value.videoHeight
+                _uiState.value.videoWidth <= _uiState.value.videoHeight
 
     private fun isWifiConnected(): Boolean {
         val cm = appContext.getSystemService(ConnectivityManager::class.java) ?: return true
