@@ -1,5 +1,3 @@
-@file:Suppress("UnstableApiUsage")
-
 import org.gradle.api.Project
 import java.time.Clock
 import java.time.LocalDateTime

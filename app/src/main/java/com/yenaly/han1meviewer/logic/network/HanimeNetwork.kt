@@ -2,8 +2,8 @@ package com.yenaly.han1meviewer.logic.network
 
 import com.yenaly.han1meviewer.GETCHU_BASE_URL
 import com.yenaly.han1meviewer.HANIME_BASE_URL
-import com.yenaly.han1meviewer.logic.network.service.HGitHubService
 import com.yenaly.han1meviewer.logic.network.service.GetchuService
+import com.yenaly.han1meviewer.logic.network.service.HGitHubService
 import com.yenaly.han1meviewer.logic.network.service.HanimeBaseService
 import com.yenaly.han1meviewer.logic.network.service.HanimeCommentService
 import com.yenaly.han1meviewer.logic.network.service.HanimeMyListService

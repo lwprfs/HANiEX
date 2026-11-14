@@ -25,9 +25,6 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.preview.fakeNewHanimeInfo
-import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
-import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
-import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewContent
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewEvent
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerDialog
@@ -35,10 +32,13 @@ import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewImageViewerState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewMonthHeaderState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewRouteUiState
 import com.yenaly.han1meviewer.ui.screen.home.preview.PreviewUiState
-import com.yenaly.han1meviewer.ui.screen.home.preview.currentDateCode as currentMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.shiftMonthCode
 import com.yenaly.han1meviewer.ui.screen.home.preview.toNormalDateLabel
+import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
+import com.yenaly.han1meviewer.ui.viewmodel.PreviewCommentPrefetcher
+import com.yenaly.han1meviewer.ui.viewmodel.PreviewViewModel
 import kotlinx.coroutines.launch
+import com.yenaly.han1meviewer.ui.screen.home.preview.currentDateCode as currentMonthCode
 
 /**
  * 预览页面 Screen 层。
@@ -111,17 +111,16 @@ fun PreviewScreen(
     var monthAnimationDirection by remember { mutableIntStateOf(1) }
     // 月份切換暫時隱藏，數據直接使用搜索結果首頁；評論區仍使用當前自然月。
     val currentMonth = remember { currentMonthCode() }
-    val currentDateCode = currentMonth
     val selectedIndex = routeState.selectedIndex
 
-    val currentDateLabel = remember(currentDateCode) { toNormalDateLabel(currentDateCode) }
-    val prevDateCode = remember(currentDateCode) { shiftMonthCode(currentDateCode, -1) }
-    val nextDateCode = remember(currentDateCode) { shiftMonthCode(currentDateCode, 1) }
+    val currentDateLabel = remember(currentMonth) { toNormalDateLabel(currentMonth) }
+    val prevDateCode = remember(currentMonth) { shiftMonthCode(currentMonth, -1) }
+    val nextDateCode = remember(currentMonth) { shiftMonthCode(currentMonth, 1) }
     val prevDateLabel = remember(prevDateCode) { toNormalDateLabel(prevDateCode) }
     val nextDateLabel = remember(nextDateCode) { toNormalDateLabel(nextDateCode) }
 
-    val displayState = remember(currentDateCode, previewState) {
-        val cached = previewViewModel.getCachedPreview(currentDateCode)
+    val displayState = remember(currentMonth, previewState) {
+        val cached = previewViewModel.getCachedPreview(currentMonth)
         if (previewState is WebsiteState.Loading && cached is WebsiteState.Success) {
             cached
         } else {
@@ -145,12 +144,12 @@ fun PreviewScreen(
     val canNext = when (displayState) {
         is WebsiteState.Loading -> false
         is WebsiteState.Success ->
-            displayState.info.hasNext || currentDateCode < currentMonth
+            displayState.info.hasNext
 
-        is WebsiteState.Error -> currentDateCode < currentMonth
+        is WebsiteState.Error -> false
     }
     val monthHeaderState = remember(
-        currentDateCode,
+        currentMonth,
         success?.info?.headerPicUrl,
         prevDateLabel,
         nextDateLabel,
@@ -158,7 +157,7 @@ fun PreviewScreen(
         canNext,
     ) {
         PreviewMonthHeaderState(
-            dateCode = currentDateCode,
+            dateCode = currentMonth,
             headerImageUrl = success?.info?.headerPicUrl,
             prevLabel = prevDateLabel,
             nextLabel = nextDateLabel,
@@ -214,16 +213,16 @@ fun PreviewScreen(
             PreviewEvent.OnOpenGetchuPreview -> onNavigateToGetchuPreview()
             is PreviewEvent.OnOpenComment -> onNavigateToPreviewComment(event.label, event.dateCode)
             PreviewEvent.OnRetryLoad -> {
-                previewViewModel.getHanimePreview(currentDateCode)
+                previewViewModel.getHanimePreview(currentMonth)
                 PreviewCommentPrefetcher.here(commentViewModel)
-                    .fetch(PREVIEW_COMMENT_PREFIX, currentDateCode)
+                    .fetch(PREVIEW_COMMENT_PREFIX, currentMonth)
             }
         }
     }
 
-    LaunchedEffect(currentDateCode) {
-        previewViewModel.getHanimePreview(currentDateCode)
-        PreviewCommentPrefetcher.here(commentViewModel).fetch(PREVIEW_COMMENT_PREFIX, currentDateCode)
+    LaunchedEffect(currentMonth) {
+        previewViewModel.getHanimePreview(currentMonth)
+        PreviewCommentPrefetcher.here(commentViewModel).fetch(PREVIEW_COMMENT_PREFIX, currentMonth)
     }
 
     // 數據刷新後項目數量可能變少，避免記住的卡片索引越界。
@@ -254,9 +253,9 @@ fun PreviewScreen(
     }
 
     // 搜索結果只有封面與標題，卡片顯示時再異步補全詳情。
-    LaunchedEffect(currentDateCode, previewPagerState.currentPage, previewInfoList.size) {
+    LaunchedEffect(currentMonth, previewPagerState.currentPage, previewInfoList.size) {
         previewInfoList.getOrNull(previewPagerState.currentPage)?.videoCode?.let { videoCode ->
-            previewViewModel.enrichPreview(currentDateCode, videoCode)
+            previewViewModel.enrichPreview(currentMonth, videoCode)
         }
     }
 

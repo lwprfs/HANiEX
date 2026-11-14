@@ -53,6 +53,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.graphics.drawable.toDrawable
+import com.yenaly.han1meviewer.ui.component.GlobalToasts.MAX_VISIBLE_COUNT
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

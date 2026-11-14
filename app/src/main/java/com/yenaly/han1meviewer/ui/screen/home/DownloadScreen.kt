@@ -2,12 +2,12 @@ package com.yenaly.han1meviewer.ui.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -42,16 +42,16 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.logic.model.DownloadItemNode
-import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadSort
-import com.yenaly.han1meviewer.ui.screen.home.download.downloadSortComparator
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadedScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadingScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.MoveGroupDialog
+import com.yenaly.han1meviewer.ui.screen.home.download.downloadSortComparator
 import com.yenaly.han1meviewer.ui.screen.home.download.toDisplayGroups
 import com.yenaly.han1meviewer.ui.screen.home.download.toFlatNodeList
 import com.yenaly.han1meviewer.ui.screen.home.download.toNodeList

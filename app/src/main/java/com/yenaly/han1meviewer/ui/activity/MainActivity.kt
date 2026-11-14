@@ -39,14 +39,14 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.base.BaseFragmentActivity
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard
 import com.yenaly.han1meviewer.util.ActivityManager
+import com.yenaly.han1meviewer.util.ClipboardVideoLinkGuard
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 

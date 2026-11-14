@@ -9,10 +9,12 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.exception.HUpdaterException
 import com.yenaly.han1meviewer.logic.model.github.CommitComparison
 import com.yenaly.han1meviewer.logic.model.github.Latest
+import com.yenaly.han1meviewer.logic.network.HUpdater.checkForUpdate
+import com.yenaly.han1meviewer.logic.network.HUpdater.injectUpdate
+import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.checkNeedUpdate
 import com.yenaly.han1meviewer.util.copyTo
 import com.yenaly.han1meviewer.util.runSuspendCatching
-import com.yenaly.han1meviewer.util.applicationContext
 import okio.use
 import java.io.File
 import java.util.zip.ZipInputStream
@@ -247,14 +249,11 @@ object HUpdater {
             body.use {
                 it.byteStream().use { stream ->
                     ZipInputStream(stream).use { zip ->
-                        val entry = zip.nextEntry
-                        if (entry == null) {
-                            throw HUpdaterException.Download(
-                                message = "下载到的 CI 压缩包内容为空（$url）",
-                                cause = null,
-                                reason = HUpdaterException.Download.Reason.INVALID_PAYLOAD,
-                            )
-                        }
+                        val entry = zip.nextEntry ?: throw HUpdaterException.Download(
+                            message = "下载到的 CI 压缩包内容为空（$url）",
+                            cause = null,
+                            reason = HUpdaterException.Download.Reason.INVALID_PAYLOAD,
+                        )
                         outputStream().use { out ->
                             Log.i(TAG, "content length: ${it.contentLength()}")
                             // 估摸着压缩率为0.56左右，稍微估算解压后大小，防止进度卡在100%时间过长

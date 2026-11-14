@@ -6,21 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.util.ThemeUtils
-
-/**
- * 当前 Compose 主题的主色桥接，供仍使用 View/Adapter 的组件读取主题色。
- */
-object AppThemeState {
-    /** 当前主题主色的 ARGB 值，0 表示尚未初始化。 */
-    var primaryColorArgb: Int = 0
-        internal set
-}
 
 @Composable
 fun HanimeTheme(
@@ -41,10 +30,6 @@ fun HanimeTheme(
     val colorScheme =
         if (darkTheme && Preferences.pureBlackDarkMode) presetColorScheme.toPureBlackColorScheme()
         else presetColorScheme
-
-    SideEffect {
-        AppThemeState.primaryColorArgb = colorScheme.primary.toArgb()
-    }
 
     MaterialTheme(
         colorScheme = colorScheme,

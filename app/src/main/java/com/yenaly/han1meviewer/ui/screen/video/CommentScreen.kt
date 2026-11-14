@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -46,10 +47,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -122,7 +121,6 @@ fun CommentScreen(
     val scope = rememberCoroutineScope()
     val loginFirstText = stringResource(R.string.login_first)
     val commentTooShortText = stringResource(R.string.comment_too_short)
-    val nestedScrollInterop = rememberNestedScrollInteropConnection()
     LaunchedEffect(reportMessageFlow) {
         reportMessageFlow.collect {
             latestReportMessage = it.text
@@ -237,19 +235,12 @@ fun CommentScreen(
                         end = paddingValues.calculateEndPadding(layoutDirection),
                     )
             ) {
-                PullToRefreshBox(
-                    isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
-                    onRefresh = onRefresh,
-                    state = refreshingState,
-                    modifier = Modifier.fillMaxSize(),
-                    indicator = {
-                        PullToRefreshDefaults.LoadingIndicator(
-                            state = refreshingState,
-                            isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
-                            modifier = Modifier.align(Alignment.TopCenter),
-                        )
-                    }
-                ) {
+                // 评论列表主体。下拉刷新常驻——头部折叠态的下拉由外层折叠头
+                // 在 preScroll 阶段优先拦截（父层先于子组件），不会触达这里的
+                // PullToRefresh，无需按折叠状态切换容器（切换会导致整个列表
+                // 重组重建，滚动折叠时列表闪烁）。
+                @Composable
+                fun BoxScope.ListBody() {
                     val loadError = state is WebsiteState.Error && sortedComments.isEmpty()
                     PageContent(
                         isLoading = false,
@@ -274,11 +265,13 @@ fun CommentScreen(
                             )
                         },
                     ) {
+                        // 播放页禁用 item 入场动画：折叠联动会持续扩展视口，
+                        // 新进入的评论全部以淡入动画进场会造成闪烁；
+                        // 每项动画协程在快速滚动时也会掉帧。
                         LazyColumn(
                             state = listState,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .nestedScroll(nestedScrollInterop),
+                            enableItemAnimation = false,
+                            modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
@@ -353,6 +346,22 @@ fun CommentScreen(
                             }
                         }
                     }
+                }
+
+                PullToRefreshBox(
+                    isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
+                    onRefresh = onRefresh,
+                    state = refreshingState,
+                    modifier = Modifier.fillMaxSize(),
+                    indicator = {
+                        PullToRefreshDefaults.LoadingIndicator(
+                            state = refreshingState,
+                            isRefreshing = state is WebsiteState.Loading && !isPreviewCommentPrefetched,
+                            modifier = Modifier.align(Alignment.TopCenter),
+                        )
+                    }
+                ) {
+                    ListBody()
                 }
             }
             AnimatedVisibility(

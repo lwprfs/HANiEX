@@ -5,17 +5,19 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
+import com.yenaly.han1meviewer.Preferences.loginCookie
+import com.yenaly.han1meviewer.Preferences.videoLanguage
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
-import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
-import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
+import com.yenaly.han1meviewer.ui.player.PlayerDefaults
+import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import com.yenaly.han1meviewer.util.CookieString
 import com.yenaly.han1meviewer.util.SafFileManager
-import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.util.getSpValue
 import com.yenaly.han1meviewer.util.putSpValue
+import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime
@@ -115,8 +117,8 @@ object Preferences {
     val switchPlayerKernel: String
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.SWITCH_PLAYER_KERNEL,
-            HMediaKernel.Type.ExoPlayer.name
-        ) ?: HMediaKernel.Type.ExoPlayer.name
+            KernelType.ExoPlayer.name
+        ) ?: KernelType.ExoPlayer.name
 
     val showBottomProgress: Boolean
         get() = preferenceSp.getBoolean(
@@ -127,20 +129,20 @@ object Preferences {
     val playerSpeed: Float
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.PLAYER_SPEED,
-            HJzvdStd.DEF_SPEED.toString()
-        )?.toFloat() ?: HJzvdStd.DEF_SPEED
+            PlayerDefaults.DEF_SPEED.toString()
+        )?.toFloat() ?: PlayerDefaults.DEF_SPEED
 
     val slideSensitivity: Int
         get() = preferenceSp.getInt(
             SettingsPreferenceKeys.SLIDE_SENSITIVITY,
-            HJzvdStd.DEF_PROGRESS_SLIDE_SENSITIVITY
+            PlayerDefaults.DEF_PROGRESS_SLIDE_SENSITIVITY
         )
 
     val longPressSpeedTime: Float
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.LONG_PRESS_SPEED_TIMES,
-            HJzvdStd.DEF_LONG_PRESS_SPEED_TIMES.toString()
-        )?.toFloat() ?: HJzvdStd.DEF_LONG_PRESS_SPEED_TIMES
+            PlayerDefaults.DEF_LONG_PRESS_SPEED_TIMES.toString()
+        )?.toFloat() ?: PlayerDefaults.DEF_LONG_PRESS_SPEED_TIMES
 
     val videoLanguage: String
         get() = preferenceSp.getString(SettingsPreferenceKeys.VIDEO_LANGUAGE, "zhs") ?: "zht"
@@ -280,7 +282,7 @@ object Preferences {
     val whenCountdownRemind: Int
         get() = preferenceSp.getInt(
             SettingsPreferenceKeys.WHEN_COUNTDOWN_REMIND,
-            HJzvdStd.DEF_COUNTDOWN_SEC
+            PlayerDefaults.DEF_COUNTDOWN_SEC
         ) * 1_000 // 越不了界，最大就30_000ms而已
 
     val showCommentWhenCountdown: Boolean

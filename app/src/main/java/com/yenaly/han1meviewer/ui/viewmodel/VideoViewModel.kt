@@ -13,6 +13,7 @@ import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HCacheManager
 import com.yenaly.han1meviewer.HanimeResolution
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
@@ -25,7 +26,6 @@ import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel.csrfToken
 import com.yenaly.han1meviewer.util.TagLocalizer
-import com.yenaly.han1meviewer.base.BaseViewModel
 import com.yenaly.han1meviewer.util.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -62,9 +62,6 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
     data class VideoHostUiState(
         val selectedTabIndex: Int = 0,
         val isAppBarExpanded: Boolean = true,
-        val appBarBottomInsetPx: Int = 0,
-        val commentBadgeCount: Int = 0,
-        val isScrollDisabled: Boolean = false,
         val isInPipMode: Boolean = false,
         val playerHeightDp: Int = 250.dp,
     )
@@ -86,9 +83,6 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
     }
     private val videoIntroUiStateMap = mutableMapOf<String, VideoIntroUiState>()
     var videoCode: String = EMPTY_STRING
-        set(value) {
-            field = value
-        }
 
     var fromDownload = false
 
@@ -105,6 +99,14 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
     val hanimeVideoFlow = _hanimeVideoFlow.asStateFlow()
     private val _videoHostUiStateFlow = MutableStateFlow(VideoHostUiState())
     val videoHostUiStateFlow = _videoHostUiStateFlow.asStateFlow()
+
+    /**
+     * 评论数角标独立成流：评论数据在进场后异步到达，若放在
+     * [VideoHostUiState] 里会让整个播放页宿主随之重组（播放器子树等），
+     * 只有 tabs 需要消费它。
+     */
+    private val _commentBadgeCount = MutableStateFlow(0)
+    val commentBadgeCount = _commentBadgeCount.asStateFlow()
 
     /**
      * 同系列影片已歸入的分組 id，作為下載時分組名的推薦項。
@@ -187,16 +189,8 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
         updateVideoIntroUiState(videoCode) { copy(isAppBarExpanded = isExpanded) }
     }
 
-    fun setAppBarBottomInsetPx(appBarBottomInsetPx: Int) {
-        _videoHostUiStateFlow.update { it.copy(appBarBottomInsetPx = appBarBottomInsetPx) }
-    }
-
     fun setCommentBadgeCount(commentBadgeCount: Int) {
-        _videoHostUiStateFlow.update { it.copy(commentBadgeCount = commentBadgeCount) }
-    }
-
-    fun setScrollDisabled(isScrollDisabled: Boolean) {
-        _videoHostUiStateFlow.update { it.copy(isScrollDisabled = isScrollDisabled) }
+        _commentBadgeCount.value = commentBadgeCount
     }
 
     fun setPipMode(isInPipMode: Boolean) {

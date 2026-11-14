@@ -28,10 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.rememberNestedScrollInteropConnection
-import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -135,7 +132,6 @@ fun ChildCommentScreen(
     val sortedComments = remember(comments) {
         comments.safeSortedBy({ parseTimeStrToMinutes(it.date) }, descending = false)
     }
-    val nestedScrollInterop = rememberNestedScrollInteropConnection()
 
     BackHandler(enabled = replyingComment != null) {
         replyingComment = null
@@ -231,9 +227,8 @@ fun ChildCommentScreen(
                 },
             ) {
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .nestedScroll(nestedScrollInterop),
+                    enableItemAnimation = false,
+                    modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {

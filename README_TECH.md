@@ -18,10 +18,10 @@ Han1meViewer 当前是以 Kotlin + Jetpack Compose 为主的 Android 应用，�
 - Room + KSP。
 - WorkManager 后台下载和更新任务。
 - Coil 3 Compose 图片加载。
-- Media3 ExoPlayer、JZVD、MPV Android 播放链路。
+- Media3 ExoPlayer、MPV Android 播放链路。
 - Firebase Analytics、Crashlytics、Performance、Remote Config、Realtime Database。
 
-当前代码仍有少量历史 View/XML 组件，例如 JZVD 自定义 View 和播放器相关布局，但主业务页面已经以 Compose 为主。
+当前主业务页面与播放器均为 Compose 实现，不再保留 JZVD 或其它播放器相关 View/XML 组件。
 
 ## 2. 模块结构
 
@@ -49,7 +49,7 @@ app/src/main/java/com/yenaly/han1meviewer/
 │   ├── screen/            Compose 页面
 │   ├── component/         Compose 组件
 │   ├── viewmodel/         页面 ViewModel
-│   ├── view/              自定义 View 和播放器 View
+│   ├── player/            Compose 播放器（内核抽象、控制器、Surface、控件）
 │   └── theme/             Compose 主题、颜色、尺寸
 ├── util/                  文件、网络、权限、主题、Cookie、Toast 等工具
 ├── worker/                下载 Worker、更新 Worker、下载管理器
@@ -229,8 +229,8 @@ java.lang.IllegalArgumentException: Key "xxxx" was already used.
 
 - `ui/navigation/main/VideoRoute.kt`
 - `ui/screen/video/VideoRouteHostScreen.kt`
+- `ui/screen/video/VideoCollapsingHeader.kt`
 - `ui/screen/video/VideoRouteContent.kt`
-- `ui/screen/video/VideoShellContent.kt`
 - `ui/screen/video/VideoTabsContent.kt`
 - `ui/screen/video/VideoIntroductionScreen.kt`
 - `ui/screen/video/CommentScreen.kt`
@@ -263,25 +263,140 @@ VideoRoute(videoCode = "-1", localUri) -> VideoViewModel.buildLocalPlayInfo -> H
 - `VideoRouteActions.openArtistSearch` 构造 `SearchRoute`。
 - 搜索页通过 `route.query` 自动填充作者名并发起搜索。
 
-## 8. 播放器链路
+## 8. 播放器架构
 
-项目保留了历史 JZVD 播放器封装，同时引入 Media3 和 MPV 能力。
+播放器为纯 Compose 实现（`ui/player/`），JZVD 依赖已彻底移除。内核保留 Media3 ExoPlayer 与 libmpv 两种，通过统一接口抽象；页面、控件、手势全部 Compose 化，跨布局移动播放器不中断画面。
 
-关键文件：
+### 8.1 分层总览
 
-- `ui/view/video/HJzvdStd.kt`
-- `ui/view/video/HMediaKernel.kt`
-- `ui/view/video/HanimeDataSource.kt`
-- `ui/screen/video/VideoPlayerUi.kt`
-- `util/Videos.kt`
-- `HanimeResolution.kt`
+```text
+ui/player/
+├── PlayerDefaults.kt          常量：倍速表、灵敏度映射、倒计时默认值
+├── PlayerUtils.kt             stringForTime 等工具
+├── PlayerUiState.kt           PlayerState / PlayerUiState / PlayerProgress / PlayerEvent
+├── HanimePlayerController.kt  状态中枢（内核编排、进度 ticker、音频焦点等）
+├── kernel/
+│   ├── PlayerKernel.kt        内核接口 + KernelType + MediaRequest + 工厂
+│   ├── ExoPlayerKernel.kt     Media3 ExoPlayer 实现
+│   └── MpvKernel.kt           libmpv 实现（Anime4K、fd:// 本地播放）
+├── surface/
+│   └── PlayerSurface.kt       movableContent 视频 Surface
+└── video/                     播放器 UI 组件
+    ├── HanimeVideoPlayer.kt   主组件（分层组装、事件、气泡弹窗接线）
+    ├── PlayerGestureLayer.kt  Modifier.playerGestures 手势层
+    ├── PlayerControls.kt      顶栏 / 底栏 / 电量时钟
+    ├── PlayerSlider.kt        三层轨道进度条
+    ├── PlayerSideSheets.kt    气泡弹窗（倍速/清晰度/超分）+ 关键帧侧栏
+    ├── PlayerGestureIndicator.kt  音量/亮度/进度手势指示浮层
+    └── KeyframeCountdown.kt   关键 H 帧倒计时
 
-播放相关约定：
+ui/screen/video/
+├── VideoCollapsingHeader.kt   折叠头部（嵌套滚动协议）
+└── VideoRouteHostScreen.kt    播放页宿主（全屏覆盖层、PiP、平板分栏）
+```
 
-- 画质信息由 `HanimeResolution` 解析后提供给播放器。
-- 播放器 UI 状态不要直接写入网络模型，应通过 ViewModel 或播放器状态对象同步。
-- PIP、屏幕方向、播放器高度、滚动禁用等与页面布局相关的状态归 `VideoViewModel.VideoHostUiState` 管理。
+依赖方向自上而下：页面 → 控制器 → 内核。UI 组件只消费控制器状态流，不触碰内核；页面只调控制器方法，不感知内核差异。
+
+### 8.2 内核层（kernel/）
+
+`PlayerKernel` 接口定义一路媒体的完整生命周期：`prepare → start/pause/seekTo/setSpeed/setLooping → release`，外加 `setSurface` / `onSurfaceSizeChanged` / `setSuperResolution`（MPV 专属，其余空实现）。`KernelType.fromString` 对旧版 `MediaPlayer` 设置值回落 ExoPlayer。
+
+**ExoPlayerKernel**：
+
+- 播放器实例在专用 `HandlerThread` 构建与释放，避免阻塞主线程；同步查询（`isPlaying`/`currentPositionMs`/`durationMs`）经 `runOnPlayerThread` 以 300ms 超时等待结果。
+- `prepare()` 内部复用 `release()` 做防重入，但会先保存并恢复 `pendingSurface` 与 `listener`——surface 丢失会导致有声无画，listener 丢失会导致收不到 READY 回调（UI 永久 loading）。
+- 起播缓冲按 `ActivityManager.memoryClass` 分档（48/64/96 MB），低内存设备防 OOM。
+- HLS（`.m3u8`）与普通媒体自动选择对应 MediaSource。
+- 释放时延迟 500ms 再 `quitSafely()`：media3 的 `release()` 内部还会向该 looper 投递收尾消息，立即退出会触发 dead thread 警告。
+
+**MpvKernel**：
+
+- `MPVLib` 为进程级单例（`HanimeApplication` 中 `create` + `init`），内核实例只做选项配置与事件观察。
+- **surface 迟到时延迟 loadfile**：`prepare()` 时若 surface 尚未就绪，先记下待播路径，等 `setSurface()` 到来后再 `loadfile`——否则 mpv 的 vo 初始化会因 WinID 无效直接原生崩溃（SIGABRT）。
+- 换源（切清晰度）时由控制器先释放旧内核、创建新内核并把当前 surface 挂回，再 prepare。
+- 本地 `file://` / `content://` 经 `ParcelFileDescriptor.detachFd()` 转为 `fd://` 播放。
+- Anime4K 超分通过 `change-list glsl-shaders` 动态加载 shader。
+
+### 8.3 控制器（HanimePlayerController）
+
+一个播放页一个实例，取代旧版 JZVD 的静态状态机：
+
+- **双流状态**：`uiState: StateFlow<PlayerUiState>`（低频：状态机、清晰度列表、倍速、循环、视频尺寸等）与 `progress: StateFlow<PlayerProgress>`（约 100ms 高频：position/duration/buffered）分离，避免高频进度引发整树重组。
+- **进度 ticker**：播放中以 100ms 周期轮询内核位置，保证关键帧倒计时 0.1s 精度；缓冲/暂停即停。
+- 收编音频焦点（`AUDIOFOCUS_GAIN_TRANSIENT`，丢失暂停、恢复续播）、非 WiFi 流量确认（事件流交页面弹框）、观看历史进度恢复（>5s 且允许恢复时自动 seek 并提示「从头开始」）、长按倍速（临时 ×N，抬起恢复）。
+- 换清晰度 = 释放重建内核 + `startPositionMs` 保持进度；旧值 `MediaPlayer` 内核回落 ExoPlayer。
+
+### 8.4 视频 Surface（surface/PlayerSurface.kt）
+
+`rememberMovablePlayerSurface` 返回一个 `movableContentOf`，在「折叠头部小窗 / 全屏覆盖层 / 平板分栏左栏」之间移动时复用同一个 `TextureView` 实例，播放不中断：
+
+- `onSurfaceTextureDestroyed` 返回 `false`，纹理由本层持有不释放；
+- 跨容器移动后系统回调新的 `onSurfaceTextureAvailable` 时，把保留的旧纹理 `setSurfaceTexture` 塞回去，渲染管线无缝衔接。
+
+渲染层在 `HanimeVideoPlayer` 内部**始终按视频宽高比居中**（`aspectRatio(matchHeightConstraintsFirst = ratio < 1)`）——直连 Surface 不会自动 letterbox，无此约束会在全屏切换后拉伸画面。
+
+### 8.5 播放器 UI（video/）
+
+`HanimeVideoPlayer` 自底向上分层：渲染层（比例约束）→ 海报层 → 手势层（`Modifier.playerGestures`）→ 控件层（顶栏/底栏/中键/锁/倒计时/迷你进度条）→ 浮层（手势指示、从头开始、重试）→ 气泡弹窗。
+
+手势层迁移自旧版 `HJzvdStd.onTouch` 全部行为：单击切换控件、双击播放暂停、长按临时倍速（触觉反馈）、横滑调进度（灵敏度可调、越界钳制、ERROR 态禁用）、左半屏竖滑亮度、右半屏竖滑音量。两个要点：
+
+- **消费让位**：拖动中若事件被子组件（弹窗列表、进度条）消费（`change.isConsumed`），手势立即放弃，否则拖列表仍会触发音量/亮度。
+- 倍速/清晰度/超分弹窗为**锚定气泡**（对话泡 + 指向按钮的三角，按锚点坐标与方向定位、水平钳制在播放器内），弹出期间控件保持显示；关键帧列表内容长，仍用右侧滑入面板。
+
+### 8.6 页面层：折叠头部与布局
+
+`VideoCollapsingHeader` 取代 CoordinatorLayout + AppBarLayout + CollapsingToolbarLayout，`Column(头部 + 内容)` 结构，头部高度随折叠真实收缩：
+
+- **性能**：折叠比例只在 `Modifier.layout` 与 `derivedStateOf` 中读取，组合期间不依赖任何折叠值——拖拽/锁定动画的每一帧只触发测量与布局，不引发整棵播放页子树重组（列表闪烁的根源）。锁定展开动画用 `Animatable`（`animateFloatAsState` 的 target 在组合期读取，会每帧重组）。
+- **滚动协议**（标准 collapsing）：
+  - 上滑：`onPreScroll` 先折叠头部，折完才轮到内容滚动；
+  - 下滑：折叠态的下拉同样在 `onPreScroll` 拦截展开——父层 preScroll 先于子组件（列表 overscroll 拉伸与 PullToRefresh）执行，否则列表置顶时下拉量会被其消费，头部收不到；
+  - 内容滚到顶后的剩余量在 `onPostScroll` 兜底展开；
+  - **fling 归属**：手势期间发生过折叠消费则 `onPreFling` 吞掉惯性——否则「拖拽段折叠 + 释放惯性全给列表」会让内容总位移接近手指距离的两倍。松手即停（无端点吸附动画，保持跟手）。
+- 播放中（PREPARING/BUFFERING/PLAYING）禁止折叠并平滑动画强制展开。
+
+`VideoRouteHostScreen` 负责三种布局形态（手机折叠 / 平板横屏分栏 / PiP 全屏）与全屏覆盖层：
+
+- 全屏 = Compose 树内覆盖层（视频页无底部导航，页面级覆盖即可全屏）+ `WindowInsetsController` 隐藏系统栏 + 方向锁定（竖屏视频全屏保持竖屏）；返回经 `BackHandler` 退全屏；**息屏/切后台只暂停不退全屏**，解锁后仍保持全屏。
+- movable Surface 在头部小窗与全屏层之间移动，不重建。
+- 播放中（含缓冲）`view.keepScreenOn = true` 保持屏幕常亮。
+- PiP 经 `VideoPageHost` 接口桥接 Activity（`shouldEnterPip` / `enterPipMode` / 远程播放暂停按钮），控制器提供 `isActiveForPip` / `togglePlayPause`。
+
+### 8.7 关键时序
+
+起播（首次点中键）：
+
+```text
+startVideo → (非WiFi? → RequestWifiConfirmation 事件 → 页面弹框 → confirmWifiAndPlay)
+→ reprepareKernel(释放旧内核 → 新内核 → 挂回 surface → prepare)
+→ 内核 READY → listener.onPlaying → uiState=PLAYING → ticker 启动
+→ 首次播放且有历史进度(>5s) → seekTo(savedProgress) + ShowResumeButton 事件
+```
+
+换清晰度：
+
+```text
+switchQuality(index) → 记录当前位置 → 释放重建内核（挂回 surface）→ prepare(startPositionMs=当前进度)
+```
+
+进入/退出全屏：
+
+```text
+enterFullscreen → movable Surface 移至覆盖层 → 隐藏系统栏 → 锁方向
+exitFullscreen  → movable Surface 移回头部小窗 → 恢复系统栏/亮度/方向
+```
+
+### 8.8 约定与常见坑
+
+- 画质信息由 `HanimeResolution` 解析后交给 `controller.setMedia`；播放器 UI 状态不写入网络模型，统一经 `HanimePlayerController` 状态流。
+- 页面级状态（Tab 选中、PiP、播放器高度）归 `VideoViewModel.VideoHostUiState`；播放器内部状态由 `HanimePlayerController.uiState` 驱动。
 - MPV 相关设置归 `MpvPlayerSettingsRouteScreen` 和偏好设置管理。
+- **勿在组合期间读取折叠比例**（新增折叠相关 UI 时走 layout/draw 阶段），否则列表闪烁回归。
+- **勿在内核 `prepare` 前让 `release()` 清掉 `pendingSurface`/`listener`**（Exo 双恢复逻辑），否则有声无画或永久 loading。
+- **播放页内的列表禁用 item 入场动画**（`enableItemAnimation = false`）：折叠联动会持续扩展视口，新进入的 item 以淡入动画进场会造成闪烁，每项动画协程在快速滚动时也会掉帧。
+- 评论下拉刷新常驻（PullToRefreshBox 不随折叠状态切换容器）——折叠态下拉由折叠头在 preScroll 拦截，切换容器会导致整棵列表重组重建。
+- 播放页内嵌套滚动链上的子组件（列表等）不要自行消费边缘下拉/上滑，交由折叠头统一分配。
 
 ## 9. 下载架构
 

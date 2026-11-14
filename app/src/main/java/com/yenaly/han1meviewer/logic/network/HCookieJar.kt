@@ -2,7 +2,6 @@ package com.yenaly.han1meviewer.logic.network
 
 import android.util.Log
 import com.yenaly.han1meviewer.Preferences
-import com.yenaly.han1meviewer.util.CookieString
 import com.yenaly.han1meviewer.util.toLoginCookieList
 import okhttp3.Cookie
 import okhttp3.CookieJar

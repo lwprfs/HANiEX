@@ -34,14 +34,12 @@ sealed class HUpdaterException(
     class VersionCheck(
         message: String,
         cause: Throwable? = null,
-        reason: Reason,
-        statusCode: Int? = null,
-    ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
-
         /**
          * 细分原因，便于日志与埋点区分失败类型。
          */
-        val reason: Reason = reason
+        val reason: Reason,
+        statusCode: Int? = null,
+    ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
 
         /**
          * 检查更新失败的细分原因。
@@ -73,14 +71,12 @@ sealed class HUpdaterException(
     class Download(
         message: String,
         cause: Throwable? = null,
-        reason: Reason,
-        statusCode: Int? = null,
-    ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
-
         /**
          * 细分原因，便于日志与埋点区分失败类型。
          */
-        val reason: Reason = reason
+        val reason: Reason,
+        statusCode: Int? = null,
+    ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
 
         /**
          * 下载更新包失败的细分原因。

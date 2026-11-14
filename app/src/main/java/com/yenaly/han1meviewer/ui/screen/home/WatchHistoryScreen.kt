@@ -829,7 +829,7 @@ private fun WatchHistoryScreenPreview() {
 private fun WatchHistoryEmptyPreview() {
     ComponentPreview {
         WatchHistoryScreen(
-            histories = emptyList<WatchHistoryEntity>(),
+            histories = emptyList(),
             onBack = {},
             onOpenVideo = {},
             onDeleteHistory = {},

@@ -713,7 +713,7 @@
     <string name="save_image_confirm">是否儲存圖片？</string>
     <string name="japanese_lang" translatable="false">日本語</string>
     <string name="simplified_chinese" translatable="false">简体中文</string>
-    <string name="anime_4k" translatable="false">Anime\n4k</string>
+    <string name="anime_4k" translatable="false">Anime 4K</string>
     <string name="super_resolution_off">關閉</string>
     <string name="super_resolution_performance">效能優先</string>
     <string name="super_resolution_quality">品質優先</string>
@@ -967,4 +967,14 @@
     <string name="meow">喵~</string>
     <string name="hiss">哈——</string>
     <string name="growl">嗚——</string>
+
+    <!-- Compose 播放器 -->
+    <string name="gesture_brightness">亮度</string>
+    <string name="gesture_volume">音量</string>
+    <string name="gesture_progress">進度</string>
+    <string name="player_video_load_failed">影片載入失敗</string>
+    <string name="player_click_retry">點擊重試</string>
+    <string name="player_replay">重播</string>
+    <string name="not_wifi_tips">當前使用行動網路，繼續播放將消耗流量</string>
+    <string name="not_wifi_confirm">繼續播放</string>
 </resources>
