@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_cosplaytele_description">Cosplay 寫真與影片</string>
+    <string name="cosplaytele_search_hint">搜尋 Cosplaytele</string>
+    <string name="cosplaytele_search_prompt">輸入 Coser、角色或標題，或貼上 Cosplaytele 文章連結</string>
+    <string name="cosplaytele_no_results">沒有結果</string>
+    <string name="cosplaytele_no_history">尚無觀看紀錄</string>
+    <string name="cosplaytele_nothing_here">這裡沒有內容</string>
+    <string name="cosplaytele_badge_photos">%1$d 張</string>
+    <string name="cosplaytele_badge_video">影片</string>
+    <string name="cosplaytele_section_video">影片（%1$d）</string>
+    <string name="cosplaytele_section_photos">照片（%1$d）</string>
+    <string name="cosplaytele_video_n">影片 %1$d</string>
+    <string name="cosplaytele_related">你可能也喜歡</string>
+    <string name="cosplaytele_err_no_stream">無法取得此影片的可播放連結</string>
+    <string name="cosplaytele_history_title">瀏覽紀錄</string>
+    <string name="cosplaytele_history_summary">你在 Cosplaytele 開啟過的文章</string>
+    <string name="cosplaytele_settings_title">播放與照片</string>
+    <string name="cosplaytele_settings_summary">偏好畫質、照片網格與檢視器</string>
+    <string name="cosplaytele_pref_quality">偏好畫質</string>
+    <string name="cosplaytele_pref_quality_hint">自動會由播放器自行調整。固定畫質會優先播放最接近但不超過的串流；你仍可在播放器中切換。</string>
+    <string name="cosplaytele_photo_columns">照片網格欄數</string>
+    <string name="cosplaytele_photo_columns_hint">文章照片區使用的欄數。</string>
+    <string name="cosplaytele_viewer_tap">點擊邊緣翻頁</string>
+    <string name="cosplaytele_viewer_tap_summary">點擊照片左側或右側邊緣即可切換上一張或下一張</string>
+    <string name="cosplaytele_troubleshooting">疑難排解</string>
+    <string name="cosplaytele_cf_clear">清除 Cloudflare Cookies</string>
+    <string name="cosplaytele_cf_cleared">已清除 Cloudflare Cookies</string>
+    <string name="cosplaytele_reset_defaults">還原為預設值</string>
+    <string name="cosplaytele_drawer_24h">24 小時熱門</string>
+    <string name="cosplaytele_drawer_top_search">熱門搜尋</string>
+    <string name="cosplaytele_drawer_best">最佳 Coser</string>
+    <string name="cosplaytele_drawer_explore">探索分類</string>
+    <string name="cosplaytele_drawer_videos">影片</string>
+</resources>

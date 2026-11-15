@@ -60,6 +60,11 @@ import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirCookieRoute
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHistoryRoute
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaSearchRoute
+import com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleConstants
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHistoryRoute
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleListRoute
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
@@ -345,6 +350,48 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 customize,
                 listOf(
                     entry(str(R.string.xhamster_settings_title), R.drawable.ic_video_quilty, XHamsterSettingsRoute),
+                    playerSettings,
+                ),
+            ),
+        )
+
+        SiteType.COSPLAYTELE -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, CosplayteleSearchRoute()),
+                    entry(
+                        str(R.string.cosplaytele_drawer_24h), history,
+                        CosplayteleListRoute(CosplayteleConstants.SECTION_24H.path, CosplayteleConstants.SECTION_24H.title),
+                    ),
+                    entry(
+                        str(R.string.cosplaytele_drawer_videos), R.drawable.ic_drawer_photos,
+                        CosplayteleListRoute(CosplayteleConstants.HOME_SECTIONS[2].path, CosplayteleConstants.HOME_SECTIONS[2].title),
+                    ),
+                    entry(
+                        str(R.string.cosplaytele_drawer_top_search), R.drawable.ic_drawer_label,
+                        CosplayteleListRoute(CosplayteleConstants.SECTION_TOP_SEARCH.path, CosplayteleConstants.SECTION_TOP_SEARCH.title, true),
+                    ),
+                    entry(
+                        str(R.string.cosplaytele_drawer_best), R.drawable.ic_drawer_creator,
+                        CosplayteleListRoute(CosplayteleConstants.SECTION_BEST.path, CosplayteleConstants.SECTION_BEST.title, true),
+                    ),
+                    entry(
+                        str(R.string.cosplaytele_drawer_explore), R.drawable.ic_drawer_category,
+                        CosplayteleListRoute(CosplayteleConstants.SECTION_EXPLORE.path, CosplayteleConstants.SECTION_EXPLORE.title, true),
+                    ),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(entry(str(R.string.watch_history), history, CosplayteleHistoryRoute)),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(
+                    entry(str(R.string.cosplaytele_settings_title), R.drawable.ic_video_quilty, CosplayteleSettingsRoute),
                     playerSettings,
                 ),
             ),

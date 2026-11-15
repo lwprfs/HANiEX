@@ -94,6 +94,7 @@ private fun rebuildAllNetworks() {
     runCatching { XHamsterNetwork.rebuildNetwork() }
     runCatching { FapFolderNetwork.rebuildNetwork() }
     runCatching { BuonduaNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.rebuildNetwork() }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")

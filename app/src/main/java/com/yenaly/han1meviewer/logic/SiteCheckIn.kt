@@ -30,6 +30,7 @@ object SiteCheckIn {
         SiteType.ROUVIDEO -> "rouvideo"
         SiteType.XHAMSTER -> "xhamster"
         SiteType.BUONDUA -> "buondua"
+        SiteType.COSPLAYTELE -> "cosplaytele"
     }
 
     fun dishCode(site: SiteType, code: String): String {
@@ -49,6 +50,7 @@ object SiteCheckIn {
             "rouvideo" -> SiteType.ROUVIDEO
             "xhamster" -> SiteType.XHAMSTER
             "buondua" -> SiteType.BUONDUA
+            "cosplaytele" -> SiteType.COSPLAYTELE
             else -> null
         }
     }
@@ -183,6 +185,18 @@ object SiteCheckIn {
                         releaseDate = 0L,
                         watchDate = it.watchDate,
                         videoCode = dishCode(SiteType.BUONDUA, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
+            com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleDatabase.getInstance(context)
+                .cosplayteleHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.COSPLAYTELE, it.videoCode),
                     )
                 }
         }

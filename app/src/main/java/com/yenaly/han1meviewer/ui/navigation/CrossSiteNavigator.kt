@@ -71,6 +71,7 @@ object CrossSiteNavigator {
         SiteType.ROUVIDEO -> applicationContext.getString(R.string.site_rouvideo_name)
         SiteType.XHAMSTER -> applicationContext.getString(R.string.site_xhamster_name)
         SiteType.BUONDUA -> "Buondua"
+        SiteType.COSPLAYTELE -> "Cosplaytele"
     }
 
     suspend fun validate(site: SiteType): Validation = when (site) {

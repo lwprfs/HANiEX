@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderNavHost
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavNavHost
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoNavHost
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaNavHost
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleNavHost
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterNavHost
 import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaNavHost
 import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvNavHost
@@ -111,6 +112,13 @@ fun UnifiedMainNavHost(
             }
             SiteType.BUONDUA -> {
                 BuonduaNavHost(
+                    activity = activity,
+                    navController = navController,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+            SiteType.COSPLAYTELE -> {
+                CosplayteleNavHost(
                     activity = activity,
                     navController = navController,
                     onDestinationChanged = onDestinationChanged,

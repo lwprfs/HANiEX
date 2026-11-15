@@ -133,6 +133,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         logoRes = R.drawable.s_switch_buondua,
         accentColor = Color(0xFFFFB300),
     ),
+    SiteSwitchOption(
+        name = "Cosplaytele",
+        description = applicationContext.getString(R.string.site_cosplaytele_description),
+        siteType = SiteType.COSPLAYTELE,
+        logoRes = R.drawable.s_switch_cosplaytele,
+        accentColor = Color(0xFFE91E63),
+    ),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

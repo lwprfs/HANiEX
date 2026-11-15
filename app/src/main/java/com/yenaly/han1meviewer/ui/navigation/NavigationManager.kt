@@ -17,6 +17,9 @@ import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoVideoRoute
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaAlbumRoute
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaSearchRoute
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHomeRoute
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
+import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplaytelePostRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSearchRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterVideoRoute
@@ -112,6 +115,11 @@ object NavigationManager {
                     SiteType.BUONDUA -> {
                         navController.navigate(BuonduaAlbumRoute(videoCode = videoCode))
                     }
+                    SiteType.COSPLAYTELE -> {
+                        navController.navigate(
+                            CosplaytelePostRoute(slug = videoCode, resumePosition = resumePosition)
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "navigateToVideo failed: ${e.message}")
@@ -149,6 +157,9 @@ object NavigationManager {
                     }
                     SiteType.BUONDUA -> {
                         navController.navigate(BuonduaSearchRoute(query = query))
+                    }
+                    SiteType.COSPLAYTELE -> {
+                        navController.navigate(CosplayteleSearchRoute(query = query))
                     }
                 }
             } catch (e: Exception) {
@@ -200,6 +211,10 @@ object NavigationManager {
                     SiteType.BUONDUA -> {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(BuonduaHomeRoute) { launchSingleTop = true }
+                    }
+                    SiteType.COSPLAYTELE -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(CosplayteleHomeRoute) { launchSingleTop = true }
                     }
                 }
             } catch (e: Exception) {
@@ -277,6 +292,7 @@ object NavigationManager {
                 SiteType.ROUVIDEO -> destination.hasRoute(RouVideoHomeRoute::class)
                 SiteType.XHAMSTER -> destination.hasRoute(XHamsterHomeRoute::class)
                 SiteType.BUONDUA -> destination.hasRoute(BuonduaHomeRoute::class)
+                SiteType.COSPLAYTELE -> destination.hasRoute(CosplayteleHomeRoute::class)
             }
         } catch (e: Exception) {
             false

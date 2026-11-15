@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_cosplaytele_description">Cosplay photo sets and videos</string>
+    <string name="cosplaytele_search_hint">Search Cosplaytele</string>
+    <string name="cosplaytele_search_prompt">Type a cosplayer, character or title, or paste a Cosplaytele post link</string>
+    <string name="cosplaytele_no_results">No results</string>
+    <string name="cosplaytele_no_history">No history yet</string>
+    <string name="cosplaytele_nothing_here">Nothing here</string>
+    <string name="cosplaytele_badge_photos">%1$d photos</string>
+    <string name="cosplaytele_badge_video">Video</string>
+    <string name="cosplaytele_section_video">Video (%1$d)</string>
+    <string name="cosplaytele_section_photos">Photos (%1$d)</string>
+    <string name="cosplaytele_video_n">Video %1$d</string>
+    <string name="cosplaytele_related">You may also like</string>
+    <string name="cosplaytele_err_no_stream">Could not get a playable link for this video</string>
+    <string name="cosplaytele_history_title">History</string>
+    <string name="cosplaytele_history_summary">Posts you opened on Cosplaytele</string>
+    <string name="cosplaytele_settings_title">Playback &amp; photos</string>
+    <string name="cosplaytele_settings_summary">Preferred quality, photo grid and viewer</string>
+    <string name="cosplaytele_pref_quality">Preferred quality</string>
+    <string name="cosplaytele_pref_quality_hint">Auto lets the player adapt. A fixed value starts the closest stream that is not above it; you can still switch in the player.</string>
+    <string name="cosplaytele_photo_columns">Photo grid columns</string>
+    <string name="cosplaytele_photo_columns_hint">Columns used by the photo section of a post.</string>
+    <string name="cosplaytele_viewer_tap">Tap edges to flip</string>
+    <string name="cosplaytele_viewer_tap_summary">Tap the left or right edge of a photo to go to the previous or next one</string>
+    <string name="cosplaytele_troubleshooting">Troubleshooting</string>
+    <string name="cosplaytele_cf_clear">Clear Cloudflare cookies</string>
+    <string name="cosplaytele_cf_cleared">Cloudflare cookies cleared</string>
+    <string name="cosplaytele_reset_defaults">Reset to defaults</string>
+    <string name="cosplaytele_drawer_24h">Top 24 hours</string>
+    <string name="cosplaytele_drawer_top_search">Top search</string>
+    <string name="cosplaytele_drawer_best">Best cosplayer</string>
+    <string name="cosplaytele_drawer_explore">Explore categories</string>
+    <string name="cosplaytele_drawer_videos">Videos</string>
+</resources>

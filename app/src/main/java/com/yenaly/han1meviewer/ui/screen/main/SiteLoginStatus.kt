@@ -219,6 +219,14 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         onClick = null,
     )
 
+    SiteType.COSPLAYTELE -> SiteLoginStatus(
+        title = context.getString(R.string.not_logged_in),
+        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.COSPLAYTELE)),
+        avatarUrl = null,
+        loggedIn = false,
+        onClick = null,
+    )
+
     SiteType.ROUVIDEO -> {
         RouVideoAuth.reload()
         val auth = RouVideoAuth.state.value

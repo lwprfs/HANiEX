@@ -143,6 +143,7 @@ fun MainActivityContent(
                 SiteType.ROUVIDEO -> d.isRoute("com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHomeRoute")
                 SiteType.XHAMSTER -> d.isRoute("com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute")
                 SiteType.BUONDUA -> d.isRoute("com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute")
+                SiteType.COSPLAYTELE -> d.isRoute("com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHomeRoute")
                 else -> false
             }
         }

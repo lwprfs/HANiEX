@@ -163,6 +163,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = true,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.COSPLAYTELE,
+            displayName = "Cosplaytele",
+            catalogKey = null,
+            defaultUrls = { listOf("https://cosplaytele.com") },
+            trailingSlash = false,
+            cloudflareFronted = true,
+        ),
     )
 
     val hubSites: List<HubSite>
