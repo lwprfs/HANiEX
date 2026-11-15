@@ -204,6 +204,7 @@ fun MainNavHost(
                 },
                 onSettingsClick = { navController.navigateSafely(HomeSettingsRoute) },
                 onSwitchSiteClick = onSwitchSiteClick,
+                onUpdateClick = { navController.navigateSafely(UpdateSettingsRoute) },
                 onTranslationClick = if (AppTranslation.available) {
                     { navController.navigateSafely(TranslationSettingsRoute) }
                 } else null,

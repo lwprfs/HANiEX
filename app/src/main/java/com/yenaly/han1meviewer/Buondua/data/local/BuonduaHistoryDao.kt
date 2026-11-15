@@ -11,6 +11,12 @@ interface BuonduaHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertOrUpdate(history: BuonduaHistoryEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(histories: List<BuonduaHistoryEntity>)
+
+    @Query("SELECT * FROM buondua_watch_history ORDER BY watchDate DESC")
+    suspend fun getAllHistorySync(): List<BuonduaHistoryEntity>
+
     @Query("SELECT * FROM buondua_watch_history ORDER BY watchDate DESC")
     fun loadAll(): Flow<List<BuonduaHistoryEntity>>
 

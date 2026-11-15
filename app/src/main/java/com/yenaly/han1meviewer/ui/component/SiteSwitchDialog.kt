@@ -2,6 +2,22 @@ package com.yenaly.han1meviewer.ui.component
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -142,8 +158,11 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
     ),
 )
 
+private const val SitesPerPage = 6
+private val TileHeight = 108.dp
+private val TileGap = 10.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
-@Suppress("DEPRECATION")
 @Composable
 fun SiteSwitchDialog(
     currentSite: SiteType,
@@ -153,11 +172,17 @@ fun SiteSwitchDialog(
     options: List<SiteSwitchOption> = DefaultSiteSwitchOptions,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val visibleOptions = options.filter {
-        it.siteType == currentSite || Preferences.isSiteEnabled(it.siteType)
-    }
-    val current = visibleOptions.firstOrNull { it.siteType == currentSite }
-    val others = visibleOptions.filter { it.siteType != currentSite }
+    var disabled by remember { mutableStateOf(Preferences.disabledSites) }
+    var pinned by remember { mutableStateOf(Preferences.pinnedSites) }
+    var menuFor by remember { mutableStateOf<SiteSwitchOption?>(null) }
+    val scope = rememberCoroutineScope()
+    val currentSiteMessage = stringResource(R.string.site_visibility_current_site)
+
+    val visible = options.filter { it.siteType == currentSite || it.siteType !in disabled }
+    val ordered = pinned.mapNotNull { p -> visible.firstOrNull { it.siteType == p } } +
+            visible.filter { it.siteType !in pinned }
+    val pages = ordered.chunked(SitesPerPage)
+    val pagerState = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
 
     ModalBottomSheet(
         modifier = modifier,
@@ -169,66 +194,274 @@ fun SiteSwitchDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
                 .navigationBarsPadding()
                 .padding(horizontal = SpacingLarge)
                 .padding(bottom = SpacingLarge),
             verticalArrangement = Arrangement.spacedBy(SpacingNormal),
         ) {
-            Column(modifier = Modifier.padding(bottom = 4.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(width = 4.dp, height = 22.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(
-                                androidx.compose.ui.graphics.Brush.verticalGradient(
-                                    listOf(
-                                        MaterialTheme.colorScheme.primary,
-                                        MaterialTheme.colorScheme.tertiary,
-                                    )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(width = 4.dp, height = 22.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    MaterialTheme.colorScheme.primary,
+                                    MaterialTheme.colorScheme.tertiary,
                                 )
-                            ),
-                    )
-                    Spacer(Modifier.width(SpacingNormal))
+                            )
+                        ),
+                )
+                Spacer(Modifier.width(SpacingNormal))
+                Column(Modifier.weight(1f)) {
                     Text(
                         text = stringResource(R.string.site_switch_site),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface,
                     )
-                    Spacer(Modifier.weight(1f))
-                    Surface(
-                        shape = RoundedCornerShape(999.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    ) {
-                        Text(
-                            text = "${visibleOptions.size}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+                    Text(
+                        text = stringResource(R.string.site_switch_hold_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(999.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                ) {
+                    Text(
+                        text = "${ordered.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+                    )
+                }
+            }
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(TileHeight * 3 + TileGap * 2),
+                    pageSpacing = 12.dp,
+                ) { page ->
+                    val items = pages.getOrNull(page).orEmpty()
+                    Column(verticalArrangement = Arrangement.spacedBy(TileGap)) {
+                        for (row in 0 until 3) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(TileGap),
+                            ) {
+                                for (col in 0 until 2) {
+                                    val option = items.getOrNull(row * 2 + col)
+                                    if (option == null) {
+                                        Spacer(Modifier.weight(1f).height(TileHeight))
+                                    } else {
+                                        SiteTile(
+                                            option = option,
+                                            isCurrent = option.siteType == currentSite,
+                                            isPinned = option.siteType in pinned,
+                                            modifier = Modifier.weight(1f).height(TileHeight),
+                                            onClick = {
+                                                if (option.siteType == currentSite) {
+                                                    onDismiss()
+                                                } else {
+                                                    onSiteSelected(option.siteType)
+                                                    onDismiss()
+                                                }
+                                            },
+                                            onLongClick = { menuFor = option },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (pagerState.currentPage < pages.lastIndex) {
+                    PageArrow(
+                        forward = true,
+                        modifier = Modifier.align(Alignment.CenterEnd),
+                        onClick = {
+                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage + 1) }
+                        },
+                    )
+                }
+                if (pagerState.currentPage > 0) {
+                    PageArrow(
+                        forward = false,
+                        modifier = Modifier.align(Alignment.CenterStart),
+                        onClick = {
+                            scope.launch { pagerState.animateScrollToPage(pagerState.currentPage - 1) }
+                        },
+                    )
+                }
+            }
+
+            if (pages.size > 1) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    repeat(pages.size) { i ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 3.dp)
+                                .size(if (i == pagerState.currentPage) 18.dp else 6.dp, 6.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (i == pagerState.currentPage) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.outlineVariant
+                                ),
                         )
                     }
                 }
+            }
+        }
+    }
+
+    menuFor?.let { option ->
+        val isPinned = option.siteType in pinned
+        AlertDialog(
+            onDismissRequest = { menuFor = null },
+            title = { Text(option.name) },
+            text = {
+                Column {
+                    SiteMenuRow(
+                        icon = Icons.Filled.PushPin,
+                        label = stringResource(
+                            if (isPinned) R.string.site_switch_unpin else R.string.site_switch_pin
+                        ),
+                        onClick = {
+                            if (isPinned) Preferences.unpinSite(option.siteType)
+                            else Preferences.pinSite(option.siteType)
+                            pinned = Preferences.pinnedSites
+                            menuFor = null
+                            scope.launch { pagerState.scrollToPage(0) }
+                        },
+                    )
+                    SiteMenuRow(
+                        icon = Icons.Filled.VisibilityOff,
+                        label = stringResource(R.string.site_switch_hide),
+                        onClick = {
+                            menuFor = null
+                            if (Preferences.setSiteEnabled(option.siteType, false)) {
+                                disabled = Preferences.disabledSites
+                                pinned = Preferences.pinnedSites
+                            } else {
+                                GlobalToasts.show(
+                                    currentSiteMessage,
+                                    level = GlobalToasts.ToastLevel.WARNING,
+                                )
+                            }
+                        },
+                    )
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { menuFor = null }) { Text(stringResource(R.string.cancel)) } },
+        )
+    }
+}
+
+@Composable
+private fun SiteMenuRow(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+        Text(label, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
+private fun PageArrow(forward: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    Surface(
+        modifier = modifier.size(36.dp),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.92f),
+        shadowElevation = 3.dp,
+        onClick = onClick,
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = if (forward) Icons.AutoMirrored.Filled.KeyboardArrowRight
+                else Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun SiteTile(
+    option: SiteSwitchOption,
+    isCurrent: Boolean,
+    isPinned: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val shape = RoundedCornerShape(20.dp)
+    Surface(
+        modifier = modifier
+            .clip(shape)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        shape = shape,
+        color = if (isCurrent) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f)
+        else MaterialTheme.colorScheme.surfaceContainer,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = if (isCurrent) BorderStroke(1.5.dp, option.accentColor.copy(alpha = 0.7f)) else null,
+    ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                SiteLogo(option, boxSize = 52.dp, logoSize = 40.dp)
+                Spacer(Modifier.height(6.dp))
                 Text(
-                    text = stringResource(R.string.site_tap_a_source_to_jump_straight),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp),
+                    text = option.name,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center,
                 )
             }
-
-            if (current != null) {
-                SiteSwitchCurrentCard(option = current, onClick = onDismiss)
+            if (isPinned) {
+                Icon(
+                    imageVector = Icons.Filled.PushPin,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                        .size(16.dp),
+                )
             }
-
-            others.forEach { option ->
-                SiteSwitchRow(
-                    option = option,
-                    onClick = {
-                        onSiteSelected(option.siteType)
-                        onDismiss()
-                    },
+            if (isCurrent) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = stringResource(R.string.site_current_site),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
+                        .size(16.dp),
                 )
             }
         }
@@ -262,106 +495,6 @@ private fun SiteLogo(option: SiteSwitchOption, boxSize: Dp, logoSize: Dp) {
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SiteSwitchCurrentCard(
-    option: SiteSwitchOption,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(22.dp)
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .clickable(onClick = onClick),
-        shape = shape,
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        border = BorderStroke(1.5.dp, option.accentColor.copy(alpha = 0.7f)),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(SpacingLarge),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(SpacingLarge),
-        ) {
-            SiteLogo(option, boxSize = 56.dp, logoSize = 42.dp)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = option.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = option.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = stringResource(R.string.site_current_site),
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SiteSwitchRow(
-    option: SiteSwitchOption,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val shape = RoundedCornerShape(18.dp)
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .clickable(onClick = onClick),
-        shape = shape,
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            SiteLogo(option, boxSize = 48.dp, logoSize = 36.dp)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = option.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = option.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .size(10.dp)
-                    .clip(CircleShape)
-                    .background(option.accentColor),
             )
         }
     }

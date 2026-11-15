@@ -493,7 +493,7 @@ fun FapFolderNavHost(
         }
 
         composable<FapFolderImageFolderRoute> {
-            com.yenaly.han1meviewer.FapFolder.ui.settings.FapFolderImageFolderScreen(
+            com.yenaly.han1meviewer.ui.screen.library.ImageDownloadsScreen(
                 onBack = { navController.popBackStackSafely() },
             )
         }

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VideoCall
@@ -67,6 +68,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
 
     onTranslationClick: (() -> Unit)? = null,
+    onUpdateClick: (() -> Unit)? = null,
 ) {
     val displayName = username?.takeIf { it.isNotBlank() }
         ?: stringResource(if (isLoggedIn) R.string.not_logged_in else R.string.login)
@@ -97,6 +99,14 @@ fun ProfileScreen(
             onClick = onSwitchSiteClick,
         ),
     ) + listOfNotNull(
+        onUpdateClick?.let {
+            ProfileEntry(
+                icon = Icons.Filled.SystemUpdate,
+                title = stringResource(R.string.upd_screen_title),
+                subtitle = stringResource(R.string.hub_update_desc),
+                onClick = it,
+            )
+        },
         onTranslationClick?.let {
             ProfileEntry(
                 icon = Icons.Filled.Translate,

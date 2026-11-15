@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_switch_hold_hint">タップで切替・長押しで固定または非表示</string>
+    <string name="site_switch_pin">先頭に固定</string>
+    <string name="site_switch_unpin">固定を解除</string>
+    <string name="site_switch_hide">切替メニューから非表示</string>
+    <string name="hub_update_desc">アプリの更新を確認してインストール</string>
+    <string name="hub_image_downloads">画像ダウンロード</string>
+    <string name="hub_image_downloads_desc">アルバムや投稿から保存した画像</string>
+    <string name="image_dl_title">画像ダウンロード</string>
+    <string name="image_dl_active">ダウンロード中</string>
+    <string name="image_dl_location">保存先</string>
+    <string name="backup_section_supjav_history">SupJav 視聴履歴</string>
+    <string name="backup_section_rouvideo_history">RouVideo 視聴履歴</string>
+    <string name="backup_section_xhamster_history">xHamster 視聴履歴</string>
+    <string name="backup_section_buondua_history">Buondua 閲覧履歴</string>
+    <string name="backup_section_local_playlists">ローカルプレイリスト</string>
+    <string name="backup_section_cookies_rouvideo">RouVideo ログイン情報</string>
+    <string name="backup_section_cookies_xhamster">xHamster ログイン情報</string>
+    <string name="backup_section_cosplaytele_history">Cosplaytele 閲覧履歴</string>
+</resources>

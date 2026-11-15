@@ -18,6 +18,18 @@ import com.yenaly.han1meviewer.MissAV.data.local.MissAvHistoryEntity
 import com.yenaly.han1meviewer.OnAir.data.local.OnAirDatabase
 import com.yenaly.han1meviewer.OnAir.data.local.OnAirHistoryEntity
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.SupJav.data.local.SupJavDatabase
+import com.yenaly.han1meviewer.SupJav.data.local.SupJavHistoryEntity
+import com.yenaly.han1meviewer.RouVideo.data.local.RouVideoDatabase
+import com.yenaly.han1meviewer.RouVideo.data.local.RouVideoHistoryEntity
+import com.yenaly.han1meviewer.XHamster.data.local.XHamsterDatabase
+import com.yenaly.han1meviewer.XHamster.data.local.XHamsterHistoryEntity
+import com.yenaly.han1meviewer.Buondua.data.local.BuonduaDatabase
+import com.yenaly.han1meviewer.Buondua.data.local.BuonduaHistoryEntity
+import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleDatabase
+import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleHistoryEntity
+import com.yenaly.han1meviewer.logic.local.LocalPlaylist
+import com.yenaly.han1meviewer.logic.local.LocalPlaylistStore
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.dao.HistoryDatabase
@@ -53,11 +65,19 @@ object BackupManager {
         HENTAIMAMA_HISTORY(R.string.backup_section_hentaimama_history, Group.DATA),
         ONAIR_HISTORY(R.string.backup_section_onair_history, Group.DATA),
         FAPFOLDER_HISTORY(R.string.backup_section_fapfolder_history, Group.DATA),
+        SUPJAV_HISTORY(R.string.backup_section_supjav_history, Group.DATA),
+        ROUVIDEO_HISTORY(R.string.backup_section_rouvideo_history, Group.DATA),
+        XHAMSTER_HISTORY(R.string.backup_section_xhamster_history, Group.DATA),
+        BUONDUA_HISTORY(R.string.backup_section_buondua_history, Group.DATA),
+        COSPLAYTELE_HISTORY(R.string.backup_section_cosplaytele_history, Group.DATA),
+        LOCAL_PLAYLISTS(R.string.backup_section_local_playlists, Group.DATA),
         COOKIES_HANIME(R.string.backup_section_cookies_hanime, Group.COOKIES),
         COOKIES_MISSAV(R.string.backup_section_cookies_missav, Group.COOKIES),
         COOKIES_HENTAIMAMA(R.string.backup_section_cookies_hentaimama, Group.COOKIES),
         COOKIES_ONAIR(R.string.backup_section_cookies_onair, Group.COOKIES),
-        COOKIES_FAPFOLDER(R.string.backup_section_cookies_fapfolder, Group.COOKIES);
+        COOKIES_FAPFOLDER(R.string.backup_section_cookies_fapfolder, Group.COOKIES),
+        COOKIES_ROUVIDEO(R.string.backup_section_cookies_rouvideo, Group.COOKIES),
+        COOKIES_XHAMSTER(R.string.backup_section_cookies_xhamster, Group.COOKIES);
 
         enum class Group { DATA, COOKIES }
     }
@@ -70,6 +90,8 @@ object BackupManager {
         key.startsWith("missav_cf_") -> Section.COOKIES_MISSAV
         key.startsWith("hm_cf_") -> Section.COOKIES_HENTAIMAMA
         key == KEY_ONAIR_COOKIES -> Section.COOKIES_ONAIR
+        key == "rouvideo_auth_cookies" || key.startsWith("rouvideo_user_") -> Section.COOKIES_ROUVIDEO
+        key == "xhamster_cookies_v1" || key == "xhamster_user_cache" -> Section.COOKIES_XHAMSTER
         else -> null
     }
 
@@ -94,6 +116,12 @@ object BackupManager {
         val hentaiMamaHistories: List<HentaiMamaHistoryEntity>? = null,
         val onAirHistories: List<OnAirHistoryEntity>? = null,
         val fapFolderHistories: List<FapFolderHistoryEntity>? = null,
+        val supJavHistories: List<SupJavHistoryEntity>? = null,
+        val rouVideoHistories: List<RouVideoHistoryEntity>? = null,
+        val xHamsterHistories: List<XHamsterHistoryEntity>? = null,
+        val buonduaHistories: List<BuonduaHistoryEntity>? = null,
+        val cosplayteleHistories: List<CosplayteleHistoryEntity>? = null,
+        val localPlaylists: List<LocalPlaylist>? = null,
     )
 
     @Serializable
@@ -219,6 +247,35 @@ object BackupManager {
             }
         }
 
+        backup.supJavHistories?.takeIf { Section.SUPJAV_HISTORY in sections }?.let {
+            SupJavDatabase.getInstance(context).supJavHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
+        backup.rouVideoHistories?.takeIf { Section.ROUVIDEO_HISTORY in sections }?.let {
+            RouVideoDatabase.getInstance(context).rouVideoHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
+        backup.xHamsterHistories?.takeIf { Section.XHAMSTER_HISTORY in sections }?.let {
+            XHamsterDatabase.getInstance(context).xHamsterHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
+        backup.buonduaHistories?.takeIf { Section.BUONDUA_HISTORY in sections }?.let {
+            BuonduaDatabase.getInstance(context).buonduaHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
+        backup.cosplayteleHistories?.takeIf { Section.COSPLAYTELE_HISTORY in sections }?.let {
+            CosplayteleDatabase.getInstance(context).cosplayteleHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
+        backup.localPlaylists?.takeIf { Section.LOCAL_PLAYLISTS in sections }?.let {
+            LocalPlaylistStore.replaceAll(it)
+        }
+
         backup.settings?.takeIf { Section.SETTINGS in sections }?.let { applyPrefs(it) }
 
         backup.cookies?.forEach { (sectionName, prefs) ->
@@ -302,6 +359,18 @@ object BackupManager {
                 OnAirDatabase.getInstance(context).onAirHistoryDao().getAll() else null,
             fapFolderHistories = if (Section.FAPFOLDER_HISTORY in sections)
                 FapFolderDatabase.getInstance(context).fapFolderHistoryDao().getAll() else null,
+            supJavHistories = if (Section.SUPJAV_HISTORY in sections)
+                SupJavDatabase.getInstance(context).supJavHistoryDao().getAllHistorySync() else null,
+            rouVideoHistories = if (Section.ROUVIDEO_HISTORY in sections)
+                RouVideoDatabase.getInstance(context).rouVideoHistoryDao().getAllHistorySync() else null,
+            xHamsterHistories = if (Section.XHAMSTER_HISTORY in sections)
+                XHamsterDatabase.getInstance(context).xHamsterHistoryDao().getAllHistorySync() else null,
+            buonduaHistories = if (Section.BUONDUA_HISTORY in sections)
+                BuonduaDatabase.getInstance(context).buonduaHistoryDao().getAllHistorySync() else null,
+            cosplayteleHistories = if (Section.COSPLAYTELE_HISTORY in sections)
+                CosplayteleDatabase.getInstance(context).cosplayteleHistoryDao().getAllHistorySync() else null,
+            localPlaylists = if (Section.LOCAL_PLAYLISTS in sections)
+                LocalPlaylistStore.playlists.value else null,
         )
         outputStream.bufferedWriter().use { writer ->
             writer.write(json.encodeToString(backup))

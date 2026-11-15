@@ -66,6 +66,7 @@ import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleListRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
@@ -284,7 +285,10 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             ),
             SiteDrawerSection(
                 library,
-                listOf(entry(str(R.string.watch_history), history, BuonduaHistoryRoute)),
+                listOf(
+                    entry(str(R.string.watch_history), history, BuonduaHistoryRoute),
+                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
+                ),
             ),
             SiteDrawerSection(
                 customize,
@@ -344,6 +348,7 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     entry(str(R.string.xhamster_liked_videos), R.drawable.ic_baseline_thumb_up_alt_24, XHamsterLibraryRoute("LIKED")),
                     entry(str(R.string.xhamster_playlists), R.drawable.ic_drawer_category, XHamsterLibraryRoute("PLAYLISTS")),
                     entry(str(R.string.xhamster_my_subscriptions), R.drawable.ic_subscribtion, XHamsterLibraryRoute("SUBSCRIPTIONS")),
+                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
                 ),
             ),
             SiteDrawerSection(
@@ -386,7 +391,10 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             ),
             SiteDrawerSection(
                 library,
-                listOf(entry(str(R.string.watch_history), history, CosplayteleHistoryRoute)),
+                listOf(
+                    entry(str(R.string.watch_history), history, CosplayteleHistoryRoute),
+                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
+                ),
             ),
             SiteDrawerSection(
                 customize,

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_switch_hold_hint">点击切换 · 长按可置顶或隐藏</string>
+    <string name="site_switch_pin">置顶</string>
+    <string name="site_switch_unpin">取消置顶</string>
+    <string name="site_switch_hide">从切换菜单隐藏</string>
+    <string name="hub_update_desc">检查并安装应用更新</string>
+    <string name="hub_image_downloads">图片下载</string>
+    <string name="hub_image_downloads_desc">从相册和帖子保存的图片</string>
+    <string name="image_dl_title">图片下载</string>
+    <string name="image_dl_active">下载中</string>
+    <string name="image_dl_location">保存位置</string>
+    <string name="backup_section_supjav_history">SupJav 观看历史</string>
+    <string name="backup_section_rouvideo_history">RouVideo 观看历史</string>
+    <string name="backup_section_xhamster_history">xHamster 观看历史</string>
+    <string name="backup_section_buondua_history">Buondua 浏览历史</string>
+    <string name="backup_section_local_playlists">本地播放列表</string>
+    <string name="backup_section_cookies_rouvideo">RouVideo 登录信息</string>
+    <string name="backup_section_cookies_xhamster">xHamster 登录信息</string>
+    <string name="backup_section_cosplaytele_history">Cosplaytele 浏览历史</string>
+</resources>

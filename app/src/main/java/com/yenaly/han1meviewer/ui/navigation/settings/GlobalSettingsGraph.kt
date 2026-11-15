@@ -36,6 +36,9 @@ object UnifiedHistoryRoute
 @Serializable
 object LocalPlaylistsRoute
 
+@Serializable
+object ImageDownloadsRoute
+
 fun NavGraphBuilder.registerGlobalSettingsRoutes(
     activity: MainActivity,
     navController: NavHostController,
@@ -193,6 +196,12 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
             activity = activity,
             onBack = { navController.popBackStackSafely() },
             onNavigateToVideo = openHanimeVideo,
+        )
+    }
+
+    composable<ImageDownloadsRoute> {
+        com.yenaly.han1meviewer.ui.screen.library.ImageDownloadsScreen(
+            onBack = { navController.popBackStackSafely() },
         )
     }
 

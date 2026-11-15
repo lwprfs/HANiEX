@@ -5,13 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.text.style.TextOverflow
-import com.yenaly.han1meviewer.util.ImageDownloadJob
-import com.yenaly.han1meviewer.util.ImageDownloadTracker
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -40,7 +36,6 @@ fun DownloadingScreen(
     onEvent: (DownloadEvent) -> Unit,
 ) {
     var pendingDelete by remember { mutableStateOf<HanimeDownloadEntity?>(null) }
-    val imageJobs by ImageDownloadTracker.jobs.collectAsState()
 
     ConfirmDialog(
         visible = pendingDelete != null,
@@ -55,7 +50,7 @@ fun DownloadingScreen(
         onDismiss = { pendingDelete = null },
     )
 
-    if (uiState.downloadingItems.isEmpty() && imageJobs.isEmpty()) {
+    if (uiState.downloadingItems.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -74,9 +69,6 @@ fun DownloadingScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                items(imageJobs, key = { "img_${it.id}" }) { job ->
-                    ImageDownloadRow(job)
-                }
                 items(uiState.downloadingItems, key = { it.id }) { item ->
                     DownloadingItemCard(
                         item = item,
@@ -112,30 +104,6 @@ private fun DownloadStatusSummary(items: List<HanimeDownloadEntity>) {
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = 12.dp),
     )
-}
-
-@Composable
-private fun ImageDownloadRow(job: ImageDownloadJob) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = stringResource(R.string.photos, job.label),
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            Text(
-                text = "${job.done}/${job.total}",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        LinearProgressIndicator(
-            progress = { job.progress },
-            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-        )
-    }
 }
 
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)

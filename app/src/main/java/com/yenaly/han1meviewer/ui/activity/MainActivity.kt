@@ -642,10 +642,12 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         onDismiss: () -> Unit,
         onSiteSelected: (SiteType) -> Unit,
     ) {
-        SiteSwitchDialog(
-            currentSite = Preferences.siteType,
-            onDismiss = onDismiss,
-            onSiteSelected = onSiteSelected,
-        )
+        com.yenaly.han1meviewer.ui.theme.HanimeTheme {
+            SiteSwitchDialog(
+                currentSite = Preferences.siteType,
+                onDismiss = onDismiss,
+                onSiteSelected = onSiteSelected,
+            )
+        }
     }
 }

@@ -1,6 +1,31 @@
 package com.yenaly.han1meviewer.ui.screen.library
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
+import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.screen.getColumnCount
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -51,6 +76,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.res.painterResource
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun LocalPlaylistsScreen(
     activity: MainActivity,
@@ -61,118 +87,176 @@ fun LocalPlaylistsScreen(
     var creating by rememberSaveable { mutableStateOf(false) }
     var renaming by remember { mutableStateOf<LocalPlaylist?>(null) }
     var deleting by remember { mutableStateOf<LocalPlaylist?>(null) }
+    var menuFor by remember { mutableStateOf<LocalPlaylist?>(null) }
     val open = playlists.firstOrNull { it.id == openId }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            SiteTopAppBar(
-                title = { Text(open?.name ?: stringResource(R.string.local_playlists)) },
-                navigationIcon = { SiteBackButton(onClick = { if (open != null) openId = null else onBack() }) },
-            )
+    HanimeScaffold(
+        title = stringResource(R.string.local_playlists),
+        onBack = onBack,
+        actions = {
+            FilledIconButton(onClick = { creating = true }) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.local_playlist_create))
+            }
         },
     ) { padding ->
-        if (open == null) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                item(key = "create") {
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().clickable { creating = true },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                    ) {
-                        Row(
-                            Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            Icon(Icons.Default.Add, null)
-                            Text(stringResource(R.string.local_playlist_create))
-                        }
-                    }
-                }
-                if (playlists.isEmpty()) item(key = "empty") {
-                    Text(
-                        stringResource(R.string.local_playlist_empty),
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                items(playlists, key = { it.id }) { p ->
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().clickable { openId = p.id },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ) {
-                        Row(
-                            Modifier.padding(start = 16.dp, top = 4.dp, bottom = 4.dp, end = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Column(Modifier.weight(1f)) {
-                                Text(p.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text(
-                                    stringResource(R.string.local_playlist_count, p.items.size),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            IconButton(onClick = { renaming = p }) { Icon(Icons.Default.Edit, null) }
-                            IconButton(onClick = { deleting = p }) { Icon(Icons.Default.Delete, null) }
-                        }
+        Box(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+        ) {
+            if (playlists.isEmpty()) {
+                EmptyContent(stringResource(R.string.local_playlist_empty))
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(maxOf(2, getColumnCount(180))),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    items(playlists, key = { it.id }) { p ->
+                        LocalPlaylistCard(
+                            playlist = p,
+                            modifier = Modifier.height(140.dp),
+                            onClick = { openId = p.id },
+                            onLongClick = { menuFor = p },
+                        )
                     }
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentPadding = PaddingValues(12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                if (open.items.isEmpty()) item(key = "empty") {
-                    Text(
-                        stringResource(R.string.local_playlist_empty_items),
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        }
+    }
+
+    if (open != null) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { openId = null },
+            sheetState = sheetState,
+            dragHandle = null,
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(Modifier.fillMaxWidth().height(200.dp)) {
+                    open.items.firstOrNull()?.let { first ->
+                        RetryableImage(
+                            model = first.coverUrl ?: "",
+                            contentDescription = first.title,
+                            placeholder = painterResource(R.drawable.h_chan_loading),
+                            error = painterResource(R.drawable.h_chan_load_failed),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize(),
+                        )
+                    }
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color.Transparent,
+                                        MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                                    )
+                                )
+                            ),
                     )
-                }
-                items(open.items, key = { it.key }) { item ->
-                    Surface(
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            val site = item.siteType ?: return@clickable
-                            activity.requestCrossSiteOpen(
-                                PendingVideoOpen(site = site, videoCode = item.videoCode, title = item.title),
-                            )
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    Text(
+                        text = open.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(start = 16.dp, top = 16.dp, end = 16.dp),
+                    )
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Row(
-                            Modifier.padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        Text(
+                            text = stringResource(R.string.local_playlist_count, open.items.size),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = Color.White.copy(alpha = 0.85f),
+                            modifier = Modifier.weight(1f).padding(start = 4.dp),
+                        )
+                        Button(
+                            onClick = { deleting = open },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            modifier = Modifier.size(40.dp),
+                            contentPadding = PaddingValues(0.dp),
                         ) {
-                            RetryableImage(
-                                model = item.coverUrl ?: "",
-                                modifier = Modifier.size(width = 112.dp, height = 63.dp),
-                                placeholder = painterResource(R.drawable.h_chan_loading),
-                                error = painterResource(R.drawable.h_chan_load_failed),
-                                contentScale = ContentScale.Crop,
+                            Icon(
+                                painterResource(R.drawable.ic_baseline_delete_24),
+                                stringResource(R.string.delete),
+                                tint = Color.White,
                             )
-                            Column(Modifier.weight(1f)) {
-                                Text(item.title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyMedium)
-                                Text(item.site, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                            }
-                            IconButton(onClick = { LocalPlaylistStore.remove(open.id, item) }) {
-                                Icon(Icons.Default.Delete, null)
-                            }
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Button(
+                            onClick = { renaming = open },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.7f)),
+                            modifier = Modifier.size(40.dp),
+                            contentPadding = PaddingValues(0.dp),
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.baseline_edit_24),
+                                stringResource(R.string.edit),
+                                tint = Color.Red,
+                            )
+                        }
+                    }
+                }
+                if (open.items.isEmpty()) {
+                    EmptyContent(stringResource(R.string.local_playlist_empty_items))
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(minSize = 160.dp),
+                        contentPadding = PaddingValues(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(open.items, key = { it.key }) { item ->
+                            LocalPlaylistVideoCard(
+                                item = item,
+                                onClick = {
+                                    val site = item.siteType ?: return@LocalPlaylistVideoCard
+                                    activity.requestCrossSiteOpen(
+                                        PendingVideoOpen(
+                                            site = site,
+                                            videoCode = item.videoCode,
+                                            title = item.title,
+                                        ),
+                                    )
+                                },
+                                onRemove = { LocalPlaylistStore.remove(open.id, item) },
+                            )
                         }
                     }
                 }
             }
         }
+    }
+
+    menuFor?.let { p ->
+        AlertDialog(
+            onDismissRequest = { menuFor = null },
+            title = { Text(p.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            text = {
+                Column {
+                    TextButton(onClick = { renaming = p; menuFor = null }) {
+                        Text(stringResource(R.string.local_playlist_rename))
+                    }
+                    TextButton(onClick = { deleting = p; menuFor = null }) {
+                        Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = { TextButton(onClick = { menuFor = null }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 
     if (creating) NameDialog(null, { creating = false }) { LocalPlaylistStore.create(it) }
@@ -182,9 +266,120 @@ fun LocalPlaylistsScreen(
             onDismissRequest = { deleting = null },
             title = { Text(stringResource(R.string.delete)) },
             text = { Text(p.name) },
-            confirmButton = { TextButton(onClick = { LocalPlaylistStore.delete(p.id); deleting = null }) { Text(stringResource(R.string.confirm)) } },
+            confirmButton = {
+                TextButton(onClick = {
+                    if (openId == p.id) openId = null
+                    LocalPlaylistStore.delete(p.id)
+                    deleting = null
+                }) { Text(stringResource(R.string.confirm)) }
+            },
             dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.cancel)) } },
         )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun LocalPlaylistCard(
+    playlist: LocalPlaylist,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    ) {
+        Column {
+            Box(modifier = Modifier.height(100.dp)) {
+                RetryableImage(
+                    model = playlist.items.firstOrNull()?.coverUrl ?: "",
+                    contentDescription = playlist.name,
+                    placeholder = painterResource(R.drawable.h_chan_loading),
+                    error = painterResource(R.drawable.h_chan_load_failed),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .background(
+                            MaterialTheme.colorScheme.scrim.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(topStart = 8.dp),
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.video_count, playlist.items.size),
+                        style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Text(
+                text = playlist.name,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun LocalPlaylistVideoCard(
+    item: LocalPlaylistItem,
+    onClick: () -> Unit,
+    onRemove: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column {
+            Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
+                RetryableImage(
+                    model = item.coverUrl ?: "",
+                    contentDescription = item.title,
+                    placeholder = painterResource(R.drawable.h_chan_loading),
+                    error = painterResource(R.drawable.h_chan_load_failed),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                )
+                IconButton(
+                    onClick = onRemove,
+                    modifier = Modifier.align(Alignment.TopEnd).size(36.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = stringResource(R.string.delete),
+                        tint = Color.White,
+                        modifier = Modifier
+                            .background(Color.Black.copy(alpha = 0.45f), CircleShape)
+                            .padding(4.dp),
+                    )
+                }
+            }
+            Column(Modifier.padding(8.dp)) {
+                Text(
+                    item.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    item.site,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
     }
 }
 

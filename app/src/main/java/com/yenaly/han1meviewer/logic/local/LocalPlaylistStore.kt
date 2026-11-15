@@ -57,6 +57,9 @@ object LocalPlaylistStore {
         _playlists.value = next
     }
 
+    /** Replaces every playlist (used when restoring a backup). */
+    fun replaceAll(playlists: List<LocalPlaylist>) = update { playlists }
+
     fun create(name: String): String {
         val id = UUID.randomUUID().toString()
         update { it + LocalPlaylist(id, name.trim()) }

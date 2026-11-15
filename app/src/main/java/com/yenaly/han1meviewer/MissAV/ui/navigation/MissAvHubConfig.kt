@@ -99,6 +99,7 @@ fun missAvHubConfig(navController: NavHostController, activity: MainActivity): S
                 title = stringResource(R.string.hub_section_on_device),
                 entries = listOf(
                     common.offlinePlaylist,
+                    common.downloads,
                     SiteHubEntry(
                         key = "local_history",
                         title = stringResource(R.string.missav_acc_local_history),
@@ -114,6 +115,7 @@ fun missAvHubConfig(navController: NavHostController, activity: MainActivity): S
             common.checkIn,
             common.switchSite,
             subtitles,
+            common.update,
             common.customize,
             common.allHistory,
         ),

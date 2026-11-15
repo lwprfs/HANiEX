@@ -12,7 +12,9 @@ import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Subscriptions
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +41,10 @@ import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.LocalPlaylistsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.UpdateSettingsRoute
+import com.yenaly.han1meviewer.ui.screen.library.IMAGE_DOWNLOAD_SITES
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.saveInt
@@ -70,6 +75,8 @@ class CommonProfileEntries(
     val allHistory: SiteHubEntry,
     val offlinePlaylist: SiteHubEntry,
     val downloads: SiteHubEntry,
+    val update: SiteHubEntry,
+    val imageDownloads: SiteHubEntry,
 )
 
 @Composable
@@ -94,6 +101,10 @@ fun rememberCommonProfileEntries(
     val playlistDesc = stringResource(R.string.hub_offline_playlist_desc)
     val downloadsTitle = stringResource(R.string.hub_downloads)
     val downloadsDesc = stringResource(R.string.hub_downloads_desc)
+    val updateTitle = stringResource(R.string.upd_screen_title)
+    val updateDesc = stringResource(R.string.hub_update_desc)
+    val imageDownloadsTitle = stringResource(R.string.hub_image_downloads)
+    val imageDownloadsDesc = stringResource(R.string.hub_image_downloads_desc)
     return CommonProfileEntries(
         siteSettings = SiteHubEntry(
             key = "site_settings",
@@ -143,6 +154,20 @@ fun rememberCommonProfileEntries(
             subtitle = downloadsDesc,
             icon = Icons.Filled.Download,
             onClick = { navController.navigateSafely(DownloadRoute) },
+        ),
+        update = SiteHubEntry(
+            key = "update",
+            title = updateTitle,
+            subtitle = updateDesc,
+            icon = Icons.Filled.SystemUpdate,
+            onClick = { navController.navigateSafely(UpdateSettingsRoute) },
+        ),
+        imageDownloads = SiteHubEntry(
+            key = "image_downloads",
+            title = imageDownloadsTitle,
+            subtitle = imageDownloadsDesc,
+            icon = Icons.Filled.PhotoLibrary,
+            onClick = { navController.navigateSafely(ImageDownloadsRoute) },
         ),
     )
 }
@@ -354,7 +379,8 @@ fun standardSiteHubConfig(
     subscriptionSections: List<SiteHubSection> = emptyList(),
     extraLibrarySections: List<SiteHubSection> = emptyList(),
     profileExtraQuickActions: List<SiteHubEntry> = emptyList(),
-    includeDownloads: Boolean = false,
+    includeDownloads: Boolean = true,
+    includeImageDownloads: Boolean = site in IMAGE_DOWNLOAD_SITES,
     customizeExtras: (LazyListScope.() -> Unit)? = null,
 ): SiteHubConfig {
     val common = rememberCommonProfileEntries(navController, activity, site, siteSettingsRoute)
@@ -362,6 +388,7 @@ fun standardSiteHubConfig(
     val onDevice = buildList {
         add(common.offlinePlaylist)
         if (includeDownloads) add(common.downloads)
+        if (includeImageDownloads) add(common.imageDownloads)
     }
     return SiteHubConfig(
         site = site,
@@ -378,6 +405,7 @@ fun standardSiteHubConfig(
             add(common.checkIn)
             add(common.switchSite)
             addAll(profileExtraQuickActions)
+            add(common.update)
             add(common.customize)
             add(common.allHistory)
         },

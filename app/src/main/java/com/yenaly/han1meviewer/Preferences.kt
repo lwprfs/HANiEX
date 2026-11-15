@@ -128,7 +128,30 @@ object Preferences {
     fun setSiteEnabled(site: SiteType, enabled: Boolean): Boolean {
         if (!enabled && site == siteType) return false
         disabledSites = if (enabled) disabledSites - site else disabledSites + site
+        if (!enabled) unpinSite(site)
         return true
+    }
+
+    private const val PINNED_SITES = "pinned_sites"
+
+    /** Sites pinned to the front of the site switcher, in the order they were pinned. */
+    var pinnedSites: List<SiteType>
+        get() = preferenceSp.getString(PINNED_SITES, null).orEmpty()
+            .split(',')
+            .mapNotNull { name -> SiteType.entries.firstOrNull { it.name == name } }
+            .distinct()
+        set(value) = preferenceSp.edit {
+            putString(PINNED_SITES, value.distinct().joinToString(",") { it.name })
+        }
+
+    fun isSitePinned(site: SiteType): Boolean = site in pinnedSites
+
+    fun pinSite(site: SiteType) {
+        if (site !in pinnedSites) pinnedSites = pinnedSites + site
+    }
+
+    fun unpinSite(site: SiteType) {
+        if (site in pinnedSites) pinnedSites = pinnedSites - site
     }
 
     val missAvBaseUrl: String
