@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.Buondua.data.model.BuonduaVideo
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaRepo
 import com.yenaly.han1meviewer.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
+import com.yenaly.han1meviewer.ui.component.player.SitePlayerState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,6 +35,9 @@ data class BuonduaAlbumUiState(
     val isLoadingMore: Boolean = false,
 ) {
     val hasMorePages: Boolean get() = loadedPages in 1 until totalPages
+
+    /** Albums that carry videos keep their photos on a separate screen. */
+    val hasVideos: Boolean get() = videos.isNotEmpty() || (videoCount ?: 0) > 0
 }
 
 class BuonduaAlbumViewModel : ViewModel() {
@@ -41,26 +45,37 @@ class BuonduaAlbumViewModel : ViewModel() {
     private val _state = MutableStateFlow(BuonduaAlbumUiState())
     val state: StateFlow<BuonduaAlbumUiState> = _state.asStateFlow()
 
-    private val _inline = MutableStateFlow<Map<String, Boolean>>(emptyMap())
-    val inlinePlayable: StateFlow<Map<String, Boolean>> = _inline.asStateFlow()
+    private val _player = MutableStateFlow(SitePlayerState())
+    val playerState: StateFlow<SitePlayerState> = _player.asStateFlow()
+
+    private val _selectedVideo = MutableStateFlow(0)
+    val selectedVideo: StateFlow<Int> = _selectedVideo.asStateFlow()
 
     private var code: String = ""
+    private var photosOnly: Boolean = false
     private var job: Job? = null
-    private val probed = HashSet<String>()
 
-    fun load(albumCode: String, force: Boolean = false) {
+    /**
+     * [photosOnly] is used by the separate photos screen: it neither records a history visit nor
+     * probes the videos again - the album screen already did both.
+     */
+    fun load(albumCode: String, force: Boolean = false, photosOnly: Boolean = false) {
         if (!force && code == albumCode && _state.value.loadedPages > 0) return
         code = albumCode
+        this.photosOnly = photosOnly
         job?.cancel()
-        probed.clear()
-        _inline.value = emptyMap()
+        _selectedVideo.value = 0
+        _player.value = SitePlayerState()
         _state.value = BuonduaAlbumUiState(code = albumCode)
         job = viewModelScope.launch {
             BuonduaRepo.album(albumCode, 1)
                 .onSuccess { page ->
                     apply(page, replace = true)
-                    runCatching {
-                        BuonduaHistoryRepo.recordVisit(albumCode, page.title, page.coverUrl, 1)
+                    if (!photosOnly) {
+                        runCatching {
+                            BuonduaHistoryRepo.recordVisit(albumCode, page.title, page.coverUrl, 1)
+                        }
+                        fetchMissingVideos(page)
                     }
                 }
                 .onFailure { e ->
@@ -73,7 +88,7 @@ class BuonduaAlbumViewModel : ViewModel() {
         }
     }
 
-    fun retry() = load(code, force = true)
+    fun retry() = load(code, force = true, photosOnly = photosOnly)
 
     fun loadNextPage() {
         val s = _state.value
@@ -110,15 +125,41 @@ class BuonduaAlbumViewModel : ViewModel() {
                 isLoadingMore = false,
             )
         }
-        probeNewVideos(page.videos)
+        if (!photosOnly) selectFirstVideoIfNeeded()
     }
 
-    private fun probeNewVideos(videos: List<BuonduaVideo>) {
-        videos.filter { probed.add(it.url) }.forEach { video ->
-            viewModelScope.launch {
-                val ok = BuonduaRepo.isInlinePlayable(video.url)
-                _inline.update { it + (video.url to ok) }
-            }
+    /**
+     * Photos are no longer paged in on the album screen, so videos that sit on later pages are
+     * fetched here (only when the title promises more videos than page 1 had).
+     */
+    private fun fetchMissingVideos(first: BuonduaAlbumPage) {
+        val expected = first.videoCount ?: 0
+        if (expected <= first.videos.size || first.totalPages <= 1) return
+        viewModelScope.launch {
+            val all = runCatching { BuonduaRepo.allVideos(code, first) }.getOrNull() ?: return@launch
+            _state.update { old -> old.copy(videos = (old.videos + all).distinctBy { it.url }) }
+            selectFirstVideoIfNeeded()
         }
     }
+
+    /** Streams the first video straight into the player: no probing, no full download. */
+    private fun selectFirstVideoIfNeeded() {
+        if (_player.value.url.isNotBlank()) return
+        selectVideo(0)
+    }
+
+    fun selectVideo(index: Int) {
+        val video = _state.value.videos.getOrNull(index) ?: return
+        _selectedVideo.value = index
+        _player.update {
+            it.copy(url = video.url, quality = "", qualityOptions = emptyMap(), isReady = true, isPlaying = false, position = 0L, duration = 0L)
+        }
+    }
+
+    fun setSpeed(speed: Float) = _player.update { it.copy(speed = speed) }
+    fun setPlaying(playing: Boolean) = _player.update { it.copy(isPlaying = playing) }
+    fun setPosition(position: Long, duration: Long) = _player.update {
+        it.copy(position = position, duration = if (duration > 0) duration else it.duration)
+    }
+    fun setFullscreen(fullscreen: Boolean) = _player.update { it.copy(isFullscreen = fullscreen) }
 }

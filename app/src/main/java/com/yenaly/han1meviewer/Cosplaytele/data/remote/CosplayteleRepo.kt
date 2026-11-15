@@ -13,6 +13,10 @@ import java.io.IOException
 
 object CosplayteleRepo {
 
+    private val detailCache = object : LinkedHashMap<String, CosplayteleDetail>(8, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CosplayteleDetail>?) = size > 12
+    }
+
     private suspend fun fetchHtml(url: String): String = withContext(Dispatchers.IO) {
         val response = CosplayteleNetwork.service.get(url)
         if (!response.isSuccessful) throw IOException("HTTP ${response.code()}")
@@ -33,6 +37,12 @@ object CosplayteleRepo {
         withContext(Dispatchers.Default) {
             CosplayteleParser.parseDetail(html, slug) ?: throw IOException("Could not read post")
         }
+    }.onSuccess { d -> synchronized(detailCache) { detailCache[slug] = d } }
+
+    /** Detail already fetched by the post screen (used by the photos screen), else a fresh fetch. */
+    suspend fun detailCached(slug: String): Result<CosplayteleDetail> {
+        val hit = synchronized(detailCache) { detailCache[slug] }
+        return if (hit != null) Result.success(hit) else detail(slug)
     }
 
     /** The site's own live search box (Ajax Search Lite), used for suggestions while typing. */

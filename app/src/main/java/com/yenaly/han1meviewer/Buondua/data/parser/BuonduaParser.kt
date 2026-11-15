@@ -52,7 +52,7 @@ object BuonduaParser {
         val img = el.selectFirst("img")
         val title = link.text().trim().ifBlank { img?.attr("alt").orEmpty().trim() }
         if (title.isBlank()) return null
-        val cover = imageUrlOf(img).orEmpty()
+        val cover = coverOf(el).ifBlank { imageUrlOf(img).orEmpty() }
         val tags = el.select(".item-tags a.tag span, .item-tags a.tag")
             .map { it.text().trim() }.filter { it.isNotBlank() }.distinct()
         return HanimeInfo(
@@ -104,17 +104,7 @@ object BuonduaParser {
             .filter { it.title.isNotBlank() && it.url.contains("/tag/") }
             .distinctBy { it.url }
 
-        val related = (doc.select(".article-related-list a[href]").mapNotNull { a ->
-            val c = BuonduaConstants.albumCodeFromUrl(a.absUrl("href")) ?: return@mapNotNull null
-            if (c == code) return@mapNotNull null
-            val t = a.text().trim().ifBlank { return@mapNotNull null }
-            HanimeInfo(
-                title = t, coverUrl = "", videoCode = c,
-                duration = countLabelOf(t), itemType = HanimeInfo.NORMAL,
-            )
-        } + doc.select("div.items-row").mapNotNull(::parseCard))
-            .filter { it.videoCode != code }
-            .distinctBy { it.videoCode }
+        val related = collectRelated(doc, code)
 
         return BuonduaAlbumPage(
             code = code,
@@ -134,10 +124,108 @@ object BuonduaParser {
 
     private fun imageUrlOf(img: Element?): String? {
         img ?: return null
-        val raw = listOf("data-src", "data-original", "data-lazy-src", "src")
+        val direct = listOf("data-src", "data-original", "data-lazy-src", "data-lazy", "data-url", "data-echo", "src")
             .map { img.absUrl(it) }
             .firstOrNull { it.isNotBlank() && !it.startsWith("data:") }
-        return raw
+        if (direct != null) return direct
+        val srcset = img.attr("data-srcset").ifBlank { img.attr("srcset") }
+        val first = srcset.split(',').firstOrNull()?.trim()?.substringBefore(' ').orEmpty()
+        if (first.isBlank()) return null
+        return runCatching { java.net.URI(img.baseUri()).resolve(first).toString() }.getOrNull()
+    }
+
+    private val BG_URL = Regex("""url\(\s*['"]?([^'")]+)['"]?\s*\)""")
+
+    private fun backgroundUrlOf(el: Element): String? {
+        val m = BG_URL.find(el.attr("style")) ?: return null
+        val raw = m.groupValues[1]
+        if (raw.startsWith("data:")) return null
+        return runCatching { java.net.URI(el.baseUri()).resolve(raw).toString() }.getOrNull()
+    }
+
+    /** First usable thumbnail inside [container]: an <img> (lazy attributes included) or a CSS background. */
+    private fun coverOf(container: Element): String {
+        for (img in container.select("img")) {
+            val u = imageUrlOf(img) ?: continue
+            if (!BuonduaConstants.isAdHost(hostOf(u))) return u
+        }
+        for (el in container.select("[style*=background]")) {
+            val u = backgroundUrlOf(el) ?: continue
+            if (!BuonduaConstants.isAdHost(hostOf(u))) return u
+        }
+        return ""
+    }
+
+    private fun albumCodesIn(el: Element): Set<String> =
+        el.select("a[href]").mapNotNull {
+            val href = it.absUrl("href")
+            if (!BuonduaConstants.isSiteHost(hostOf(href))) null else BuonduaConstants.albumCodeFromUrl(href)
+        }.toSet()
+
+    /** Largest ancestor of [anchor] that still only points at the album [code]. */
+    private fun cardContainerOf(anchor: Element, code: String): Element {
+        var best: Element = anchor
+        var cur: Element? = anchor.parent()
+        var depth = 0
+        while (cur != null && depth < 5 && cur.tagName() != "body") {
+            val codes = albumCodesIn(cur)
+            if (codes.size > 1 || (codes.isNotEmpty() && code !in codes)) break
+            best = cur
+            cur = cur.parent()
+            depth++
+        }
+        return best
+    }
+
+    /**
+     * Every other album linked from the page outside the photo area - the cards above the photos,
+     * the "popular" / "you may like" blocks and the plain related list. The same album usually
+     * appears in several of these; they are merged so the entry that has a thumbnail wins.
+     */
+    private fun collectRelated(doc: Document, code: String): List<HanimeInfo> {
+        val byCode = LinkedHashMap<String, HanimeInfo>()
+        for (a in doc.body().select("a[href]")) {
+            val skip = a.parents().any {
+                it.hasClass("article-fulltext") || it.tagName() == "nav" || it.hasClass("navbar") ||
+                        it.hasClass("search-box") || it.hasClass("article-tags") || it.hasClass("tags") ||
+                        it.hasClass("pagination") || it.hasClass("article-header")
+            }
+            if (skip) continue
+            val href = a.absUrl("href")
+            if (!BuonduaConstants.isSiteHost(hostOf(href))) continue
+            val c = BuonduaConstants.albumCodeFromUrl(href) ?: continue
+            if (c == code) continue
+
+            val container = cardContainerOf(a, c)
+            val heading = container.selectFirst(".item-title, .page-header h2, h2, h3, h4")?.text()
+            val title = cleanTitle(
+                listOf(heading, a.attr("title"), a.text(), container.selectFirst("img")?.attr("alt"))
+                    .firstOrNull { !it.isNullOrBlank() }.orEmpty()
+            )
+            if (title.isBlank()) continue
+            val cover = coverOf(container)
+            val tags = container.select(".item-tags a.tag span, .item-tags a.tag")
+                .map { it.text().trim() }.filter { it.isNotBlank() }.distinct()
+
+            val old = byCode[c]
+            byCode[c] = if (old == null) {
+                HanimeInfo(
+                    title = title, coverUrl = cover, videoCode = c,
+                    duration = countLabelOf(title),
+                    genre = tags.joinToString(", ").ifBlank { null },
+                    itemType = HanimeInfo.NORMAL,
+                )
+            } else {
+                val bestTitle = if (title.length > old.title.length) title else old.title
+                old.copy(
+                    title = bestTitle,
+                    coverUrl = old.coverUrl.ifBlank { cover },
+                    duration = old.duration ?: countLabelOf(bestTitle),
+                    genre = old.genre ?: tags.joinToString(", ").ifBlank { null },
+                )
+            }
+        }
+        return byCode.values.toList()
     }
 
     private fun hostOf(url: String): String =

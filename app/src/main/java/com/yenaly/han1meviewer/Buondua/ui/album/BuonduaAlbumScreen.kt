@@ -1,35 +1,49 @@
 package com.yenaly.han1meviewer.Buondua.ui.album
 
-import androidx.compose.foundation.ExperimentalFoundationApi
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.ActivityInfo
+import android.os.Build
+import android.view.WindowManager
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,59 +52,197 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil3.compose.AsyncImage
+import androidx.media3.common.MediaItem
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import com.yenaly.han1meviewer.Buondua.common.BuonduaDownloads
 import com.yenaly.han1meviewer.Buondua.common.BuonduaImageLoader
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
-import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaRepo
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.CollapsingPlayerLayout
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteErrorContent
 import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.SiteVideoActionBar
-import com.yenaly.han1meviewer.util.DownloadLayout
-import com.yenaly.han1meviewer.util.SiteImageSaver
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
+import com.yenaly.han1meviewer.ui.component.SiteVideoCard
+import com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+import com.yenaly.han1meviewer.ui.component.player.createSitePlayer
+import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
+import com.yenaly.han1meviewer.util.PlayerOrientation
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
+private tailrec fun Context.findHostActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findHostActivity()
+    else -> null
+}
+
+/** Progressive mp4 streaming: ExoPlayer range-requests the file, nothing is downloaded up front. */
+private fun buildVideoSource(context: Context, url: String): MediaSource {
+    val http = OkHttpDataSource.Factory(BuonduaNetwork.streamClient)
+        .setDefaultRequestProperties(BuonduaNetwork.mediaHeaders())
+    val dsFactory = DefaultDataSource.Factory(context, http)
+    return ProgressiveMediaSource.Factory(dsFactory)
+        .createMediaSource(MediaItem.Builder().setUri(url).build())
+}
+
+/**
+ * An album page never loads its photos up front. Videos (when there are any) play in the player
+ * on top, exactly like a Cosplaytele post; the photos sit behind one "Photos" button that opens
+ * the separate photos screen. Related albums are listed with their thumbnails.
+ */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BuonduaAlbumScreen(
     code: String,
     onBack: () -> Unit,
     onNavigateToAlbum: (String) -> Unit,
     onNavigateToTag: (url: String, title: String) -> Unit,
+    onOpenPhotos: () -> Unit = {},
     viewModel: BuonduaAlbumViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val inline by viewModel.inlinePlayable.collectAsStateWithLifecycle()
+    val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val selectedVideo by viewModel.selectedVideo.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val activity = remember(context) { context.findHostActivity() }
     val scope = rememberCoroutineScope()
     val imageLoader = BuonduaImageLoader.get(context)
-    val listState: LazyListState = rememberLazyListState()
-    var lightboxIndex by remember { mutableStateOf<Int?>(null) }
+
+    val exoPlayer = remember { mutableStateOf<ExoPlayer?>(null) }
+    val currentMediaUrl = remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(code) { viewModel.load(code) }
 
-    val nearEnd by remember(listState) {
-        derivedStateOf {
-            val info = listState.layoutInfo
-            val last = info.visibleItemsInfo.lastOrNull()?.index ?: 0
-            info.totalItemsCount > 0 && last >= info.totalItemsCount - 4
+    // ---- player lifecycle
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP && viewModel.playerState.value.isPlaying) {
+                viewModel.setPlaying(false)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            if (viewModel.playerState.value.isFullscreen) {
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    activity?.window?.insetsController?.show(
+                        android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars()
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                }
+                viewModel.setFullscreen(false)
+            }
         }
     }
-    LaunchedEffect(listState, state.photos.size) {
-        snapshotFlow { nearEnd }.distinctUntilChanged().filter { it }
-            .collect { viewModel.loadNextPage() }
+    DisposableEffect(Unit) {
+        onDispose {
+            exoPlayer.value?.release()
+            exoPlayer.value = null
+            currentMediaUrl.value = null
+        }
     }
 
-    lightboxIndex?.let { start ->
-        BuonduaPhotoLightbox(photos = state.photos, startIndex = start) { lightboxIndex = null }
+    LaunchedEffect(playerState.url) {
+        val url = playerState.url
+        if (!playerState.isReady || url.isBlank()) return@LaunchedEffect
+        val existing = exoPlayer.value
+        if (existing != null && currentMediaUrl.value == url) return@LaunchedEffect
+        if (existing == null) {
+            val player = createSitePlayer(context)
+            player.setMediaSource(buildVideoSource(context, url))
+            player.prepare()
+            player.setPlaybackSpeed(playerState.speed)
+            exoPlayer.value = player
+        } else {
+            existing.setMediaSource(buildVideoSource(context, url))
+            existing.prepare()
+            existing.playWhenReady = false
+        }
+        currentMediaUrl.value = url
+    }
+
+    val playerConfig = SitePlayerSettings.config(SiteType.BUONDUA)
+    LaunchedEffect(playerConfig.defaultSpeed) { viewModel.setSpeed(playerConfig.defaultSpeed) }
+    LaunchedEffect(playerState.isReady, playerState.url, playerConfig.autoPlay) {
+        if (playerConfig.autoPlay && playerState.isReady && playerState.url.isNotBlank()) {
+            delay(500)
+            if (!viewModel.playerState.value.isPlaying) viewModel.setPlaying(true)
+        }
+    }
+
+    fun enterFullscreen() {
+        activity?.requestedOrientation = PlayerOrientation.fullscreenRequest()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity?.window?.insetsController?.hide(
+                android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars()
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        }
+        viewModel.setFullscreen(true)
+    }
+
+    fun exitFullscreen() {
+        activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity?.window?.insetsController?.show(
+                android.view.WindowInsets.Type.statusBars() or android.view.WindowInsets.Type.navigationBars()
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+        }
+        viewModel.setFullscreen(false)
+    }
+
+    BackHandler(enabled = playerState.isFullscreen) { exitFullscreen() }
+
+    @Composable
+    fun Player(fullscreen: Boolean, modifier: Modifier) {
+        BuonduaVideoPlayer(
+            state = playerState,
+            exoPlayer = exoPlayer.value,
+            coverUrl = state.coverUrl,
+            isFullscreen = fullscreen,
+            onPlayPause = { viewModel.setPlaying(!playerState.isPlaying) },
+            onSeek = { pos -> exoPlayer.value?.seekTo(pos) },
+            onSkip = { delta ->
+                val current = exoPlayer.value?.currentPosition ?: 0L
+                exoPlayer.value?.seekTo((current + delta).coerceAtLeast(0L))
+            },
+            onToggleFullscreen = { if (fullscreen) exitFullscreen() else enterFullscreen() },
+            onPositionUpdate = { pos, dur -> viewModel.setPosition(pos, dur) },
+            modifier = modifier,
+            title = state.title,
+            onBack = { if (fullscreen) exitFullscreen() else onBack() },
+            onSpeedSelect = { viewModel.setSpeed(it) },
+        )
+    }
+
+    if (playerState.isFullscreen) {
+        Dialog(
+            onDismissRequest = { exitFullscreen() },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
+        ) { Player(fullscreen = true, modifier = Modifier.fillMaxSize()) }
     }
 
     Scaffold(
@@ -108,151 +260,40 @@ fun BuonduaAlbumScreen(
                     message = state.error.orEmpty(),
                     onRetry = { viewModel.retry() },
                 )
-                else -> LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    item(key = "header") {
-                        androidx.compose.foundation.layout.Column(
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
-                        ) {
-                            Text(
-                                text = state.title,
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                            )
-                            val counts = buildList {
-                                state.photoCount?.let { add("$it photos") }
-                                state.videoCount?.let { add("$it videos") }
-                            }.joinToString(" + ")
-                            if (counts.isNotBlank()) {
-                                Text(
-                                    text = counts,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                        }
-                    }
-
-                    item(key = "actions") {
-                        SiteVideoActionBar(
-                            site = SiteType.BUONDUA,
-                            videoCode = state.code,
-                            title = state.title,
-                            coverUrl = state.coverUrl,
-                            webUrl = state.pageUrl,
-                            onDownloadClick = {
+                else -> {
+                    val content: @Composable () -> Unit = {
+                        AlbumContent(
+                            state = state,
+                            selectedVideo = selectedVideo,
+                            playerUrl = playerState.url,
+                            imageLoader = imageLoader,
+                            onSelectVideo = { viewModel.selectVideo(it) },
+                            onOpenPhotos = onOpenPhotos,
+                            onDownloadPhotos = {
                                 scope.launch {
-                                    GlobalToasts.show(
-                                        context.getString(R.string.buondua_photos_download_started),
-                                        level = GlobalToasts.ToastLevel.INFO,
-                                    )
-                                    val urls = BuonduaRepo.allPhotoUrls(
-                                        state.code, state.photos.map { it.url }, state.totalPages,
-                                    )
-                                    SiteImageSaver.saveBatchInBackground(
+                                    BuonduaDownloads.downloadAllPhotos(
                                         context = context,
-                                        urls = urls,
-                                        segments = listOf("Buondua", "Photos", DownloadLayout.sanitize(state.title)),
-                                        baseName = DownloadLayout.sanitize(state.title, "photo"),
-                                        client = BuonduaNetwork.streamClient,
-                                        headers = BuonduaNetwork.mediaHeaders(),
-                                    ) { result ->
-                                        val msg = when (result) {
-                                            is SiteImageSaver.SaveResult.Saved ->
-                                                "${result.count} saved, ${result.skipped} skipped, ${result.failed} failed"
-                                            is SiteImageSaver.SaveResult.Error -> result.message
-                                        }
-                                        GlobalToasts.show(
-                                            msg,
-                                            level = if (result is SiteImageSaver.SaveResult.Error)
-                                                GlobalToasts.ToastLevel.ERROR else GlobalToasts.ToastLevel.SUCCESS,
-                                        )
-                                    }
+                                        code = state.code,
+                                        title = state.title,
+                                        loadedUrls = state.photos.map { it.url },
+                                        totalPages = state.totalPages,
+                                    )
                                 }
                             },
+                            onNavigateToAlbum = onNavigateToAlbum,
+                            onNavigateToTag = onNavigateToTag,
                         )
                     }
-
-                    if (state.tags.isNotEmpty()) {
-                        item(key = "tags") {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                state.tags.forEach { tag ->
-                                    AssistChip(
-                                        onClick = { onNavigateToTag(tag.url, tag.title) },
-                                        label = { Text(tag.title) },
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     if (state.videos.isNotEmpty()) {
-                        item(key = "videos_header") {
-                            SectionTitle("${stringResource(R.string.buondua_section_videos)} (${state.videos.size})")
-                        }
-                        items(state.videos, key = { "video_" + it.url }) { video ->
-                            BuonduaVideoItem(
-                                albumCode = state.code,
-                                coverUrl = state.coverUrl,
-                                video = video,
-                                inline = inline[video.url],
-                            )
-                        }
-                    }
-
-                    item(key = "photos_header") {
-                        SectionTitle(
-                            "${stringResource(R.string.buondua_section_photos)} " +
-                                    "(${state.photoCount ?: state.photos.size})"
+                        CollapsingPlayerLayout(
+                            modifier = Modifier.fillMaxSize(),
+                            player = {
+                                if (!playerState.isFullscreen) Player(fullscreen = false, modifier = Modifier.fillMaxWidth())
+                            },
+                            content = content,
                         )
-                    }
-                    itemsIndexed(state.photos, key = { _, p -> "photo_" + p.url }) { index, photo ->
-                        AsyncImage(
-                            model = photo.url,
-                            contentDescription = null,
-                            imageLoader = imageLoader,
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
-                                .clickable { lightboxIndex = index },
-                        )
-                    }
-                    item(key = "pager_footer") {
-                        Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
-                            if (state.isLoadingMore) {
-                                CircularProgressIndicator()
-                            } else {
-                                Text(
-                                    text = "${state.loadedPages} / ${state.totalPages}",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-
-                    if (state.related.isNotEmpty()) {
-                        item(key = "related_header") {
-                            SectionTitle(stringResource(R.string.buondua_section_related))
-                        }
-                        items(state.related, key = { "related_" + it.videoCode }) { rel ->
-                            Text(
-                                text = rel.title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable { onNavigateToAlbum(rel.videoCode) }
-                                    .padding(vertical = 6.dp),
-                            )
-                        }
+                    } else {
+                        content()
                     }
                 }
             }
@@ -260,16 +301,148 @@ fun BuonduaAlbumScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SectionTitle(text: String) {
-    androidx.compose.foundation.layout.Column {
-        HorizontalDivider()
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(top = 10.dp),
-        )
+private fun AlbumContent(
+    state: BuonduaAlbumUiState,
+    selectedVideo: Int,
+    playerUrl: String,
+    imageLoader: coil3.ImageLoader,
+    onSelectVideo: (Int) -> Unit,
+    onOpenPhotos: () -> Unit,
+    onDownloadPhotos: () -> Unit,
+    onNavigateToAlbum: (String) -> Unit,
+    onNavigateToTag: (url: String, title: String) -> Unit,
+) {
+    val context = LocalContext.current
+    val columns = rememberVideoGridColumns().coerceAtLeast(2)
+    val hasVideos = state.videos.isNotEmpty()
+    val photoCount = state.photoCount ?: state.photos.size
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(
+            start = 12.dp, top = 12.dp, end = 12.dp,
+            bottom = 24.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+        ),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = state.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+                val counts = buildList {
+                    state.photoCount?.let { add("$it photos") }
+                    state.videoCount?.let { add("$it videos") }
+                }.joinToString(" + ")
+                if (counts.isNotBlank()) {
+                    Text(
+                        text = counts,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+        }
+
+        item(key = "actions", span = { GridItemSpan(maxLineSpan) }) {
+            SiteVideoActionBar(
+                site = SiteType.BUONDUA,
+                videoCode = state.code,
+                title = state.title,
+                coverUrl = state.coverUrl,
+                webUrl = state.pageUrl,
+                onDownloadClick = {
+                    val video = state.videos.getOrNull(selectedVideo)
+                    if (video != null) BuonduaDownloads.enqueueVideo(context, state.code, video, state.coverUrl)
+                    else onDownloadPhotos()
+                },
+            )
+        }
+
+        if (state.tags.isNotEmpty()) {
+            item(key = "tags", span = { GridItemSpan(maxLineSpan) }) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    state.tags.forEach { tag ->
+                        AssistChip(
+                            onClick = { onNavigateToTag(tag.url, tag.title) },
+                            label = { Text(tag.title) },
+                        )
+                    }
+                }
+            }
+        }
+
+        if (hasVideos) {
+            item(key = "videos", span = { GridItemSpan(maxLineSpan) }) {
+                BuonduaVideoControls(
+                    albumCode = state.code,
+                    coverUrl = state.coverUrl,
+                    videos = state.videos,
+                    selected = selectedVideo,
+                    onSelect = onSelectVideo,
+                )
+            }
+        }
+
+        // Photos are never loaded here: one button opens the photos screen.
+        if (photoCount > 0 || state.photos.isNotEmpty()) {
+            item(key = "photos_entry", span = { GridItemSpan(maxLineSpan) }) {
+                Box(Modifier.padding(top = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { onOpenPhotos() }) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(Icons.Default.PhotoLibrary, contentDescription = null)
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                text = "${stringResource(R.string.buondua_section_photos)} ($photoCount)",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+                        }
+                    }
+                }
+            }
+        }
+
+        if (state.related.isNotEmpty()) {
+            item(key = "related_header", span = { GridItemSpan(maxLineSpan) }) {
+                Text(
+                    text = stringResource(R.string.buondua_section_related),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = 12.dp),
+                )
+            }
+            items(state.related, key = { "related_" + it.videoCode }) { rel ->
+                SiteVideoCard(
+                    title = rel.title,
+                    coverUrl = rel.coverUrl,
+                    onClick = { onNavigateToAlbum(rel.videoCode) },
+                    aspectRatio = 3f / 4f,
+                    topEndBadge = rel.duration,
+                    imageLoader = imageLoader,
+                    contentScale = ContentScale.Crop,
+                )
+            }
+        }
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Videocam
@@ -156,6 +157,7 @@ fun CosplaytellePostScreen(
     onBack: () -> Unit,
     onNavigateToPost: (String) -> Unit,
     onNavigateToTerm: (CosplayteleTerm) -> Unit,
+    onOpenPhotos: () -> Unit = {},
     resumePosition: Long = 0L,
     viewModel: CosplaytellePostViewModel = viewModel(),
 ) {
@@ -172,7 +174,6 @@ fun CosplaytellePostScreen(
     var pendingResume by remember { mutableLongStateOf(0L) }
     var resumeApplied by remember { mutableStateOf(false) }
     var showResumeDialog by remember { mutableStateOf(false) }
-    var viewerIndex by remember { mutableStateOf<Int?>(null) }
     val gridState = rememberLazyGridState()
 
     val exoPlayer = remember { mutableStateOf<ExoPlayer?>(null) }
@@ -370,18 +371,6 @@ fun CosplaytellePostScreen(
         ) { Player(fullscreen = true, modifier = Modifier.fillMaxSize()) }
     }
 
-    viewerIndex?.let { start ->
-        if (detail != null) {
-            CosplaytelePhotoViewer(
-                photos = detail.photos,
-                initialIndex = start,
-                title = detail.title,
-                pageUrl = detail.pageUrl,
-                onDismiss = { viewerIndex = null },
-            )
-        }
-    }
-
     Scaffold(
         topBar = {
             SiteTopAppBar(
@@ -414,7 +403,7 @@ fun CosplaytellePostScreen(
                         streamState = streamState,
                         playerState = playerState,
                         viewModel = viewModel,
-                        onOpenPhoto = { viewerIndex = it },
+                        onOpenPhotos = onOpenPhotos,
                         onNavigateToPost = onNavigateToPost,
                         onNavigateToTerm = onNavigateToTerm,
                     )
@@ -472,7 +461,7 @@ private fun CosplaytellePostContent(
     streamState: CosplayteleStreamState,
     playerState: CosplaytellePlayerState,
     viewModel: CosplaytellePostViewModel,
-    onOpenPhoto: (Int) -> Unit,
+    onOpenPhotos: () -> Unit,
     onNavigateToPost: (String) -> Unit,
     onNavigateToTerm: (CosplayteleTerm) -> Unit,
 ) {
@@ -511,11 +500,6 @@ private fun CosplaytellePostContent(
             }
         }
     }
-
-    // Item positions for the jump bar: header, actions, [jump], [video], [photos banner].
-    val both = info.hasVideo && info.hasPhotos
-    val videoIndex = if (both) 3 else 2
-    val photosIndex = if (both) 4 else 2
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
@@ -577,26 +561,6 @@ private fun CosplaytellePostContent(
             )
         }
 
-        // ---- jump bar (only when the post has both parts)
-        if (both) {
-            item(key = "jump", span = { GridItemSpan(maxLineSpan) }) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    FilterChip(
-                        selected = false,
-                        onClick = { scope.launch { gridState.animateScrollToItem(videoIndex) } },
-                        leadingIcon = { Icon(Icons.Default.Videocam, null, Modifier.size(18.dp)) },
-                        label = { Text(stringResource(R.string.cosplaytele_section_video, info.videos.size)) },
-                    )
-                    FilterChip(
-                        selected = false,
-                        onClick = { scope.launch { gridState.animateScrollToItem(photosIndex) } },
-                        leadingIcon = { Icon(Icons.Default.PhotoLibrary, null, Modifier.size(18.dp)) },
-                        label = { Text(stringResource(R.string.cosplaytele_section_photos, info.photos.size)) },
-                    )
-                }
-            }
-        }
-
         // ---- SECTION 1: video
         if (info.hasVideo) {
             item(key = "video_section", span = { GridItemSpan(maxLineSpan) }) {
@@ -654,40 +618,19 @@ private fun CosplaytellePostContent(
             }
         }
 
-        // ---- SECTION 2: photos
+        // ---- SECTION 2: photos. No post loads its photos here: one button opens the separate
+        // photos screen (same for video posts and photo-only posts).
         if (info.hasPhotos) {
-            item(key = "photos_section", span = { GridItemSpan(maxLineSpan) }) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
-                    if (info.hasVideo) HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
+            item(key = "photos_entry", span = { GridItemSpan(maxLineSpan) }) {
+                Box(Modifier.padding(top = 8.dp).clip(RoundedCornerShape(16.dp)).clickable { onOpenPhotos() }) {
                     SectionBanner(
                         icon = Icons.Default.PhotoLibrary,
                         title = stringResource(R.string.cosplaytele_section_photos, info.photos.size),
                         container = MaterialTheme.colorScheme.secondaryContainer,
                         onContainer = MaterialTheme.colorScheme.onSecondaryContainer,
-                        trailing = {
-                            IconButton(enabled = !savingAll, onClick = { saveAll() }) {
-                                if (savingAll) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                                else Icon(Icons.Default.Download, stringResource(R.string.xhamster_download_all))
-                            }
-                        },
+                        trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
                     )
                 }
-            }
-            val span = gridColumns / columns
-            itemsIndexed(info.photos, key = { index, _ -> "photo_$index" }, span = { _, _ -> GridItemSpan(span) }) { index, url ->
-                RetryableImage(
-                    model = url,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .androidxAspect(COSPLAYTELE_CARD_RATIO)
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onOpenPhoto(index) },
-                    placeholder = painterResource(R.drawable.h_chan_loading),
-                    error = painterResource(R.drawable.h_chan_load_failed),
-                    contentScale = ContentScale.Crop,
-                    imageLoader = imageLoader,
-                )
             }
         }
 

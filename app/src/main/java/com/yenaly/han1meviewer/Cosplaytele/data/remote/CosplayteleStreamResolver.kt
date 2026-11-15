@@ -30,16 +30,35 @@ object CosplayteleStreamResolver {
         withContext(Dispatchers.IO) {
             if (!ref.isEmbed) {
                 return@withContext listOf(direct(ref.url, pageUrl))
-                    .let { expandPlaylist(it.first()) }
+                    .let { expandPlaylist(it.first(), listOf(pageUrl)) }
             }
             val embed = ref.url
-            val html = get(embed, pageUrl)
-            val playlist = findPlaylist(html, embed)
-                ?: throw IOException("No playable stream in embed page")
             val origin = embed.toHttpUrlOrNull()?.let { "${it.scheme}://${it.host}" }
                 ?: CosplayteleConstants.STREAM_ORIGIN
-            expandPlaylist(CosplayteleStream(playlist, "auto", embed, origin))
+            val alternates = listOf(CosplayteleConstants.STREAM_REFERER, pageUrl)
+
+            // 1) the embed page itself, 2) the player's api endpoint, 3) a real WebView sniffing the request.
+            val html = runCatching { get(embed, pageUrl) }.getOrDefault("")
+            var playlist = if (html.isNotBlank()) findPlaylist(html, embed) else null
+            if (playlist == null) playlist = guessApiPlaylist(embed, pageUrl, alternates)
+            if (playlist == null) playlist = CosplayteleWebSniffer.sniff(embed, pageUrl)
+            if (playlist == null) throw IOException("No playable stream in embed page")
+            expandPlaylist(CosplayteleStream(playlist, "auto", embed, origin), alternates)
         }
+
+    /** Some embeds only expose `api-embed/<id>/index.m3u8` (token optional): try it directly. */
+    private fun guessApiPlaylist(embed: String, pageUrl: String, alternates: List<String>): String? {
+        val id = ID_REGEX.find(embed)?.groupValues?.get(1) ?: return null
+        val http = embed.toHttpUrlOrNull() ?: return null
+        val url = "${http.scheme}://${http.host}/api-embed/$id/index.m3u8"
+        for (ref in listOf(embed, pageUrl) + alternates) {
+            val text = runCatching { get(url, ref) }.getOrNull() ?: continue
+            if (text.contains("#EXTM3U")) return url
+        }
+        return null
+    }
+
+    private val BASE64_REGEX = Regex("""[A-Za-z0-9+/]{40,}={0,2}""")
 
     private fun direct(url: String, referer: String): CosplayteleStream {
         val origin = url.toHttpUrlOrNull()?.let { "${it.scheme}://${it.host}" }.orEmpty()
@@ -57,8 +76,21 @@ object CosplayteleStreamResolver {
     private fun unescape(s: String): String =
         s.replace("\\/", "/").replace("&amp;", "&").replace("\\u0026", "&")
 
+    private fun cleanUrl(raw: String): String =
+        unescape(raw).trimEnd('\\', ',', ';', ')')
+
     private fun findPlaylist(html: String, embedUrl: String): String? {
-        M3U8_REGEX.find(html)?.let { return unescape(it.value) }
+        M3U8_REGEX.find(html)?.let { return cleanUrl(it.value) }
+        // Percent-encoded / unicode-escaped copies of the url.
+        val decoded = runCatching { java.net.URLDecoder.decode(html.replace("\\u002F", "/"), "UTF-8") }.getOrDefault(html)
+        if (decoded !== html) M3U8_REGEX.find(decoded)?.let { return cleanUrl(it.value) }
+        // Base64-wrapped config blobs (atob("...")).
+        for (m in BASE64_REGEX.findAll(html)) {
+            val text = runCatching { String(android.util.Base64.decode(m.value, android.util.Base64.DEFAULT)) }
+                .getOrNull() ?: continue
+            if (!text.contains(".m3u8")) continue
+            M3U8_REGEX.find(text)?.let { return cleanUrl(it.value) }
+        }
         FILE_REGEX.findAll(html).map { unescape(it.groupValues[1]) }
             .firstOrNull { it.contains(".m3u8") }?.let { return absolute(it, embedUrl) }
         // Token present but url assembled by script: rebuild it the way the player does.
@@ -75,11 +107,27 @@ object CosplayteleStreamResolver {
         if (url.startsWith("http")) url
         else runCatching { java.net.URI(base).resolve(url).toString() }.getOrDefault(url)
 
+    /** Variant urls often drop the signed query of their master playlist: carry it over. */
+    private fun withMasterQuery(variant: String, master: String): String {
+        if (variant.contains("token=") || !master.contains('?')) return variant
+        if (variant.contains('?')) return variant
+        return variant + "?" + master.substringAfter('?')
+    }
+
     /** Splits a master playlist into one entry per variant; media playlists stay as they are. */
-    private fun expandPlaylist(auto: CosplayteleStream): List<CosplayteleStream> {
+    private fun expandPlaylist(auto: CosplayteleStream, alternates: List<String> = emptyList()): List<CosplayteleStream> {
         if (!auto.url.contains(".m3u8")) return listOf(auto)
-        val text = runCatching { get(auto.url, auto.referer) }.getOrNull() ?: return listOf(auto)
-        if (!text.contains("#EXT-X-STREAM-INF")) return listOf(auto)
+        var base = auto
+        var text: String? = null
+        for (ref in listOf(auto.referer) + alternates) {
+            text = runCatching { get(auto.url, ref) }.getOrNull()
+            if (text != null) {
+                base = auto.copy(referer = ref)
+                break
+            }
+        }
+        if (text == null) return listOf(auto)
+        if (!text.contains("#EXT-X-STREAM-INF")) return listOf(base)
         val lines = text.lines().map { it.trim() }
         val variants = ArrayList<CosplayteleStream>()
         for (i in lines.indices) {
@@ -95,11 +143,11 @@ object CosplayteleStreamResolver {
                 val bw = BANDWIDTH_REGEX.find(line)?.groupValues?.get(1)?.toLongOrNull() ?: 0L
                 if (bw > 0) "${bw / 1000}k" else "video"
             }
-            variants += auto.copy(url = absolute(uri, auto.url), label = label, height = side)
+            variants += base.copy(url = withMasterQuery(absolute(uri, base.url), base.url), label = label, height = side)
         }
-        if (variants.isEmpty()) return listOf(auto)
+        if (variants.isEmpty()) return listOf(base)
         val sorted = variants.distinctBy { it.label }.sortedByDescending { it.height }
-        return if (sorted.size > 1) listOf(auto) + sorted else sorted
+        return if (sorted.size > 1) listOf(base) + sorted else sorted
     }
 
     /** Picks the stream for the preferred quality ("auto", "1080p" ...). */

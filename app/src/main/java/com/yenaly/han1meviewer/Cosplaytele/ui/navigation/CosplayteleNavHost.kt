@@ -19,6 +19,7 @@ import com.yenaly.han1meviewer.Cosplaytele.data.model.CosplayteleTerm
 import com.yenaly.han1meviewer.Cosplaytele.ui.history.CosplayteleHistoryScreen
 import com.yenaly.han1meviewer.Cosplaytele.ui.home.CosplayteleHomeScreen
 import com.yenaly.han1meviewer.Cosplaytele.ui.list.CosplayteleListScreen
+import com.yenaly.han1meviewer.Cosplaytele.ui.post.CosplaytellePhotosScreen
 import com.yenaly.han1meviewer.Cosplaytele.ui.post.CosplaytellePostScreen
 import com.yenaly.han1meviewer.Cosplaytele.ui.search.CosplayteleSearchScreen
 import com.yenaly.han1meviewer.Cosplaytele.ui.settings.CosplayteleSettingsScreen
@@ -52,6 +53,10 @@ data class CosplayteleSearchRoute(val query: String? = null)
 
 @Serializable
 data class CosplaytelePostRoute(val slug: String, val resumePosition: Long = 0L)
+
+/** Photos-only screen of a post (used for posts that also have a video). */
+@Serializable
+data class CosplaytelePhotosRoute(val slug: String)
 
 /** Any archive / "top" page: `/24-hours/`, `/top-search/`, `/category/x/`, `/tag/x/` ... */
 @Serializable
@@ -163,6 +168,15 @@ fun CosplayteleNavHost(
                 onBack = { navController.popBackStackSafely() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
+                onOpenPhotos = { navController.navigateSafely(CosplaytelePhotosRoute(route.slug)) },
+            )
+        }
+
+        composable<CosplaytelePhotosRoute> {
+            val route = it.toRoute<CosplaytelePhotosRoute>()
+            CosplaytellePhotosScreen(
+                slug = route.slug,
+                onBack = { navController.popBackStackSafely() },
             )
         }
 

@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.Buondua.ui.album.BuonduaAlbumScreen
+import com.yenaly.han1meviewer.Buondua.ui.album.BuonduaPhotosScreen
 import com.yenaly.han1meviewer.Buondua.ui.history.BuonduaHistoryScreen
 import com.yenaly.han1meviewer.Buondua.ui.home.BuonduaHomeScreen
 import com.yenaly.han1meviewer.Buondua.ui.home.BuonduaTagScreen
@@ -52,6 +53,10 @@ data class BuonduaSearchRoute(val query: String? = null)
 
 @Serializable
 data class BuonduaAlbumRoute(val videoCode: String, val resumePosition: Long = 0L)
+
+/** Photos-only screen of an album (used for albums that also have videos). */
+@Serializable
+data class BuonduaPhotosRoute(val code: String)
 
 @Serializable
 data class BuonduaTagRoute(val url: String, val title: String)
@@ -153,6 +158,15 @@ fun BuonduaNavHost(
                 onBack = { navController.popBackStackSafely() },
                 onNavigateToAlbum = { code -> navController.navigateSafely(BuonduaAlbumRoute(code)) },
                 onNavigateToTag = { url, title -> navController.navigateSafely(BuonduaTagRoute(url, title)) },
+                onOpenPhotos = { navController.navigateSafely(BuonduaPhotosRoute(route.videoCode)) },
+            )
+        }
+
+        composable<BuonduaPhotosRoute> {
+            val route = it.toRoute<BuonduaPhotosRoute>()
+            BuonduaPhotosScreen(
+                code = route.code,
+                onBack = { navController.popBackStackSafely() },
             )
         }
 
