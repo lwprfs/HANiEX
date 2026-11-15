@@ -15,7 +15,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
-/** Cosplaytele: no account, so only real pages are listed. */
 @Composable
 fun cosplayteleHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(

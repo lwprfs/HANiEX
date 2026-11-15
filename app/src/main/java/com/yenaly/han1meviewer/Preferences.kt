@@ -134,7 +134,6 @@ object Preferences {
 
     private const val PINNED_SITES = "pinned_sites"
 
-    /** Sites pinned to the front of the site switcher, in the order they were pinned. */
     var pinnedSites: List<SiteType>
         get() = preferenceSp.getString(PINNED_SITES, null).orEmpty()
             .split(',')

@@ -24,10 +24,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.copyTextToClipboard
 
-/**
- * Video picker shown under the player (same idea as Cosplaytele's video chips): the player on top
- * streams the selected video, this block switches video, copies the link or downloads the file.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BuonduaVideoControls(

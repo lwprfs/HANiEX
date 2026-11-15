@@ -57,10 +57,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
-/**
- * Photos only: back + "download all" at the top, a grid below that keeps loading album pages as
- * you scroll. Tapping a photo opens the full-screen pager; going back lands here again.
- */
 @Composable
 fun BuonduaPhotosScreen(
     code: String,

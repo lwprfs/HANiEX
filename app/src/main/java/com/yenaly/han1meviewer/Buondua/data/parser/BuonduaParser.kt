@@ -143,7 +143,6 @@ object BuonduaParser {
         return runCatching { java.net.URI(el.baseUri()).resolve(raw).toString() }.getOrNull()
     }
 
-    /** First usable thumbnail inside [container]: an <img> (lazy attributes included) or a CSS background. */
     private fun coverOf(container: Element): String {
         for (img in container.select("img")) {
             val u = imageUrlOf(img) ?: continue
@@ -162,7 +161,6 @@ object BuonduaParser {
             if (!BuonduaConstants.isSiteHost(hostOf(href))) null else BuonduaConstants.albumCodeFromUrl(href)
         }.toSet()
 
-    /** Largest ancestor of [anchor] that still only points at the album [code]. */
     private fun cardContainerOf(anchor: Element, code: String): Element {
         var best: Element = anchor
         var cur: Element? = anchor.parent()
@@ -177,11 +175,6 @@ object BuonduaParser {
         return best
     }
 
-    /**
-     * Every other album linked from the page outside the photo area - the cards above the photos,
-     * the "popular" / "you may like" blocks and the plain related list. The same album usually
-     * appears in several of these; they are merged so the entry that has a thumbnail wins.
-     */
     private fun collectRelated(doc: Document, code: String): List<HanimeInfo> {
         val byCode = LinkedHashMap<String, HanimeInfo>()
         for (a in doc.body().select("a[href]")) {

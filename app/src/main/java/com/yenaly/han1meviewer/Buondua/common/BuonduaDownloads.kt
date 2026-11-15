@@ -41,7 +41,6 @@ object BuonduaDownloads {
 
     private fun photoSegments(title: String) = listOf("Buondua", "Photos", DownloadLayout.sanitize(title))
 
-    /** Downloads every photo of an album (all pages) in the background. */
     suspend fun downloadAllPhotos(
         context: Context,
         code: String,
@@ -75,7 +74,6 @@ object BuonduaDownloads {
         }
     }
 
-    /** Saves a single photo (used by the full-screen viewer). */
     suspend fun savePhoto(context: Context, title: String, url: String, index: Int): SiteImageSaver.SaveResult =
         SiteImageSaver.saveOne(
             context = context,

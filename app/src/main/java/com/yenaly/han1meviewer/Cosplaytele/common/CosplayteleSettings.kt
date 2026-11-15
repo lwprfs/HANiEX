@@ -25,7 +25,6 @@ object CosplayteleSettings {
             sp.edit().putInt(KEY_PHOTO_COLUMNS, value).apply()
         }
 
-    /** Tapping the left / right third of the photo viewer flips the page. */
     var viewerTapToFlip: Boolean
         get() = sp.getBoolean(KEY_VIEWER_TAP_NEXT, true)
         set(value) {

@@ -56,10 +56,6 @@ import com.yenaly.han1meviewer.util.SiteImageSaver
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/**
- * Full-screen photo pager: swipe sideways through every photo, back + download at the top.
- * [onNearEnd] lets the caller fetch the next album page when the user nears the last loaded photo.
- */
 @Composable
 fun BuonduaPhotoLightbox(
     photos: List<BuonduaPhoto>,
@@ -194,7 +190,7 @@ private fun ZoomablePhoto(
                     )
                 }
                 .then(
-                    // Only while zoomed in: otherwise the pager keeps the horizontal swipes.
+
                     if (scale > 1.01f) Modifier.pointerInput(url) {
                         detectTransformGestures { _, pan, zoom, _ ->
                             scale = (scale * zoom).coerceIn(1f, 4f)

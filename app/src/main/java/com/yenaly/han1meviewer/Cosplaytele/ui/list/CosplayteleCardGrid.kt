@@ -54,7 +54,6 @@ import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
-/** Cosplay shots are portrait, so cards are taller than the 16:9 video cards of other sites. */
 const val COSPLAYTELE_CARD_RATIO = 3f / 4f
 
 @Composable
@@ -64,10 +63,6 @@ fun cosplayteleBadges(card: CosplayteleCard): Pair<String?, String?> {
     return photos to video
 }
 
-/**
- * Listing grid shared by home, archives, search and the "top" pages. Terms (cosplayers,
- * categories, tags) found on the page are shown as a block above the posts.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CosplayteleCardGrid(

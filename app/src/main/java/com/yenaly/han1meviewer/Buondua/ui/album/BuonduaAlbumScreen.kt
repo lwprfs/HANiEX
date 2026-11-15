@@ -90,7 +90,6 @@ private tailrec fun Context.findHostActivity(): Activity? = when (this) {
     else -> null
 }
 
-/** Progressive mp4 streaming: ExoPlayer range-requests the file, nothing is downloaded up front. */
 private fun buildVideoSource(context: Context, url: String): MediaSource {
     val http = OkHttpDataSource.Factory(BuonduaNetwork.streamClient)
         .setDefaultRequestProperties(BuonduaNetwork.mediaHeaders())
@@ -99,11 +98,6 @@ private fun buildVideoSource(context: Context, url: String): MediaSource {
         .createMediaSource(MediaItem.Builder().setUri(url).build())
 }
 
-/**
- * An album page never loads its photos up front. Videos (when there are any) play in the player
- * on top, exactly like a Cosplaytele post; the photos sit behind one "Photos" button that opens
- * the separate photos screen. Related albums are listed with their thumbnails.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BuonduaAlbumScreen(
@@ -127,7 +121,6 @@ fun BuonduaAlbumScreen(
 
     LaunchedEffect(code) { viewModel.load(code) }
 
-    // ---- player lifecycle
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -393,7 +386,6 @@ private fun AlbumContent(
             }
         }
 
-        // Photos are never loaded here: one button opens the photos screen.
         if (photoCount > 0 || state.photos.isNotEmpty()) {
             item(key = "photos_entry", span = { GridItemSpan(maxLineSpan) }) {
                 Box(Modifier.padding(top = 4.dp).clip(RoundedCornerShape(16.dp)).clickable { onOpenPhotos() }) {

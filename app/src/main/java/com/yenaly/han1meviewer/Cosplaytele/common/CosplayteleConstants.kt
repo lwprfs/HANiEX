@@ -5,21 +5,6 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.network.SiteNetworkPrefs
 import java.net.URLEncoder
 
-/**
- * Cosplaytele (WordPress + Flatsome theme).
- *
- * Page map taken from the HAR captures:
- *  - `/`                       latest posts (paged: `/page/N/`)
- *  - `/24-hours/`              most viewed in the last 24 hours (WordPress Popular Posts page)
- *  - `/top-search/`            most searched cosplayers / tags
- *  - `/best-cosplayer/`        best cosplayers
- *  - `/explore-categories/`    all categories + tags
- *  - `/category/<slug>/`       category archive (cosplay, cosplay-nudee, cosplay-ero, video-cosplayyy,
- *                              cosplayer names such as machi, sticky-bunny, game names such as genshin-impact)
- *  - `/tag/<slug>/`            tag archive (frieren, wuthering-waves, rezero ...)
- *  - `/<post-slug>/`           a post: photo gallery and/or video embed
- *  - `/?s=<query>`             full search, `/wp-admin/admin-ajax.php` (Ajax Search Lite) for live search
- */
 object CosplayteleConstants {
 
     val BASE_URL: String
@@ -28,12 +13,10 @@ object CosplayteleConstants {
     val HOSTNAME: Array<String>
         get() = SiteNetworkPrefs.knownHosts(SiteType.COSPLAYTELE, listOf("cosplaytele.com"))
 
-    /** Video host used by the embedded players. */
     const val STREAM_HOST = "cossora.stream"
     const val STREAM_ORIGIN = "https://cossora.stream"
     const val STREAM_REFERER = "https://cossora.stream/"
 
-    /** Ajax Search Lite instance id used by the site's own search box. */
     const val AJAX_SEARCH_ID = "3"
 
     val QUALITIES = listOf("auto", "1080p", "720p", "480p", "360p")
@@ -53,7 +36,6 @@ object CosplayteleConstants {
         val collectTerms: Boolean get() = kind == SectionKind.TERMS
     }
 
-    /** Sections of the home page, in display order. */
     val HOME_SECTIONS: List<Section> = listOf(
         Section("latest", "Latest", ""),
         Section("24h", "Top 24 hours", "/24-hours/"),
@@ -77,7 +59,6 @@ object CosplayteleConstants {
         return if (clean.isEmpty() || clean == "/") "$BASE_URL/" else BASE_URL + "/" + clean.trim('/') + "/"
     }
 
-    /** Builds the url of [page] for an archive path (`/category/x/` -> `/category/x/page/2/`). */
     fun pagedUrl(path: String, page: Int): String {
         val first = pageUrl(path)
         return if (page <= 1) first else first.trimEnd('/') + "/page/$page/"
@@ -93,7 +74,6 @@ object CosplayteleConstants {
 
     fun postUrl(slug: String): String = "$BASE_URL/${slug.trim('/')}/"
 
-    /** First url segments that are never a post. */
     val RESERVED_SEGMENTS = setOf(
         "category", "tag", "page", "author", "feed", "comments", "search", "wp-content", "wp-admin",
         "wp-json", "wp-includes", "wp-login.php", "xmlrpc.php", "24-hours", "top-search",
@@ -102,7 +82,6 @@ object CosplayteleConstants {
         "cart", "checkout", "my-account", "shop", "request", "report", "donate",
     )
 
-    /** `https://cosplaytele.com/the-herta-swimsuit-2/` -> `the-herta-swimsuit-2`. */
     fun parsePostReference(input: String): String? {
         val text = input.trim()
         if (text.isEmpty()) return null

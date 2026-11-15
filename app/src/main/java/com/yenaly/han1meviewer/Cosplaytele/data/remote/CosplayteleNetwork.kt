@@ -59,7 +59,6 @@ object CosplayteleNetwork {
 
     private val streamReferers = ConcurrentHashMap<String, String>()
 
-    /** Remembers the Referer a resolved stream needs, so downloads can send the same one. */
     fun rememberStreamReferer(slug: String, referer: String) {
         if (slug.isNotBlank() && referer.isNotBlank()) streamReferers[slug] = referer
     }

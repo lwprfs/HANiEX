@@ -145,11 +145,6 @@ private fun buildMediaSource(context: Context, url: String, referer: String, ori
     }
 }
 
-/**
- * A post can hold a video, a photo gallery or both. When both exist the page has two clearly
- * separated sections - a video section (player on top, tinted primary) and a photo section (tinted
- * secondary) - with a jump bar to switch between them.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CosplaytellePostScreen(
@@ -512,7 +507,7 @@ private fun CosplaytellePostContent(
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        // ---- title + terms
+
         item(key = "header", span = { GridItemSpan(maxLineSpan) }) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 4.dp)) {
                 Text(info.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
@@ -539,7 +534,6 @@ private fun CosplaytellePostContent(
             }
         }
 
-        // ---- actions
         item(key = "actions", span = { GridItemSpan(maxLineSpan) }) {
             SiteVideoActionBar(
                 site = SiteType.COSPLAYTELE,
@@ -561,7 +555,6 @@ private fun CosplaytellePostContent(
             )
         }
 
-        // ---- SECTION 1: video
         if (info.hasVideo) {
             item(key = "video_section", span = { GridItemSpan(maxLineSpan) }) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
@@ -618,8 +611,6 @@ private fun CosplaytellePostContent(
             }
         }
 
-        // ---- SECTION 2: photos. No post loads its photos here: one button opens the separate
-        // photos screen (same for video posts and photo-only posts).
         if (info.hasPhotos) {
             item(key = "photos_entry", span = { GridItemSpan(maxLineSpan) }) {
                 Box(Modifier.padding(top = 8.dp).clip(RoundedCornerShape(16.dp)).clickable { onOpenPhotos() }) {
@@ -634,7 +625,6 @@ private fun CosplaytellePostContent(
             }
         }
 
-        // ---- related posts
         if (info.related.isNotEmpty()) {
             item(key = "related_header", span = { GridItemSpan(maxLineSpan) }) {
                 SectionBanner(

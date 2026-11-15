@@ -23,7 +23,6 @@ object CosplayteleRepo {
         response.body()?.string().orEmpty()
     }
 
-    /** Any listing page: home, archive, 24 hours, top search, best cosplayer, categories ... */
     suspend fun page(url: String, collectTerms: Boolean): Result<CosplayteleListPage> = runCatching {
         val html = fetchHtml(url)
         withContext(Dispatchers.Default) { CosplayteleParser.parseListPage(html, collectTerms) }
@@ -39,13 +38,11 @@ object CosplayteleRepo {
         }
     }.onSuccess { d -> synchronized(detailCache) { detailCache[slug] = d } }
 
-    /** Detail already fetched by the post screen (used by the photos screen), else a fresh fetch. */
     suspend fun detailCached(slug: String): Result<CosplayteleDetail> {
         val hit = synchronized(detailCache) { detailCache[slug] }
         return if (hit != null) Result.success(hit) else detail(slug)
     }
 
-    /** The site's own live search box (Ajax Search Lite), used for suggestions while typing. */
     suspend fun liveSearch(query: String): Result<List<CosplayteleCard>> = runCatching {
         val body = FormBody.Builder()
             .add("action", "ajaxsearchlite_search")

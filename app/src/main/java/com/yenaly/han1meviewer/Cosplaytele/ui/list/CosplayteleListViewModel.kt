@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 sealed interface CosplayteleSource {
-    /** A site page: `""` (home), `/24-hours/`, `/category/x/`, `/tag/x/`, `/top-search/` ... */
+
     data class Page(val path: String, val collectTerms: Boolean = false) : CosplayteleSource
     data class Search(val query: String) : CosplayteleSource
 }

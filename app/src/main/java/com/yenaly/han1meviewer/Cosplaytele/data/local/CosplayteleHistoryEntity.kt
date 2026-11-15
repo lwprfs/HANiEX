@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
-/** One row per opened post (photo set and/or video). [videoCode] is the post slug. */
 @Serializable
 @Entity(tableName = "cosplaytele_watch_history")
 data class CosplayteleHistoryEntity(

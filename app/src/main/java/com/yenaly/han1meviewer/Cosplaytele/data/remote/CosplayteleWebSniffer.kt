@@ -15,10 +15,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
-/**
- * Last-resort stream finder: loads the embed page in a hidden WebView (so its JavaScript runs
- * exactly like in a browser) and returns the first `.m3u8` request the player makes.
- */
 object CosplayteleWebSniffer {
 
     private const val TIMEOUT_MS = 20_000L
@@ -54,7 +50,7 @@ object CosplayteleWebSniffer {
                             override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) = Unit
 
                             override fun onPageFinished(view: WebView, url: String?) {
-                                // Nudge players that wait for a tap before requesting the playlist.
+
                                 view.evaluateJavascript(
                                     "(function(){try{var v=document.querySelector('video');if(v){v.muted=true;v.play();}" +
                                         "var b=document.querySelector('.jw-icon-display,.play,button');if(b)b.click();}catch(e){}})()",

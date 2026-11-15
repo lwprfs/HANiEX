@@ -61,7 +61,6 @@ import kotlinx.coroutines.launch
 fun cosplayteleSafeName(s: String): String =
     s.replace(Regex("[\\\\/:*?\"<>|]"), "_").trim().take(60).ifBlank { "cosplaytele" }
 
-/** Full-screen photo pager with pinch / double-tap zoom and per-photo save. */
 @Composable
 fun CosplaytelePhotoViewer(
     photos: List<String>,
@@ -214,7 +213,7 @@ private fun ZoomablePhoto(
                     )
                 }
                 .then(
-                    // Only while zoomed in: otherwise the pager must keep the horizontal swipes.
+
                     if (scale > 1.01f) Modifier.pointerInput(url) {
                         detectTransformGestures { _, pan, zoom, _ ->
                             scale = (scale * zoom).coerceIn(1f, 4f)

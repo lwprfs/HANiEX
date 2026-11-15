@@ -16,10 +16,6 @@ import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import java.util.concurrent.TimeUnit
 
-/**
- * Photos are served from the site's own `wp-content/uploads` and need the post / site Referer.
- * Every image request of this site goes through [get].
- */
 object CosplayteleImageLoader {
 
     private fun isSiteHost(host: String): Boolean =
@@ -68,7 +64,6 @@ object CosplayteleImageLoader {
             instance ?: build(context.applicationContext).also { instance = it }
         }
 
-    /** Client used for saving photos to disk (adds the headers the CDN expects). */
     fun downloadClient(): OkHttpClient = siteClient
 
     fun downloadHeaders(referer: String? = null): Map<String, String> =

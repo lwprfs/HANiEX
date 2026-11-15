@@ -57,10 +57,6 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import kotlinx.coroutines.delay
 
-/**
- * Search: while typing, the site's live search (Ajax Search Lite) provides suggestions; submitting
- * runs the full `/?s=` search with paging. Pasting a post link opens the post directly.
- */
 @Composable
 fun CosplayteleSearchScreen(
     initialQuery: String?,

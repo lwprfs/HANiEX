@@ -54,11 +54,9 @@ data class CosplayteleSearchRoute(val query: String? = null)
 @Serializable
 data class CosplaytelePostRoute(val slug: String, val resumePosition: Long = 0L)
 
-/** Photos-only screen of a post (used for posts that also have a video). */
 @Serializable
 data class CosplaytelePhotosRoute(val slug: String)
 
-/** Any archive / "top" page: `/24-hours/`, `/top-search/`, `/category/x/`, `/tag/x/` ... */
 @Serializable
 data class CosplayteleListRoute(
     val path: String,

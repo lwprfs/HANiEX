@@ -10,13 +10,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import java.io.IOException
 
-/**
- * Posts embed their video as `https://cossora.stream/embed/<uuid>` (JW Player). Playing it needs:
- *  1. the embed page, fetched with the post as Referer, which carries a signed
- *     `api-embed/<uuid>/index.m3u8?token=...` url;
- *  2. that master playlist (variants `master_1920p.m3u8`, ...), fetched with the embed page as Referer;
- *  3. segments from `hls-cdn.cossora.stream`, which want `Referer/Origin: https://cossora.stream`.
- */
 object CosplayteleStreamResolver {
 
     private val M3U8_REGEX = Regex("""https?:\\?/\\?/[^"'\s<>\\]+(?:\\/[^"'\s<>\\]+)*\.m3u8[^"'\s<>]*""")
@@ -37,7 +30,6 @@ object CosplayteleStreamResolver {
                 ?: CosplayteleConstants.STREAM_ORIGIN
             val alternates = listOf(CosplayteleConstants.STREAM_REFERER, pageUrl)
 
-            // 1) the embed page itself, 2) the player's api endpoint, 3) a real WebView sniffing the request.
             val html = runCatching { get(embed, pageUrl) }.getOrDefault("")
             var playlist = if (html.isNotBlank()) findPlaylist(html, embed) else null
             if (playlist == null) playlist = guessApiPlaylist(embed, pageUrl, alternates)
@@ -46,7 +38,6 @@ object CosplayteleStreamResolver {
             expandPlaylist(CosplayteleStream(playlist, "auto", embed, origin), alternates)
         }
 
-    /** Some embeds only expose `api-embed/<id>/index.m3u8` (token optional): try it directly. */
     private fun guessApiPlaylist(embed: String, pageUrl: String, alternates: List<String>): String? {
         val id = ID_REGEX.find(embed)?.groupValues?.get(1) ?: return null
         val http = embed.toHttpUrlOrNull() ?: return null
@@ -81,10 +72,10 @@ object CosplayteleStreamResolver {
 
     private fun findPlaylist(html: String, embedUrl: String): String? {
         M3U8_REGEX.find(html)?.let { return cleanUrl(it.value) }
-        // Percent-encoded / unicode-escaped copies of the url.
+
         val decoded = runCatching { java.net.URLDecoder.decode(html.replace("\\u002F", "/"), "UTF-8") }.getOrDefault(html)
         if (decoded !== html) M3U8_REGEX.find(decoded)?.let { return cleanUrl(it.value) }
-        // Base64-wrapped config blobs (atob("...")).
+
         for (m in BASE64_REGEX.findAll(html)) {
             val text = runCatching { String(android.util.Base64.decode(m.value, android.util.Base64.DEFAULT)) }
                 .getOrNull() ?: continue
@@ -93,7 +84,7 @@ object CosplayteleStreamResolver {
         }
         FILE_REGEX.findAll(html).map { unescape(it.groupValues[1]) }
             .firstOrNull { it.contains(".m3u8") }?.let { return absolute(it, embedUrl) }
-        // Token present but url assembled by script: rebuild it the way the player does.
+
         val id = ID_REGEX.find(embedUrl)?.groupValues?.get(1)
         val token = TOKEN_REGEX.find(html)?.value
         val http: HttpUrl? = embedUrl.toHttpUrlOrNull()
@@ -107,14 +98,12 @@ object CosplayteleStreamResolver {
         if (url.startsWith("http")) url
         else runCatching { java.net.URI(base).resolve(url).toString() }.getOrDefault(url)
 
-    /** Variant urls often drop the signed query of their master playlist: carry it over. */
     private fun withMasterQuery(variant: String, master: String): String {
         if (variant.contains("token=") || !master.contains('?')) return variant
         if (variant.contains('?')) return variant
         return variant + "?" + master.substringAfter('?')
     }
 
-    /** Splits a master playlist into one entry per variant; media playlists stay as they are. */
     private fun expandPlaylist(auto: CosplayteleStream, alternates: List<String> = emptyList()): List<CosplayteleStream> {
         if (!auto.url.contains(".m3u8")) return listOf(auto)
         var base = auto
@@ -137,7 +126,7 @@ object CosplayteleStreamResolver {
             val res = RESOLUTION_REGEX.find(line)
             val w = res?.groupValues?.get(1)?.toIntOrNull() ?: 0
             val h = res?.groupValues?.get(2)?.toIntOrNull() ?: 0
-            // Portrait clips report 1080x1920: the quality label follows the short side.
+
             val side = if (w > 0 && h > 0) minOf(w, h) else 0
             val label = if (side > 0) "${side}p" else {
                 val bw = BANDWIDTH_REGEX.find(line)?.groupValues?.get(1)?.toLongOrNull() ?: 0L
@@ -150,7 +139,6 @@ object CosplayteleStreamResolver {
         return if (sorted.size > 1) listOf(base) + sorted else sorted
     }
 
-    /** Picks the stream for the preferred quality ("auto", "1080p" ...). */
     fun choose(streams: List<CosplayteleStream>, preferred: String): CosplayteleStream? {
         if (streams.isEmpty()) return null
         if (preferred == "auto") return streams.first()

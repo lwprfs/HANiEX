@@ -19,10 +19,6 @@ import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
-/**
- * One site page by path: `/24-hours/`, `/top-search/`, `/best-cosplayer/`, `/explore-categories/`,
- * `/category/<slug>/` (cosplayer, game, type) and `/tag/<slug>/`.
- */
 @Composable
 fun CosplayteleListScreen(
     path: String,

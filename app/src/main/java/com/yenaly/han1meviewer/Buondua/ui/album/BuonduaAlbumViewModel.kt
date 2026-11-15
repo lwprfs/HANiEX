@@ -36,7 +36,6 @@ data class BuonduaAlbumUiState(
 ) {
     val hasMorePages: Boolean get() = loadedPages in 1 until totalPages
 
-    /** Albums that carry videos keep their photos on a separate screen. */
     val hasVideos: Boolean get() = videos.isNotEmpty() || (videoCount ?: 0) > 0
 }
 
@@ -55,10 +54,6 @@ class BuonduaAlbumViewModel : ViewModel() {
     private var photosOnly: Boolean = false
     private var job: Job? = null
 
-    /**
-     * [photosOnly] is used by the separate photos screen: it neither records a history visit nor
-     * probes the videos again - the album screen already did both.
-     */
     fun load(albumCode: String, force: Boolean = false, photosOnly: Boolean = false) {
         if (!force && code == albumCode && _state.value.loadedPages > 0) return
         code = albumCode
@@ -128,10 +123,6 @@ class BuonduaAlbumViewModel : ViewModel() {
         if (!photosOnly) selectFirstVideoIfNeeded()
     }
 
-    /**
-     * Photos are no longer paged in on the album screen, so videos that sit on later pages are
-     * fetched here (only when the title promises more videos than page 1 had).
-     */
     private fun fetchMissingVideos(first: BuonduaAlbumPage) {
         val expected = first.videoCount ?: 0
         if (expected <= first.videos.size || first.totalPages <= 1) return
@@ -142,7 +133,6 @@ class BuonduaAlbumViewModel : ViewModel() {
         }
     }
 
-    /** Streams the first video straight into the player: no probing, no full download. */
     private fun selectFirstVideoIfNeeded() {
         if (_player.value.url.isNotBlank()) return
         selectVideo(0)

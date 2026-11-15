@@ -54,7 +54,6 @@ data class BuonduaSearchRoute(val query: String? = null)
 @Serializable
 data class BuonduaAlbumRoute(val videoCode: String, val resumePosition: Long = 0L)
 
-/** Photos-only screen of an album (used for albums that also have videos). */
 @Serializable
 data class BuonduaPhotosRoute(val code: String)
 

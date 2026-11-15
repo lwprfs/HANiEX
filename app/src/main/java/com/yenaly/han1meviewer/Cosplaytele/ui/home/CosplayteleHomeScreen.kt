@@ -32,10 +32,6 @@ import com.yenaly.han1meviewer.ui.component.SiteHomeTopBar
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 
-/**
- * Home: a chip row over every browsable page of the site (latest, top 24 hours, videos, top
- * search, best cosplayer, categories, cosplay / nude / ero archives).
- */
 @Composable
 fun CosplayteleHomeScreen(
     onNavigateToPost: (String) -> Unit,

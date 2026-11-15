@@ -97,7 +97,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** Sites whose posts / albums can be saved as images. */
 val IMAGE_DOWNLOAD_SITES = setOf(SiteType.FAPFOLDER, SiteType.BUONDUA, SiteType.XHAMSTER, SiteType.COSPLAYTELE)
 
 private data class PhotoEntry(

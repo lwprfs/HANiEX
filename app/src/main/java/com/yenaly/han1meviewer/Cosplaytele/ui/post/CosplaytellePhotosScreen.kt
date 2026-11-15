@@ -83,10 +83,6 @@ class CosplaytellePhotosViewModel : ViewModel() {
     }
 }
 
-/**
- * Photos only: back + "download all" at the top, a grid below. Tapping a photo opens the
- * full-screen pager (swipe sideways through every photo); going back lands here again.
- */
 @Composable
 fun CosplaytellePhotosScreen(
     slug: String,

@@ -52,7 +52,6 @@ class CosplaytellePostViewModel : ViewModel() {
     private val _selectedVideo = MutableStateFlow(0)
     val selectedVideo: StateFlow<Int> = _selectedVideo.asStateFlow()
 
-    /** Referer / Origin the current stream must be requested with. */
     private val _referer = MutableStateFlow(CosplayteleConstants.STREAM_REFERER)
     val referer: StateFlow<String> = _referer.asStateFlow()
     private val _origin = MutableStateFlow(CosplayteleConstants.STREAM_ORIGIN)

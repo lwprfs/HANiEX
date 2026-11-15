@@ -44,7 +44,6 @@ object CosplayteleHistoryRepo {
     suspend fun getByVideoCode(videoCode: String): CosplayteleHistoryEntity? =
         withContext(Dispatchers.IO) { runCatching { dao.getByVideoCode(videoCode) }.getOrNull() }
 
-    /** Records that a post was opened (photo posts have no playback progress). */
     suspend fun touch(slug: String, title: String, coverUrl: String) = withContext(Dispatchers.IO) {
         writeMutex.withLock {
             val now = System.currentTimeMillis()

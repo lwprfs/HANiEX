@@ -13,11 +13,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
-/**
- * The site is a WordPress install with the Flatsome theme. Rather than relying on theme class
- * names (which the HAR captures do not include - the saved HTML only has the `<head>`), cards are
- * recognised by what they link to: a single-segment url on the site's own host.
- */
 object CosplayteleParser {
 
     private val PHOTO_COUNT_REGEX = Regex("""(\d+)\s*photos?""", RegexOption.IGNORE_CASE)
@@ -41,7 +36,6 @@ object CosplayteleParser {
         "cropped-icon", "emoji", "gravatar", "/font-awesome/", "logo", "avatar", "-32x32", "-192x192",
     )
 
-    /** Containers that are page chrome, never content. */
     private const val NOISE_SELECTOR =
         "script, style, noscript, template, #header, .header-wrapper, #masthead, #wide-nav, " +
                 "#footer, .footer-wrapper, .mobile-sidebar, .off-canvas, #comments, .comments-area, " +
@@ -49,14 +43,11 @@ object CosplayteleParser {
 
     private const val SIDEBAR_SELECTOR = ".post-sidebar, #secondary, .sidebar, aside.widget-area"
 
-    // ---------------------------------------------------------------- url helpers
-
     private fun isSiteHost(host: String): Boolean {
         val h = host.lowercase()
         return CosplayteleConstants.HOSTNAME.any { h == it || h.endsWith(".$it") }
     }
 
-    /** Slug of a single post url on the site, null for archives, pages, files and other hosts. */
     fun postSlug(absUrl: String): String? {
         if (absUrl.isBlank()) return null
         val url = absUrl.toHttpUrlOrNull() ?: return null
@@ -77,8 +68,6 @@ object CosplayteleParser {
         if (slug.isBlank()) return null
         return kind to slug
     }
-
-    // ---------------------------------------------------------------- text / image helpers
 
     private fun clean(text: String?): String =
         text.orEmpty().replace('\u00a0', ' ').replace(Regex("""\s+"""), " ").trim()
@@ -128,8 +117,6 @@ object CosplayteleParser {
         )
     }
 
-    // ---------------------------------------------------------------- listings
-
     private fun contentRoot(doc: Document): Element {
         doc.select(NOISE_SELECTOR).remove()
         val root = doc.selectFirst("#content, main#main, #main, main, .page-wrapper") ?: doc.body()
@@ -137,7 +124,6 @@ object CosplayteleParser {
         return root
     }
 
-    /** Largest ancestor of [anchor] that still only links to a single post. */
     private fun cardContainer(anchor: Element, root: Element): Element {
         var best: Element = anchor
         var cur: Element? = anchor.parent()
@@ -250,9 +236,6 @@ object CosplayteleParser {
         return CosplayteleListPage(cards = cards, terms = terms, nextUrl = next)
     }
 
-    // ---------------------------------------------------------------- live search (Ajax Search Lite)
-
-    /** Response of `admin-ajax.php?action=ajaxsearchlite_search`: `{"html":"<div class='item ...'>..."}`. */
     fun parseAjaxSearch(json: String): List<CosplayteleCard> {
         val html = runCatching { JSONObject(json).optString("html") }.getOrDefault("")
         if (html.isBlank()) return emptyList()
@@ -268,8 +251,6 @@ object CosplayteleParser {
         }
         return out.distinctBy { it.slug }
     }
-
-    // ---------------------------------------------------------------- post
 
     private fun isRelatedContext(el: Element): Boolean {
         var p: Element? = el.parent()
@@ -340,8 +321,7 @@ object CosplayteleParser {
             if (seen.add(src.substringBefore('?'))) urls += src
         }
         if (urls.size < 4) return urls
-        // Posts number their photos `<title>-1_result.webp ... -N_result.webp`; keep that run and
-        // drop strays (author avatars, ads, banners) that slipped into the content area.
+
         val dominant = urls.groupBy { baseKey(it) }.maxByOrNull { it.value.size } ?: return urls
         return if (dominant.value.size >= 3 && dominant.value.size * 2 >= urls.size) {
             urls.filter { baseKey(it) == dominant.key }
@@ -381,7 +361,6 @@ object CosplayteleParser {
             ?.substringBefore('T')
             ?: doc.selectFirst("time[datetime]")?.attr("datetime")?.substringBefore('T').orEmpty()
 
-        // Related posts: every other post card that is not inside the entry body.
         if (entry !== article && entry !== doc.body()) entry.remove()
         val related = parseCards(contentRoot(doc))
             .filter { it.slug != slug && it.coverUrl.isNotBlank() }
