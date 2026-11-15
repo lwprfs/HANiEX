@@ -15,10 +15,6 @@ import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
 import java.util.concurrent.TimeUnit
 
-/**
- * Album images are hot-link protected, so every request carries the site Referer
- * (the page itself sends `referrerpolicy="strict-origin"`).
- */
 object BuonduaImageLoader {
 
     private val refererInterceptor = Interceptor { chain ->

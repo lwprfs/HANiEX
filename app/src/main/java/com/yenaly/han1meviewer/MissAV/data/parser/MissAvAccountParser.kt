@@ -22,13 +22,6 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URI
 
-/**
- * Parsers for MissAV's logged-in pages and `/api` responses.
- *
- * The list pages (history / saved / playlists / actresses) are parsed tolerantly: video cards reuse the
- * site's standard `div.thumbnail` card, and actress / playlist cards are located by their link + image
- * patterns rather than by exact class names.
- */
 object MissAvAccountParser {
 
     private val ITEM_KEY = Regex("""/api/items/([A-Za-z0-9]+)/(?:view|save)""")
@@ -36,8 +29,6 @@ object MissAvAccountParser {
     private val ACTRESS_ID_IMG = Regex("""/actress/(\d+)""")
     private val PLAYLIST_KEY = Regex("""/playlists/([A-Za-z0-9]{6,})(?:[/?#].*)?$""")
     private val MAGNET = Regex("""magnet:\?xt=[^"'\s<>\\]+""")
-
-    // ---- video page extras ----
 
     fun extractItemKey(body: String): String? = ITEM_KEY.find(body.replace("&amp;", "&"))?.groupValues?.get(1)
 
@@ -55,13 +46,10 @@ object MissAvAccountParser {
         return MAGNET.find(body.replace("&amp;", "&"))?.value
     }
 
-    // ---- actress page ----
-
     fun extractActressId(body: String): String? =
         ACTRESS_ID_API.find(body)?.groupValues?.get(1)
             ?: ACTRESS_ID_IMG.find(body)?.groupValues?.get(1)
 
-    /** Hero block shared by the actress page and its news page (`h4` name, `<p>` height/size/birthday). */
     fun parseActressProfile(body: String): MissAvActressProfile? {
         val document = parse(body)
         val hero = document.selectFirst("div.hero-pattern")
@@ -76,7 +64,6 @@ object MissAvAccountParser {
         return MissAvActressProfile(name, avatar, details)
     }
 
-    /** `{"data":[{id,text,media,created_at,created_at_for_humans,...}],"next_cursor":"..."}` */
     fun parseTweets(json: String): MissAvTweetsPage {
         val root = JSONObject(json)
         val arr = root.optJSONArray("data")
@@ -107,8 +94,6 @@ object MissAvAccountParser {
         return MissAvTweetsPage(items, next)
     }
 
-    // ---- list pages ----
-
     fun parseVideoList(body: String): MissAvListPage<HanimeInfo> {
         val document = parse(body)
         var items = document.select("div.thumbnail").mapNotNull { card ->
@@ -116,7 +101,7 @@ object MissAvAccountParser {
             info.takeIf { it.videoCode.isNotBlank() && it.coverUrl.isNotBlank() || it.title.isNotBlank() && it.videoCode.isNotBlank() }
         }
         if (items.isEmpty()) {
-            // Fallback: any anchor wrapping a fourhoi cover image.
+
             items = document.select("img[data-src*=fourhoi.com], img[src*=fourhoi.com]")
                 .filter { !it.attr("data-src").plus(it.attr("src")).contains("/actress/") }
                 .mapNotNull { img ->
@@ -186,12 +171,9 @@ object MissAvAccountParser {
     fun hasNext(document: Document): Boolean =
         document.selectFirst("a[rel=next]") != null
 
-    // ---- API ----
-
     fun parseLogin(json: String): MissAvLoginResponse? =
         runCatching { HJson.decodeFromString<MissAvLoginResponse>(json) }.getOrNull()
 
-    /** Laravel validation / error payload → readable message. */
     fun parseErrorMessage(json: String): String? = runCatching {
         val o = JSONObject(json)
         val errors = o.optJSONObject("errors")
@@ -218,7 +200,6 @@ object MissAvAccountParser {
                 .map { MissAvPlaylistOption(it.key, it.name, it.isAdded) }
         }.getOrDefault(emptyList())
 
-    /** Reads the create-playlist `<form>` so hidden fields (CSRF `_token` etc.) are submitted untouched. */
     data class FormSpec(val action: String, val fields: Map<String, String>, val nameField: String)
 
     fun parseCreatePlaylistForm(body: String, pageUrl: String): FormSpec? {
@@ -243,14 +224,10 @@ object MissAvAccountParser {
         return FormSpec(action, fields, "name")
     }
 
-    // ---- helpers ----
-
     private fun parse(body: String): Document = Jsoup.parse(body, Preferences.missAvBaseUrl)
 
-    /** Absolute URL of [attr], falling back to the raw attribute when no base could be applied. */
     private fun Element.urlOf(attr: String): String = absUrl(attr).ifBlank { attr(attr) }
 
-    /** Absolute or relative URL → site-relative path without a leading slash issue (`/dm289/...`). */
     fun toPath(url: String): String = runCatching {
         if (url.isBlank()) return@runCatching ""
         val u = URI(url.replace(" ", "%20"))

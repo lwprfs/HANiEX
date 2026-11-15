@@ -44,7 +44,6 @@ object BuonduaHistoryRepo {
     suspend fun getByVideoCode(videoCode: String): BuonduaHistoryEntity? =
         withContext(Dispatchers.IO) { runCatching { dao.getByVideoCode(videoCode) }.getOrNull() }
 
-    /** Records that an album was opened (and which page the reader reached). */
     suspend fun recordVisit(code: String, title: String, coverUrl: String, page: Int) =
         withContext(Dispatchers.IO) {
             writeMutex.withLock {

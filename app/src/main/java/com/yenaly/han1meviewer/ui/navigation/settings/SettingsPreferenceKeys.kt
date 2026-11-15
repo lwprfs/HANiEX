@@ -30,7 +30,6 @@ object SettingsPreferenceKeys {
     const val SEARCH_GRID_COLUMNS_EXPANDED = "search_grid_columns_expanded"
     const val SEARCH_GRID_COLUMNS_LARGE = "search_grid_columns_large"
 
-    // Vertical video grids (home/list/related). Independent from the search-grid keys above.
     const val VIDEO_GRID_COLUMNS_COMPACT = "video_grid_columns_compact"
     const val VIDEO_GRID_COLUMNS_MEDIUM = "video_grid_columns_medium"
     const val VIDEO_GRID_COLUMNS_EXPANDED = "video_grid_columns_expanded"

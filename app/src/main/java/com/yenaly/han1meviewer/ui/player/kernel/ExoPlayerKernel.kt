@@ -30,21 +30,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
-/**
- * 基于 Media3 ExoPlayer 的播放内核。
- *
- * 自旧版 `ExoMediaKernel`（JZVD `JZMediaInterface` 实现）迁移而来，保留其关键行为：
- * - 播放器实例构建与释放均在专用后台线程执行，避免阻塞主线程；
- * - 起播缓冲按设备 Java 堆分档限制（低内存设备防 OOM）；
- * - HLS（`.m3u8`）与普通媒体流自动选择对应 MediaSource；
- * - seek 超出已缓冲位置时回调 [KernelListener.onBuffering] 显示 loading。
- *
- * ### 线程模型
- * 所有公开方法在主线程调用；命令通过 [mediaHandler] 转发到播放器线程执行，
- * `isPlaying` / 位置等同步查询通过 [runOnPlayerThread] 以 300ms 超时等待结果。
- *
- * @param context 应用级 Context
- */
 @OptIn(UnstableApi::class)
 class ExoPlayerKernel(
     private val context: Context,
@@ -55,24 +40,15 @@ class ExoPlayerKernel(
 
         private const val MIB = 1024 * 1024
 
-        /** 起播只需要 1 秒缓冲，卡顿后重新起播需要 2 秒。 */
         private const val BUFFER_FOR_PLAYBACK_MS = 1_000
         private const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 2_000
 
-        /**
-         * 按普通 Java 堆大小选择播放缓冲配置。
-         *
-         * Media3 默认会按 125 MB 视频 + 12.5 MB 音频准备缓冲，在 256 MB 堆的设备上，
-         * 加上图片缓存后很容易直接 OOM。这里根据 `ActivityManager.memoryClass`
-         * 分档限制缓冲，既照顾低内存设备，也尽量不牺牲大堆设备的播放体验。
-         */
         private fun createLoadControl(context: Context): LoadControl {
             val memoryClassMb = context.getSystemService(ActivityManager::class.java)
                 ?.memoryClass
                 ?.takeIf { it > 0 }
                 ?: 256
 
-            // targetBufferBytes 是视频、音频、字幕等所有轨道的合计上限。
             val (targetBufferBytes, minBufferMs, maxBufferMs) = when {
                 memoryClassMb <= 256 -> Triple(48 * MIB, 10_000, 20_000)
                 memoryClassMb <= 384 -> Triple(64 * MIB, 15_000, 30_000)
@@ -93,7 +69,7 @@ class ExoPlayerKernel(
                     BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
                 )
                 .setTargetBufferBytes(targetBufferBytes)
-                // 优先按内存上限停止加载，避免低内存设备被缓冲撑爆。
+
                 .setPrioritizeTimeOverSizeThresholds(false)
                 .build()
         }
@@ -108,14 +84,12 @@ class ExoPlayerKernel(
     private var mediaHandler: Handler? = null
     private var mediaHandlerThread: HandlerThread? = null
 
-    /** [prepare] 之前 setSurface 缓存的 surface，就绪后挂载。 */
     @Volatile
     private var pendingSurface: Surface? = null
 
     @Volatile
     private var _exoPlayer: ExoPlayer? = null
 
-    /** release 后置位，防止已 post 未构建的播放器泄漏。 */
     @Volatile
     private var released = false
 
@@ -164,8 +138,7 @@ class ExoPlayerKernel(
                                 listener?.onPlaying()
                             }
                         } else {
-                            // 暂停态就绪：补 onPaused，把暂停中远端 seek 触发的
-                            // BUFFERING 恢复为 PAUSED（控制器带状态守卫，幂等）
+
                             mainHandler.post {
                                 listener?.onPrepared()
                                 listener?.onPaused()
@@ -178,8 +151,6 @@ class ExoPlayerKernel(
                     mainHandler.post { listener?.onCompleted() }
                 }
 
-                // STATE_IDLE：出错/停止后的空闲态，错误由 onPlayerError 上报，
-                // 这里无需向控制器转发任何状态
                 Player.STATE_IDLE -> Unit
             }
         }
@@ -217,8 +188,7 @@ class ExoPlayerKernel(
                         if (playing) {
                             listener?.onPlaying()
                         } else {
-                            // 暂停中 seek：把可能的 BUFFERING 拉回暂停态，
-                            // 否则 UI 会一直转圈
+
                             listener?.onPaused()
                         }
                     }
@@ -235,10 +205,7 @@ class ExoPlayerKernel(
     }
 
     override fun prepare(request: MediaRequest) {
-        // release() 会清空 pendingSurface 与 listener，而控制器在 prepare 之前已把
-        // 当前 surface 经 setSurface 缓存进来、监听也在 init 时挂好（首次起播与
-        // 换清晰度都是如此），这里必须保住两者：surface 丢了会「有声无画」，
-        // listener 丢了会收不到 READY 回调（UI 永久 loading、进度不动）。
+
         val surfaceToKeep = pendingSurface
         val listenerToKeep = listener
         release()
@@ -323,12 +290,10 @@ class ExoPlayerKernel(
             val player = _exoPlayer ?: return@post
             if (positionMs != prevSeek) {
                 if (positionMs >= player.bufferedPosition) {
-                    // seek 目标超出已缓冲范围，显示 loading
+
                     mainHandler.post { listener?.onBuffering() }
                 }
-                // 不强制 playWhenReady：暂停中 seek 保持暂停（对齐 MPV 内核）。
-                // 暂停中的远端 seek 会先进入 BUFFERING，seek 完成后由
-                // onPositionDiscontinuity 的 onPaused 恢复暂停态。
+
                 player.seekTo(positionMs)
                 prevSeek = positionMs
             }
@@ -374,15 +339,13 @@ class ExoPlayerKernel(
             player?.release()
             return
         }
-        // release 不能放到主线程里，界面会卡顿
+
         handler.post {
             try {
                 player?.release()
             } catch (_: Exception) {
             }
-            // media3 的 release() 内部还会向本线程 looper 投递收尾消息，
-            // 立即 quit 会撞出 "sending message to a Handler on a dead thread"
-            // 警告——延迟退出，给内部清理留出窗口。
+
             handler.postDelayed({
                 handler.removeCallbacksAndMessages(null)
                 thread.quitSafely()
@@ -390,11 +353,6 @@ class ExoPlayerKernel(
         }
     }
 
-    /**
-     * 在播放器线程同步执行 [block]，超时（300ms）返回 null。
-     *
-     * 供 `isPlaying` / 位置 / 时长等同步查询使用。
-     */
     private inline fun <T> runOnPlayerThread(crossinline block: () -> T?): T? {
         val handler = mediaHandler ?: return null
         if (Looper.myLooper() == handler.looper) {

@@ -129,16 +129,6 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import com.yenaly.han1meviewer.util.dp as dpToPx
 
-/**
- * 播放页宿主（纯 Compose）。
- *
- * 取代旧版基于 View 体系的 `VideoRouteShell`（CoordinatorLayout + AppBarLayout +
- * CollapsingToolbarLayout）与 `HJzvdStd` 播放器：
- * - 播放器经 [rememberMovablePlayerSurface] 在「折叠头部小窗 / 平板分栏 / 全屏覆盖层」间移动；
- * - 全屏为 Compose 树内覆盖层（视频页无底部导航，页面级覆盖即可全屏），
- *   配合 [WindowInsetsControllerCompat] 隐藏系统栏与方向锁定；
- * - PiP、观看历史、自动连播、重力自动全屏等页面级逻辑自旧版等价迁移。
- */
 @OptIn(ExperimentalTime::class)
 @Composable
 fun VideoRouteHostScreen(
@@ -157,7 +147,7 @@ fun VideoRouteHostScreen(
         initialValue = emptyList(),
         key1 = Preferences.baseUrl,
     ) {
-        // 资产 JSON 读取 + 解析移到 IO：避免在组合期间占用主线程
+
         value = withContext(Dispatchers.IO) {
             loadAssetAs<List<com.yenaly.han1meviewer.logic.model.SearchOption>>(
                 if (Preferences.baseUrl == com.yenaly.han1meviewer.HanimeConstants.HANIME_URL[3]) {
@@ -189,11 +179,9 @@ fun VideoRouteHostScreen(
     var unsubscribeArtist by remember { mutableStateOf<HanimeVideo.Artist?>(null) }
     var showDownloadPermissionDialog by remember { mutableStateOf(false) }
 
-    // ---------------- 播放器核心 ----------------
-
     val kernelType = remember(route.videoCode, route.localUri) {
         val preferred = KernelType.fromString(Preferences.switchPlayerKernel)
-        // 魔改版：HentaiMama 及已标记需回退的流强制走 MPV
+
         if (SiteCheckIn.siteOfDishCode(route.videoCode) == SiteType.HENTAIMAMA ||
             com.yenaly.han1meviewer.ui.component.player.StreamFallback.shouldUseMpv(route.localUri)
         ) {
@@ -209,39 +197,24 @@ fun VideoRouteHostScreen(
         onDispose { controller.release() }
     }
 
-    /** 关键帧实体（倒计时与列表弹窗数据源）。 */
     var keyframeEntity by remember(route.videoCode) { mutableStateOf<HKeyframeEntity?>(null) }
 
-    /** 可移动的视频 Surface。 */
     val playerSurface = rememberMovablePlayerSurface(controller)
 
-    /** 是否全屏。 */
     var isFullscreen by remember { mutableStateOf(false) }
-    /** 是否处于 PiP。 */
+
     val isInPipMode = hostUiState.isInPipMode
 
-    /** 播放器在窗口中的位置（PiP sourceRectHint 用）。 */
     var playerWindowBounds by remember {
         mutableStateOf(androidx.compose.ui.geometry.Rect(androidx.compose.ui.geometry.Offset.Zero, androidx.compose.ui.geometry.Offset.Zero))
     }
 
-    /** 进入全屏前的窗口亮度（退出时恢复）。 */
     var brightnessBackup by remember { mutableFloatStateOf(-1f) }
 
-    /** 重力自动全屏防抖时间戳。 */
     var lastAutoFullscreenTime by remember { mutableLongStateOf(0L) }
 
-    // ---------------- 全屏切换过渡 ----------------
-    //
-    // 覆盖层从小窗矩形（playerWindowBounds，与 PiP sourceRectHint 同源）
-    // 扩展/收缩到全屏；动画期间小窗槽位保持黑色占位，surface 由 movableContent
-    // 留在覆盖层，动画结束后才归还小窗，避免画面闪跳。进度只在 graphicsLayer
-    //（draw 阶段）读取，不引发逐帧重组。
-
-    /** 全屏过渡进度：0 = 小窗矩形，1 = 全屏。 */
     val fullscreenAnim = remember { Animatable(0f) }
 
-    /** 覆盖层是否在组合中（含退出动画期间；结束后才移除）。 */
     var fullscreenOverlayVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(isFullscreen, isInPipMode) {
@@ -258,7 +231,7 @@ fun VideoRouteHostScreen(
             }
 
             else -> {
-                // 只有覆盖层真展示过才播放退出动画
+
                 if (fullscreenOverlayVisible) {
                     fullscreenAnim.animateTo(0f, tween(240, easing = FastOutSlowInEasing))
                 }
@@ -267,10 +240,6 @@ fun VideoRouteHostScreen(
         }
     }
 
-    /**
-     * 全屏覆盖层是否应顶替小窗槽位：进入/退出动画全程为 true——
-     * 小窗槽位在覆盖层彻底消失前保持黑色占位。
-     */
     val showFullscreenOverlay = fullscreenOverlayVisible && !isInPipMode
 
     fun enterFullscreen() {
@@ -282,7 +251,7 @@ fun VideoRouteHostScreen(
         insetsController.systemBarsBehavior =
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         insetsController.hide(WindowInsetsCompat.Type.systemBars())
-        // 竖屏视频全屏时保持竖屏（对齐旧版 lockOrientation(PORTRAIT) 行为）
+
         activity.requestedOrientation = if (controller.isPortraitVideo) {
             ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         } else {
@@ -296,7 +265,7 @@ fun VideoRouteHostScreen(
         val window = activity.window
         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
         insetsController.show(WindowInsetsCompat.Type.systemBars())
-        // 恢复进入全屏前的亮度（手势调节可能改动过）
+
         window.attributes = window.attributes.apply {
             screenBrightness = brightnessBackup.coerceAtLeast(-1f)
         }
@@ -306,8 +275,6 @@ fun VideoRouteHostScreen(
     BackHandler(enabled = isFullscreen) {
         exitFullscreen()
     }
-
-    // ---------------- 重力自动全屏 ----------------
 
     val orientationManager = remember(activity) {
         OrientationManager(activity) { orientation ->
@@ -328,23 +295,15 @@ fun VideoRouteHostScreen(
         }
     }
 
-    // ---------------- PiP ----------------
-
-    /** PiP 是否允许（与 MainActivity.onUserLeaveHint 读取同一偏好）。 */
     val pipAllowed = remember(activity) {
         android.preference.PreferenceManager
             .getDefaultSharedPreferences(activity)
             .getBoolean("allow_pip_mode", true)
     }
 
-    /** PiP 是否满足进入条件（播放或暂停中）。 */
     val pipEligible = playerUiState.state == PlayerState.PLAYING ||
             playerUiState.state == PlayerState.PAUSED
 
-    /**
-     * PiP 窗口宽高比：按视频实际比例（PiP 支持范围外时收敛到边界），
-     * 未知时回落 16:9——窗口形状与视频一致，配合 sourceRectHint 才能无缝。
-     */
     fun pipAspectRatio(): android.util.Rational {
         val w = playerUiState.videoWidth
         val h = playerUiState.videoHeight
@@ -356,13 +315,6 @@ fun VideoRouteHostScreen(
         return android.util.Rational((ratio * 10_000).roundToInt(), 10_000)
     }
 
-    /**
-     * 统一构建 PiP 参数（进入/更新/autoEnter 共用）：
-     * - 宽高比按视频实际比例，避免窗口形状跳变；
-     * - [includeSourceHint] 携带 sourceRectHint（进入动画从小窗矩形起）；
-     * - S+ 上按 [eligible] 设置 autoEnterEnabled——手势上滑回主页时
-     *   系统直接把播放器动画进 PiP，全程无缝。
-     */
     fun buildPipParams(includeSourceHint: Boolean, eligible: Boolean): PictureInPictureParams {
         val intent = PendingIntent.getBroadcast(
             activity,
@@ -400,10 +352,6 @@ fun VideoRouteHostScreen(
         return builder.build()
     }
 
-    // 播放状态/视频尺寸/全屏态/PiP 模式变化时刷新 PiP 参数——autoEnter 依赖
-    // 最近一次 setPictureInPictureParams。关键：isInPipMode 也作为键——
-    // 从 PiP 展开回来时必须重设（PiP 期间 updatePipAction 刷新过按钮，
-    // 否则 autoEnter=false 的旧参数会留驻系统，导致第二次回桌面不再进 PiP）
     LaunchedEffect(
         pipEligible,
         playerUiState.videoWidth,
@@ -419,13 +367,10 @@ fun VideoRouteHostScreen(
 
     fun updatePipAction() {
         if (!activity.isInPictureInPictureMode) return
-        // 刷新播放/暂停按钮；保留 sourceRectHint 与 autoEnter（展开回 app 后
-        // 系统仍用这套参数，重置 autoEnter 会让下一次回桌面进不了 PiP）
+
         runCatching { activity.setPictureInPictureParams(buildPipParams(true, pipEligible)) }
     }
 
-    // PiP 小窗按钮图标随播放状态同步——播完/出错/音频焦点丢失等
-    // 非按钮路径的状态变化也要刷新 RemoteAction 图标
     LaunchedEffect(isInPipMode, playerUiState.state) {
         if (isInPipMode) updatePipAction()
     }
@@ -462,8 +407,6 @@ fun VideoRouteHostScreen(
         activity.registerCurrentVideoHost(pageHost)
         onDispose { activity.registerCurrentVideoHost(null) }
     }
-
-    // ---------------- 媒体加载与进度恢复 ----------------
 
     val currentOnNoVideoUrl by rememberUpdatedState {
         GlobalToasts.show(
@@ -533,8 +476,6 @@ fun VideoRouteHostScreen(
         }
     }
 
-    // ---------------- 播放状态联动（滚动锁定 / 已看 / 自动连播） ----------------
-
     fun markWatchedIfReachedThreshold() {
         if (viewModel.fromDownload) return
         val duration = controller.durationMs
@@ -574,8 +515,6 @@ fun VideoRouteHostScreen(
         }
     }
 
-    // ---------------- 生命周期（进度保存 / 后台暂停） ----------------
-
     DisposableEffect(lifecycleOwner, activity, controller, route.videoCode) {
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
@@ -588,8 +527,7 @@ fun VideoRouteHostScreen(
                 }
 
                 Lifecycle.Event.ON_STOP -> {
-                    // 息屏/切后台：只暂停播放，保持全屏状态——
-                    // 解锁/回前台后仍处于全屏，不退回小窗
+
                     if (!activity.isInPictureInPictureMode) {
                         controller.pause()
                     }
@@ -606,13 +544,11 @@ fun VideoRouteHostScreen(
         }
     }
 
-    // ---------------- 其它数据流 ----------------
-
     LaunchedEffect(route.videoCode, route.localUri) {
         checkedQuality = null
         pendingDownloadPrompt = null
         videoTitle = null
-        // 签名校验涉及 PackageManager binder 调用与证书摘要计算，移出主线程
+
         withContext(Dispatchers.Default) {
             checkBadGuy(activity, R.raw.akarin)
         }
@@ -683,13 +619,9 @@ fun VideoRouteHostScreen(
         )
     }
 
-    // ---------------- 播放器层 ----------------
-
-    /** 页面视频信息是否仍在加载（加载期间中键显示 loading，不触发跳浏览器兜底）。 */
     val videoInfoLoading =
         viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle().value is VideoLoadingState.Loading
 
-    /** 播放器槽位：surface + 控件整体，可被放置在折叠头部 / 分栏左栏 / 全屏覆盖层。 */
     @Composable
     fun PlayerSlot(modifier: Modifier, fullscreen: Boolean) {
         HanimeVideoPlayer(
@@ -779,8 +711,6 @@ fun VideoRouteHostScreen(
         )
     }
 
-    // ---------------- 布局 ----------------
-
     val configuration = LocalConfiguration.current
     val isTabletLandscape =
         useLargeVideoLayout && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -789,22 +719,17 @@ fun VideoRouteHostScreen(
 
     var isSidePaneCollapsed by rememberSaveable { mutableStateOf(false) }
 
-    // 简介底部是否内嵌相关影片
     LaunchedEffect(relatedAsTab, showSplitLayout) {
         viewModel.hideRelatedInIntro = relatedAsTab || showSplitLayout
     }
 
-    // 播放器高度（px，沿用 VideoHostUiState.playerHeightDp 的像素语义）
-    // 竖屏小窗高度上限：屏高的 60%——竖屏/方形视频按宽换算的高度会超过
-    // 屏高（如 1080x1920 → 宽×1.78），点播放瞬间会撑满整个页面
     val maxSmallWindowHeightPx = (appScreenHeight * 0.6f).toInt()
     LaunchedEffect(isInPipMode, isSidePaneCollapsed, showSplitLayout) {
         if (isInPipMode) return@LaunchedEffect
         val height = if (showSplitLayout) {
             if (isSidePaneCollapsed) 500.dpToPx else 400.dpToPx
         } else {
-            // 竖屏（折叠布局）的基础高度按屏宽 16:9、下限 250dp：
-            // 平板竖屏不再显矮，手机维持原值；起播后由视频真实比例覆盖
+
             minOf(maxOf(250.dpToPx, appScreenWidth * 9 / 16), maxSmallWindowHeightPx)
         }
         if (hostUiState.playerHeightDp != height) {
@@ -813,15 +738,12 @@ fun VideoRouteHostScreen(
     }
     val playerHeightPx = hostUiState.playerHeightDp
 
-    /** 视频宽高比（已加载后用于分栏播放器尺寸约束）。 */
     val videoRatio = if (playerUiState.videoWidth > 0 && playerUiState.videoHeight > 0) {
         playerUiState.videoWidth.toFloat() / playerUiState.videoHeight
     } else {
         0f
     }
 
-    // 手机折叠布局：视频加载后按「宽满屏」的比例调整小窗高度（对齐旧版 JZVD resize 行为），
-    // 同样受 60% 屏高上限约束
     LaunchedEffect(playerUiState.videoWidth, playerUiState.videoHeight, showSplitLayout, isInPipMode) {
         val w = playerUiState.videoWidth
         val h = playerUiState.videoHeight
@@ -832,12 +754,11 @@ fun VideoRouteHostScreen(
         }
     }
 
-    /** 折叠展开状态持久化（跨越阈值时才上报）。 */
     var lastReportedExpanded by remember { mutableStateOf(true) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
-            // PiP：仅保留视频画面，无控件
+
             isInPipMode -> {
                 Box(
                     modifier = Modifier
@@ -848,7 +769,6 @@ fun VideoRouteHostScreen(
                 }
             }
 
-            // 手机/竖屏：折叠头部 + tabs（让出状态栏高度，对齐旧版 shell 的 fitsSystemWindows）
             !showSplitLayout -> {
                 VideoCollapsingHeader(
                     headerHeightPx = playerHeightPx,
@@ -869,7 +789,7 @@ fun VideoRouteHostScreen(
                         .navigationBarsPadding(),
                     headerContent = {
                         if (showFullscreenOverlay) {
-                            // 播放器已移至全屏覆盖层（含切换动画期间），占位避免高度塌陷
+
                             Box(modifier = Modifier.fillMaxSize().background(Color.Black))
                         } else {
                             PlayerSlot(modifier = Modifier.fillMaxSize(), fullscreen = false)
@@ -896,7 +816,6 @@ fun VideoRouteHostScreen(
                 )
             }
 
-            // 平板横屏分栏
             else -> {
                 val indicatorWidth = 28.dp
                 BoxWithConstraints(
@@ -911,7 +830,7 @@ fun VideoRouteHostScreen(
                     )
                     Row(modifier = Modifier.fillMaxSize()) {
                         if (relatedAsTab) {
-                            // 左栏仅播放器，垂直居中
+
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
@@ -940,16 +859,13 @@ fun VideoRouteHostScreen(
                                 }
                             }
                         } else {
-                            // 左栏：播放器（可折叠头部）+ 相关影片列表——暂停时与手机
-                            // 折叠布局行为一致：上滑先折叠播放器，播放中锁定展开
+
                             BoxWithConstraints(
                                 modifier = Modifier
                                     .weight(1f)
                                     .fillMaxHeight(),
                             ) {
-                                // 展开态高度：宽按比例、不超过面板高的 65%；
-                                // 比例未知时用 16:9 占位——否则未起播或竖屏视频
-                                // 会把播放器撑满面板，相关影片被挤出屏幕无法滚动
+
                                 val playerRatio = videoRatio.takeIf { it > 0f } ?: (16f / 9f)
                                 val expandedPlayerHeightPx = with(LocalDensity.current) {
                                     minOf(maxWidth / playerRatio, maxHeight * 0.65f).roundToPx()
@@ -977,7 +893,7 @@ fun VideoRouteHostScreen(
                                                 .background(Color.Black),
                                         ) {
                                             if (showFullscreenOverlay) {
-                                                // 播放器已移至全屏覆盖层（含切换动画期间），占位避免高度塌陷
+
                                                 Box(modifier = Modifier.fillMaxSize())
                                             } else {
                                                 PlayerSlot(
@@ -1045,10 +961,6 @@ fun VideoRouteHostScreen(
             }
         }
 
-        // 全屏覆盖层（后声明，天然覆盖其它内容）。
-        // 过渡：从小窗矩形扩展到全屏（退出反向收缩），进度仅在 draw 阶段读取；
-        // 小窗矩形来自 PiP 用途的 playerWindowBounds，若其不在当前屏内
-        // （如全屏同时发生了旋转）则退化为纯淡入淡出。
         if (showFullscreenOverlay) {
             Box(
                 modifier = Modifier
@@ -1065,8 +977,7 @@ fun VideoRouteHostScreen(
                         scaleY = lerp(sy0, 1f, p)
                         translationX = if (rectValid) lerp(b.left, 0f, p) else 0f
                         translationY = if (rectValid) lerp(b.top, 0f, p) else 0f
-                        // 快速淡入（前 1/4 达到不透明），退出时接近收完才淡出，
-                        // 与黑色占位衔接避免闪烁
+
                         alpha = (p * 4f).coerceIn(0f, 1f)
                     }
                     .background(Color.Black),
@@ -1075,8 +986,6 @@ fun VideoRouteHostScreen(
             }
         }
     }
-
-    // ---------------- 对话框 ----------------
 
     unsubscribeArtist?.let { artist ->
         ConfirmDialog(
@@ -1144,9 +1053,6 @@ fun VideoRouteHostScreen(
     }
 }
 
-/**
- * tabs 内容宿主：封装 [VideoRouteContent] 在分栏与折叠布局间的公共调用。
- */
 @Composable
 private fun VideoTabsHost(
     activity: MainActivity,
@@ -1234,9 +1140,6 @@ private fun VideoTabsHost(
     }
 }
 
-/**
- * 分栏右栏折叠指示条。
- */
 @Composable
 private fun RelatedCollapseIndicator(
     collapsed: Boolean,

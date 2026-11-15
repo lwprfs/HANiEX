@@ -39,7 +39,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
-/** Search uses the site's own `/?search=<query>` and shows its heading ("2,000+ results"). */
 @Composable
 fun BuonduaSearchScreen(
     initialQuery: String?,

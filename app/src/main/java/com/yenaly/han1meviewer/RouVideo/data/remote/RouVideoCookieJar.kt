@@ -13,7 +13,6 @@ class RouVideoCookieJar : CookieJar {
     companion object {
         private const val TAG = "RouVideoCookieJar"
 
-        /** Cookie that carries the signed-in session. */
         const val SESSION_COOKIE = "rouv.session"
 
         private const val KEY_PERSISTED = "rouvideo_auth_cookies"
@@ -57,7 +56,6 @@ class RouVideoCookieJar : CookieJar {
             }
         }
 
-        /** True when a sign-in session cookie is stored for [host]. */
         fun hasSession(host: String): Boolean {
             restoreIfNeeded()
             val now = System.currentTimeMillis()
@@ -66,10 +64,6 @@ class RouVideoCookieJar : CookieJar {
             }
         }
 
-        /**
-         * Copies cookies from a `Cookie:` header string (what the WebView hands out) into the
-         * jar for [host]. Used right after a successful sign-in in the WebView.
-         */
         fun importHeader(host: String, header: String) {
             restoreIfNeeded()
             val cookies = ArrayList<Cookie>()
@@ -95,7 +89,6 @@ class RouVideoCookieJar : CookieJar {
             persist()
         }
 
-        /** Forgets the sign-in cookies for every host (keeps Cloudflare clearance). */
         fun clearAuth() {
             restoreIfNeeded()
             synchronized(lock) {

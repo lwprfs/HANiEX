@@ -20,11 +20,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.longOrNull
 
-/**
- * Parsers for the signed-in "my" pages (history, favourites, liked, playlists), the
- * subscriptions feed, star country lists and photo search. All of them read the
- * `window.initials` blob (or the x-api JSON) exactly like [XHamsterParser].
- */
 object XHamsterListsParser {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -41,8 +36,6 @@ object XHamsterListsParser {
     private fun JsonObject.obj(key: String): JsonObject? = this[key] as? JsonObject
 
     private fun JsonObject.arr(key: String): JsonArray? = this[key] as? JsonArray
-
-    // ───────────────────────── video page: like / favourite state ─────────────────────────
 
     fun parseEngagement(root: JsonObject?, fallbackEntityId: Long?): XHamsterEngagement? {
         root ?: return null
@@ -72,8 +65,6 @@ object XHamsterListsParser {
         )
     }
 
-    // ───────────────────────── favourites playlists ─────────────────────────
-
     fun parseCollections(html: String): List<XHamsterCollection> {
         val root = XHamsterParser.extractInitials(html) ?: return emptyList()
         val list = root.arr("favoritesVideoCollectionsCollection") ?: return emptyList()
@@ -94,8 +85,6 @@ object XHamsterListsParser {
             )
         }
     }
-
-    // ───────────────────────── my lists (history / favourites / liked / collection) ─────────────────────────
 
     private val NOISE_KEYS = Regex("trending|recommend|related|banner|popular|suggest|sidebar", RegexOption.IGNORE_CASE)
 
@@ -145,14 +134,11 @@ object XHamsterListsParser {
         }
         if (specific != null) XHamsterParser.parseCards(specific).forEach { items.putIfAbsent(it.videoCode, it) }
         if (items.isEmpty() && kind != XHamsterListKind.LIKED && kind != XHamsterListKind.WATCH_HISTORY) {
-            // Collection pages (watch later, custom playlists) were not captured; scan the page
-            // body but skip recommendation blocks so we never mix in "trending" videos.
+
             cardsIn(layout ?: root, items)
         }
         return XHamsterListPage(items.values.toList(), nextUrl(layout, items.isNotEmpty()))
     }
-
-    // ───────────────────────── stars ─────────────────────────
 
     fun parseStarCountries(html: String): List<XHamsterOption> {
         val list = XHamsterParser.extractInitials(html)?.obj("layoutPage")?.arr("countries") ?: return emptyList()
@@ -164,8 +150,6 @@ object XHamsterListsParser {
             XHamsterOption(if (count != null) "$name ($count)" else name, XHamsterConstants.relativePath(url))
         }
     }
-
-    // ───────────────────────── photo search ─────────────────────────
 
     fun parsePhotoSearch(html: String): XHamsterPage<XHamsterGallery> {
         val root = XHamsterParser.extractInitials(html) ?: return XHamsterPage(emptyList(), null)
@@ -197,8 +181,6 @@ object XHamsterListsParser {
         } else null
         return XHamsterPage(items, next)
     }
-
-    // ───────────────────────── subscriptions feed (x-api newsCollectionFetch) ─────────────────────────
 
     fun parseNewsFeed(body: String): List<XHamsterFeedItem> {
         val root = (runCatching { json.parseToJsonElement(body) }.getOrNull() as? JsonArray)

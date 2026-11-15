@@ -41,10 +41,6 @@ class BuonduaAlbumViewModel : ViewModel() {
     private val _state = MutableStateFlow(BuonduaAlbumUiState())
     val state: StateFlow<BuonduaAlbumUiState> = _state.asStateFlow()
 
-    /**
-     * Per video URL: `true` = plays without saving first, `false` = download only,
-     * absent = still being checked.
-     */
     private val _inline = MutableStateFlow<Map<String, Boolean>>(emptyMap())
     val inlinePlayable: StateFlow<Map<String, Boolean>> = _inline.asStateFlow()
 

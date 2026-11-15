@@ -46,7 +46,6 @@ object RouVideoConstants {
         FRESH("fresh", R.string.rouvideo_series_filter_fresh),
     }
 
-    /** Sort orders of "My favorites" (`/favorite/{id}?order=`). */
     enum class FavoriteOrder(val query: String, val labelRes: Int) {
         SAVED("createdAt", R.string.rouvideo_fav_order_saved),
         PUBLISHED("published", R.string.rouvideo_fav_order_published),
@@ -124,12 +123,8 @@ object RouVideoConstants {
 
     fun categoriesUrl(): String = "$BASE_URL/cat"
 
-    // ---- account (login / library / profile) ----
-
-    /** Host of the Keycloak server that renders the sign-in and registration forms. */
     const val AUTH_HOST = "auth.rou.one"
 
-    /** Starts the OpenID Connect flow; the site redirects to the sign-in form. */
     fun signInUrl(callbackPath: String = "/home"): String =
         "$BASE_URL/api/auth/signin" + query(listOf("callbackUrl" to callbackPath))
 

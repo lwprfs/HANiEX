@@ -25,13 +25,8 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 
-/** The viewer is not signed in (or the site no longer accepts the stored session). */
 class RouVideoNotSignedInException : IOException("Not signed in")
 
-/**
- * Everything that needs a signed-in session: the library pages (follows, favorites,
- * cloud history), favouriting, following, saved playback position and the profile.
- */
 object RouVideoAccountRepo {
 
     private val JSON_TYPE = "application/json".toMediaType()
@@ -75,12 +70,6 @@ object RouVideoAccountRepo {
     private fun parseObject(text: String): JsonObject? =
         runCatching { json.parseToJsonElement(text) as? JsonObject }.getOrNull()
 
-    // ---- session ----
-
-    /**
-     * Asks the site whether the stored session is still valid, and who it belongs to.
-     * Must only be called when a session cookie exists.
-     */
     suspend fun checkSession(): RouVideoSessionCheck {
         val user: RouVideoUser? = try {
             val html = fetchHtml(RouVideoConstants.homeUrl())
@@ -93,7 +82,6 @@ object RouVideoAccountRepo {
         }
         if (user != null) return RouVideoSessionCheck.LoggedIn(user)
 
-        // The home page told us nothing: the follow list endpoint only answers for a valid session.
         return try {
             val reply = send(RouVideoConstants.followIdsApiUrl(), "GET")
             when {
@@ -106,12 +94,9 @@ object RouVideoAccountRepo {
         }
     }
 
-    /** Ends the session on the server. Failures are ignored: the local session is dropped anyway. */
     suspend fun signOutRemote() {
         runCatching { send(RouVideoConstants.signOutUrl(), "GET") }
     }
-
-    // ---- profile (`/profile/{id}/edit`) ----
 
     suspend fun updateProfile(user: RouVideoUser, newName: String): Result<Unit> = runCatching {
         val body = buildJsonObject {
@@ -129,8 +114,6 @@ object RouVideoAccountRepo {
             throw IOException(message ?: "HTTP ${reply.code}")
         }
     }
-
-    // ---- library pages ----
 
     private fun requireSignedIn(html: String) {
         val signedOut = RouVideoLiteral.allLoaderObjects(html).any {
@@ -159,9 +142,6 @@ object RouVideoAccountRepo {
         withContext(Dispatchers.Default) { RouVideoAccountParser.parseFollows(html) }
     }
 
-    // ---- video page ----
-
-    /** Whether the viewer favourited the video, and where they stopped watching it. */
     suspend fun viewerState(videoId: String): Result<RouVideoViewerState> = runCatching {
         val reply = send(RouVideoConstants.viewerStateUrl(videoId), "GET")
         reply.requireOk()
@@ -172,7 +152,6 @@ object RouVideoAccountRepo {
         )
     }
 
-    /** The site exposes a single toggle: the same call favourites and un-favourites. */
     suspend fun toggleFavorite(videoId: String): Result<Unit> = runCatching {
         send(RouVideoConstants.favoriteApiUrl(videoId), "PUT").requireOk()
     }
@@ -212,7 +191,6 @@ object RouVideoAccountRepo {
         send(RouVideoConstants.seriesFollowApiUrl(seriesId), "PUT", body).requireOk()
     }
 
-    /** "Got it" on one series' new episodes, or on all of them. */
     suspend fun markSeen(seriesId: String? = null): Result<Unit> = runCatching {
         val body = buildJsonObject {
             if (seriesId != null) put("seriesId", seriesId) else put("all", true)

@@ -36,14 +36,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yenaly.han1meviewer.R
 
-/**
- * 手势指示浮层（进度 / 音量 / 亮度）。
- *
- * 拖动手势进行中显示：图标 + 名称 + 数值 + 进度条的紧凑竖排卡片，
- * 内容高度自适应，不做固定高裁剪。
- *
- * @param data 手势数据；null 时隐藏
- */
 @Composable
 fun GestureIndicatorOverlay(
     data: GestureIndicatorData?,
@@ -61,8 +53,7 @@ fun GestureIndicatorOverlay(
                 modifier = Modifier
                     .width(148.dp)
                     .clip(RoundedCornerShape(20.dp))
-                    // 纯半透明深色底即可：RenderEffect 会把卡片自身内容一起模糊，
-                    // 无法实现真正的背景毛玻璃（需要捕获背后画面），故不使用
+
                     .background(Color.Black.copy(alpha = 0.55f))
                     .padding(horizontal = 16.dp, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -93,7 +84,6 @@ fun GestureIndicatorOverlay(
                     )
                 }
 
-                // 数值 + 副文本（总时长）同行，避免多行撑爆
                 Row(
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -115,7 +105,6 @@ fun GestureIndicatorOverlay(
                     }
                 }
 
-                // 进度条：已播放段圆头，底轨细
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

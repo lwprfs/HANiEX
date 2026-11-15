@@ -78,12 +78,6 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private const val EASTER_EGG_TAP_COUNT = 7
 
-/**
- * 设置 -> 关于 -> 关于 页面。
- *
- * 展示版本、构建、运行环境和项目入口。
- * 连续点击顶部应用信息卡片 7 次会触发暂时占位的彩蛋 Toast。
- */
 @Composable
 fun AboutAppScreen() {
     val context = LocalContext.current
@@ -251,7 +245,6 @@ fun AboutAppScreen() {
     }
 }
 
-
 @Composable
 private fun DisclaimerGroup(
     modifier: Modifier = Modifier,
@@ -306,7 +299,6 @@ private fun DisclaimerRow(
         }
     }
 }
-
 
 @Composable
 private fun HighlightDisclaimerCard(

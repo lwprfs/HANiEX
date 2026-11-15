@@ -55,10 +55,6 @@ object Preferences {
 
     private const val LAST_HANDLED_CLIPBOARD = "last_handled_clipboard"
 
-    /**
-     * 最近一次读取并处理过的剪贴板内容。
-     * 用于避免同一段剪贴板文本在每次回到应用时重复弹出打开链接的提示。
-     */
     var lastHandledClipboard: String
         get() = getSpValue(LAST_HANDLED_CLIPBOARD, EMPTY_STRING)
         set(value) = putSpValue(LAST_HANDLED_CLIPBOARD, value)
@@ -227,13 +223,6 @@ object Preferences {
     val autoPlayNext: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.AUTO_PLAY_NEXT, false)
 
-    /**
-     * 播放頁中「相關影片」是否作為跟隨在簡介、評論之後的獨立標籤頁顯示。
-     *
-     * 開啟後簡介底部不再內嵌相關影片列表；平板橫屏下標籤頁整體移至右側，
-     * 左欄僅剩播放器並垂直置中。關閉時平板橫屏同樣將標籤頁移至右側，
-     * 但相關影片顯示在播放器下方（與右側標籤頁互換位置）。
-     */
     val relatedVideoAsTab: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.RELATED_VIDEO_AS_TAB, false)
 
@@ -260,12 +249,6 @@ object Preferences {
             ),
         )
 
-    /**
-     * Column counts for vertical video grids. Stored under its own keys so changing it never
-     * affects [searchGridColumnsConfig]. Until the user saves it once, every bucket falls back to
-     * the legacy search-grid value, which is what used to drive these grids before the split, so
-     * existing users keep the layout they had.
-     */
     val videoGridColumnsConfig: SearchGridColumnsConfig
         get() {
             val legacy = searchGridColumnsConfig
@@ -363,7 +346,7 @@ object Preferences {
         get() = preferenceSp.getInt(
             SettingsPreferenceKeys.WHEN_COUNTDOWN_REMIND,
             PlayerDefaults.DEF_COUNTDOWN_SEC
-        ) * 1_000 // 越不了界，最大就30_000ms而已
+        ) * 1_000
 
     val showCommentWhenCountdown: Boolean
         get() = preferenceSp.getBoolean(

@@ -31,7 +31,6 @@ import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import kotlinx.coroutines.launch
 
-/** `/profile/{id}/edit`: change the display name; the email comes from the sign-in method. */
 @Composable
 fun RouVideoProfileEditScreen(onBack: () -> Unit) {
     val auth by RouVideoAuth.state.collectAsStateWithLifecycle()

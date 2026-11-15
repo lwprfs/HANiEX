@@ -277,7 +277,7 @@ object Parser {
         val title = hanimeSearchItem.selectFirst("div[class=home-rows-videos-title]")?.text()
             .logIfParseNull(Parser::hanimeSimplifiedItem.name, "title")
         if (videoCode == null || coverUrl == null || title == null) return null
-        // 新番預告的搜索結果會在封面左上角顯示發佈日期，例如「11月27日」。
+
         val uploadTime = hanimeSearchItem
             .selectFirst("div.video-card-inner > div.hidden-xs")
             ?.text()
@@ -721,12 +721,6 @@ object Parser {
         )
     }
 
-    /**
-     * 將「新番預告」搜索結果轉換成預覽頁使用的數據。
-     *
-     * 搜索結果只提供封面、標題、影片代碼和發佈日期；其餘欄位會在預覽頁
-     * 顯示對應卡片時，再從影片詳情頁補充。
-     */
     fun hanimePreviewFromSearch(list: List<HanimeInfo>): HanimePreview {
         return HanimePreview(
             headerPicUrl = list.firstOrNull()?.coverUrl,
@@ -739,7 +733,7 @@ object Parser {
 
     private fun HanimeInfo.toPreviewInfo(): HanimePreview.PreviewInfo {
         return HanimePreview.PreviewInfo(
-            // 搜索結果只有中文短標題，先用 videoTitle 展示；詳情補全後再拆成主副標題。
+
             title = null,
             videoTitle = title,
             coverUrl = coverUrl,
@@ -815,13 +809,12 @@ object Parser {
             .throwIfParseNull(Parser::userAccountPage.name, "avatarUrl")
         val username = parseBody.selectFirst("input[name=name]")?.attr("value")?.trim()
             .throwIfParseNull(Parser::userAccountPage.name, "username")
-        // 2026-11 網站改版：email 輸入框不再帶 name 屬性，改為 id="email"（且 disabled 唯讀），
-        // 新版選擇器優先，舊版 input[name=email] 作為回退相容。
+
         val emailInput = parseBody.selectFirst("#email")
             ?: parseBody.selectFirst("input[name=email]")
         val email = emailInput?.attr("value")?.trim()
             .throwIfParseNull(Parser::userAccountPage.name, "email")
-        // 網站將 email 設為 disabled（唯讀）時，App 端的編輯狀態與其保持同步
+
         val emailEditable = emailInput?.hasAttr("disabled") == false
         val userIdText = parseBody.selectFirst("div.profile-sub-stats-id")?.text()
             .throwIfParseNull(Parser::userAccountPage.name, "userId")

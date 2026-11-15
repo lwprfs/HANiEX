@@ -56,7 +56,6 @@ import com.yenaly.han1meviewer.XHamster.data.model.XHamsterComment
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterEngagement
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterUserRepo
 
-/** Pill-shaped button row under the player: like, dislike, favourite, watch later, playlist, report. */
 @Composable
 internal fun XHamsterEngagementBar(
     state: XHamsterEngagementState,
@@ -158,7 +157,6 @@ private fun EngagementPill(
     }
 }
 
-/** Checklist of the user's playlists; saving replaces the video's playlist membership. */
 @Composable
 internal fun XHamsterPlaylistPickerDialog(
     state: XHamsterEngagementState,
@@ -220,10 +218,6 @@ private val REPORT_REASONS = listOf(
     R.string.xhamster_report_reason_other,
 )
 
-/**
- * The site only exposes reporting through its abuse form, so this collects the reason, copies
- * "video link + reason" to the clipboard and opens the form for the user to paste and send.
- */
 @Composable
 internal fun XHamsterReportDialog(
     videoTitle: String,
@@ -276,7 +270,6 @@ internal fun XHamsterReportDialog(
     )
 }
 
-/** Text box + send button at the top of the comments tab; also used for replies. */
 @Composable
 internal fun XHamsterCommentComposer(
     replyTo: XHamsterComment?,
@@ -339,7 +332,6 @@ internal fun XHamsterCommentComposer(
     }
 }
 
-/** Shows a toast for every one-shot result raised by the ViewModel (success + failure). */
 @Composable
 internal fun XHamsterMessageEffect(viewModel: XHamsterVideoViewModel) {
     val context = LocalContext.current

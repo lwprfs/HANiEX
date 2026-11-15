@@ -9,11 +9,6 @@ import org.json.JSONObject
 
 import com.yenaly.han1meviewer.MissAV.cloudflare.MissAvCloudflareCookieManager
 
-/**
- * In-memory cookie jar for MissAV that also persists the site's session cookies
- * (Laravel session, XSRF token and "remember me" cookie) so a login survives app restarts.
- * `cf_clearance` is handled separately by [MissAvCloudflareCookieManager].
- */
 class MissAvCookieJar : CookieJar {
 
     companion object {
@@ -83,14 +78,12 @@ class MissAvCookieJar : CookieJar {
             }.onFailure { Log.w(TAG, "Failed to persist session cookies", it) }
         }
 
-        /** Current `XSRF-TOKEN` cookie value for [host] (URL-decoded), as axios would send it. */
         fun xsrfToken(host: String): String? {
             ensureRestored()
             val raw = synchronized(lock) { cookieStore[host]?.get(XSRF_COOKIE)?.value } ?: return null
             return runCatching { java.net.URLDecoder.decode(raw, "UTF-8") }.getOrDefault(raw)
         }
 
-        /** Whether any non-Cloudflare cookie is held for [host] (i.e. a session may exist). */
         fun hasSessionCookies(host: String): Boolean {
             ensureRestored()
             return synchronized(lock) {
@@ -100,7 +93,6 @@ class MissAvCookieJar : CookieJar {
             }
         }
 
-        /** Drops every site cookie (login session) but keeps the Cloudflare clearance. */
         fun clearSessionCookies() {
             ensureRestored()
             synchronized(lock) {
@@ -137,7 +129,6 @@ class MissAvCookieJar : CookieJar {
         val host = url.host
         val now = System.currentTimeMillis()
 
-        // A cookie the server expires (logout / session reset) must be removed, not ignored.
         val expired = cookies.filter { it.expiresAt != Long.MAX_VALUE && it.expiresAt <= now }
         val validCookies = cookies.filter {
             it.expiresAt == Long.MAX_VALUE || it.expiresAt > now

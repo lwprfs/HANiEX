@@ -27,11 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 
-/**
- * 设置一级分类入口。
- *
- * 同时用于手机设置首页和双栏模式左侧列表。
- */
 @Composable
 fun SettingsCategoryItem(
     category: SettingsCategory,

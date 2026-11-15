@@ -26,14 +26,13 @@ sealed interface RouVideoDetailState {
     data class Error(val message: String) : RouVideoDetailState
 }
 
-/** What the signed-in viewer has done with the current video (favorite, follow, saved position). */
 data class RouVideoViewerUi(
     val loaded: Boolean = false,
     val favorite: Boolean = false,
     val followed: Boolean = false,
     val positionMs: Long = 0L,
     val busy: Boolean = false,
-    /** The site refused an action because the session is no longer valid. */
+
     val sessionExpired: Boolean = false,
 )
 
@@ -94,7 +93,6 @@ class RouVideoVideoViewModel : ViewModel() {
         }
     }
 
-    /** Loads favorite / follow / saved position when an account is signed in. */
     fun loadViewer(videoId: String = currentId, seriesId: String? = null) {
         if (!RouVideoAuth.isLoggedIn) {
             _viewer.value = RouVideoViewerUi()
@@ -167,7 +165,6 @@ class RouVideoVideoViewModel : ViewModel() {
         }
     }
 
-    /** Saves the playback position to the account (no-op when signed out). */
     fun syncProgress(positionMs: Long, ended: Boolean) {
         if (!RouVideoAuth.isLoggedIn || currentId.isEmpty() || positionMs <= 0L) return
         val id = currentId

@@ -19,11 +19,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
-/**
- * HentaiMama: every existing page (playlists + playlist details, history, recent episodes,
- * upcoming) lives in Library. Upcoming is additionally the single home-header shortcut.
- * The site has no account system, so the profile account card shows the unavailable state.
- */
 @Composable
 fun hentaiMamaHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(

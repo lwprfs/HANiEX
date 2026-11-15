@@ -58,8 +58,6 @@ interface MissAvService {
         @Body body: RequestBody,
     ): Response<ResponseBody>
 
-    // ---- account / session endpoints (absolute URLs built by MissAvAccountRepo) ----
-
     @GET
     suspend fun getPageUrl(@Url url: String): Response<ResponseBody>
 

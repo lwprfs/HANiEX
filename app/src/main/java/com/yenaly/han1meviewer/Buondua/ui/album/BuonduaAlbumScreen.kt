@@ -58,12 +58,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
-/**
- * An album page = two clearly separated sections:
- *  1. **Videos** (only when the album has some) – each with its published title, a copyable
- *     link and a downloader button; an inline player only appears for files that stream.
- *  2. **Photos** – full-width images, loaded page by page, tap for the full-screen viewer.
- */
 @OptIn(ExperimentalLayoutApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun BuonduaAlbumScreen(
@@ -199,7 +193,6 @@ fun BuonduaAlbumScreen(
                         }
                     }
 
-                    // ---------------------------------------------------- Section 1: videos
                     if (state.videos.isNotEmpty()) {
                         item(key = "videos_header") {
                             SectionTitle("${stringResource(R.string.buondua_section_videos)} (${state.videos.size})")
@@ -214,7 +207,6 @@ fun BuonduaAlbumScreen(
                         }
                     }
 
-                    // ---------------------------------------------------- Section 2: photos
                     item(key = "photos_header") {
                         SectionTitle(
                             "${stringResource(R.string.buondua_section_photos)} " +

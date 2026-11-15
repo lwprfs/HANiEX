@@ -67,10 +67,6 @@ fun VideoRouteContent(
         }
     }
 
-    // 评论预取上提到 tabs 层：评论页不再预组合（见 VideoTabsContent），
-    // 这里在进场时即请求评论数据并更新角标，首次切到评论 tab 时数据已就绪。
-    // 用 getCommentIfNeeded：全屏切换等导致的子树重组重跑本效应时不重拉
-    // （同码已成功加载过即跳过），评论区不再闪加载。
     LaunchedEffect(commentViewModel.code) {
         commentViewModel.getCommentIfNeeded(VIDEO_COMMENT_PREFIX, commentViewModel.code)
         commentViewModel.videoCommentStateFlow.collect { state ->

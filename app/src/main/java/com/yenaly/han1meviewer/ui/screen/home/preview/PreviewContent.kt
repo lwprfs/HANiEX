@@ -249,7 +249,6 @@ fun PreviewContent(
     }
 }
 
-// 網站改版後搜索結果不再按月份區分，暫時隱藏月份切換按鈕。
 private const val SHOW_MONTH_SWITCH = false
 
 @Composable

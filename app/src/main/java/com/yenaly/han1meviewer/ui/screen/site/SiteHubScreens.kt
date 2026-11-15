@@ -41,18 +41,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.AccountAvatar
 import com.yenaly.han1meviewer.ui.component.ExpressiveEntryCard
 import com.yenaly.han1meviewer.ui.component.SettingIconBadge
 import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.ui.component.SettingTile
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 
-/**
- * One tappable row in a site hub page (Library, Subscription, Profile, Customize).
- *
- * The hub pages never own any business logic: every entry just forwards to an existing
- * route of the site, so existing screens, ViewModels and data sources are reused as they are.
- */
 data class SiteHubEntry(
     val key: String,
     val title: String,
@@ -61,19 +56,11 @@ data class SiteHubEntry(
     val subtitle: String? = null,
 )
 
-/** A titled group of [SiteHubEntry]. A `null` [title] renders the group without a header. */
 data class SiteHubSection(
     val title: String?,
     val entries: List<SiteHubEntry>,
 )
 
-/**
- * State of the account card on My Profile.
- *
- * A site without authentication passes `onClick = null` plus an explanatory [subtitle]; the
- * card is then rendered as a non-interactive "not available" state instead of a fake login.
- * When login support is added to such a site later, only this object needs to be filled in.
- */
 data class SiteAccountHeader(
     val siteLabel: String,
     val title: String,
@@ -83,7 +70,6 @@ data class SiteAccountHeader(
     val onClick: (() -> Unit)? = null,
 )
 
-/** Same metrics as Hanime's "My" page so every site's primary pages look identical. */
 private val CardMinWidth = 160.dp
 private val CardHeight = 168.dp
 private val CardGridHorizontalPadding = 20.dp
@@ -127,7 +113,6 @@ internal fun SiteHubRow(entry: SiteHubEntry) {
     }
 }
 
-/** Renders [sections] as LazyColumn items. Shared by every hub page. */
 internal fun androidx.compose.foundation.lazy.LazyListScope.siteHubSections(
     sections: List<SiteHubSection>,
 ) {
@@ -145,16 +130,6 @@ internal fun androidx.compose.foundation.lazy.LazyListScope.siteHubSections(
     }
 }
 
-/**
- * Generic page used for Library, Subscription and Customize.
- *
- * Primary (bottom-bar) pages, i.e. `onBack == null`, render every entry as the same big
- * [ExpressiveEntryCard] box Hanime uses; secondary pages keep the compact list rows.
- *
- * @param onBack `null` for primary (bottom-bar) destinations, a callback for secondary pages.
- * @param emptyState shown instead of the list when [sections] has no entries, so an unsupported
- *   feature gets an honest "unavailable" explanation rather than an empty screen.
- */
 @Composable
 fun SiteHubListScreen(
     title: String,
@@ -200,7 +175,6 @@ fun SiteHubListScreen(
     }
 }
 
-/** Big-card grid shared by the primary Library / Subscription pages. */
 @Composable
 private fun SiteHubCardGrid(
     sections: List<SiteHubSection>,
@@ -237,7 +211,6 @@ private fun hubCardColumns(maxWidth: androidx.compose.ui.unit.Dp): Int = maxOf(
             (CardMinWidth + CardGridSpacing)).toInt(),
 )
 
-/** Renders [sections] into a [LazyVerticalGrid]: full-width titles, one big card per entry. */
 private fun androidx.compose.foundation.lazy.grid.LazyGridScope.siteHubCardSections(
     sections: List<SiteHubSection>,
 ) {
@@ -270,14 +243,13 @@ private fun SiteHubCard(entry: SiteHubEntry) {
         icon = entry.icon,
         title = entry.title,
         subtitle = entry.subtitle,
-        // Reserve two subtitle lines and a fixed height so every box is the same size.
+
         subtitleMinLines = 2,
         modifier = Modifier.height(CardHeight),
         onClick = entry.onClick,
     )
 }
 
-/** Centered "feature not supported on this site" state. */
 @Composable
 fun SiteHubUnavailableState(
     title: String,
@@ -321,10 +293,6 @@ fun SiteHubUnavailableState(
     }
 }
 
-/**
- * My Profile for non-Hanime sites, an exact counterpart of Hanime's ProfileScreen: big account
- * card on top, then every entry as the same big [ExpressiveEntryCard] box.
- */
 @Composable
 fun SiteProfileScreen(
     account: SiteAccountHeader,
@@ -395,7 +363,6 @@ fun SiteProfileScreen(
     }
 }
 
-/** Account card, same shape and proportions as the header card of Hanime's My page. */
 @Composable
 private fun SiteAccountCard(account: SiteAccountHeader) {
     val shape = RoundedCornerShape(32.dp)
@@ -411,16 +378,12 @@ private fun SiteAccountCard(account: SiteAccountHeader) {
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.size(76.dp),
             ) {
-                AsyncImage(
-                    model = account.avatarUrl?.takeIf { it.isNotBlank() },
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(R.drawable.bg_default_header),
-                    fallback = painterResource(R.drawable.bg_default_header),
-                    error = painterResource(R.drawable.bg_default_header),
+                AccountAvatar(
+                    avatarUrl = account.avatarUrl,
+                    name = account.title,
+                    loggedIn = account.loggedIn,
+                    signInAvailable = account.loggedIn || account.onClick != null,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))

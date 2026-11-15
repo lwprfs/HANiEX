@@ -29,7 +29,6 @@ data class PagedUiState<T>(
     val page: Int = 0,
 )
 
-/** Generic paginated loader used by every account list page. */
 class PagedLoader<T>(
     private val scope: kotlinx.coroutines.CoroutineScope,
     private val key: (T) -> Any,
@@ -167,7 +166,6 @@ class MissAvAccountViewModel : ViewModel() {
         }
     }
 
-    // keyed loaders for detail pages
     private val playlistLoaders = mutableMapOf<String, PagedLoader<HanimeInfo>>()
     fun playlistLoader(key: String) = playlistLoaders.getOrPut(key) {
         PagedLoader<HanimeInfo>(viewModelScope, { it.videoCode }) { p -> MissAvAccountRepo.playlistVideos(key, p) }
@@ -178,7 +176,6 @@ class MissAvAccountViewModel : ViewModel() {
         PagedLoader<MissAvActress>(viewModelScope, { it.path }) { p -> MissAvAccountRepo.actresses(path, p) }
     }
 
-    /** Actress page: videos, header profile, the id needed by the save/news APIs, and the news feed. */
     class ActressDetail(val loader: PagedLoader<HanimeInfo>) {
         val id = MutableStateFlow<String?>(null)
         val profile = MutableStateFlow<MissAvActressProfile?>(null)
@@ -200,7 +197,7 @@ class MissAvAccountViewModel : ViewModel() {
         var cursor: String? = null
         detail.news = PagedLoader<MissAvTweet>(viewModelScope, { it.id }) { p ->
             if (p == 1) cursor = null
-            // The id comes from the videos load; wait for it if the news tab is opened first.
+
             var id = detail.id.value
             if (id == null) {
                 id = MissAvAccountRepo.actressPage(path, 1).also { r ->

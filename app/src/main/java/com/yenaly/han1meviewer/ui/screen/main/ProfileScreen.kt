@@ -44,20 +44,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.AccountAvatar
 import com.yenaly.han1meviewer.ui.component.ExpressiveEntryCard
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 
-/** “我的”页面快捷入口卡片的统一高度。 */
 private val ProfileEntryCardHeight = 168.dp
 
-/** 快捷入口卡片的最小宽度，同时保证窄屏下至少两列。 */
 private val ProfileEntryCardMinWidth = 160.dp
 
-/**
- * “我的”一级页面，承载账号、签到、创作中心和设置等入口。
- *
- * 页面使用 M3 Expressive 风格：顶部为账号信息大卡片，下方为自适应快捷入口网格。
- */
 @Composable
 fun ProfileScreen(
     isLoggedIn: Boolean,
@@ -71,7 +65,7 @@ fun ProfileScreen(
     onSettingsClick: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     modifier: Modifier = Modifier,
-    /** Opens the app-wide translation settings; `null` hides the tile (translation unavailable). */
+
     onTranslationClick: (() -> Unit)? = null,
 ) {
     val displayName = username?.takeIf { it.isNotBlank() }
@@ -143,6 +137,7 @@ fun ProfileScreen(
                     span = { GridItemSpan(maxLineSpan) },
                 ) {
                     ProfileHeaderCard(
+                        isLoggedIn = isLoggedIn,
                         avatarUrl = avatarUrl,
                         displayName = displayName,
                         currentSite = currentSite,
@@ -170,7 +165,7 @@ fun ProfileScreen(
                         icon = entry.icon,
                         title = entry.title,
                         subtitle = entry.subtitle,
-                        // 统一预留两行副标题并固定卡片高度，避免四个快捷入口大小不一致。
+
                         subtitleMinLines = 2,
                         modifier = Modifier.height(ProfileEntryCardHeight),
                         onClick = entry.onClick,
@@ -190,6 +185,7 @@ private data class ProfileEntry(
 
 @Composable
 private fun ProfileHeaderCard(
+    isLoggedIn: Boolean,
     avatarUrl: String?,
     displayName: String,
     currentSite: String,
@@ -217,16 +213,11 @@ private fun ProfileHeaderCard(
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.size(76.dp),
             ) {
-                AsyncImage(
-                    model = avatarUrl,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                    placeholder = painterResource(R.drawable.bg_default_header),
-                    fallback = painterResource(R.drawable.bg_default_header),
-                    error = painterResource(R.drawable.bg_default_header),
+                AccountAvatar(
+                    avatarUrl = avatarUrl,
+                    name = displayName,
+                    loggedIn = isLoggedIn,
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))

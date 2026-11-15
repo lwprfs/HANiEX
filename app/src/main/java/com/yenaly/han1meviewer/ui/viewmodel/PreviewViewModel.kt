@@ -15,11 +15,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-/**
- * @project Hanime1
- * @author Yenaly Liew
- * @time 2022/06/23 023 16:47
- */
 class PreviewViewModel(application: Application) : BaseViewModel(application) {
 
     private val previewCache = linkedMapOf<String, WebsiteState<HanimePreview>>()
@@ -49,10 +44,6 @@ class PreviewViewModel(application: Application) : BaseViewModel(application) {
 
     fun getCachedPreview(date: String): WebsiteState<HanimePreview>? = previewCache[date]
 
-    /**
-     * 新番預告頁面現在直接使用「新番預告」搜索結果首頁的列表。
-     * AV 站沒有這個類型，仍保留舊的預覽頁接口。
-     */
     private suspend fun loadPreview(date: String): WebsiteState<HanimePreview> {
         return if (Preferences.baseUrl == HANIME_URL[3]) {
             NetworkRepo.getHanimePreview(date).first { it !is WebsiteState.Loading }
@@ -61,16 +52,13 @@ class PreviewViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    /**
-     * 搜索結果只有基本資料；在卡片真正展示時再從影片詳情頁補全簡介、標籤等。
-     */
     fun enrichPreview(date: String, videoCode: String?) {
         if (videoCode.isNullOrBlank()) return
         val cached = previewCache[date] as? WebsiteState.Success ?: return
         val index = cached.info.previewInfo.indexOfFirst { it.videoCode == videoCode }
         if (index < 0) return
         val oldInfo = cached.info.previewInfo[index]
-        // 舊版預覽頁已經帶有完整資料，不需要再請求詳情。
+
         if (oldInfo.introduction != null || oldInfo.tags.isNotEmpty()) return
 
         val key = "$date:$videoCode"
@@ -118,10 +106,10 @@ class PreviewViewModel(application: Application) : BaseViewModel(application) {
                     _previewFlow.value = updatedState
                 }
             } catch (_: Exception) {
-                // 詳情補全失敗時保留搜索結果的基本資料。
+
             } finally {
                 enriching.remove(key)
-                // 允許下次顯示該卡片時重試失敗的補全請求。
+
                 if (!enriched) enrichAttempted.remove(key)
             }
         }

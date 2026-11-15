@@ -4,11 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.yenaly.han1meviewer.R
 
-/**
- * 设置页一级分类。
- *
- * 手机与平板双栏共用这套入口，具体的二级设置项由分类页面承载。
- */
 enum class SettingsCategory(
     val key: String,
     @param:StringRes val titleRes: Int,

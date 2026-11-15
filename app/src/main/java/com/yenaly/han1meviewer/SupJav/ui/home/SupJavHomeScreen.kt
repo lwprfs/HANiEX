@@ -79,7 +79,7 @@ fun SupJavHomeScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 SupJavVideoGrid(
-                    // Filters live INSIDE the scrolling grid so they scroll away with the page.
+
                     header = {
                         SiteChipRow(
                             options = SupJavConstants.CATEGORIES,

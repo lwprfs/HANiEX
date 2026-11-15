@@ -586,8 +586,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        // Android 10+ 只有在窗口获得焦点时才能读取剪贴板。
-        // 每次回到应用只检查一次，避免弹窗等焦点变化导致重复读取。
+
         if (hasFocus && pendingClipboardCheck) {
             pendingClipboardCheck = false
             ClipboardVideoLinkGuard.findNewVideoCode()?.let(::showClipboardLinkSnackbar)

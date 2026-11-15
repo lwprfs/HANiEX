@@ -21,17 +21,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/**
- * 播放器进度条。
- *
- * 三段轨道（背景 / 已缓冲 / 当前进度）+ 白色圆点 thumb，
- * 支持拖动期间冻结外部进度更新（[SliderState.isDragging]）。
- *
- * @param value 当前进度（0..1）
- * @param buffered 已缓冲进度（0..1）
- * @param onValueChange 拖动中回调（0..1）
- * @param onValueChangeFinished 拖动结束回调（配合 onValueChange 最终值使用）
- */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PlayerSlider(
@@ -55,7 +44,6 @@ fun PlayerSlider(
         onValueChangeFinished = onValueChangeFinished,
         modifier = modifier,
 
-        // Thumb：光晕 + 实心白点
         thumb = {
             Box(
                 modifier = Modifier.size(18.dp),
@@ -74,7 +62,6 @@ fun PlayerSlider(
             }
         },
 
-        // Track：背景 / 已缓冲 / 当前进度三层
         track = {
             Box(
                 modifier = Modifier

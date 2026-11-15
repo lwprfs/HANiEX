@@ -47,11 +47,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 
-/**
- * @project Hanime1
- * @author Yenaly Liew
- * @time 2022/06/17 017 19:01
- */
 class VideoViewModel(application: Application) : BaseViewModel(application) {
 
     data class IntroScrollState(
@@ -84,7 +79,6 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
 
     var fromDownload = false
 
-    // 相关影片在别处展示时（独立标签页开关开启，或平板横屏分栏布局），简介底部不显示相关列表
     var hideRelatedInIntro by mutableStateOf(false)
     var hKeyframes: HKeyframeEntity? = null
     private val _videoList = MutableLiveData<List<HanimeInfo>>()
@@ -98,19 +92,9 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
     private val _videoHostUiStateFlow = MutableStateFlow(VideoHostUiState())
     val videoHostUiStateFlow = _videoHostUiStateFlow.asStateFlow()
 
-    /**
-     * 评论数角标独立成流：评论数据在进场后异步到达，若放在
-     * [VideoHostUiState] 里会让整个播放页宿主随之重组（播放器子树等），
-     * 只有 tabs 需要消费它。
-     */
     private val _commentBadgeCount = MutableStateFlow(0)
     val commentBadgeCount = _commentBadgeCount.asStateFlow()
 
-    /**
-     * 同系列影片已歸入的分組 id，作為下載時分組名的推薦項。
-     *
-     * 同系列任意一集在非預設分組中時推薦該分組，否則為 null。
-     */
     val recommendedGroupId: StateFlow<Int?> =
         hanimeVideoFlow
             .map { video -> video?.playlist?.video?.map { it.videoCode }.orEmpty() }

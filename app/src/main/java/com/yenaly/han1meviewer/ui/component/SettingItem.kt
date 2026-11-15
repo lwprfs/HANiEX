@@ -38,10 +38,6 @@ import kotlin.math.roundToInt
 private val TileShape = RoundedCornerShape(20.dp)
 private val BadgeShape = RoundedCornerShape(12.dp)
 
-/**
- * Section label shown above a group of setting tiles.
- * Shared by every settings screen so headers look identical everywhere.
- */
 @Composable
 fun SettingSectionHeader(
     title: String,
@@ -59,7 +55,6 @@ fun SettingSectionHeader(
     )
 }
 
-/** Rounded tonal square that holds a setting icon. */
 @Composable
 fun SettingIconBadge(
     iconRes: Int,
@@ -113,10 +108,6 @@ private fun SettingIconBadgeBox(
     }
 }
 
-/**
- * Rounded card-like container used by every setting row so that rows
- * stacked in a LazyColumn read as a tidy list of tiles.
- */
 @Composable
 fun SettingTile(
     modifier: Modifier = Modifier,
@@ -288,9 +279,7 @@ fun SettingSliderItem(
     } else {
         0
     }
-    // Single slider: the title/summary live once in the header row, the bar once below it.
-    // Local drag state keeps the thumb under the finger even if the caller persists the
-    // value asynchronously; it re-syncs whenever the external value changes.
+
     var sliderValue by remember(value) { mutableFloatStateOf(value.toFloat()) }
     SettingTile(modifier = modifier) {
         Column(
@@ -319,10 +308,6 @@ fun SettingSliderItem(
     }
 }
 
-/**
- * Selectable row used inside dialogs and sheets. The selected row gets a
- * tonal highlight instead of only a trailing check mark.
- */
 @Composable
 fun SettingChoiceItem(
     title: String,

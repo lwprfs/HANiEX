@@ -35,7 +35,6 @@ import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
-/** Cover thumbnails on the site are 1024x1535, i.e. portrait 2:3. */
 private const val COVER_ASPECT = 2f / 3f
 
 @Composable

@@ -16,7 +16,6 @@ import org.json.JSONObject
 
 class MissAvAuthException(message: String) : Exception(message)
 
-/** MissAV account session: login via `POST /en/api/login` (XSRF + JSON), persisted via [MissAvCookieJar]. */
 object MissAvAuth {
 
     private const val TAG = "MissAvAuth"
@@ -35,7 +34,7 @@ object MissAvAuth {
             val raw = Preferences.preferenceSp.getString(PREF_USER, null) ?: return
             val o = JSONObject(raw)
             val host = Preferences.missAvBaseUrl.toHttpUrl().host
-            // A stored user without session cookies cannot be logged in.
+
             if (MissAvCookieJar.hasSessionCookies(host)) {
                 _user.value = MissAvUser(
                     name = o.optString("name").takeIf { it.isNotBlank() },
@@ -71,7 +70,7 @@ object MissAvAuth {
                 ensureRestored()
                 val service = MissAvNetwork.missAvService
                 val host = base().toHttpUrl().host
-                // 1) load a page so the server sets session + XSRF-TOKEN cookies
+
                 if (MissAvCookieJar.xsrfToken(host) == null) {
                     service.getPageUrl("${base()}/en")
                 }
@@ -83,7 +82,7 @@ object MissAvAuth {
                     .toRequestBody("application/json".toMediaType())
 
                 var response = service.postJson("${base()}/en/api/login", payload, xsrf = MissAvCookieJar.xsrfToken(host))
-                if (response.code() == 419) { // CSRF token expired → refresh once
+                if (response.code() == 419) {
                     service.getPageUrl("${base()}/en")
                     response = service.postJson("${base()}/en/api/login", payload, xsrf = MissAvCookieJar.xsrfToken(host))
                 }
@@ -112,7 +111,6 @@ object MissAvAuth {
         setUser(null)
     }
 
-    /** Called when an authenticated request is rejected (401/419/redirect to login). */
     fun onSessionExpired() {
         if (_user.value != null) {
             Log.w(TAG, "Session expired")
@@ -120,7 +118,6 @@ object MissAvAuth {
         }
     }
 
-    /** Updates the account name from an `/api/.../view` response that reports `user`. */
     fun onServerUserSeen(loggedIn: Boolean) {
         if (!loggedIn && _user.value != null) onSessionExpired()
     }

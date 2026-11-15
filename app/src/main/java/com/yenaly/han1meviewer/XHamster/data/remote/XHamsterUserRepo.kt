@@ -29,11 +29,6 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.util.UUID
 
-/**
- * Everything that needs the signed-in session: rating, favourites / playlists, comments,
- * the "my" lists and the subscriptions feed. Request shapes were taken from the captured
- * browser sessions (see per-function notes).
- */
 object XHamsterUserRepo {
 
     const val LOGIN_REQUIRED = "LOGIN_REQUIRED"
@@ -85,8 +80,6 @@ object XHamsterUserRepo {
         return error == null || error is JsonNull
     }
 
-    // ───────────────────────── lists ─────────────────────────
-
     suspend fun myVideos(url: String, kind: XHamsterListKind): Result<XHamsterListPage> = runCatching {
         requireLogin()
         XHamsterListsParser.parseMyVideos(fetchHtml(url), kind)
@@ -97,16 +90,9 @@ object XHamsterUserRepo {
         XHamsterListsParser.parseCollections(fetchHtml(XHamsterConstants.listUrl("/my/favorites/videos")))
     }
 
-    /** Path of the Watch Later collection page for the signed-in user. */
     suspend fun watchLaterPath(): String =
         collections().getOrNull()?.firstOrNull { it.isWatchLater }?.path ?: "/my/watch-later"
 
-    // ───────────────────────── rating ─────────────────────────
-
-    /**
-     * POST /api/front/rating/rate — body and `{"result":true}` response as captured from the
-     * video page. `isLike=false` is the dislike button.
-     */
     suspend fun rate(
         videoId: Long,
         like: Boolean,
@@ -128,12 +114,6 @@ object XHamsterUserRepo {
         if (result == false) throw IOException("Rating was rejected")
     }
 
-    // ───────────────────────── favourites ─────────────────────────
-
-    /**
-     * POST /api/front/favorite/videos with the full set of collections the video should be in.
-     * An empty set removes it from every playlist. Returns the collections the server confirms.
-     */
     suspend fun setVideoCollections(
         videoId: Long,
         collectionIds: List<String>,
@@ -157,12 +137,6 @@ object XHamsterUserRepo {
             ?.mapNotNull { (it as? JsonPrimitive)?.contentOrNull }
             ?: collectionIds
     }
-
-    // ───────────────────────── playlist management ─────────────────────────
-    //
-    // The captures only show the playlists *page*, not the create / rename / delete requests, so
-    // these follow the site's generic "<modelName>Sync" x-api convention (same envelope as the
-    // subscription and comment calls). Failures are surfaced to the UI instead of being hidden.
 
     private suspend fun syncCollection(
         id: String?,
@@ -206,13 +180,6 @@ object XHamsterUserRepo {
     suspend fun deleteCollection(id: String): Result<Unit> =
         syncCollection(id, null, "removed")
 
-    // ───────────────────────── comments ─────────────────────────
-
-    /**
-     * POST /x-api commentModelSync (new comment or reply). A `403` + `showCaptcha` answer means
-     * the site wants a reCAPTCHA, which cannot be completed from here; that is reported as
-     * [XHamsterCommentResult.CaptchaRequired] so the UI can send the user to the web page.
-     */
     suspend fun postComment(
         entityModel: String,
         entityId: Long,
@@ -276,12 +243,8 @@ object XHamsterUserRepo {
         }
     }
 
-    /** The site's abuse / report form (the only reporting channel present in the captures). */
     fun reportUrl(): String = "${XHamsterConstants.BASE_URL}/info/contact?subject=abuse"
 
-    // ───────────────────────── subscriptions feed ─────────────────────────
-
-    /** GET /x-api?r=[{"name":"newsCollectionFetch"...}] — videos from followed channels/creators. */
     suspend fun newsFeed(): Result<List<XHamsterFeedItem>> = runCatching {
         requireLogin()
         withContext(Dispatchers.IO) {
@@ -300,8 +263,6 @@ object XHamsterUserRepo {
             XHamsterListsParser.parseNewsFeed(response.body()?.string().orEmpty())
         }
     }
-
-    // ───────────────────────── search / stars ─────────────────────────
 
     suspend fun photoSearch(url: String): Result<XHamsterPage<XHamsterGallery>> = runCatching {
         XHamsterListsParser.parsePhotoSearch(fetchHtml(url))

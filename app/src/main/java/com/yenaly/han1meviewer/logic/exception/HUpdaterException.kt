@@ -15,9 +15,7 @@ sealed class HUpdaterException(
     class VersionCheck(
         message: String,
         cause: Throwable? = null,
-        /**
-         * 细分原因，便于日志与埋点区分失败类型。
-         */
+
         val reason: Reason,
         statusCode: Int? = null,
     ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {
@@ -41,9 +39,7 @@ sealed class HUpdaterException(
     class Download(
         message: String,
         cause: Throwable? = null,
-        /**
-         * 细分原因，便于日志与埋点区分失败类型。
-         */
+
         val reason: Reason,
         statusCode: Int? = null,
     ) : HUpdaterException(message, cause, reason.errorMessageRes, statusCode) {

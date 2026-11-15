@@ -9,11 +9,6 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.yenaly.han1meviewer.R
 
-/**
- * 主界面的一级导航目的地。
- *
- * 这些入口会显示在底部导航栏或平板/折叠屏的导航轨中。
- */
 enum class MainTopLevelDestination(
     val icon: ImageVector,
     @param:StringRes val titleRes: Int,

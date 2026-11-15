@@ -11,7 +11,6 @@ import com.yenaly.han1meviewer.worker.HanimeDownloadWorker
 
 object BuonduaDownloads {
 
-    /** Task id / folder: `Buondua/<album slug>/Videos/<file stem>/`. Unique per video. */
     fun videoCodeFor(albumCode: String, video: BuonduaVideo): String =
         "${albumCode.trim('/')}/Videos/${video.fileName.substringBeforeLast('.').ifBlank { "video" }}"
 
@@ -19,10 +18,6 @@ object BuonduaDownloads {
         video.fileName.substringAfterLast('.', "").lowercase()
             .takeIf { it.length in 2..4 } ?: "mp4"
 
-    /**
-     * Hands the video to the app downloader. `hanimeName` is the title exactly as published,
-     * so the saved file keeps that name.
-     */
     fun enqueueVideo(context: Context, albumCode: String, video: BuonduaVideo, coverUrl: String?) {
         HanimeDownloadManagerV2.addTask(
             HanimeDownloadWorker.Args(

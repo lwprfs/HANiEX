@@ -26,14 +26,9 @@ object BuonduaNetwork {
     val sharedOkHttpClient: OkHttpClient
         get() { ensure(); return _client!! }
 
-    /**
-     * Client for media files (photos, mp4). No Cloudflare interceptor: CDN hosts are not
-     * behind the challenge and the interceptor must not try to solve it on a media host.
-     */
     val streamClient: OkHttpClient
         get() { ensure(); return _streamClient!! }
 
-    /** Headers every media request (image, probe, inline playback, download) must carry. */
     fun mediaHeaders(): Map<String, String> = mapOf(
         "Referer" to BuonduaConstants.REFERER,
         "Origin" to BuonduaConstants.BASE_URL,

@@ -24,11 +24,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
-/**
- * FapFolder: Library holds history, saved posts, followed communities and search history;
- * Subscription surfaces the followed communities. Account, privacy, cookies and the existing
- * sign-in / register screens stay reachable from My Profile.
- */
 @Composable
 fun fapFolderHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
     val loggedIn = FapFolderNetwork.hasAuthCookies()

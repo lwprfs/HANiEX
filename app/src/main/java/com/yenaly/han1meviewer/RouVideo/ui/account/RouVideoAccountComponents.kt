@@ -20,7 +20,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 
-/** "Sign in to sync your library" block shown wherever a signed-in feature is opened signed out. */
 @Composable
 fun RouVideoSignInPrompt(
     onSignIn: () -> Unit,

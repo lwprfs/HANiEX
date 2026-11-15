@@ -168,21 +168,12 @@ enum class SettingsDestinationSpec(
     }
 }
 
-/**
- * 设置页当前展示的页面类型。
- *
- * 用于统一标题、返回行为、双栏左侧选中态和统计埋点。
- */
 sealed interface SettingsScreenDestination {
     val titleRes: Int
     val screenClassName: String
     val showToolbar: Boolean
     val category: SettingsCategory?
 
-    /**
-     * 用于 [androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator]
-     * 的可保存内容键，不能直接使用 sealed 对象。
-     */
     val contentKey: String
 
     data object Home : SettingsScreenDestination {

@@ -630,7 +630,6 @@ object XHamsterEntityParser {
         )
     }
 
-    /** Channel pages keep their data under `layoutPage.channelLandingInfoProps`. */
     private fun parseChannelProfile(html: String, path: String): XHamsterEntityProfile? {
         val root = XHamsterParser.extractInitials(html) ?: return null
         val layout = root.obj("layoutPage") ?: return null
@@ -694,7 +693,6 @@ object XHamsterEntityParser {
         )
     }
 
-    /** Parses `moments-by-id-list` into id -> real stream / rating info. */
     fun parseMomentsMeta(json: String): Map<Long, XHamsterShortMeta> {
         val root = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(json) }
             .getOrNull() as? JsonObject ?: return emptyMap()

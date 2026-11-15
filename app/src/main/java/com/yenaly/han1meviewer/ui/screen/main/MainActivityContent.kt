@@ -155,8 +155,7 @@ fun MainActivityContent(
         val atProfile = remember(backStackEntry) {
             backStackEntry?.destination.isRoute(SITE_PROFILE_ROUTE_NAME)
         }
-        // Every non-Hanime site shares the same four primary items. The bar is only shown on
-        // those four destinations; video players and other secondary pages stay full screen.
+
         val siteNavItems: List<SiteNavItem>? = if (isHanimeFamilySite) null else listOf(
             SiteNavItem(
                 key = "home",
@@ -333,11 +332,6 @@ fun MainActivityContent(
     }
 }
 
-
-/**
- * Compares the destination's type-safe route string with a route class' serial name.
- * (Avoids the reflective `hasRoute(KClass)` serializer lookup, which breaks under R8.)
- */
 private fun androidx.navigation.NavDestination?.isRoute(serialName: String): Boolean {
     val route = this?.route ?: return false
     return route.substringBefore('/').substringBefore('?') == serialName

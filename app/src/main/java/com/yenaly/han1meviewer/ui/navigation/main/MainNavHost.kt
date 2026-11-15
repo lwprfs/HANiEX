@@ -5,7 +5,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.MediaControlsSettingsRoute
 import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
 
-
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationCacheRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
 import com.yenaly.han1meviewer.util.translation.AppTranslation
@@ -119,7 +118,7 @@ fun MainNavHost(
         enterTransition = {
             when {
                 targetState.isAutoPlayVideo() -> EnterTransition.None
-                // 双栏设置只切换右侧内容，左栏保持不动。
+
                 suppressSettingsPaneTransition(initialState, targetState) -> EnterTransition.None
                 else -> slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Start,
@@ -133,7 +132,7 @@ fun MainNavHost(
                 suppressSettingsPaneTransition(initialState, targetState) -> ExitTransition.None
                 else -> slideOutOfContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Start,
-                    targetOffset = { it / 3 }, // 只偏移 1/3 的宽度
+                    targetOffset = { it / 3 },
                     animationSpec = tween(450, easing = FastOutSlowInEasing)
                 ) + scaleOut(targetScale = 0.9f) + fadeOut(animationSpec = tween(300))
             }

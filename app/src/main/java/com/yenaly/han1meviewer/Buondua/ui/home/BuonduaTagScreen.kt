@@ -15,7 +15,6 @@ import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
-/** Albums of one tag (`/tag/<slug>-<id>`). Paging follows the tag page's own "next" link. */
 @Composable
 fun BuonduaTagScreen(
     url: String,

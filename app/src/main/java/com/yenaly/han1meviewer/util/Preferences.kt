@@ -15,15 +15,6 @@ private fun Context.sp(
     mode: Int = Context.MODE_PRIVATE
 ): SharedPreferences = getSharedPreferences(name, mode)
 
-/**
- * 将值写入 SharedPreferences。
- *
- * 支持 Long、String、Int、Boolean、Float，其他类型会先序列化再存储。
- *
- * @param key 储存键
- * @param value 储存值
- * @param name SharedPreferences 名称，默认为包名
- */
 fun <T> putSpValue(
     key: String,
     value: T,
@@ -41,13 +32,6 @@ fun <T> putSpValue(
     }
 }
 
-/**
- * 从 SharedPreferences 读取值。
- *
- * @param key 储存键
- * @param default 缺省值，同时用于推断存储类型
- * @param name SharedPreferences 名称，默认为包名
- */
 fun <T> getSpValue(
     key: String,
     default: T,

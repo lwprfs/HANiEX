@@ -112,10 +112,6 @@ object XHamsterRepo {
         XHamsterEntityParser.parseShortsPage(fetchHtml(rebase(url)))
     }
 
-    /**
-     * Resolves the real (audio) stream and rating of short videos. The shorts grid only has the
-     * silent preview clip, so the player needs this before it can play with sound.
-     */
     suspend fun shortMetas(
         ids: List<Long>,
         referer: String,
@@ -146,7 +142,6 @@ object XHamsterRepo {
         }
     }
 
-    /** Like (or remove the like of) a video / short. Returns the new liked state. */
     suspend fun setLiked(
         videoId: Long,
         like: Boolean,

@@ -18,18 +18,6 @@ import androidx.compose.ui.unit.sp
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import java.util.Locale
 
-/**
- * 关键 H 帧倒计时浮层。
- *
- * 迁移自旧版 `HJzvdStd.onProgress` 的 `tvTimer` 逻辑：
- * 播放位置临近某个关键帧（`0 <= keyframe - position < remindAheadMs`）时，
- * 显示 `#序号`、备注（小字，可开关）与剩余秒数（粗体大字），一次只取第一个命中的关键帧。
- *
- * @param positionMs 当前播放位置
- * @param keyframes 关键帧实体
- * @param remindAheadMs 提前提醒的毫秒数（[com.yenaly.han1meviewer.Preferences.whenCountdownRemind]）
- * @param showComment 是否显示序号与备注
- */
 @Composable
 fun KeyframeCountdownOverlay(
     positionMs: Long,
@@ -95,7 +83,6 @@ fun KeyframeCountdownOverlay(
     }
 }
 
-/** 倒计时展示数据。 */
 private data class Countdown(
     val kfIndexLabel: String,
     val prompt: String?,

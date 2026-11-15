@@ -21,7 +21,6 @@ import org.json.JSONObject
 import retrofit2.Response
 import okhttp3.ResponseBody
 
-/** Logged-in MissAV pages and APIs (history, saved, playlists, actresses, per-video actions). */
 object MissAvAccountRepo {
 
     private val service get() = MissAvNetwork.missAvService
@@ -30,7 +29,6 @@ object MissAvAccountRepo {
     private fun xsrf() = MissAvCookieJar.xsrfToken(host())
     private val emptyJson: RequestBody = "{}".toRequestBody("application/json".toMediaType())
 
-    /** Builds an absolute URL from a site path, percent-encoding each segment (actress names are CJK). */
     private fun url(path: String, page: Int? = null, build: HttpUrl.Builder.() -> Unit = {}): String {
         val b = base().toHttpUrl().newBuilder()
         path.trim('/').split('/').filter { it.isNotEmpty() }.forEach { b.addPathSegment(it) }
@@ -52,8 +50,6 @@ object MissAvAccountRepo {
         val r = service.getPageUrl(url(path, page))
         r.checked(requireAuth)
     }
-
-    // ---- list pages ----
 
     suspend fun history(page: Int): MissAvListPage<HanimeInfo> =
         MissAvAccountParser.parseVideoList(page("/en/history", page, true))
@@ -88,7 +84,6 @@ object MissAvAccountRepo {
         )
     }
 
-    /** Actress news feed; cursor-based. First page has no cursor. */
     suspend fun actressTweets(actressId: String, cursor: String?): MissAvTweetsPage = withContext(Dispatchers.IO) {
         val u = base().toHttpUrl().newBuilder()
             .addPathSegments("en/api/actresses/$actressId/tweets")
@@ -97,14 +92,10 @@ object MissAvAccountRepo {
         MissAvAccountParser.parseTweets(service.getJson(u, xsrf = xsrf()).checked())
     }
 
-    // ---- history ----
-
     suspend fun clearHistory() = withContext(Dispatchers.IO) {
         service.deleteJson("${base()}/api/history", emptyJson, xsrf = xsrf()).checked(true)
         Unit
     }
-
-    // ---- saved (videos / actresses) ----
 
     private suspend fun viewState(kind: String, id: String): MissAvSavedState = withContext(Dispatchers.IO) {
         val text = service.getJson("${base()}/api/$kind/$id/view", xsrf = xsrf()).checked()
@@ -114,11 +105,6 @@ object MissAvAccountRepo {
     suspend fun itemState(itemKey: String) = viewState("items", itemKey)
     suspend fun actressState(id: String) = viewState("actresses", id)
 
-    /**
-     * Saves or unsaves. Saving is `POST .../save` (HAR-verified). Unsaving is `DELETE` (the site's own `toggleSave` uses
-     * `delete`/`post`); a toggling `POST` is kept as a fallback, re-reading the real state after each attempt.
-     * Returns the final saved state.
-     */
     private suspend fun setSaved(kind: String, id: String, save: Boolean): Boolean = withContext(Dispatchers.IO) {
         val u = "${base()}/api/$kind/$id/save"
         if (save) {
@@ -133,8 +119,6 @@ object MissAvAccountRepo {
 
     suspend fun setItemSaved(itemKey: String, save: Boolean) = setSaved("items", itemKey, save)
     suspend fun setActressSaved(id: String, save: Boolean) = setSaved("actresses", id, save)
-
-    // ---- playlists ----
 
     suspend fun playlistOptions(dvdId: String): List<MissAvPlaylistOption> = withContext(Dispatchers.IO) {
         MissAvAccountParser.parsePlaylistOptions(
@@ -151,7 +135,6 @@ object MissAvAccountRepo {
         playlistOptions(dvdId).firstOrNull { it.key == key }?.isAdded == true
     }
 
-    /** Removal endpoint is not in the HAR: tries `POST /remove`, then `DELETE /add`, verifying each time. */
     suspend fun removeFromPlaylist(dvdId: String, key: String): Boolean = withContext(Dispatchers.IO) {
         suspend fun added() = playlistOptions(dvdId).firstOrNull { it.key == key }?.isAdded == true
         runCatching { service.postJson("${base()}/api/playlists/remove", playlistBody(dvdId, key), xsrf = xsrf()).checked(true) }
@@ -160,7 +143,6 @@ object MissAvAccountRepo {
         added()
     }
 
-    /** Reads the live create form and submits it with the typed name. Returns the new playlists list. */
     suspend fun createPlaylist(name: String): List<MissAvPlaylist> = withContext(Dispatchers.IO) {
         val createUrl = url("/en/playlists/create")
         val html = service.getPageUrl(createUrl).checked(true)

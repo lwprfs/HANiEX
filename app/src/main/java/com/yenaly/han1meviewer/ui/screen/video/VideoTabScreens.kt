@@ -141,12 +141,6 @@ fun RenderVideoIntroductionContent(
     }
 }
 
-/**
- * 「相关影片」标签页内容。
- *
- * 仅在「相关影片独立标签页」开关开启且非本地下载时出现；
- * 复用简介底部的 [RelatedVideosSection]，独立成可滚动页面。
- */
 @Composable
 fun RenderVideoRelatedContent(
     viewModel: VideoViewModel,
@@ -215,8 +209,6 @@ fun RenderVideoCommentContent(
     val scope = rememberCoroutineScope()
 
     HanimeTheme {
-        // 评论数据请求与角标收集已上提到 VideoRouteContent：
-        // 评论页不随播放页进场预组合，请求在 tabs 层进场即发出。
 
         childCommentId?.let { currentCommentId ->
             ModalBottomSheet(

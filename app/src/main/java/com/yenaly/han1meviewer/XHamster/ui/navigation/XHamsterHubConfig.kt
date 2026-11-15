@@ -31,11 +31,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
-/**
- * XHamster: Subscription page lists subscriptions / channels / top creators, Library reuses the
- * existing tabbed library screen (one entry per tab), Customize hosts the two independent
- * homepage visibility switches.
- */
 @Composable
 fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
     fun library(tab: String) = { navController.navigateSafely(XHamsterLibraryRoute(tab)) }

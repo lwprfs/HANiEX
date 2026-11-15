@@ -52,9 +52,7 @@ fun TagChipGroup(
         collapsible,
         collapsedMaxLines
     ) { mutableIntStateOf(0) }
-    // 高度补间用 Animatable 手动驱动：首次出现直接 snap 到位——
-    // animateIntAsState 的 0→h 入场动画会让所在列表在数据到达后的每一帧
-    // 都重排（播放页进场的连续掉帧来源之一）；仅展开/收起时播放补间。
+
     val heightAnimatable = remember(tags, collapsible, collapsedMaxLines) {
         Animatable(-1f)
     }
@@ -184,8 +182,7 @@ fun TagChipGroup(
                 contentPlaceables = chipPlaceables + togglePlaceable
                 contentLayout = calculateFlowLayout(contentPlaceables)
             } else {
-                // 二分查找折叠态最多能放下的 chip 数（线性逐个回退为 O(n²)，
-                // 且「行数随 chip 数单调不减」，二分安全）
+
                 var lo = 0
                 var hi = chipPlaceables.size
                 var bestCount = -1
@@ -217,7 +214,6 @@ fun TagChipGroup(
             chipContentHeightTarget = chipContentHeight
         }
 
-        // 首次出现（动画尚未就位）直接用目标高度，之后用补间值
         val displayChipHeight = if (heightAnimatable.value >= 0f) {
             heightAnimatable.value.roundToInt()
         } else {
@@ -300,8 +296,7 @@ private fun rememberTagChipColors(tags: List<String>): Map<String, ChipColors> {
     val assignedPalette = remember(tags, palette) {
         assignPaletteWithoutAdjacentRepeats(tags.distinct(), palette)
     }
-    // assistChipColors 是 @Composable 工厂，无法整体 remember；
-    // ChipColors 为轻量数据类，逐次创建开销可忽略。
+
     return assignedPalette.mapValues { (_, pair) ->
         AssistChipDefaults.assistChipColors(
             containerColor = pair.first,

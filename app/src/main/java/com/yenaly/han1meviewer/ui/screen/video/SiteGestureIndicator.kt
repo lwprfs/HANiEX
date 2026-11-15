@@ -38,13 +38,6 @@ import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 
-/**
- * 站点播放器（MissAV / OnAir / FapFolder 等）使用的手势指示浮层。
- *
- * 上游把 Hanime 播放器迁移到 Compose 后删除了 VideoPlayerUi.kt，
- * 其中的该浮层仍被各站点播放器引用，故单独保留在此。
- * （Hanime 播放器自身使用 ui.player.video.GestureIndicatorOverlay。）
- */
 enum class GestureIndicatorType {
     Brightness,
     Volume,

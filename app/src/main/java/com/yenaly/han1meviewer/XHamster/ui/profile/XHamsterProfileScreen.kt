@@ -169,7 +169,6 @@ private fun ProfileContent(
     val tabs = if (hasShorts) listOf(ProfileTab.VIDEOS, ProfileTab.SHORTS) else listOf(ProfileTab.VIDEOS)
     var selected by remember(profile.path) { mutableIntStateOf(0) }
 
-    // Subscribe state is shared by the header button and the shorts player.
     val scope = rememberCoroutineScope()
     var subscribed by remember(profile.path) { mutableStateOf(profile.subscribed) }
     var busy by remember(profile.path) { mutableStateOf(false) }
@@ -307,7 +306,6 @@ private fun ProfileVideos(
     val defaultSort = sorts.firstOrNull { it.selected }?.path
     var sort by remember(basePath) { mutableStateOf(defaultSort) }
 
-    // tag links already look like "/channels/x?tag=y"; the sort is appended on top.
     val path = remember(basePath, tag, sort) {
         val start = tag ?: basePath
         if (sort != null && sort != defaultSort) {
@@ -553,7 +551,6 @@ private fun ShortsPlayerDialog(
 
     LaunchedEffect(muted) { player.volume = if (muted) 0f else 1f }
 
-    // Progress bar.
     LaunchedEffect(player) {
         while (true) {
             val duration = player.duration
@@ -568,8 +565,6 @@ private fun ShortsPlayerDialog(
         val page = pagerState.currentPage
         val short = items.getOrNull(page) ?: return@LaunchedEffect
 
-        // The grid only knows the silent preview clip; ask the site for the real stream
-        // (and rating) of this short plus the next few so swiping stays quick.
         if (metas[short.id] == null) {
             val batch = items.drop(page).take(6).map { it.id }.filter { it !in metas }
             XHamsterRepo.shortMetas(batch, referer).onSuccess { metas.putAll(it) }
@@ -624,7 +619,6 @@ private fun ShortsPlayerDialog(
                         }
                     }
 
-                    // Title / views, bottom-left.
                     Column(
                         Modifier.align(Alignment.BottomStart).padding(start = 16.dp, end = 88.dp)
                             .padding(bottom = 32.dp).navigationBarsPadding(),
@@ -637,7 +631,6 @@ private fun ShortsPlayerDialog(
                         }
                     }
 
-                    // Action column, bottom-right: follow, like, sound.
                     Column(
                         Modifier.align(Alignment.BottomEnd).padding(end = 12.dp)
                             .padding(bottom = 32.dp).navigationBarsPadding(),

@@ -10,11 +10,6 @@ import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.yenaly.han1meviewer.R
 
-/**
- * 内容库入口定义。
- *
- * 入口的顺序、显示内容和登录要求都集中在这里，后续调整不需要修改导航壳。
- */
 enum class ContentLibraryEntry(
     val icon: ImageVector,
     @param:StringRes val titleRes: Int,

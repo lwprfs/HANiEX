@@ -95,7 +95,7 @@ fun PreviewScreen(
     }
     var imageViewerState by remember { mutableStateOf<PreviewImageViewerState?>(null) }
     var monthAnimationDirection by remember { mutableIntStateOf(1) }
-    // 月份切換暫時隱藏，數據直接使用搜索結果首頁；評論區仍使用當前自然月。
+
     val currentMonth = remember { currentMonthCode() }
     val selectedIndex = routeState.selectedIndex
 
@@ -126,7 +126,7 @@ fun PreviewScreen(
         is WebsiteState.Success -> displayState.info.hasPrevious
         is WebsiteState.Error -> true
     }
-    // 某個月加載失敗或結果為空時，仍然要允許回到後面的月份。
+
     val canNext = when (displayState) {
         is WebsiteState.Loading -> false
         is WebsiteState.Success ->
@@ -211,7 +211,6 @@ fun PreviewScreen(
         PreviewCommentPrefetcher.here(commentViewModel).fetch(PREVIEW_COMMENT_PREFIX, currentMonth)
     }
 
-    // 數據刷新後項目數量可能變少，避免記住的卡片索引越界。
     LaunchedEffect(previewInfoList.size) {
         if (previewInfoList.isNotEmpty() &&
             routeState.selectedIndex !in previewInfoList.indices
@@ -238,7 +237,6 @@ fun PreviewScreen(
         }
     }
 
-    // 搜索結果只有封面與標題，卡片顯示時再異步補全詳情。
     LaunchedEffect(currentMonth, previewPagerState.currentPage, previewInfoList.size) {
         previewInfoList.getOrNull(previewPagerState.currentPage)?.videoCode?.let { videoCode ->
             previewViewModel.enrichPreview(currentMonth, videoCode)

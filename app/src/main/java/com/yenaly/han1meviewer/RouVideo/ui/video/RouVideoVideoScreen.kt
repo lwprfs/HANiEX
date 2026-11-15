@@ -283,7 +283,6 @@ fun RouVideoVideoScreen(
         }
     }
 
-    // Signed in: resume from the position saved on the account.
     LaunchedEffect(viewer.loaded, viewer.positionMs, resumePosition) {
         if (!viewer.loaded || resumePosition > 0L || resumeApplied) return@LaunchedEffect
         val server = viewer.positionMs
@@ -293,7 +292,6 @@ fun RouVideoVideoScreen(
         }
     }
 
-    // Signed in: keep the account's watch progress up to date while playing.
     LaunchedEffect(playerState.isPlaying, auth.loggedIn, detailState) {
         if (!auth.loggedIn || detailState !is RouVideoDetailState.Success) return@LaunchedEffect
         if (!playerState.isPlaying) {
@@ -626,8 +624,6 @@ private fun RouVideoVideoContent(
     }
 }
 
-
-/** Sign-in status of the video page, with favorite / follow buttons for a signed-in viewer. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun RouVideoAccountBar(

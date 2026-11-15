@@ -353,7 +353,6 @@ private fun PlaylistNameDialog(initial: String?, onDismiss: () -> Unit, onConfir
     )
 }
 
-/** Plain video grid for one playlist / watch-later page. */
 @Composable
 fun XHamsterCollectionScreen(
     path: String,

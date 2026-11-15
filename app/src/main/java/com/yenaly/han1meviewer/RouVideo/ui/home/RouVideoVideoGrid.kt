@@ -76,8 +76,7 @@ fun RouVideoVideoGrid(
 ) {
     when {
         state.items.isEmpty() -> {
-            // Keep the header (filter chips) visible while loading / failed / empty, otherwise
-            // the user could not switch filters out of a bad state.
+
             Column(modifier = modifier.fillMaxSize()) {
                 if (header != null) {
                     Box(modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp)) {

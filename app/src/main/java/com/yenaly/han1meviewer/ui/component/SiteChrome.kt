@@ -827,7 +827,6 @@ fun <T> SiteChipRow(
     }
 }
 
-/** Site identity badge shown at the left of every site home header. */
 @Composable
 fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifier) {
     val res = when (site) {
@@ -852,11 +851,6 @@ fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifi
     )
 }
 
-/**
- * Shared home header, following Hanime's HomePageTopBar: site logo, a rounded clickable search
- * field and ONE contextual shortcut on the right. There is no menu button and no site-switch
- * button; switching sites lives in My Profile.
- */
 @Composable
 fun SiteHomeTopBar(
     site: com.yenaly.han1meviewer.SiteType,
@@ -895,10 +889,6 @@ private fun SiteScrollToTopFab(
     }
 }
 
-/**
- * Floating "back to top" button anchored at the bottom-LEFT of a home page, so it never covers
- * the cards or the controls on the right. Hidden near the top, animated scroll on click.
- */
 @Composable
 fun androidx.compose.foundation.layout.BoxScope.SiteScrollToTopButton(
     state: androidx.compose.foundation.lazy.LazyListState,

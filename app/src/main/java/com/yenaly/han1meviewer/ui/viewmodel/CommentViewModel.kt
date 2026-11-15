@@ -26,11 +26,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/**
- * @project Han1meViewer
- * @author Yenaly Liew
- * @time 2022/06/28 028 14:18
- */
 class CommentViewModel(application: Application) : BaseViewModel(application) {
 
     data class CommentUiState(
@@ -65,10 +60,6 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
 
     private var commentRequestJob: Job? = null
 
-    /**
-     * 最近一次請求的評論目標（影片代碼或預覽月份）。
-     * 用於避免把上一個月份的預取評論誤用到新的月份。
-     */
     var lastCommentCode: String? = null
         private set
 
@@ -140,14 +131,6 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    /**
-     * 预取/进场场景的加载：同一目标已成功加载过则跳过请求。
-     *
-     * 全屏切换会让播放页在「折叠布局 / 分栏布局」间切换（≥840dp 横屏为分栏），
-     * tabs 子树被销毁重组、预取的 LaunchedEffect 重跑——没有该守卫时每次切换
-     * 都会把评论状态重置为 Loading（列表清空闪加载）并重新请求。
-     * 下拉刷新走 [getComment] 保持强制重拉。
-     */
     fun getCommentIfNeeded(type: String, code: String) {
         if (code == lastCommentCode && _videoCommentStateFlow.value is WebsiteState.Success) return
         getComment(type, code)

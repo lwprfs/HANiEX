@@ -106,10 +106,6 @@ import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.VideoCardItem
 
-// ---------------------------------------------------------------------------------------------
-// Shared building blocks
-// ---------------------------------------------------------------------------------------------
-
 @Composable
 private fun LoginRequired(onLogin: () -> Unit) {
     Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
@@ -139,7 +135,6 @@ private fun LoadMoreEffect(state: LazyGridState, canLoadMore: Boolean, onLoadMor
     LaunchedEffect(shouldLoad, canLoadMore) { if (shouldLoad && canLoadMore) onLoadMore() }
 }
 
-/** Paginated grid with pull-to-refresh, loading, error and empty states. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun <T> PagedGrid(
@@ -212,10 +207,6 @@ private fun ActressItem(actress: MissAvActress, onClick: () -> Unit) {
     }
 }
 
-// ---------------------------------------------------------------------------------------------
-// Login
-// ---------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MissAvLoginScreen(
@@ -279,10 +270,6 @@ fun MissAvLoginScreen(
     }
 }
 
-// ---------------------------------------------------------------------------------------------
-// Account hub
-// ---------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MissAvAccountScreen(
@@ -338,14 +325,10 @@ fun MissAvAccountScreen(
 
 @Composable
 private fun AccountRow(icon: androidx.compose.ui.graphics.vector.ImageVector, title: Int, onClick: () -> Unit) {
-    // Same row style as the Library / Profile hub pages.
+
     val label = stringResource(title)
     SiteHubRow(SiteHubEntry(key = label, title = label, icon = icon, onClick = onClick))
 }
-
-// ---------------------------------------------------------------------------------------------
-// Saved (videos / actresses)
-// ---------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -378,10 +361,6 @@ fun MissAvSavedScreen(
         }
     }
 }
-
-// ---------------------------------------------------------------------------------------------
-// Account watch history
-// ---------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -424,10 +403,6 @@ fun MissAvSiteHistoryScreen(
         dismissButton = { TextButton(onClick = { confirm = false }) { Text(stringResource(android.R.string.cancel)) } },
     )
 }
-
-// ---------------------------------------------------------------------------------------------
-// Playlists
-// ---------------------------------------------------------------------------------------------
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -530,10 +505,6 @@ fun MissAvCreatePlaylistScreen(
     }
 }
 
-// ---------------------------------------------------------------------------------------------
-// Actresses
-// ---------------------------------------------------------------------------------------------
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MissAvActressesScreen(
@@ -599,7 +570,6 @@ private fun TweetCard(tweet: MissAvTweet) {
     }
 }
 
-/** Paginated vertical list with the same loading / error / empty handling as [PagedGrid]. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun <T> PagedList(

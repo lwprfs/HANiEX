@@ -72,12 +72,6 @@ object NetworkRepo {
         action = Parser::hanimePreview
     )
 
-    /**
-     * 從「新番預告」搜索結果加載預覽數據。
-     *
-     * 網站已把新番預告遷移到 `search?page=1&genre=新番預告`，
-     * 這裡直接使用搜索結果首頁的影片列表，並轉換成原有的 [HanimePreview] 模型。
-     */
     fun getHanimePreviewFromSearch() = flow<WebsiteState<HanimePreview>> {
         val requestResult = HanimeNetwork.hanimeService.getHanimeSearchResult(
             page = 1,
@@ -98,7 +92,6 @@ object NetworkRepo {
         emit(WebsiteState.Error(handleException(e)))
     }.flowOn(Dispatchers.IO)
 
-    //获取订阅或者可以说是关注列表及它们的更新
     fun getMySubscriptions(page: Int) = websiteIOFlow(
         request = { HanimeNetwork.hanimeService.getMySubscriptions(page) },
         action = Parser::getMySubscriptions

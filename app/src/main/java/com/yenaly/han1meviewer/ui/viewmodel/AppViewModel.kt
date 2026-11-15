@@ -25,11 +25,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * @project Han1meViewer
- * @author Yenaly Liew
- * @time 2024/03/29 029 18:00
- */
 object AppViewModel : BaseViewModel(application), IHCsrfToken {
 
     override var csrfToken: String? = null

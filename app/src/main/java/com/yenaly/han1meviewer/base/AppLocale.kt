@@ -7,22 +7,11 @@ import android.os.LocaleList
 import androidx.preference.PreferenceManager
 import java.util.Locale
 
-/**
- * 应用语言相关工具。
- */
 object AppLocale {
 
-    /**
-     * 系统当前首选语言。
-     */
     val preferredLanguage: Locale
         get() = LocaleList.getDefault()[0]
 
-    /**
-     * 根据设置中的应用语言包装 [context]。
-     *
-     * 由 Activity 的 `attachBaseContext` 调用，使资源按用户选择加载。
-     */
     fun wrap(context: Context): Context {
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val lang = prefs.getString("app_language", "system") ?: "system"

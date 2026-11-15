@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 sealed interface BuonduaSource {
     data class Category(val path: String) : BuonduaSource
     data class Search(val query: String) : BuonduaSource
-    /** Tag page, or any other listing link taken from the site. */
+
     data class Url(val url: String) : BuonduaSource
 
     fun firstUrl(): String = when (this) {
@@ -73,7 +73,7 @@ class BuonduaListViewModel : ViewModel() {
                 .onSuccess { result ->
                     _state.update { old ->
                         val merged = (old.items + result.items).distinctBy { it.videoCode }
-                        // Stop paging if the site returns a page that adds nothing new.
+
                         val progressed = merged.size > old.items.size
                         old.copy(
                             items = merged,

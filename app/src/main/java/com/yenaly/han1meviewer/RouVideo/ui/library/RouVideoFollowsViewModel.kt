@@ -25,11 +25,10 @@ data class RouVideoFollowsUiState(
     val needsSignIn: Boolean = false,
     val total: Int = 0,
     val newCount: Int = 0,
-    /** One-shot message for a snackbar / toast; cleared with [RouVideoFollowsViewModel.messageShown]. */
+
     val message: String? = null,
 )
 
-/** "My follows": series the signed-in viewer follows (`/follows`). */
 class RouVideoFollowsViewModel : ViewModel() {
 
     private val _state = MutableStateFlow(RouVideoFollowsUiState())

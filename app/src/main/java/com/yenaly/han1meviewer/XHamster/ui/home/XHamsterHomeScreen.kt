@@ -79,7 +79,7 @@ fun XHamsterHomeScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 XHamsterVideoGrid(
-                    // Filter chips and discover strips scroll together with the videos.
+
                     header = {
                         Column {
                             SiteChipRow(

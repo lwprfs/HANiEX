@@ -380,8 +380,7 @@ private fun ActionRow(
     onStopWaiting: () -> Unit,
     onCopyDetails: () -> Unit,
 ) {
-    // FlowRow so that long localized labels wrap onto a new line instead of squashing
-    // neighbouring buttons into each other.
+
     FlowRow(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),

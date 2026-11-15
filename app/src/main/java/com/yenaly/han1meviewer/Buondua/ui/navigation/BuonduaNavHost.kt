@@ -50,7 +50,6 @@ object BuonduaSettingsHubRoute
 @Serializable
 data class BuonduaSearchRoute(val query: String? = null)
 
-/** An album. [videoCode] is the album slug; [resumePosition] is accepted for NavigationManager parity. */
 @Serializable
 data class BuonduaAlbumRoute(val videoCode: String, val resumePosition: Long = 0L)
 
@@ -60,7 +59,6 @@ data class BuonduaTagRoute(val url: String, val title: String)
 @Serializable
 object BuonduaHistoryRoute
 
-/** Buondua has no account and no subscriptions, so only real pages are listed. */
 @Composable
 fun buonduaHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(

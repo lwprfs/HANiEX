@@ -41,11 +41,6 @@ import com.yenaly.han1meviewer.ui.theme.colorScheme
 import com.yenaly.han1meviewer.ui.theme.dynamicColorScheme
 import com.yenaly.han1meviewer.util.ThemeUtils
 
-/**
- * 预设配色选择弹窗。
- *
- * 使用四色圆盘预览每套配色，点击即可应用。
- */
 @Composable
 fun ThemeColorPresetDialog(
     presets: List<ThemeColorPreset>,
@@ -58,7 +53,7 @@ fun ThemeColorPresetDialog(
 
     val context = LocalContext.current
     val darkTheme = remember(context) { ThemeUtils.isDarkTheme(context) }
-    // “跟随系统”预览必须基于系统动态取色，而不是当前已选主题。
+
     val systemPreviewScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         dynamicColorScheme(darkTheme)
     } else {

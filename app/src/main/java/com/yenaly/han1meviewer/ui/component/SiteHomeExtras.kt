@@ -33,21 +33,12 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import java.util.Calendar
 
-/** An optional shortcut shown as a pill inside [SiteWelcomeHeader]. */
 data class SiteQuickAction(
     val label: String,
     val iconRes: Int,
     val onClick: () -> Unit,
 )
 
-/**
- * Slim greeting card shared by every site's home page.
- *
- * It intentionally does NOT repeat the search / history / settings shortcuts any more:
- * those already live in the top bar ([SiteSearchTopBar]), and showing them twice made the
- * home screen look duplicated. [actions] is still accepted for sites that need an extra,
- * non-duplicated shortcut, but it defaults to empty.
- */
 @Composable
 fun SiteWelcomeHeader(
     siteName: String,

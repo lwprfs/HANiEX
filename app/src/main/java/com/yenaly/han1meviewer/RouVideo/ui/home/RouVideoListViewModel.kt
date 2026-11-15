@@ -39,10 +39,8 @@ sealed interface RouVideoSource {
         val sort: SeriesSort,
     ) : RouVideoSource
 
-    /** Signed-in: "My favorites" (`/favorite/{id}`). */
     data class Favorites(val order: FavoriteOrder) : RouVideoSource
 
-    /** Signed-in: the account's watch history (`/history/{id}`). */
     data object CloudHistory : RouVideoSource
 }
 
@@ -52,7 +50,7 @@ data class RouVideoListUiState(
     val isLoadingMore: Boolean = false,
     val hasNext: Boolean = false,
     val error: String? = null,
-    /** The list needs a signed-in account and there is none (or it expired). */
+
     val needsSignIn: Boolean = false,
     val total: Int = 0,
 

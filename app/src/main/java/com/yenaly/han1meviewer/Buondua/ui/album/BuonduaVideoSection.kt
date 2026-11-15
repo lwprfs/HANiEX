@@ -37,15 +37,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.util.copyTextToClipboard
 
-/**
- * One video of the "Videos" section.
- *
- *  - The title is shown exactly as published: the downloaded file is saved under that name.
- *  - [inline] == true  -> the file streams, so an inline player is offered.
- *  - [inline] == false -> the file only works once saved, so there is NO player, only the
- *    copyable link and the downloader button.
- *  - [inline] == null  -> still being checked.
- */
 @Composable
 fun BuonduaVideoItem(
     albumCode: String,
@@ -113,7 +104,6 @@ fun BuonduaVideoItem(
     }
 }
 
-/** Tap-to-play so a page with many clips never starts them all at once. */
 @Composable
 private fun BuonduaInlinePlayer(url: String) {
     var started by remember(url) { mutableStateOf(false) }
@@ -136,7 +126,7 @@ private fun BuonduaInlinePlayer(url: String) {
                 val controller = MediaController(ctx)
                 controller.setAnchorView(view)
                 view.setMediaController(controller)
-                // The CDN is hot-link protected: send the same Referer the site page sends.
+
                 view.setVideoURI(Uri.parse(url), BuonduaNetwork.mediaHeaders())
                 view.setOnPreparedListener { it.isLooping = false; view.start() }
             }

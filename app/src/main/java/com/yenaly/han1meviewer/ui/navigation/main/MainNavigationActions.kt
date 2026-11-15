@@ -29,11 +29,6 @@ fun NavHostController.navigateTopLevelDestination(
     return true
 }
 
-/**
- * 切换设置一级分类。
- *
- * 只保留“设置首页 + 当前分类”，避免平板双栏反复点击分类时不断入栈。
- */
 fun NavController.navigateSettingsCategoryDestination(category: SettingsCategory) {
     navigateSafely(SettingsCategoryRoute(category.key)) {
         popUpTo(HomeSettingsRoute) {
@@ -43,11 +38,6 @@ fun NavController.navigateSettingsCategoryDestination(category: SettingsCategory
     }
 }
 
-/**
- * 进入设置二级页面。
- *
- * 使用普通入栈，保证从二级页面返回时回到所属分类，而不是直接回到设置首页。
- */
 fun NavController.navigateSettingsDestination(route: Any) {
     navigateSafely(route) {
         launchSingleTop = true

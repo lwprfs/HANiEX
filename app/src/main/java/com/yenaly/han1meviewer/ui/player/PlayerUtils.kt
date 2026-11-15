@@ -2,16 +2,8 @@ package com.yenaly.han1meviewer.ui.player
 
 import java.util.Locale
 
-/**
- * 播放器工具函数。
- */
 object PlayerUtils {
 
-    /**
-     * 将毫秒时间格式化为 `mm:ss` 或 `h:mm:ss` 形式的字符串。
-     *
-     * 替代旧版 `cn.jzvd.JZUtils.stringForTime`。
-     */
     fun stringForTime(timeMs: Long): String {
         val totalSeconds = timeMs / 1000
         val seconds = totalSeconds % 60

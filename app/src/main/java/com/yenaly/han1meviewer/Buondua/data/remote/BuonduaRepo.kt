@@ -17,7 +17,6 @@ object BuonduaRepo {
         response.body()?.string().orEmpty()
     }
 
-    /** Any listing by absolute URL (category, tag, search, or a "next page" link). */
     suspend fun list(url: String): Result<BuonduaListPage> = runCatching {
         val html = fetchHtml(url)
         withContext(Dispatchers.Default) { BuonduaParser.parseListPage(html) }
@@ -37,7 +36,6 @@ object BuonduaRepo {
         }
     }
 
-    /** Photos of every page of an album, in order (used by "download all photos"). */
     suspend fun allPhotoUrls(code: String, loaded: List<String>, totalPages: Int): List<String> {
         val urls = ArrayList<String>(loaded)
         for (p in 2..totalPages) {
@@ -47,7 +45,6 @@ object BuonduaRepo {
         return urls.distinct()
     }
 
-    /** Videos of every page of an album (videos may be listed on any page). */
     suspend fun allVideos(code: String, first: BuonduaAlbumPage) =
         buildList {
             addAll(first.videos)
@@ -56,11 +53,6 @@ object BuonduaRepo {
             }
         }.distinctBy { it.url }
 
-    /**
-     * Can this file be shown without saving it first?  The site CDN is asked for the first two
-     * bytes; the file is "inline" only if the server answers with video bytes and does not force
-     * a download (`Content-Disposition: attachment`).
-     */
     suspend fun isInlinePlayable(url: String): Boolean = withContext(Dispatchers.IO) {
         runCatching {
             val request = Request.Builder().url(url).get()

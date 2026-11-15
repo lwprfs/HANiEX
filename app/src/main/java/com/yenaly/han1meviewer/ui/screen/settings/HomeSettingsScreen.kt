@@ -43,11 +43,6 @@ private enum class HomeSettingsChoiceDialog {
     UpdateInstaller,
 }
 
-/**
- * 单个设置分类的详情内容。
- *
- * 手机和双栏模式的右侧面板共用该页面，仅根据 [category] 展示对应设置项。
- */
 @Composable
 fun HomeSettingsScreen(
     category: SettingsCategory,
@@ -453,7 +448,6 @@ fun HomeSettingsScreen(
                 }
             }
 
-            // 网络、下载和关键帧直接展示对应设置页，不再经过重复的聚合页。
             SettingsCategory.Network -> {
                 val siteEntries = SiteSettingsRegistry.activeEntries
                 if (siteEntries.isNotEmpty()) {

@@ -16,18 +16,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
-/**
- * Sign-in state of rou.video. The site signs people in through its own web form
- * (OpenID Connect), so the app signs in with a WebView ([RouVideoLoginActivity]) and then
- * keeps the resulting session cookie in [RouVideoCookieJar].
- */
 object RouVideoAuth {
 
     private const val KEY_USER_ID = "rouvideo_user_id"
     private const val KEY_USER_NAME = "rouvideo_user_name"
     private const val KEY_USER_EMAIL = "rouvideo_user_email"
 
-    /** Long-lived scope for work that must outlive a screen (e.g. the last progress save). */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val sp get() = Preferences.preferenceSp
 
@@ -54,7 +48,6 @@ object RouVideoAuth {
         return RouVideoAuthState(loggedIn = true, user = user)
     }
 
-    /** Re-reads the stored session, e.g. after the mirror host was changed. */
     fun reload() {
         _state.value = readState()
     }
@@ -71,17 +64,12 @@ object RouVideoAuth {
         }.apply()
     }
 
-    /**
-     * Called by the login WebView once the site has accepted the sign-in.
-     * [cookieHeader] is what `CookieManager.getCookie()` returned for the site.
-     */
     fun onWebLoginFinished(cookieHeader: String) {
         RouVideoCookieJar.importHeader(host(), cookieHeader)
         _state.value = RouVideoAuthState(loggedIn = RouVideoCookieJar.hasSession(host()), user = _state.value.user)
         appScope.launch { refresh() }
     }
 
-    /** Validates the session with the site and updates who is signed in. */
     suspend fun refresh(): RouVideoSessionCheck {
         if (!RouVideoCookieJar.hasSession(host())) {
             clearLocal()
@@ -100,7 +88,6 @@ object RouVideoAuth {
         return check
     }
 
-    /** The site rejected the session (HTTP 401/403): forget it. */
     fun onSessionRejected() {
         clearLocal()
     }
@@ -111,7 +98,6 @@ object RouVideoAuth {
         withContext(Dispatchers.Main) { clearWebCookies() }
     }
 
-    /** Profile name was changed on the site; the site signs the viewer out afterwards. */
     suspend fun updateProfileName(name: String): Result<Unit> {
         val current = user ?: return Result.failure(RouVideoNotSignedInException())
         val result = RouVideoAccountRepo.updateProfile(current, name.trim())
@@ -135,7 +121,7 @@ object RouVideoAuth {
                 manager.getCookie(base)?.split(';')?.forEach { part ->
                     val name = part.substringBefore('=').trim()
                     if (name.isNotEmpty()) {
-                        // Keycloak keeps its single-sign-on cookies under /auth/realms/rou/.
+
                         listOf("/", "/auth/realms/rou/", "/auth/realms/rou").forEach { path ->
                             manager.setCookie(base, "$name=; Max-Age=0; Path=$path")
                         }

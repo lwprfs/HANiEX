@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/** Navigation hooks used by the "top creators / channels / subscriptions" strips. */
 data class XHamsterDiscoverActions(
     val onOpenCreator: (path: String, title: String) -> Unit,
     val onOpenChannel: (path: String, title: String) -> Unit,
@@ -105,7 +104,6 @@ private fun StripTitle(text: String, onSeeAll: () -> Unit) {
     }
 }
 
-/** Top creators, channels and (when signed in) the subscriptions feed, for any page header. */
 @Composable
 fun XHamsterDiscoverStrips(
     actions: XHamsterDiscoverActions,

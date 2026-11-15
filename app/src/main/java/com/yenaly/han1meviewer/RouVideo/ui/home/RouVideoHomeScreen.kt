@@ -112,7 +112,7 @@ fun RouVideoHomeScreen(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 RouVideoVideoGrid(
-                    // Tab / sort / filter chips scroll together with the videos.
+
                     header = {
                         Column {
                             SiteChipRow(

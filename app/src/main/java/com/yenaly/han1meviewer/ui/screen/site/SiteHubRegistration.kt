@@ -52,19 +52,6 @@ import com.yenaly.han1meviewer.ui.screen.main.siteLoginStatus
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
 
-/**
- * Everything a site contributes to the four shared primary pages.
- *
- * Each site builds one of these in its own package (see e.g. `MissAvHubConfig`), which keeps all
- * site-specific wiring isolated: adding a library page, a profile utility or a customization
- * entry to a single site never touches the shared screens or any other site.
- *
- * Extension points:
- *  * [subscriptionSections] – leave empty when the site has no subscription concept; the page then
- *    shows an honest "unavailable" state. Fill it when real support exists.
- *  * [librarySections] – add entries (e.g. an online playlist) once the site has a data source.
- *  * [customizeExtras] – extra customization rows rendered under the shared layout controls.
- */
 data class SiteHubConfig(
     val site: SiteType,
     val subscriptionSections: List<SiteHubSection>,
@@ -75,7 +62,6 @@ data class SiteHubConfig(
     val customizeExtras: (LazyListScope.() -> Unit)? = null,
 )
 
-/** Entries every site's profile shares; each site arranges them in its own order. */
 class CommonProfileEntries(
     val siteSettings: SiteHubEntry,
     val checkIn: SiteHubEntry,
@@ -161,12 +147,6 @@ fun rememberCommonProfileEntries(
     )
 }
 
-/**
- * Registers Subscription / Library / Profile / Customize for [site] in the current NavHost.
- *
- * [config] is a composable lambda because entries need `stringResource`; it is re-evaluated
- * whenever one of these pages is composed, so account/login state is always fresh.
- */
 fun NavGraphBuilder.registerSiteHubRoutes(
     navController: NavHostController,
     site: SiteType,
@@ -227,13 +207,6 @@ fun NavGraphBuilder.registerSiteHubRoutes(
 
 private enum class LayoutDialog { VideoGrid, SearchGrid, HorizontalCards }
 
-/**
- * Customize page. Site-specific entries come from [SiteHubConfig.customizeSections]; the three
- * card-layout controls below are shared and fully independent of each other:
- *  - horizontal cards per row (horizontal category sections),
- *  - video grid columns (vertical home / list grids),
- *  - search grid columns (search results).
- */
 @Composable
 fun SiteCustomizeScreen(
     config: SiteHubConfig,
@@ -243,7 +216,6 @@ fun SiteCustomizeScreen(
     var refreshKey by remember { mutableIntStateOf(0) }
     var dialog by remember { mutableStateOf<LayoutDialog?>(null) }
 
-    // Re-read on every refresh so the value texts reflect what was just saved.
     @Suppress("UNUSED_VARIABLE")
     val tick = refreshKey
     val videoConfig = Preferences.videoGridColumnsConfig
@@ -358,7 +330,6 @@ fun SiteCustomizeScreen(
     }
 }
 
-/** "Player settings" entry shared by every site's Customize page. */
 @Composable
 fun rememberPlayerSettingsEntry(navController: NavHostController, site: SiteType): SiteHubEntry =
     SiteHubEntry(
@@ -372,10 +343,6 @@ fun rememberPlayerSettingsEntry(navController: NavHostController, site: SiteType
         },
     )
 
-/**
- * Builds the standard [SiteHubConfig] used by sites without special needs. A site only passes
- * the pages that really exist for it; nothing is listed for features it does not have.
- */
 @Composable
 fun standardSiteHubConfig(
     site: SiteType,

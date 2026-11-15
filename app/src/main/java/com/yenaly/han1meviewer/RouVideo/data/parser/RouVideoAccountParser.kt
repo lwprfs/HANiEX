@@ -13,10 +13,6 @@ import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.doubleOrNull
 import kotlinx.serialization.json.longOrNull
 
-/**
- * Parsers for the signed-in pages: the session, `/favorite/{id}`, `/history/{id}` and `/follows`.
- * They read the same server-rendered loader data as the public pages.
- */
 object RouVideoAccountParser {
 
     private fun JsonObject.prim(key: String): JsonPrimitive? = this[key] as? JsonPrimitive
@@ -43,10 +39,6 @@ object RouVideoAccountParser {
 
     private val ID_IN_LINK = Regex("""/(?:history|favorite|profile)/([A-Za-z0-9]{15,40})""")
 
-    /**
-     * The signed-in user of any page. The root route's loader data is the session
-     * (`{ user: { id, name, email } }`); a signed-out visitor has none.
-     */
     fun parseSessionUser(html: String): RouVideoUser? {
         val fromLoader = RouVideoLiteral.allLoaderObjects(html)
             .asSequence()
@@ -62,11 +54,9 @@ object RouVideoAccountParser {
         return null
     }
 
-    /** Fallback: the user id can also be read from the library links in the page chrome. */
     fun parseUserIdFromLinks(html: String): String? =
         ID_IN_LINK.find(html)?.groupValues?.get(1)
 
-    /** `/favorite/{id}` — saved videos, plus ongoing series the viewer saved single episodes of. */
     fun parseFavorites(html: String): RouVideoListPage {
         val root = RouVideoLiteral.loaderObject(html, "userFavorites", "pageNum")
         val videos = root.objList("userFavorites").mapNotNull { row ->
@@ -85,7 +75,6 @@ object RouVideoAccountParser {
         )
     }
 
-    /** `/history/{id}` — what the viewer watched recently, with where they stopped. */
     fun parseHistory(html: String): RouVideoListPage {
         val root = RouVideoLiteral.loaderObject(html, "userHistories", "pageNum")
         val items = root.objList("userHistories").mapNotNull { row ->
@@ -112,7 +101,6 @@ object RouVideoAccountParser {
         )
     }
 
-    /** `/follows` — series the viewer follows, with unseen-episode counts. */
     fun parseFollows(html: String): RouVideoFollowsPage {
         val root = RouVideoLiteral.loaderObject(html, "rows", "anon")
         val rows = root.objList("rows").mapNotNull { row ->

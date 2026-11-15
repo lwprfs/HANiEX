@@ -22,7 +22,6 @@ object XHamsterSettings {
             sp.edit().putString(KEY_QUALITY, value).apply()
         }
 
-    // Home / discover strip visibility. Keys are XHamster-specific so no other site is affected.
     const val KEY_SHOW_CHANNELS = "xhamster_show_channels"
     const val KEY_SHOW_TOP_CREATORS = "xhamster_show_top_creators"
 
@@ -39,7 +38,6 @@ object XHamsterSettings {
         }
 }
 
-/** Boolean preference that recomposes as soon as it changes (e.g. from the Customize page). */
 @Composable
 fun rememberXHamsterFlag(key: String, default: Boolean = true): Boolean {
     val sp = Preferences.preferenceSp

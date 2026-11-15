@@ -51,7 +51,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.res.painterResource
 
-/** Local playlists screen: list of playlists, tap one to see and open its videos (any site). */
 @Composable
 fun LocalPlaylistsScreen(
     activity: MainActivity,
@@ -210,7 +209,6 @@ private fun NameDialog(initial: String?, onDismiss: () -> Unit, onConfirm: (Stri
     )
 }
 
-/** "Add to playlist" dialog used by every site's video page. */
 @Composable
 fun LocalPlaylistPickerDialog(
     item: LocalPlaylistItem,

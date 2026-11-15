@@ -27,11 +27,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 
-/**
- * M3 Expressive 风格的聚合入口卡片。
- *
- * 使用大圆角、tonal 图标容器和分组信息，作为“我的”“内容库”等聚合页的统一入口样式。
- */
 @Composable
 fun ExpressiveEntryCard(
     icon: ImageVector,

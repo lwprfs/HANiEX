@@ -24,11 +24,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.screen.settings.SettingsCategoryItem
 
-/**
- * 设置首页。
- *
- * 手机展示一级分类列表；双栏模式下左栏已经展示分类，右侧只展示提示。
- */
 @Composable
 fun SettingsHomeRouteScreen(
     onOpenCategory: (SettingsCategory) -> Unit,

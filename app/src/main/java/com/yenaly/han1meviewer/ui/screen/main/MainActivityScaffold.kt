@@ -50,18 +50,10 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.navigation.main.MainTopLevelDestination
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
-/** 导航轨每个 item 的固定高度，避免展开/折叠时高度变化影响图标间距。 */
 private val RailItemHeight = 64.dp
 
-/** 折叠态 item 间默认的 4dp 间距，展开态用相同间距补齐。 */
 private val RailItemSpacing = 4.dp
 
-/**
- * 主界面外壳：手机使用可自动隐藏的底部导航，平板/折叠屏使用导航轨。
- *
- * 展开宽度下导航轨可通过第五个箭头按钮折叠/展开标签；详情页面通过
- * [showNavigationSuite] 控制导航组件显示或隐藏。
- */
 data class SiteNavItem(
     val key: String,
     val icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -171,9 +163,6 @@ private fun MainActivityScaffoldInner(
         NavigationSuiteType.ShortNavigationBarMedium
     }
 
-    // 始终使用同一个 NavigationSuiteScaffold 及其 content 调用点，只切换导航类型。
-    // 如果按 isBottomNavigation 在外部写 if/else 两套布局，横竖屏切换时 content
-    // 会被整体移除并重新创建，播放页的播放器也会随之重建导致播放中断。
     NavigationSuiteScaffold(
         navigationSuiteType = if (isBottomNavigation) {
             bottomNavigationType
@@ -203,8 +192,7 @@ private fun MainActivityScaffoldInner(
                 WideNavigationRail(
                     state = railState,
                     modifier = Modifier.fillMaxHeight(),
-                    // 折叠态内部默认会在 item 之间加 4dp，展开态用 arrangement 补齐，
-                    // 让两种状态下四个图标的垂直间距保持一致。
+
                     arrangement = if (shouldExpandRail) {
                         Arrangement.spacedBy(RailItemSpacing)
                     } else {
@@ -330,13 +318,6 @@ private fun MainActivityScaffoldTabletPreview() {
     }
 }
 
-/**
- * 主界面外壳（多站点版）。
- *
- * Every site now uses the same adaptive bottom bar / navigation rail. Hanime-family sites
- * drive it from [MainTopLevelDestination]; every other site supplies its four primary items
- * through [siteItems]. There is intentionally no navigation drawer any more.
- */
 @Composable
 fun MainActivityScaffold(
     selectedDestination: MainTopLevelDestination?,

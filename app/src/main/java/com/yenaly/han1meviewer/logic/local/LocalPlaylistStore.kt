@@ -32,13 +32,8 @@ data class LocalPlaylist(
     val items: List<LocalPlaylistItem> = emptyList(),
 )
 
-/**
- * On-device playlists shared by every site. Sites that have an online playlist (Hanime,
- * Javchu, xHamster) keep using it; all other sites use this store.
- */
 object LocalPlaylistStore {
 
-    /** Sites whose playlists live on the server. */
     val ONLINE_SITES = setOf(SiteType.HANIME, SiteType.JAVCHU, SiteType.XHAMSTER)
 
     fun usesLocalPlaylists(site: SiteType): Boolean = site !in ONLINE_SITES
@@ -89,7 +84,6 @@ object LocalPlaylistStore {
     fun containing(item: LocalPlaylistItem): Set<String> =
         _playlists.value.filter { p -> p.items.any { it.key == item.key } }.map { it.id }.toSet()
 
-    /** Replace the video's membership with exactly [ids]. */
     fun setMembership(item: LocalPlaylistItem, ids: Set<String>) = update { list ->
         list.map { p ->
             val has = p.items.any { it.key == item.key }

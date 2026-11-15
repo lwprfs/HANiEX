@@ -44,11 +44,6 @@ import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
-/**
- * Signs in to (or registers on) rou.video. The site delegates both to its own account server
- * (`auth.rou.one`), so the real web forms are shown in a WebView. When the site redirects
- * back with a session cookie, the cookies are handed to [RouVideoAuth] and the activity closes.
- */
 class RouVideoLoginActivity : AppCompatActivity() {
 
     companion object {
@@ -111,7 +106,7 @@ class RouVideoLoginActivity : AppCompatActivity() {
                     val host = url?.toHttpUrlOrNull()?.host ?: return
 
                     if (host == RouVideoConstants.AUTH_HOST) {
-                        // On the sign-in form: jump to the registration form when asked to.
+
                         if (wantRegister && !registerClicked && url.contains("openid-connect/auth")) {
                             registerClicked = true
                             view?.evaluateJavascript(CLICK_REGISTER_JS, null)
@@ -119,7 +114,6 @@ class RouVideoLoginActivity : AppCompatActivity() {
                         return
                     }
 
-                    // Back on the site (callback finished): the session cookie is set.
                     if (siteHost != null && host == siteHost && !finished) {
                         val header = cookies.getCookie(baseUrl).orEmpty()
                         if (header.contains("${RouVideoCookieJar.SESSION_COOKIE}=")) {
@@ -144,7 +138,6 @@ class RouVideoLoginActivity : AppCompatActivity() {
     }
 }
 
-/** Clicks the "Register" link of the Keycloak sign-in form, whichever theme renders it. */
 private const val CLICK_REGISTER_JS = """
 (function () {
   var link = document.querySelector('a[href*="login-actions/registration"]')
@@ -196,10 +189,6 @@ private fun RouVideoLoginScreen(
     }
 }
 
-/**
- * Returns a function that opens the sign-in (or registration) page; [onFinished] runs when the
- * page closes, with `true` when the viewer ended up signed in.
- */
 @Composable
 fun rememberRouVideoLoginLauncher(onFinished: (Boolean) -> Unit = {}): (register: Boolean) -> Unit {
     val context = LocalContext.current

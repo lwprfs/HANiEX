@@ -20,11 +20,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
-/**
- * OnAir: all browsing pages (history, tags, pictures, announcements, chat) live in Library so
- * nothing becomes unreachable once the drawer is gone. Account/session and cookie sign-in are
- * profile quick actions; the existing login / register screens are untouched.
- */
 @Composable
 fun onAirHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(

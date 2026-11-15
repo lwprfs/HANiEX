@@ -62,9 +62,6 @@ import java.util.Date
 import java.util.Locale
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * 玻璃拟态背景容器（顶栏/底栏共享视觉）。
- */
 @Composable
 internal fun FrostedGlassBar(
     modifier: Modifier = Modifier,
@@ -81,12 +78,6 @@ internal fun FrostedGlassBar(
     }
 }
 
-/**
- * 顶栏小胶囊按钮（🥵关键帧 / 倍速 / Anime4K）。
- *
- * @param onClick 点击回调，携带按钮的 [androidx.compose.ui.layout.LayoutCoordinates]
- * （供气泡弹窗定位锚点）
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun CompactChip(
@@ -123,11 +114,6 @@ internal fun CompactChip(
     }
 }
 
-/**
- * 电量 + 系统时间指示（全屏顶栏用）。
- *
- * 电量经 [Context.ACTION_BATTERY_CHANGED] 广播刷新，时间每 30 秒刷新。
- */
 @Composable
 internal fun BatteryTimeChip(modifier: Modifier = Modifier) {
     val context = LocalContext.current
@@ -145,7 +131,7 @@ internal fun BatteryTimeChip(modifier: Modifier = Modifier) {
                 }
             }
         }
-        // 初始读取一次
+
         val sticky = context.registerReceiver(receiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
         if (sticky != null) {
             val level = sticky.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
@@ -194,14 +180,6 @@ private fun batteryIcon(pct: Int): ImageVector = when {
     else -> Icons.Outlined.Battery0Bar
 }
 
-/**
- * 播放器顶栏。
- *
- * 全屏：返回 + 标题 +（🥵 / 倍速 / Anime4K）胶囊 + 电量时间；
- * 普通窗口：返回 + 回到首页（标题不展示，对齐旧版行为）。
- *
- * 倍速/超分点击回调携带按钮锚点坐标，供气泡弹窗定位。
- */
 @Composable
 internal fun PlayerTopBar(
     isFullscreen: Boolean,
@@ -295,12 +273,6 @@ internal fun PlayerTopBar(
     }
 }
 
-/**
- * 播放器底栏。
- *
- * 时间（当前/总时长）+ 进度条（含缓冲）+ 循环 + 清晰度 + 全屏切换。
- * 清晰度点击回调携带按钮锚点坐标，供气泡弹窗定位。
- */
 @Composable
 internal fun PlayerBottomBar(
     currentTime: String,

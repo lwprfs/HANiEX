@@ -47,13 +47,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 
-/**
- * 渲染首页顶部栏，包含抽屉入口、搜索入口和新番列表入口。
- *
- * @param onSearchClick 点击搜索框时调用。
- * @param onNavigateToPreview 点击新番按钮时调用。
- * @param modifier 应用于顶部栏根布局的修饰符。
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePageTopBar(

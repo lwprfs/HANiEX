@@ -41,22 +41,11 @@ import com.yenaly.han1meviewer.MissAV.ui.video.MissAvSubtitleHelper
 import com.yenaly.han1meviewer.SupJav.common.SupJavImageLoader
 import java.util.concurrent.TimeUnit
 
-/**
- * @project Hanime1
- * @author Yenaly Liew
- * @time 2022/06/08 008 17:32
- */
 class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
 
     companion object {
         const val TAG = "HanimeApplication"
 
-        /**
-         * 全局图片内存缓存上限。
-         *
-         * Coil3 默认会使用堆的 20%，在 256 MB 堆的设备上约 51 MB；再叠加播放器缓冲后
-         * 很容易触发 OOM。统一限制到 32 MB，并让所有页面共用同一个 ImageLoader。
-         */
         private const val IMAGE_MEMORY_CACHE_BYTES = 32L * 1024 * 1024
     }
 
@@ -67,9 +56,7 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
                     .maxSizeBytes(IMAGE_MEMORY_CACHE_BYTES)
                     .build()
             }
-            // 下载封面等非 Compose 场景统一走全局 ImageLoader，
-            // 在这里挂上 HDns 与超时等网络配置；手动注册的组件排在
-            // ServiceLoader 默认组件之前，会优先生效。
+
             .components {
                 add(
                     OkHttpNetworkFetcherFactory(
@@ -85,8 +72,7 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        // #676 部分情况下会OOM，设置内存上限
-        // UI_HIDDEN 是官方推荐释放 Bitmap 等界面资源的等级，同时也能覆盖后台内存压力。
+
         if (level >= TRIM_MEMORY_UI_HIDDEN) {
             SingletonImageLoader.get(this).memoryCache?.clear()
         }

@@ -407,7 +407,6 @@ fun SiteDrawerContent(
     }
 }
 
-/** Small primary-coloured section label, shared by every drawer. */
 @Composable
 internal fun DrawerSectionHeader(title: String) {
     Text(
@@ -424,7 +423,6 @@ internal fun DrawerSectionHeader(title: String) {
     )
 }
 
-/** One drawer row with the shared look (rounded, tonal when selected). */
 @Composable
 internal fun DrawerNavItem(
     title: String,
@@ -485,6 +483,8 @@ private fun SiteDrawerHeader(
 ) {
     DrawerHeaderCard(
         avatarModel = status.avatarUrl,
+        loggedIn = status.loggedIn,
+        signInAvailable = status.loggedIn || status.onClick != null,
         title = status.title,
         subtitle = status.subtitle,
         badge = CrossSiteNavigator.siteLabel(site),

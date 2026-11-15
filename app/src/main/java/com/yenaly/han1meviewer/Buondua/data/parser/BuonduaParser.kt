@@ -11,12 +11,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
-/**
- * Selectors come from the captured search/list page (`div.items-row`, `.item-thumb`,
- * `.item-tags a.tag`, `.pagination-next`) and the site stylesheet (`.article-fulltext`,
- * `.article-tags`, `.article-related-list`). Album pages were captured without their body,
- * so everything on them is parsed defensively with fallbacks.
- */
 object BuonduaParser {
 
     private val PAGE_SUFFIX = Regex("""\s*-?\s*\(\s*Page\s+\d+\s*/\s*\d+\s*\)\s*$""", RegexOption.IGNORE_CASE)
@@ -30,8 +24,6 @@ object BuonduaParser {
 
     fun cleanTitle(raw: String): String =
         raw.replace('\u00A0', ' ').replace(PAGE_SUFFIX, "").trim()
-
-    // ---------------------------------------------------------------- listings
 
     fun parseListPage(html: String): BuonduaListPage {
         val doc = Jsoup.parse(html, BuonduaConstants.BASE_URL + "/")
@@ -73,7 +65,6 @@ object BuonduaParser {
         )
     }
 
-    /** "(157 photos + 2 videos)" -> "157 photos + 2 videos"; the title itself stays untouched. */
     fun countLabelOf(title: String): String? {
         val photos = PHOTO_COUNT.find(title)?.groupValues?.get(1)
         val videos = VIDEO_COUNT.find(title)?.groupValues?.get(1)
@@ -84,8 +75,6 @@ object BuonduaParser {
             else -> null
         }
     }
-
-    // ------------------------------------------------------------------- album
 
     fun parseAlbum(html: String, code: String, requestedPage: Int): BuonduaAlbumPage? {
         val doc = Jsoup.parse(html, BuonduaConstants.BASE_URL + "/")
@@ -227,7 +216,6 @@ object BuonduaParser {
             }
         }
 
-        // Last resort: a plain URL inside an inline script of the article body only.
         if (found.isEmpty()) {
             val articleHtml = body.outerHtml().ifBlank { rawHtml }
             VIDEO_URL_IN_TEXT.findAll(articleHtml).forEach { m ->

@@ -5,7 +5,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
 import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
 
-
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,8 +80,7 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
             )
         }
     }
-    // AboutAppRoute was navigated to from the settings category screen but never registered
-    // for the per-site graphs, which crashed with "destination cannot be found".
+
     composable<AboutAppRoute> {
         SettingsScaffold(
             navController = navController,

@@ -28,7 +28,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
-/** RouVideo: categories and history in Library; host, site settings, translation in Customize. */
 @Composable
 fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
     val translation = if (AppTranslation.available) {

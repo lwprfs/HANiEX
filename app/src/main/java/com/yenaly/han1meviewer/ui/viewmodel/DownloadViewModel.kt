@@ -17,14 +17,6 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * @project Han1meViewer
- * @author Yenaly Liew - 创建 (2022/08/02)
- * 初始版本
- * @author Misaka10032w - 更新 (2025/11/27)
- * 实现分组展示和展开/折叠功能
- * 实现分组移动、重命名等
- */
 class DownloadViewModel(application: Application) : BaseViewModel(application) {
 
     private val _downloaded = MutableStateFlow(mutableListOf<VideoWithCategories>())

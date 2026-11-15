@@ -75,8 +75,7 @@ fun DownloadScreen(
     onLoadDownloaded: () -> Unit,
     onEvent: (DownloadEvent) -> Unit,
 ) {
-    // 使用 null 区分“尚未收到数据库首帧”和“确实没有下载任务”，
-    // 以便在首次进入时准确决定默认 Tab。
+
     val downloadingItemsState by remember(downloadingFlow) {
         downloadingFlow.map { it as List<HanimeDownloadEntity>? }
     }.collectAsStateWithLifecycle(initialValue = null)
@@ -89,7 +88,7 @@ fun DownloadScreen(
         val items = downloadingItemsState ?: return@LaunchedEffect
         if (!defaultPageApplied) {
             defaultPageApplied = true
-            // 没有正在下载的任务时，默认展示“已下载”。
+
             val targetPage = if (items.isEmpty()) 1 else 0
             if (pagerState.currentPage != targetPage) {
                 pagerState.scrollToPage(targetPage)

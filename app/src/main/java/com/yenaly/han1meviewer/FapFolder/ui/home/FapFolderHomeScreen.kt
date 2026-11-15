@@ -163,8 +163,7 @@ fun FapFolderHomeScreen(
                 .fillMaxSize()
                 .padding(paddingValues),
         ) {
-        // Filter rows live in the scrolling content (and above the status states) so they scroll
-        // away with the feed instead of staying pinned.
+
         val filterHeader: @Composable () -> Unit = {
             Column {
             HomeTabRow(

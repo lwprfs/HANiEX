@@ -47,11 +47,6 @@ import com.yenaly.han1meviewer.ui.navigation.main.WatchLaterRouteScreen
 import com.yenaly.han1meviewer.ui.screen.LocalVideoGridAvailableWidth
 import kotlinx.coroutines.launch
 
-/**
- * 内容库一级页面。
- *
- * 手机使用单栏，平板/折叠屏展开宽度使用列表-详情双栏。
- */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun ContentLibraryScreen(
@@ -67,7 +62,7 @@ fun ContentLibraryScreen(
         ContentLibraryEntry.entries.firstOrNull { !it.requiresLogin || isLoggedIn }
             ?: ContentLibraryEntry.entries.first()
     }
-    // 双栏模式下切换分类只替换详情内容，不再向 navigator 追加新的 Detail 页面。
+
     var selectedEntryName by rememberSaveable { mutableStateOf<String?>(null) }
     val selectedEntry = selectedEntryName?.let { name ->
         ContentLibraryEntry.entries.firstOrNull { it.name == name }
@@ -129,7 +124,7 @@ fun ContentLibraryScreen(
         detailPane = {
             AnimatedPane {
                 BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                    // 双栏时视频网格使用详情面板的实际宽度，而不是整个窗口宽度。
+
                     CompositionLocalProvider(
                         LocalVideoGridAvailableWidth provides maxWidth,
                     ) {

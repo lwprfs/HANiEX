@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.account
 
+import com.yenaly.han1meviewer.ui.component.AccountAvatar
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -226,19 +227,13 @@ private fun AccountContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    val defaultPlaceholder = painterResource(R.drawable.bg_default_header)
-                    AsyncImage(
-                        model = account.avatarUrl,
-                        contentDescription = account.username,
+                    AccountAvatar(
+                        avatarUrl = account.avatarUrl,
+                        name = account.username,
+                        loggedIn = true,
                         modifier = Modifier
                             .size(108.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
                             .border(2.dp, MaterialTheme.colorScheme.primaryContainer, CircleShape),
-                        contentScale = ContentScale.Crop,
-                        placeholder = defaultPlaceholder,
-                        error = defaultPlaceholder,
-                        fallback = defaultPlaceholder,
                     )
 
                     SmallFloatingActionButton(
@@ -329,7 +324,6 @@ private fun AccountContent(
                     shape = MaterialTheme.shapes.medium
                 )
 
-                // 2026-11 網站改版後 email 為唯讀欄位，編輯狀態與網站同步
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },

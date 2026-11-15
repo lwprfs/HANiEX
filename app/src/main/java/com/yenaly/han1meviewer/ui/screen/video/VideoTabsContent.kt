@@ -19,12 +19,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 
-/**
- * 播放页标签的种类。
- *
- * 页面分发不再依赖下标（评论关闭、本地下载、相关影片开关都会改变 tab 数量），
- * 而是根据 [VideoTabItem.kind] 映射到对应的页面内容。
- */
 enum class VideoTabKind {
     INTRODUCTION,
     COMMENT,
@@ -103,9 +97,6 @@ fun VideoTabsContent(
             }
         }
 
-        // 不设 beyondViewportPageCount：相邻页（评论页较重：Scaffold + PTR + 列表）
-        // 预组合会把整页塞进进场帧，造成导航动画掉帧；各页滚动状态经
-        // pager 的 SaveableStateHolder 保留，首次切换时才组合。
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),

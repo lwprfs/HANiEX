@@ -25,14 +25,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberCommonProfileEntries
 import androidx.compose.ui.res.stringResource
 
-/**
- * MissAV's contribution to the shared Subscription / Library / Profile / Customize pages.
- *
- *  - The account card on My Profile reflects the real MissAV login (see `siteLoginStatus`).
- *  - Subscription lists saved actresses, MissAV's follow-style list. Pages that need an
- *    account show their own "log in" prompt, so entries are always listed.
- *  - Library separates account (online) data from data stored on this device.
- */
 @Composable
 fun missAvHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
     val common = rememberCommonProfileEntries(

@@ -36,16 +36,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.AccountAvatar
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
-/**
- * Shared header card for every drawer (Hanime1 and all other sites), so they look identical.
- *
- * @param badge small pill under the title (e.g. the current site name). Hidden when null.
- */
 @Composable
 internal fun DrawerHeaderCard(
     avatarModel: Any?,
+    loggedIn: Boolean,
     title: String,
     subtitle: String,
     badge: String?,
@@ -54,6 +51,7 @@ internal fun DrawerHeaderCard(
     onAvatarClick: (() -> Unit)? = null,
     onAvatarLongClick: (() -> Unit)? = null,
     onTitleClick: (() -> Unit)? = null,
+    signInAvailable: Boolean = true,
 ) {
     val shape = RoundedCornerShape(28.dp)
     Column(
@@ -86,19 +84,17 @@ internal fun DrawerHeaderCard(
                 onAvatarClick != null -> Modifier.clickable(onClick = onAvatarClick)
                 else -> Modifier
             }
-            AsyncImage(
-                model = avatarModel,
-                contentDescription = null,
+            AccountAvatar(
+                avatarUrl = avatarModel as? String,
+                name = title,
+                loggedIn = loggedIn,
+                signInAvailable = signInAvailable,
                 modifier = Modifier
                     .size(60.dp)
                     .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
                     .padding(3.dp)
                     .clip(CircleShape)
                     .then(avatarClick),
-                contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.bg_default_header),
-                fallback = painterResource(id = R.drawable.bg_default_header),
-                error = painterResource(id = R.drawable.bg_default_header),
             )
             Column(
                 modifier = Modifier
@@ -192,6 +188,7 @@ fun MainDrawerHeader(
 ) {
     DrawerHeaderCard(
         avatarModel = avatarUrl,
+        loggedIn = isLoggedIn && !isLoading,
         title = when {
             isLoading -> stringResource(R.string.loading)
             isLoggedIn -> username ?: stringResource(R.string.refresh_page_or_login_expired)

@@ -70,10 +70,6 @@ data class SiteSettingsEntry(
     val onClick: () -> Unit,
 )
 
-/**
- * Holds the current site's own settings entries so the shared (app-wide) settings screen can show
- * them — and only them — while that site is active. Entries of any other site are never shown.
- */
 object SiteSettingsRegistry {
     var site by mutableStateOf<SiteType?>(null)
         private set
@@ -85,7 +81,6 @@ object SiteSettingsRegistry {
         this.entries = entries
     }
 
-    /** Entries to show right now: only those that belong to the active site. */
     val activeEntries: List<SiteSettingsEntry>
         get() = if (site == Preferences.siteType) entries else emptyList()
 }
@@ -277,9 +272,6 @@ fun SiteSettingsHubScreen(
                     onClick = { dialog = HubDialog.AppLanguage },
                 )
             }
-
-            // Card layout controls (horizontal cards / video grid / search grid) now live on the
-            // dedicated Customize page so there is a single place to change them.
 
             item { HubSectionTitle(stringResource(R.string.site_all_app_settings)) }
             item {

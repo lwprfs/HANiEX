@@ -204,7 +204,6 @@ data class XHamsterShort(
     val views: Long?,
 )
 
-/** Extra info for a short video, fetched from `moments-by-id-list` (real stream + rating). */
 data class XHamsterShortMeta(
     val streamUrl: String?,
     val likes: Long,
@@ -246,21 +245,20 @@ data class XHamsterEntityProfile(
     val tabs: List<XHamsterProfileTab>,
     val videos: List<com.yenaly.han1meviewer.logic.model.HanimeInfo>,
     val shorts: List<XHamsterShort>,
-    /** Channel only: tag filters and sort options shown above the video list. */
+
     val tags: List<XHamsterOption> = emptyList(),
     val sorts: List<XHamsterOption> = emptyList(),
 ) {
     enum class Kind { CREATOR, CHANNEL, USER }
 }
 
-/** The signed-in user's relationship to a video (rating + favourite state). */
 data class XHamsterEngagement(
     val entityId: Long,
     val userId: Long?,
     val watchId: String?,
     val likes: Long?,
     val dislikes: Long?,
-    /** 0 = no rating, [RATING_LIKED] / [RATING_DISLIKED] otherwise. */
+
     val ratingState: Int,
     val isFavorite: Boolean,
     val collectionIds: List<String>,
@@ -272,7 +270,6 @@ data class XHamsterEngagement(
     }
 }
 
-/** A favourites playlist ("collection"), including the built-in Default and Watch Later lists. */
 data class XHamsterCollection(
     val id: String,
     val title: String,
@@ -283,7 +280,6 @@ data class XHamsterCollection(
     val visibility: String?,
 )
 
-/** One entry of the subscriptions feed (videos published by channels / creators the user follows). */
 data class XHamsterFeedItem(
     val authorName: String,
     val authorPath: String?,
@@ -295,7 +291,7 @@ enum class XHamsterListKind { WATCH_HISTORY, FAVORITES, WATCH_LATER, LIKED, COLL
 sealed interface XHamsterCommentResult {
     object Posted : XHamsterCommentResult
     object LoginRequired : XHamsterCommentResult
-    /** The site wants a captcha for this comment; it cannot be solved in-app. */
+
     object CaptchaRequired : XHamsterCommentResult
     data class Rejected(val message: String?) : XHamsterCommentResult
 }

@@ -50,10 +50,10 @@ data class MissAvVideoInfo(
     val description: String?,
     val videoUrl: String?,
     val relatedVideos: List<HanimeInfo>,
-    /** Account key used by `/api/items/{key}/view|save`; null when the page does not expose it. */
+
     val itemKey: String? = null,
-    /** Actresses with links, so the video page can open their pages. */
+
     val actressLinks: List<MissAvActressLink> = emptyList(),
-    /** `magnet:` link shown on the video page for logged-in users, when present. */
+
     val magnetUrl: String? = null,
 )

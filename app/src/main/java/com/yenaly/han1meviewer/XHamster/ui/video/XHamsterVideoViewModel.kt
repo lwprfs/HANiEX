@@ -51,7 +51,6 @@ data class XHamsterSubscribeState(
 
 enum class SubscribeMessage { LoginRequired, Failed }
 
-/** Rating / favourites state of the current video for the signed-in user. */
 data class XHamsterEngagementState(
     val engagement: XHamsterEngagement? = null,
     val collections: List<XHamsterCollection> = emptyList(),
@@ -100,7 +99,7 @@ class XHamsterVideoViewModel : ViewModel() {
     val commentSending: StateFlow<Boolean> = _commentSending.asStateFlow()
 
     private val _commentPostedTick = MutableStateFlow(0)
-    /** Increments every time a comment/reply was accepted by the server. */
+
     val commentPostedTick: StateFlow<Int> = _commentPostedTick.asStateFlow()
 
     private val _message = MutableStateFlow<XHamsterActionMessage?>(null)
@@ -238,9 +237,6 @@ class XHamsterVideoViewModel : ViewModel() {
 
     fun consumeSubscribeMessage() = _subscribe.update { it.copy(message = null) }
 
-
-    // ───────────────────────── like / dislike / favourites ─────────────────────────
-
     private fun currentDetail(): XHamsterDetail? =
         (_detailState.value as? XHamsterDetailState.Success)?.detail
 
@@ -275,7 +271,6 @@ class XHamsterVideoViewModel : ViewModel() {
         )
     }
 
-    /** Tap on thumb-up / thumb-down. Tapping the active one again clears the rating. */
     fun rate(like: Boolean) {
         val detail = currentDetail() ?: return
         val state = _engagement.value
@@ -340,7 +335,6 @@ class XHamsterVideoViewModel : ViewModel() {
         }
     }
 
-    /** Heart button: adds to the default playlist, or removes from every playlist but Watch Later. */
     fun toggleFavorite() {
         val state = _engagement.value
         val eng = state.engagement ?: return
@@ -375,10 +369,7 @@ class XHamsterVideoViewModel : ViewModel() {
         }
     }
 
-    /** "Add to playlist" dialog: replace membership with exactly [ids]. */
     fun setPlaylists(ids: Set<String>) = saveMembership(ids.toList(), XHamsterMessage.PlaylistsSaved)
-
-    // ───────────────────────── posting comments ─────────────────────────
 
     fun postComment(text: String, replyTo: XHamsterComment?) {
         val detail = currentDetail() ?: return

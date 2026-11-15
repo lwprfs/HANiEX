@@ -51,10 +51,6 @@ import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import kotlinx.coroutines.launch
 
-/**
- * The RouVideo account page: sign in / register when signed out; when signed in, who you are,
- * shortcuts to the library pages, profile editing and sign-out.
- */
 @Composable
 fun RouVideoAccountScreen(
     onBack: () -> Unit,
@@ -69,7 +65,6 @@ fun RouVideoAccountScreen(
     val expiredText = stringResource(R.string.rouvideo_account_session_expired)
     val signedOutText = stringResource(R.string.rouvideo_logout_done)
 
-    // Re-validate the stored session whenever the page opens (also fetches the name).
     LaunchedEffect(Unit) {
         if (RouVideoAuth.isLoggedIn) {
             val check = RouVideoAuth.refresh()

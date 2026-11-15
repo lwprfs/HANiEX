@@ -59,10 +59,6 @@ import com.yenaly.han1meviewer.R
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-/**
- * Login-aware block for the video page: login prompt (guest) or Save / Add-to-playlist / Magnet
- * actions (logged in), plus tappable actress chips.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MissAvVideoAccountActions(

@@ -742,9 +742,6 @@ fun XHamsterAccountSettingsScreen(
     }
 }
 
-
-// ───────────────────────── photo search results ─────────────────────────
-
 class XHamsterPhotoSearchViewModel : XHamsterPagedViewModel<XHamsterGallery>() {
     override suspend fun load(url: String): Result<XHamsterPage<XHamsterGallery>> =
         XHamsterUserRepo.photoSearch(url)
@@ -803,8 +800,6 @@ fun XHamsterPhotoSearchResults(
         }
     }
 }
-
-// ───────────────────────── stars ─────────────────────────
 
 private enum class StarTab(val titleRes: Int, val path: String) {
     POPULAR(R.string.xhamster_stars_popular, "/pornstars"),

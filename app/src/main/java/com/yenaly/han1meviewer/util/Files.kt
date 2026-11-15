@@ -142,9 +142,6 @@ inline fun <reified T> loadAssetAs(filePath: String): T? = runCatching {
     }
 }.getOrNull()
 
-/**
- * 递归计算文件夹占用的总字节数。
- */
 val File?.folderSize: Long
     get() {
         var size = 0L
@@ -154,11 +151,6 @@ val File?.folderSize: Long
         return size
     }
 
-/**
- * 文件不存在时创建文件及其父目录。
- *
- * @return 文件最终是否存在且为普通文件
- */
 fun File.createFileIfNotExists(): Boolean {
     return if (!exists()) {
         parentFile?.mkdirs()
@@ -168,11 +160,6 @@ fun File.createFileIfNotExists(): Boolean {
     }
 }
 
-/**
- * 将 Drawable 压缩后写入输出流。
- *
- * @return 是否写入成功
- */
 fun Drawable.saveTo(
     outputStream: OutputStream,
     format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,
@@ -181,11 +168,6 @@ fun Drawable.saveTo(
     return toBitmapOrNull()?.saveTo(outputStream, format, quality) == true
 }
 
-/**
- * 将 Bitmap 压缩后写入输出流。
- *
- * @return 是否写入成功
- */
 fun Bitmap.saveTo(
     outputStream: OutputStream,
     format: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,
@@ -205,13 +187,6 @@ fun Bitmap.saveTo(
 private val SI_UNITS = arrayOf("B", "kB", "MB", "GB", "TB")
 private val IEC_UNITS = arrayOf("B", "KiB", "MiB", "GiB", "TiB")
 
-/**
- * 将字节数格式化为带单位的文件大小文本。
- *
- * @param useSi 使用十进制单位（1000），默认使用二进制单位（1024）
- * @param decimalPlaces 保留的小数位数
- * @param stripTrailingZeros 能整除时是否省略小数部分
- */
 fun Long.formatFileSizeV2(
     useSi: Boolean = false,
     @IntRange(from = 0) decimalPlaces: Int = 1,
@@ -237,11 +212,6 @@ fun Long.formatFileSizeV2(
     }
 }
 
-/**
- * 将字节数格式化为带单位的速度文本，例如 `1.2 MB/s`。
- *
- * @see formatFileSizeV2
- */
 fun Long.formatBytesPerSecond(
     useSi: Boolean = false,
     @IntRange(from = 0) decimalPlaces: Int = 1,

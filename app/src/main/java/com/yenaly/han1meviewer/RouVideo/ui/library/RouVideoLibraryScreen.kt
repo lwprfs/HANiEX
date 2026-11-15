@@ -73,14 +73,12 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 
-/** The three pages of the site's "My library". */
 enum class RouVideoLibraryTab(val labelRes: Int) {
     FOLLOWS(R.string.rouvideo_my_follows),
     FAVORITES(R.string.rouvideo_my_favorites),
     HISTORY(R.string.rouvideo_cloud_history),
 }
 
-/** "My library" of a signed-in account: follows (`/follows`), favorites and watch history. */
 @Composable
 fun RouVideoLibraryScreen(
     initialTab: RouVideoLibraryTab,

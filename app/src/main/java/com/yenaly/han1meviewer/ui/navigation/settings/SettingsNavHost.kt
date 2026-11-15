@@ -140,7 +140,7 @@ private fun SettingsTwoPaneScaffold(
     content: @Composable () -> Unit,
 ) {
     val navigator = rememberListDetailPaneScaffoldNavigator<String>()
-    // 双栏设置始终同时展示列表与详情，避免路由切换时左栏被重新展开而产生滑动。
+
     val fixedTwoPaneValue = remember {
         ThreePaneScaffoldValue(
             primary = PaneAdaptedValue.Expanded,
