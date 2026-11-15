@@ -160,7 +160,7 @@ fun DailyCheckInScreen(
     val scrollBehavior = pinnedScrollBehavior(rememberTopAppBarState())
     HanimeScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        title = stringResource(R.string.has_cum),
+        title = stringResource(R.string.has_mastur),
         onBack = onBack,
         scrollBehavior = scrollBehavior,
         actions = {

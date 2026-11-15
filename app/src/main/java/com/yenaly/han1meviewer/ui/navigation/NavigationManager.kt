@@ -14,6 +14,9 @@ import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavVideoRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHomeRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSearchRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoVideoRoute
+import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaAlbumRoute
+import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute
+import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaSearchRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSearchRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterVideoRoute
@@ -106,6 +109,9 @@ object NavigationManager {
                             XHamsterVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
                         )
                     }
+                    SiteType.BUONDUA -> {
+                        navController.navigate(BuonduaAlbumRoute(videoCode = videoCode))
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "navigateToVideo failed: ${e.message}")
@@ -140,6 +146,9 @@ object NavigationManager {
                     }
                     SiteType.XHAMSTER -> {
                         navController.navigate(XHamsterSearchRoute(query = query))
+                    }
+                    SiteType.BUONDUA -> {
+                        navController.navigate(BuonduaSearchRoute(query = query))
                     }
                 }
             } catch (e: Exception) {
@@ -187,6 +196,10 @@ object NavigationManager {
                     SiteType.XHAMSTER -> {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(XHamsterHomeRoute) { launchSingleTop = true }
+                    }
+                    SiteType.BUONDUA -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(BuonduaHomeRoute) { launchSingleTop = true }
                     }
                 }
             } catch (e: Exception) {
@@ -263,6 +276,7 @@ object NavigationManager {
                 SiteType.SUPJAV -> destination.hasRoute(SupJavHomeRoute::class)
                 SiteType.ROUVIDEO -> destination.hasRoute(RouVideoHomeRoute::class)
                 SiteType.XHAMSTER -> destination.hasRoute(XHamsterHomeRoute::class)
+                SiteType.BUONDUA -> destination.hasRoute(BuonduaHomeRoute::class)
             }
         } catch (e: Exception) {
             false

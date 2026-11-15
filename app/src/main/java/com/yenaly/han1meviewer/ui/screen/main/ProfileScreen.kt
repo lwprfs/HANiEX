@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.VideoCall
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -70,6 +71,8 @@ fun ProfileScreen(
     onSettingsClick: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Opens the app-wide translation settings; `null` hides the tile (translation unavailable). */
+    onTranslationClick: (() -> Unit)? = null,
 ) {
     val displayName = username?.takeIf { it.isNotBlank() }
         ?: stringResource(if (isLoggedIn) R.string.not_logged_in else R.string.login)
@@ -99,6 +102,15 @@ fun ProfileScreen(
             subtitle = currentSite,
             onClick = onSwitchSiteClick,
         ),
+    ) + listOfNotNull(
+        onTranslationClick?.let {
+            ProfileEntry(
+                icon = Icons.Filled.Translate,
+                title = stringResource(R.string.rouvideo_tr_title),
+                subtitle = stringResource(R.string.rouvideo_tr_privacy),
+                onClick = it,
+            )
+        },
     )
 
     HanimeScaffold(

@@ -35,7 +35,7 @@ import com.yenaly.han1meviewer.logic.update.UpdateStage
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 
 private val historySiteNames = listOf(
-    "Hanime1", "MissAV", "HentaiMama", "OnAir", "FapFolder", "SupJav", "RouVideo", "XHamster",
+    "Hanime1", "MissAV", "HentaiMama", "OnAir", "FapFolder", "SupJav", "RouVideo", "XHamster", "Buondua",
 )
 
 @OptIn(ExperimentalLayoutApi::class)

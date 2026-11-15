@@ -45,6 +45,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork
+import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.logic.Parser
 import com.yenaly.han1meviewer.logic.network.DohConfig
 import com.yenaly.han1meviewer.logic.network.HDns
@@ -92,6 +93,7 @@ private fun rebuildAllNetworks() {
     runCatching { RouVideoNetwork.rebuildNetwork() }
     runCatching { XHamsterNetwork.rebuildNetwork() }
     runCatching { FapFolderNetwork.rebuildNetwork() }
+    runCatching { BuonduaNetwork.rebuildNetwork() }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")

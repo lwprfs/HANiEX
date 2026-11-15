@@ -17,12 +17,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SliderState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -287,6 +288,10 @@ fun SettingSliderItem(
     } else {
         0
     }
+    // Single slider: the title/summary live once in the header row, the bar once below it.
+    // Local drag state keeps the thumb under the finger even if the caller persists the
+    // value asynchronously; it re-syncs whenever the external value changes.
+    var sliderValue by remember(value) { mutableFloatStateOf(value.toFloat()) }
     SettingTile(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -302,39 +307,15 @@ fun SettingSliderItem(
                 SettingTexts(title, summary, Modifier.weight(1f))
             }
             Slider(
-                value = value.toFloat(),
-                onValueChange = { onValueChange(it.roundToInt()) },
+                value = sliderValue,
+                onValueChange = {
+                    sliderValue = it
+                    onValueChange(it.roundToInt())
+                },
                 valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
                 steps = totalSteps.coerceAtLeast(0),
             )
         }
-        if (!summary.isNullOrBlank()) {
-            Text(
-                text = summary,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        val sliderState = remember(valueRange, totalSteps) {
-            SliderState(
-                value = value.toFloat(),
-                steps = totalSteps.coerceAtLeast(0),
-                trackRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
-            )
-        }
-        LaunchedEffect(value) {
-            if (!sliderState.isDragging) {
-                sliderState.value = value.toFloat()
-            }
-        }
-        Slider(
-            state = sliderState,
-            onValueChange = {
-                // SliderState 不会自动跟随手势，必须同步写入当前拖动位置。
-                sliderState.value = it
-                onValueChange(it.roundToInt())
-            },
-        )
     }
 }
 

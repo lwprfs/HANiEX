@@ -1,11 +1,14 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
+import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
+import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.MediaControlsSettingsRoute
 import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
-import com.yenaly.han1meviewer.RouVideo.ui.settings.RouVideoTranslationCacheScreen
-import com.yenaly.han1meviewer.RouVideo.ui.settings.RouVideoTranslationSettingsScreen
+
+
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationCacheRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -202,6 +205,9 @@ fun MainNavHost(
                 },
                 onSettingsClick = { navController.navigateSafely(HomeSettingsRoute) },
                 onSwitchSiteClick = onSwitchSiteClick,
+                onTranslationClick = if (AppTranslation.available) {
+                    { navController.navigateSafely(TranslationSettingsRoute) }
+                } else null,
             )
         }
         composable<WatchHistoryRoute> {
@@ -349,13 +355,13 @@ fun MainNavHost(
             MediaControlsSettingsScreen(onBack = { navController.popBackStackSafely() })
         }
         composable<TranslationSettingsRoute> {
-            RouVideoTranslationSettingsScreen(
+            TranslationSettingsScreen(
                 onBack = { navController.popBackStackSafely() },
                 onOpenCache = { navController.navigateSafely(TranslationCacheRoute) },
             )
         }
         composable<TranslationCacheRoute> {
-            RouVideoTranslationCacheScreen(onBack = { navController.popBackStackSafely() })
+            TranslationCacheScreen(onBack = { navController.popBackStackSafely() })
         }
         composable<PlayerSettingsRoute> {
             SettingsScaffold(

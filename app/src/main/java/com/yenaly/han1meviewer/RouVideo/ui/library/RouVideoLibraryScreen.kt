@@ -56,7 +56,7 @@ import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.FavoriteOrder
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoImageLoader
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoTagLabels
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.RouVideo.data.model.RouVideoFollowRow
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
 import com.yenaly.han1meviewer.RouVideo.ui.account.RouVideoSignInPrompt
@@ -307,7 +307,7 @@ private fun FollowRowCard(
     onSeen: () -> Unit,
 ) {
     val context = LocalContext.current
-    val title = RouVideoTranslation.title(RouVideoSettings.pick(row.title, row.titleZh))
+    val title = AppTranslation.title(RouVideoSettings.pick(row.title, row.titleZh))
     val target = row.playVideoId
     val playLabel = when (row.playKind) {
         "resume" -> stringResource(R.string.rouvideo_play_resume, row.playNumber)

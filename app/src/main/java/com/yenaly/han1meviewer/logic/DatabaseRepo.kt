@@ -317,6 +317,7 @@ object DatabaseRepo {
             SiteType.SUPJAV -> "SupJav"
             SiteType.ROUVIDEO -> "rou.video"
             SiteType.XHAMSTER -> "xHamster"
+            SiteType.BUONDUA -> "Buondua"
         }
 
         fun siteOfVideoCode(videoCode: String): SiteType =

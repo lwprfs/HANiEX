@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.RouVideo.common
+package com.yenaly.han1meviewer.util.translation
 
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +22,7 @@ import java.io.File
 import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
-object RouVideoTranslation {
+object AppTranslation {
 
     enum class Kind(val key: String, val maxEntries: Int, val long: Boolean = false) {
         TAG("tag", 2000),

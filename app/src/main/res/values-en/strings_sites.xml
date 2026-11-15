@@ -1116,4 +1116,23 @@
     <string name="fap_range_all_time">All time</string>
     <string name="fap_range_month">Month</string>
     <string name="fap_range_week">Week</string>
+
+    <!-- Buondua -->
+    <string name="site_buondua_description">Photo albums and videos</string>
+    <string name="buondua_history_title">Album history</string>
+    <string name="buondua_history_summary">Albums you opened on Buondua</string>
+    <string name="buondua_search_hint">Search Buondua</string>
+    <string name="buondua_search_prompt">Type a keyword, or paste a Buondua album link</string>
+    <string name="buondua_no_results">No results</string>
+    <string name="buondua_no_history">No albums opened yet</string>
+    <string name="buondua_nothing_here">Nothing here</string>
+    <string name="buondua_album">Album</string>
+    <string name="buondua_section_videos">Videos</string>
+    <string name="buondua_section_photos">Photos</string>
+    <string name="buondua_section_related">Related albums</string>
+    <string name="buondua_copy_link">Copy link</string>
+    <string name="buondua_link_copied">Link copied</string>
+    <string name="buondua_tap_to_play">Play</string>
+    <string name="buondua_checking_video">Checking whether this video can play…</string>
+    <string name="buondua_photos_download_started">Saving photos…</string>
 </resources>

@@ -1,9 +1,11 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
+import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
+import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
 import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
-import com.yenaly.han1meviewer.RouVideo.ui.settings.RouVideoTranslationCacheScreen
-import com.yenaly.han1meviewer.RouVideo.ui.settings.RouVideoTranslationSettingsScreen
+
+
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -117,13 +119,13 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
         MediaControlsSettingsScreen(onBack = { navController.popBackStackSafely() })
     }
     composable<TranslationSettingsRoute> {
-        RouVideoTranslationSettingsScreen(
+        TranslationSettingsScreen(
             onBack = { navController.popBackStackSafely() },
             onOpenCache = { navController.navigateSafely(TranslationCacheRoute) },
         )
     }
     composable<TranslationCacheRoute> {
-        RouVideoTranslationCacheScreen(onBack = { navController.popBackStackSafely() })
+        TranslationCacheScreen(onBack = { navController.popBackStackSafely() })
     }
     composable<NetworkSettingsRoute> {
         SettingsScaffold(

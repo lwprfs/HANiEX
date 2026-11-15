@@ -79,6 +79,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.NavHostController
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
+import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
@@ -396,6 +397,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.XHAMSTER -> {
                 XHamsterNetwork.rebuildNetwork()
+            }
+
+            SiteType.BUONDUA -> {
+                BuonduaNetwork.rebuildNetwork()
             }
         }
 

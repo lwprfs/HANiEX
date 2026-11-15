@@ -31,6 +31,7 @@ object SitePlayerSettings {
         SiteType.SUPJAV -> "SupJav"
         SiteType.ROUVIDEO -> applicationContext.getString(R.string.site_rouvideo_name)
         SiteType.XHAMSTER -> applicationContext.getString(R.string.site_xhamster_name)
+        SiteType.BUONDUA -> "Buondua"
     }
 
     sealed class Spec(val id: String, val title: String, val summary: String?) {

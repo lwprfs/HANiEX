@@ -540,7 +540,7 @@ private fun RouVideoVideoContent(
                     )
                     series.description?.takeIf { it.isNotBlank() }?.let {
                         Text(
-                            text = com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation.description(it),
+                            text = com.yenaly.han1meviewer.util.translation.AppTranslation.description(it),
                             style = MaterialTheme.typography.bodySmall,
                         )
                     }

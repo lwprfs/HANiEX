@@ -96,7 +96,7 @@ fun rememberCommonProfileEntries(
     val label = CrossSiteNavigator.siteLabel(site)
     val settingsTitle = stringResource(R.string.hub_site_settings_title, label)
     val settingsDesc = stringResource(R.string.hub_site_settings_desc)
-    val checkInTitle = stringResource(R.string.has_cum)
+    val checkInTitle = stringResource(R.string.has_mastur)
     val checkInDesc = stringResource(R.string.hub_check_in_desc)
     val switchTitle = stringResource(R.string.switch_site)
     val switchDesc = stringResource(R.string.hub_switch_site_desc)

@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoImageLoader
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.RouVideo.data.local.RouVideoHistoryEntity
 import com.yenaly.han1meviewer.RouVideo.data.repository.RouVideoHistoryRepo
 import com.yenaly.han1meviewer.ui.component.SiteHistoryEntry
@@ -27,7 +27,7 @@ fun RouVideoHistoryScreen(
         onDelete = { RouVideoHistoryRepo.deleteByVideoCode(it) },
         onNavigateToVideo = onNavigateToVideo,
         onBack = onBack,
-        titleOf = { RouVideoTranslation.title(it) },
+        titleOf = { AppTranslation.title(it) },
     )
 }
 

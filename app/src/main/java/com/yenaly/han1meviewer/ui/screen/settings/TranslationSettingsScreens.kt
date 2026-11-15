@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.RouVideo.ui.settings
+package com.yenaly.han1meviewer.ui.screen.settings
 
 import android.text.format.Formatter
 import androidx.compose.foundation.layout.Arrangement
@@ -34,8 +34,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation.Kind
+import com.yenaly.han1meviewer.util.translation.AppTranslation
+import com.yenaly.han1meviewer.util.translation.AppTranslation.Kind
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
@@ -56,14 +56,14 @@ private fun SettingsSectionTitle(title: String) {
 }
 
 @Composable
-fun RouVideoTranslationSettingsScreen(
+fun TranslationSettingsScreen(
     onBack: () -> Unit,
     onOpenCache: () -> Unit,
 ) {
     val context = LocalContext.current
-    val stats = RouVideoTranslation.stats()
-    val paused = RouVideoTranslation.pausedForSeconds()
-    val enabled = RouVideoTranslation.enabled
+    val stats = AppTranslation.stats()
+    val paused = AppTranslation.pausedForSeconds()
+    val enabled = AppTranslation.enabled
     var confirmClear by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -86,7 +86,7 @@ fun RouVideoTranslationSettingsScreen(
                     summary = stringResource(R.string.rouvideo_tr_privacy),
                     iconRes = R.drawable.ic_translate_24,
                     checked = enabled,
-                    onCheckedChange = { RouVideoTranslation.enabled = it },
+                    onCheckedChange = { AppTranslation.enabled = it },
                 )
             }
 
@@ -96,9 +96,9 @@ fun RouVideoTranslationSettingsScreen(
                     title = stringResource(R.string.rouvideo_tr_tags),
                     summary = stringResource(R.string.rouvideo_tr_tags_desc),
                     iconRes = R.drawable.ic_settings_label_24,
-                    checked = RouVideoTranslation.tagsEnabled,
+                    checked = AppTranslation.tagsEnabled,
                     enabled = enabled,
-                    onCheckedChange = { RouVideoTranslation.tagsEnabled = it },
+                    onCheckedChange = { AppTranslation.tagsEnabled = it },
                 )
             }
             item {
@@ -106,9 +106,9 @@ fun RouVideoTranslationSettingsScreen(
                     title = stringResource(R.string.rouvideo_tr_titles),
                     summary = stringResource(R.string.rouvideo_tr_titles_desc),
                     iconRes = R.drawable.ic_settings_movie_24,
-                    checked = RouVideoTranslation.titlesEnabled,
+                    checked = AppTranslation.titlesEnabled,
                     enabled = enabled,
-                    onCheckedChange = { RouVideoTranslation.titlesEnabled = it },
+                    onCheckedChange = { AppTranslation.titlesEnabled = it },
                 )
             }
             item {
@@ -116,9 +116,9 @@ fun RouVideoTranslationSettingsScreen(
                     title = stringResource(R.string.rouvideo_tr_descriptions),
                     summary = stringResource(R.string.rouvideo_tr_descriptions_desc),
                     iconRes = R.drawable.ic_settings_notes_24,
-                    checked = RouVideoTranslation.descriptionsEnabled,
+                    checked = AppTranslation.descriptionsEnabled,
                     enabled = enabled,
-                    onCheckedChange = { RouVideoTranslation.descriptionsEnabled = it },
+                    onCheckedChange = { AppTranslation.descriptionsEnabled = it },
                 )
             }
             item {
@@ -126,21 +126,21 @@ fun RouVideoTranslationSettingsScreen(
                     title = stringResource(R.string.rouvideo_tr_comments),
                     summary = stringResource(R.string.rouvideo_tr_comments_desc),
                     iconRes = R.drawable.ic_baseline_comment_24,
-                    checked = RouVideoTranslation.commentsEnabled,
+                    checked = AppTranslation.commentsEnabled,
                     enabled = enabled,
-                    onCheckedChange = { RouVideoTranslation.commentsEnabled = it },
+                    onCheckedChange = { AppTranslation.commentsEnabled = it },
                 )
             }
 
             item { SettingsSectionTitle(stringResource(R.string.rouvideo_tr_sites)) }
-            items(RouVideoTranslation.SUPPORTED_SITES, key = { "site_" + it.name }) { site ->
+            items(AppTranslation.SUPPORTED_SITES, key = { "site_" + it.name }) { site ->
                 SettingSwitchItem(
                     title = CrossSiteNavigator.siteLabel(site),
                     summary = stringResource(R.string.rouvideo_tr_sites_desc),
                     iconRes = R.drawable.ic_settings_public_24,
-                    checked = RouVideoTranslation.siteEnabled(site),
+                    checked = AppTranslation.siteEnabled(site),
                     enabled = enabled,
-                    onCheckedChange = { RouVideoTranslation.setSiteEnabled(site, it) },
+                    onCheckedChange = { AppTranslation.setSiteEnabled(site, it) },
                 )
             }
 
@@ -191,7 +191,7 @@ fun RouVideoTranslationSettingsScreen(
             text = { Text(stringResource(R.string.rouvideo_tr_clear_confirm, stats.total)) },
             confirmButton = {
                 TextButton(onClick = {
-                    RouVideoTranslation.clear()
+                    AppTranslation.clear()
                     confirmClear = false
                 }) { Text(stringResource(R.string.delete)) }
             },
@@ -205,10 +205,10 @@ fun RouVideoTranslationSettingsScreen(
 }
 
 @Composable
-fun RouVideoTranslationCacheScreen(onBack: () -> Unit) {
+fun TranslationCacheScreen(onBack: () -> Unit) {
     var filterName by rememberSaveable { mutableStateOf("") }
     val filter = Kind.entries.firstOrNull { it.name == filterName }
-    val items = RouVideoTranslation.snapshot(filter)
+    val items = AppTranslation.snapshot(filter)
     val options = listOf<Kind?>(null) + Kind.entries
     val labels = mapOf<Kind?, String>(
         null to stringResource(R.string.rouvideo_tr_filter_all),
@@ -275,7 +275,7 @@ fun RouVideoTranslationCacheScreen(onBack: () -> Unit) {
                                     overflow = TextOverflow.Ellipsis,
                                 )
                             }
-                            IconButton(onClick = { RouVideoTranslation.delete(entry) }) {
+                            IconButton(onClick = { AppTranslation.delete(entry) }) {
                                 Icon(
                                     Icons.Default.Delete,
                                     contentDescription = stringResource(R.string.delete),

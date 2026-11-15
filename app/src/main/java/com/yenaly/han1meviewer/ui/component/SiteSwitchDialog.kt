@@ -126,6 +126,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         logoRes = R.drawable.s_switch_xhamster,
         accentColor = Color(0xFFEF6C00),
     ),
+    SiteSwitchOption(
+        name = "Buondua",
+        description = applicationContext.getString(R.string.site_buondua_description),
+        siteType = SiteType.BUONDUA,
+        logoRes = R.drawable.s_switch_buondua,
+        accentColor = Color(0xFFFFB300),
+    ),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

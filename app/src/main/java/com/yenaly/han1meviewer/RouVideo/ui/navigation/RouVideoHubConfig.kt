@@ -15,7 +15,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.util.translation.AppTranslation
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
 import com.yenaly.han1meviewer.RouVideo.ui.library.RouVideoLibraryTab
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -30,13 +31,13 @@ import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 /** RouVideo: categories and history in Library; host, site settings, translation in Customize. */
 @Composable
 fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
-    val translation = if (RouVideoTranslation.available) {
+    val translation = if (AppTranslation.available) {
         SiteHubEntry(
             key = "translation",
             title = stringResource(R.string.rouvideo_tr_title),
             subtitle = stringResource(R.string.rouvideo_tr_privacy),
             icon = Icons.Filled.Translate,
-            onClick = { navController.navigateSafely(RouVideoTranslationSettingsRoute) },
+            onClick = { navController.navigateSafely(TranslationSettingsRoute) },
         )
     } else null
     fun library(tab: RouVideoLibraryTab) = { navController.navigateSafely(RouVideoLibraryRoute(tab.name)) }

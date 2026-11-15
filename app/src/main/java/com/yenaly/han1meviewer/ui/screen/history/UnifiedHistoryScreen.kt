@@ -55,6 +55,7 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.FapFolder.data.local.FapFolderHistoryRepo
 import com.yenaly.han1meviewer.SupJav.data.repository.SupJavHistoryRepo
 import com.yenaly.han1meviewer.RouVideo.data.repository.RouVideoHistoryRepo
+import com.yenaly.han1meviewer.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.XHamster.data.repository.XHamsterHistoryRepo
 import com.yenaly.han1meviewer.HentaiMama.data.local.HentaiMamaHistoryRepo
 import com.yenaly.han1meviewer.MissAV.data.repository.MissAvHistoryRepo
@@ -116,6 +117,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         SupJavHistoryRepo.init(application)
         RouVideoHistoryRepo.init(application)
         XHamsterHistoryRepo.init(application)
+        BuonduaHistoryRepo.init(application)
     }
 
     private fun <T> safe(flow: kotlinx.coroutines.flow.Flow<List<T>>) =
@@ -238,9 +240,22 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
             )
         }).sortedByDescending { it.watchDate }
     },
-        safe(XHamsterHistoryRepo.loadAll()),
-    ) { base, xhamster ->
-        (base + xhamster.map {
+        combine(safe(XHamsterHistoryRepo.loadAll()), safe(BuonduaHistoryRepo.loadAll())) { x, b -> x to b },
+    ) { base, (xhamster, buondua) ->
+        (base + buondua.map {
+            UnifiedHistoryItem(
+                site = SiteType.BUONDUA,
+                code = it.videoCode,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = 0L,
+                durationMs = 0L,
+                path = null,
+                subtitle = null,
+                completed = false,
+            )
+        } + xhamster.map {
             UnifiedHistoryItem(
                 site = SiteType.XHAMSTER,
                 code = it.videoCode,
@@ -288,6 +303,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     SiteType.SUPJAV -> SupJavHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.ROUVIDEO -> RouVideoHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.XHAMSTER -> XHamsterHistoryRepo.deleteByVideoCode(item.code)
+                    SiteType.BUONDUA -> BuonduaHistoryRepo.deleteByVideoCode(item.code)
                 }
             }
         }
@@ -304,6 +320,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                 if (site == null || site == SiteType.SUPJAV) SupJavHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.ROUVIDEO) RouVideoHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.XHAMSTER) XHamsterHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.BUONDUA) BuonduaHistoryRepo.deleteAll()
             }
         }
     }
@@ -318,6 +335,7 @@ private val filterSites = listOf(
     SiteType.SUPJAV,
     SiteType.ROUVIDEO,
     SiteType.XHAMSTER,
+    SiteType.BUONDUA,
 )
 
 private fun siteBadge(site: SiteType): String = when (site) {

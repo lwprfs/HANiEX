@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.RouVideo.common
 
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation.Kind
+import com.yenaly.han1meviewer.util.translation.AppTranslation
+import com.yenaly.han1meviewer.util.translation.AppTranslation.Kind
 
 object RouVideoTagLabels {
 
@@ -85,9 +86,9 @@ object RouVideoTagLabels {
     )
 
     fun label(tag: String): String {
-        if (tag.isBlank() || !RouVideoTranslation.isActive(Kind.TAG)) return tag
+        if (tag.isBlank() || !AppTranslation.isActive(Kind.TAG)) return tag
         STATIC[tag]?.let { return it }
-        return RouVideoTranslation.translate(Kind.TAG, tag)
+        return AppTranslation.translate(Kind.TAG, tag)
     }
 
     fun matches(tag: String, needle: String): Boolean =

@@ -35,8 +35,7 @@ import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHistoryRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHostSettingsRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSearchRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSettingsRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoTranslationSettingsRoute
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterAccountRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterChannelsRoute
@@ -207,6 +206,14 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
     SiteType.SUPJAV -> SiteLoginStatus(
         title = context.getString(R.string.not_logged_in),
         subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.SUPJAV)),
+        avatarUrl = null,
+        loggedIn = false,
+        onClick = null,
+    )
+
+    SiteType.BUONDUA -> SiteLoginStatus(
+        title = context.getString(R.string.not_logged_in),
+        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.BUONDUA)),
         avatarUrl = null,
         loggedIn = false,
         onClick = null,

@@ -155,6 +155,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = true,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.BUONDUA,
+            displayName = "Buondua",
+            catalogKey = null,
+            defaultUrls = { listOf("https://buondua.com") },
+            trailingSlash = false,
+            cloudflareFronted = true,
+        ),
     )
 
     val hubSites: List<HubSite>

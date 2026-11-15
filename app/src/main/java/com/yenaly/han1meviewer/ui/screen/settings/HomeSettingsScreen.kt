@@ -469,7 +469,7 @@ fun HomeSettingsScreen(
                         }
                     }
                 }
-                if (com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation.available) {
+                if (com.yenaly.han1meviewer.util.translation.AppTranslation.available) {
                     item {
                         SettingNavigationItem(
                             title = stringResource(R.string.rouvideo_tr_title),

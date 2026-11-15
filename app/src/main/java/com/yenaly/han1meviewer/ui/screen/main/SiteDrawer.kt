@@ -30,8 +30,8 @@ import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHistoryRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHostSettingsRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSearchRoute
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSettingsRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoTranslationSettingsRoute
-import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterAccountRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterChannelsRoute
@@ -58,6 +58,8 @@ import com.yenaly.han1meviewer.OnAir.data.local.OnAirProfileCache
 import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirAccountSettingsRoute
 import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirCookieRoute
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHistoryRoute
+import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaSearchRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
@@ -129,7 +131,7 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
     val home = SiteDrawerEntry(str(R.string.home_page), R.drawable.ic_baseline_home_24) {
         NavigationManager.navigateToHome()
     }
-    val checkIn = SiteDrawerEntry(str(R.string.has_cum), R.drawable.ic_baseline_check_circle_24) {
+    val checkIn = SiteDrawerEntry(str(R.string.has_mastur), R.drawable.ic_baseline_check_circle_24) {
         it.navigateSafely(DailyCheckInRoute)
     }
     val history = R.drawable.ic_baseline_history_24
@@ -266,6 +268,25 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             ),
         )
 
+        SiteType.BUONDUA -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, BuonduaSearchRoute()),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(entry(str(R.string.watch_history), history, BuonduaHistoryRoute)),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(playerSettings),
+            ),
+        )
+
         SiteType.ROUVIDEO -> listOf(
             SiteDrawerSection(
                 browse,
@@ -286,8 +307,8 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     entry(str(R.string.drawer_host_mirror), R.drawable.baseline_domain_24, RouVideoHostSettingsRoute),
                     entry(str(R.string.rouvideo_settings_title), R.drawable.ic_video_quilty, RouVideoSettingsRoute),
                 ) + listOfNotNull(
-                    if (RouVideoTranslation.available) {
-                        entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, RouVideoTranslationSettingsRoute)
+                    if (AppTranslation.available) {
+                        entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, TranslationSettingsRoute)
                     } else null,
                     playerSettings,
                 ),

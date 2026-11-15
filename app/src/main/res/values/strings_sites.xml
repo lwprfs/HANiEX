@@ -1116,4 +1116,23 @@
     <string name="fap_range_all_time">全部時間</string>
     <string name="fap_range_month">本月</string>
     <string name="fap_range_week">本週</string>
+
+    <!-- Buondua -->
+    <string name="site_buondua_description">寫真圖集與影片</string>
+    <string name="buondua_history_title">圖集記錄</string>
+    <string name="buondua_history_summary">你在 Buondua 開啟過的圖集</string>
+    <string name="buondua_search_hint">搜尋 Buondua</string>
+    <string name="buondua_search_prompt">輸入關鍵字，或貼上 Buondua 圖集連結</string>
+    <string name="buondua_no_results">沒有結果</string>
+    <string name="buondua_no_history">尚未開啟任何圖集</string>
+    <string name="buondua_nothing_here">這裡沒有內容</string>
+    <string name="buondua_album">圖集</string>
+    <string name="buondua_section_videos">影片</string>
+    <string name="buondua_section_photos">照片</string>
+    <string name="buondua_section_related">相關圖集</string>
+    <string name="buondua_copy_link">複製連結</string>
+    <string name="buondua_link_copied">已複製連結</string>
+    <string name="buondua_tap_to_play">播放</string>
+    <string name="buondua_checking_video">正在檢查此影片是否可直接播放…</string>
+    <string name="buondua_photos_download_started">正在儲存照片…</string>
 </resources>

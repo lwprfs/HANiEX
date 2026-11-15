@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,7 +23,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -42,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.ExpressiveEntryCard
 import com.yenaly.han1meviewer.ui.component.SettingIconBadge
 import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.ui.component.SettingTile
@@ -83,8 +83,11 @@ data class SiteAccountHeader(
     val onClick: (() -> Unit)? = null,
 )
 
-private val QuickActionMinWidth = 150.dp
-private val QuickActionHeight = 96.dp
+/** Same metrics as Hanime's "My" page so every site's primary pages look identical. */
+private val CardMinWidth = 160.dp
+private val CardHeight = 168.dp
+private val CardGridHorizontalPadding = 20.dp
+private val CardGridSpacing = 12.dp
 
 @Composable
 internal fun SiteHubRow(entry: SiteHubEntry) {
@@ -143,7 +146,10 @@ internal fun androidx.compose.foundation.lazy.LazyListScope.siteHubSections(
 }
 
 /**
- * Generic list page used for Library, Subscription and Customize.
+ * Generic page used for Library, Subscription and Customize.
+ *
+ * Primary (bottom-bar) pages, i.e. `onBack == null`, render every entry as the same big
+ * [ExpressiveEntryCard] box Hanime uses; secondary pages keep the compact list rows.
  *
  * @param onBack `null` for primary (bottom-bar) destinations, a callback for secondary pages.
  * @param emptyState shown instead of the list when [sections] has no entries, so an unsupported
@@ -171,6 +177,12 @@ fun SiteHubListScreen(
                     .padding(padding),
                 contentAlignment = Alignment.Center,
             ) { emptyState() }
+        } else if (onBack == null) {
+            SiteHubCardGrid(
+                sections = sections,
+                padding = padding,
+                extraContent = extraContent,
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -186,6 +198,83 @@ fun SiteHubListScreen(
             }
         }
     }
+}
+
+/** Big-card grid shared by the primary Library / Subscription pages. */
+@Composable
+private fun SiteHubCardGrid(
+    sections: List<SiteHubSection>,
+    padding: PaddingValues,
+    extraContent: (@Composable () -> Unit)?,
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val columns = hubCardColumns(maxWidth)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(columns),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(
+                start = CardGridHorizontalPadding,
+                end = CardGridHorizontalPadding,
+                top = padding.calculateTopPadding() + 16.dp,
+                bottom = padding.calculateBottomPadding() + 24.dp,
+            ),
+            horizontalArrangement = Arrangement.spacedBy(CardGridSpacing),
+            verticalArrangement = Arrangement.spacedBy(CardGridSpacing),
+        ) {
+            if (extraContent != null) {
+                item(key = "hub_extra_content", span = { GridItemSpan(maxLineSpan) }) {
+                    extraContent()
+                }
+            }
+            siteHubCardSections(sections)
+        }
+    }
+}
+
+private fun hubCardColumns(maxWidth: androidx.compose.ui.unit.Dp): Int = maxOf(
+    2,
+    ((maxWidth - CardGridHorizontalPadding * 2 + CardGridSpacing) /
+            (CardMinWidth + CardGridSpacing)).toInt(),
+)
+
+/** Renders [sections] into a [LazyVerticalGrid]: full-width titles, one big card per entry. */
+private fun androidx.compose.foundation.lazy.grid.LazyGridScope.siteHubCardSections(
+    sections: List<SiteHubSection>,
+) {
+    sections.forEachIndexed { sectionIndex, section ->
+        if (section.entries.isEmpty()) return@forEachIndexed
+        if (!section.title.isNullOrBlank()) {
+            item(
+                key = "hub_section_${sectionIndex}_title",
+                span = { GridItemSpan(maxLineSpan) },
+            ) {
+                Text(
+                    text = section.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = if (sectionIndex == 0) 0.dp else 12.dp),
+                )
+            }
+        }
+        items(
+            items = section.entries,
+            key = { "hub_entry_${sectionIndex}_${it.key}" },
+            span = { GridItemSpan(1) },
+        ) { entry -> SiteHubCard(entry) }
+    }
+}
+
+@Composable
+private fun SiteHubCard(entry: SiteHubEntry) {
+    ExpressiveEntryCard(
+        icon = entry.icon,
+        title = entry.title,
+        subtitle = entry.subtitle,
+        // Reserve two subtitle lines and a fixed height so every box is the same size.
+        subtitleMinLines = 2,
+        modifier = Modifier.height(CardHeight),
+        onClick = entry.onClick,
+    )
 }
 
 /** Centered "feature not supported on this site" state. */
@@ -233,8 +322,8 @@ fun SiteHubUnavailableState(
 }
 
 /**
- * My Profile for non-Hanime sites, modelled on Hanime's ProfileScreen: account card on top,
- * a grid of quick actions, then grouped lists for everything else.
+ * My Profile for non-Hanime sites, an exact counterpart of Hanime's ProfileScreen: big account
+ * card on top, then every entry as the same big [ExpressiveEntryCard] box.
  */
 @Composable
 fun SiteProfileScreen(
@@ -249,24 +338,18 @@ fun SiteProfileScreen(
         modifier = modifier,
     ) { padding ->
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            val itemSpacing = 12.dp
-            val horizontalPadding = 16.dp
-            val columns = maxOf(
-                2,
-                ((maxWidth - horizontalPadding * 2 + itemSpacing) /
-                        (QuickActionMinWidth + itemSpacing)).toInt(),
-            )
+            val columns = hubCardColumns(maxWidth)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(columns),
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(
-                    start = horizontalPadding,
-                    end = horizontalPadding,
-                    top = padding.calculateTopPadding() + 12.dp,
+                    start = CardGridHorizontalPadding,
+                    end = CardGridHorizontalPadding,
+                    top = padding.calculateTopPadding() + 16.dp,
                     bottom = padding.calculateBottomPadding() + 24.dp,
                 ),
-                horizontalArrangement = Arrangement.spacedBy(itemSpacing),
-                verticalArrangement = Arrangement.spacedBy(itemSpacing),
+                horizontalArrangement = Arrangement.spacedBy(CardGridSpacing),
+                verticalArrangement = Arrangement.spacedBy(CardGridSpacing),
             ) {
                 item(key = "profile_account", span = { GridItemSpan(maxLineSpan) }) {
                     SiteAccountCard(account)
@@ -277,12 +360,14 @@ fun SiteProfileScreen(
                             text = stringResource(R.string.hub_section_quick_actions),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(top = 8.dp),
+                            modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
                         )
                     }
-                    items(items = quickActions, key = { "quick_${it.key}" }) { entry ->
-                        SiteQuickActionTile(entry)
-                    }
+                    items(
+                        items = quickActions,
+                        key = { "quick_${it.key}" },
+                        span = { GridItemSpan(1) },
+                    ) { entry -> SiteHubCard(entry) }
                 }
                 sections.forEachIndexed { sectionIndex, section ->
                     if (section.entries.isEmpty()) return@forEachIndexed
@@ -295,89 +380,95 @@ fun SiteProfileScreen(
                                 text = section.title,
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
-                                modifier = Modifier.padding(top = 12.dp),
+                                modifier = Modifier.padding(top = 12.dp, bottom = 2.dp),
                             )
                         }
                     }
                     items(
                         items = section.entries,
                         key = { "profile_entry_${sectionIndex}_${it.key}" },
-                        span = { GridItemSpan(maxLineSpan) },
-                    ) { entry ->
-                        SiteHubRow(entry)
-                    }
+                        span = { GridItemSpan(1) },
+                    ) { entry -> SiteHubCard(entry) }
                 }
             }
         }
     }
 }
 
+/** Account card, same shape and proportions as the header card of Hanime's My page. */
 @Composable
 private fun SiteAccountCard(account: SiteAccountHeader) {
-    val shape = RoundedCornerShape(28.dp)
-    val clickable = account.onClick != null
+    val shape = RoundedCornerShape(32.dp)
     val content: @Composable () -> Unit = {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .padding(horizontal = 20.dp, vertical = 20.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Surface(
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.surface,
-                modifier = Modifier.size(64.dp),
+                modifier = Modifier.size(76.dp),
             ) {
-                if (account.avatarUrl.isNullOrBlank()) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Filled.Person,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(32.dp),
-                        )
-                    }
-                } else {
-                    AsyncImage(
-                        model = account.avatarUrl,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop,
-                        placeholder = painterResource(R.drawable.bg_default_header),
-                        fallback = painterResource(R.drawable.bg_default_header),
-                        error = painterResource(R.drawable.bg_default_header),
-                    )
-                }
+                AsyncImage(
+                    model = account.avatarUrl?.takeIf { it.isNotBlank() },
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(R.drawable.bg_default_header),
+                    fallback = painterResource(R.drawable.bg_default_header),
+                    error = painterResource(R.drawable.bg_default_header),
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
-                    text = account.siteLabel,
+                    text = stringResource(R.string.account_profile),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f),
                 )
                 Text(
                     text = account.title,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    text = account.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                if (account.subtitle.isNotBlank()) {
+                    Text(
+                        text = account.subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.08f),
+                ) {
+                    Box(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = account.siteLabel,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
             }
-            if (clickable) {
+            if (account.onClick != null) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
@@ -398,48 +489,8 @@ private fun SiteAccountCard(account: SiteAccountHeader) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = shape,
-            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            color = MaterialTheme.colorScheme.primaryContainer,
             tonalElevation = 2.dp,
         ) { content() }
-    }
-}
-
-@Composable
-private fun SiteQuickActionTile(entry: SiteHubEntry) {
-    Surface(
-        onClick = entry.onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = QuickActionHeight),
-        shape = RoundedCornerShape(22.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        tonalElevation = 1.dp,
-    ) {
-        Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(38.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = entry.icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(22.dp),
-                    )
-                }
-            }
-            Text(
-                text = entry.title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
     }
 }
