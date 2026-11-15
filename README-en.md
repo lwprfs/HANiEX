@@ -1,9 +1,10 @@
 [简体中文](README.md) | **English**
 
-# MissAV, HentaiMama, OnAir, FapFolder, Han1me
-[missav](missav.ws)  [hentaimama](hentaimama.io)  [FapFolder](fapfolder.club)
+# HANiEX
 
-[Tor VPN](https://play.google.com/store/apps/details?id=org.torproject.android)  [OnAir](check app)
+Hanime1 · Javchu · MissAV · HentaiMama · OnAir · FapFolder · SupJav · RouVideo · XHamster · Buondua
+
+[Tor VPN](https://play.google.com/store/apps/details?id=org.torproject.android) is required for the OnAir site (see "Supported Sites").
 
 <table>
   <tr>
@@ -31,7 +32,7 @@ This app does not accept any form of public promotion. If public promotion, re-p
 
 🔞 R18 warning: downloading and using this app is prohibited for anyone under 18.
 
-HANiEX (Han1meViewer Extended) is an extended fork of Han1meViewer. The app is named **HANiEX** and its application ID (applicationId) is `com.yenaly.hani.extended`. It is an Android client written in Kotlin for browsing, searching, playing and managing publicly available hanime-related video pages. The project is built mainly on Jetpack Compose, Navigation Compose, ViewModel, StateFlow, Retrofit, Jsoup, Room, WorkManager and Media3/JZVD/MPV, and is organized around video browsing, detail playback, search, user lists, download management, comments, subscriptions, settings and privacy protection.
+HANiEX (Han1meViewer Extended) is an extended fork of Han1meViewer. The app is named **HANiEX** and its application ID (applicationId) is `com.yenaly.hani.extended`. It is an Android client written in Kotlin for browsing, searching, playing and managing publicly available video and image pages. Besides the original Hanime1 support it now bundles **ten site modules** (see "Supported Sites") behind one app shell: a site switcher, per-site home/search/video/history screens, per-site mirror and network settings, cross-site link opening, unified history and local playlists. The project is built mainly on Jetpack Compose, Navigation Compose, ViewModel, StateFlow, Retrofit, Jsoup, Room, WorkManager and Media3 ExoPlayer / libmpv (both used through a Compose player).
 
 This app has no official website. The GitHub Releases and CI build artifacts of this fork, [lwprfs/HANiEX](https://github.com/lwprfs/HANiEX), are the only download and update channels.
 
@@ -42,9 +43,10 @@ This project was originally forked from [YenalyLiew/Han1meViewer](https://github
 Main changes in this fork compared with upstream:
 
 - The app was renamed to HANiEX and its application ID changed to `com.yenaly.hani.extended` (the Kotlin source `namespace` is still `com.yenaly.han1meviewer`).
+- Multi-site support: MissAV, HentaiMama, Javchu, OnAir, FapFolder, SupJav, RouVideo, XHamster and Buondua were added next to Hanime1, together with a site switcher, per-site mirrors, cross-site opening, unified history, local playlists and backup/restore.
 - In-app updates now come from this fork's Releases / CI, and incremental (delta) updates were added.
-- New ways to install the update package: system installer, PackageInstaller and Shizuku, switchable in settings.
-- CI gained Gradle caching and build optimizations, and generates delta update packages during the build.
+- The update package can be installed with the system installer or silently through Shizuku, switchable in settings.
+- CI gained Gradle caching and build optimizations, and generates delta update packages during the build (against up to three previous CI builds and the latest release).
 - The Shizuku implementation is based on the extension installer of [Mihon](https://github.com/mihonapp/mihon) (Apache 2.0 / MIT).
 
 As required by the Apache 2.0 license:
@@ -59,11 +61,11 @@ License file: [LICENSE](LICENSE)
 
 ## ⚠️ Disclaimer
 
-This application has no affiliation, cooperation or authorization relationship with `https://hanime1.me/` or its related parties.
+This application has no affiliation, cooperation or authorization relationship with `https://hanime1.me/` or with any other website it can browse (see "Supported Sites"), or with their related parties.
 
 🔍 Data sources:
 
-- The app only obtains information publicly displayed on the target website through ordinary network requests and HTML DOM parsing.
+- The app only obtains information publicly displayed on the target websites through ordinary network requests and HTML DOM parsing.
 - The app does not access the website's backend database.
 - The app does not perform injection attacks, bypass authorization or obtain non-public user private data.
 
@@ -71,11 +73,11 @@ This application has no affiliation, cooperation or authorization relationship w
 
 - This app is for technical research, learning and mobile experience optimization only.
 - This app does not provide any commercial service.
-- Users must comply with the laws and regulations of their region and the rules of the target website.
+- Users must comply with the laws and regulations of their region and the rules of the target websites.
 
 ©️ Copyright:
 
-- The copyright of the original videos, images, text and related content belongs to `https://hanime1.me/` or the original producers and distributors.
+- The copyright of the original videos, images, text and related content belongs to the respective websites or the original producers and distributors.
 - This app does not store copyrighted content, does not modify the original content, and does not claim ownership of any content.
 
 🛡️ Liability exemption:
@@ -84,9 +86,9 @@ This application has no affiliation, cooperation or authorization relationship w
 - Users bear all consequences arising from the use of this app.
 - This app must not be used for any illegal purpose.
 
-If `https://hanime1.me/` considers the behavior of this app inappropriate, it can contact the maintainers through the built-in features of the GitHub repository.
+If any of the websites considers the behavior of this app inappropriate, it can contact the maintainers through the built-in features of the GitHub repository.
 
-🔄 Last updated: `2026-05-23`
+🔄 Last updated: `2026-11-15`
 
 ℹ️ You are encouraged to support the original site's content through official channels and to click ads to support the site operators.
 
@@ -94,30 +96,51 @@ If `https://hanime1.me/` considers the behavior of this app inappropriate, it ca
 
 Telegram group: [https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
+## 🌐 Supported Sites
+
+The site is chosen in the site switcher (drawer / site dialog) and the whole UI follows it. Each site is a self-contained package under `app/src/main/java/com/yenaly/han1meviewer/<Site>/` with its own network client, parser, Room database (history), navigation graph and screens. Sites you do not use can be hidden in Settings (site visibility).
+
+| Site | Type | What the module provides |
+| --- | --- | --- |
+| Hanime1 (`HANIME`) | Anime video | The original, most complete module: home, search, advanced search, video detail, comments, login, favorites, watch later, playlists, subscriptions, creator center, downloads, preview pages, shared key H frames, announcements. |
+| Javchu (`JAVCHU`) | JAV library | Shares the Hanime1 module and navigation (treated as the same "site family"), with its own base URL. |
+| MissAV (`MISSAV`) | JAV streaming | Home, search, video playback, history, account / login, Cloudflare handling. |
+| HentaiMama (`HENTAIMAMA`) | Anime streaming | Home, recent, upcoming, series, playlists, search, history, video playback. |
+| OnAir (`ONAIR`) | Self-hosted onion video site | Home, search, tags, pictures, video, history, account/auth, chat, announcements, mirror status. **Requires a Tor exit**; the app checks this before switching to it. |
+| FapFolder (`FAPFOLDER`) | Community feed (albums and videos) | Home feed, posts, albums, groups, hashtags, profiles, followed, saved, search, history, login. |
+| SupJav (`SUPJAV`) | JAV streaming | Home, search, video (stream resolver), history, site settings. |
+| RouVideo (`ROUVIDEO`) | Video | Home, categories, library, search, video, history, account / login, site settings. |
+| XHamster (`XHAMSTER`) | Video and galleries | Home, categories, discover, entities, galleries, library, profile / account, search, video, history. |
+| Buondua (`BUONDUA`) | Image albums | Home, search, album viewer, history, image downloads. |
+
+Available features differ by site. The list above comes from the source tree and is not a promise that every function works on every mirror.
+
 ## ✨ Features
 
-- 🏠 Home browsing: home recommendations, latest uploads, category entries, preview pages and a search entry.
-- 🎬 Video details: synopsis, author, tags, series videos, related recommendations, comments and sub-comments.
-- ▶️ Video playback: online playback, local downloaded file playback, picture-in-picture, player engine switching, playback speed and quality selection.
-- 🔍 Search: keyword search, advanced search, history, filter display and paged loading.
-- 👤 User content: favorites, watch later, playlists, online history, followed authors and the creator center.
-- 💬 Comments: comment sorting, viewing replies, reporting and copying share text.
-- 📥 Download management: background downloads, download groups (groups can be created automatically by series name when downloading), importing local files, custom download directory and playback after download.
-- 🔐 Account: login, manual cookie entry, account profile, avatar cropping, login status detection and logout.
-- 🎨 Theme and settings: Material 3 theme, dynamic color, home layout, playback settings, MPV settings, download settings and network settings.
-- 🕵️ Privacy protection: app lock, launcher icon disguise and manual cookie management.
-- 🌐 Network helpers: Cloudflare handling, backup domains, proxy-related settings, CDN/network detection and update checks.
-- 🔄 In-app updates: Release / CI update channels and incremental updates (download only a diff patch) with automatic fallback to the full APK. See "App Updates".
-- 📲 Install methods: the update package can be installed with the system installer, PackageInstaller or Shizuku, similar to Mihon's extension installer setting. See "Install Methods".
-- 📅 Health check-in: a built-in check-in page and a home screen widget.
-- 🎯 Shared key H frames: reading, configuring and displaying built-in key frame data and shared data.
-- 🗞️ Announcements: home announcement display and announcement detail dialog, together with `HanimeAnnouncementManagerWebUI` for maintaining the `announcements` node in Firebase Realtime Database.
+🧩 Across all sites:
+
+- 🔀 Site switching: site drawer and switch dialog, per-site visibility, the last used site is remembered, a usage notice dialog on first launch.
+- 🔗 Cross-site opening: a shared link or clipboard link can open a video on another site (`CrossSiteNavigator`, with a reachability / Tor check before switching).
+- 🪞 Mirrors and network: per-site mirror lists with built-in catalog, mirror latency test, custom mirror host, DNS-over-HTTPS presets, proxy settings, Cloudflare verification, built-in Cloudflare IP list for fronted sites.
+- 🕘 History: per-site history databases plus a unified history screen; search history per site.
+- 📚 Library: local playlists across sites and a content library entry.
+- 💾 Backup and restore: export / import settings, check-in records, key frames, per-site history, downloads and (optionally) per-site cookies, chosen section by section.
+- 🌍 Languages: Simplified Chinese, English and Japanese, switchable in-app; tag / title / description / comment translation cache and Simplified-to-Traditional conversion.
+- ▶️ Playback: Media3 ExoPlayer and libmpv kernels behind one Compose player, Anime4K super-resolution (MPV), picture-in-picture, playback speed and quality selection, gesture controls, resume from history.
+- 📥 Downloads: WorkManager background downloads (including HLS), download groups (auto-created by series name), importing local files, custom download directory (SAF), playback after download, per-site image saving and download-failure classification (Tor / cookies / network / storage / expired).
+- 🎨 Theme and settings: Material 3, dynamic color, home layout, grid columns, card size, settings split into Appearance / Playback / Network / Download / Keyframes / Privacy / Data / About.
+- 🕵️ Privacy: app lock (biometric), launcher icon disguise (calculator / Cornhub / "Xxt" aliases), manual cookie management.
+- 🔄 In-app updates: Release / CI channels, delta (patch) updates with automatic fallback to the full APK, install with the system installer or Shizuku. See "App Updates" and "Install Methods".
+- 📅 Health check-in: check-in page, calendar and a home screen widget (per-site check-in records).
+- 🎯 Shared key H frames: built-in key frame data, settings and shared data display.
+
+🅷 Hanime1-specific: login with manual cookie entry, avatar cropping, favorites, watch later, playlists, online history, subscriptions, creator center, comments (sorting, replies, reporting), preview pages, search with advanced filters, announcements.
 
 ## 🗞️ Announcement System Guide
 
 The announcement system has two parts:
 
-- User side: after the app starts, `MainViewModel.loadAnnouncements()` reads the `announcements` node from Firebase Realtime Database. The home page shows valid announcements and lets users open an announcement detail dialog.
+- User side: the Hanime1 home page (`HomePageViewModel`) reads the `announcements` node from Firebase Realtime Database. The home page shows valid announcements and lets users open an announcement detail dialog (`ui/screen/home/homepage/component/Announcement*.kt`). OnAir has its own announcement screen.
 - Maintenance side: `HanimeAnnouncementManagerWebUI` maintains the announcement data. It writes, updates or takes down announcements on the same `announcements` node.
 
 The `HanimeAnnouncementManagerWebUI` directory contains two files:
@@ -130,7 +153,7 @@ Prerequisites:
 - The app must be able to access the network normally.
 - The Firebase Realtime Database address configured in the project must be available.
 - The announcement data under the `announcements` node must match the `Announcement` model, containing at least fields such as `title`, `content` and `isActive`.
-- Announcements are sorted by `priority`, and only announcements with `isActive = true` are shown.
+- Announcements are sorted by `priority` in ascending order (a smaller value is shown first), and only announcements with `isActive = true` are shown.
 - The admin side needs Firebase Authentication and Realtime Database enabled.
 - The admin side needs the Firebase web config parameters and an admin email and password that can sign in.
 - To use `PermitAdmin.py`, you also need the Firebase Admin SDK `serviceAccountKey.json`.
@@ -161,11 +184,13 @@ Announcement fields:
 - `timestamp`: announcement timestamp, in seconds.
 - `isActive`: whether it is enabled.
 
+The model is `logic/model/Announcement.kt`; if a field is added, update the model, the WebUI form and the dialog together.
+
 Maintenance tips:
 
 - Preview a new announcement in the WebUI first, then switch it to `isActive = true`.
 - Take down expired or no longer needed announcements instead of deleting them, so they can be traced back.
-- Whether a higher or lower `priority` value ranks first must stay consistent with the WebUI convention to avoid confusing the order.
+- The app sorts `priority` ascending (smaller first); keep the WebUI convention consistent with that.
 
 ## 🔄 App Updates
 
@@ -173,23 +198,24 @@ The app checks for and downloads updates through GitHub, with no need to open th
 
 📡 Update channels (Settings → Update):
 
-- **Release channel (default)**: reads GitHub `releases/latest`, compares the version code after the `+` in the tag with the current `VERSION_CODE`, and takes the APK from the release asset ending in `.apk`.
-- **CI channel (optional)**: compares the current `COMMIT_SHA` with the latest successful `ci.yml` run and downloads its `app-release-<sha>` build artifact. `HA_GITHUB_TOKEN` is required to download build artifacts.
+- **Release channel (default)**: reads GitHub `releases/latest`, compares the version in the tag with the current version, and takes the APK from the release asset ending in `.apk`.
+- **CI channel (optional)**: compares the current `COMMIT_SHA` with the latest CI run on `main` and downloads its `app-release-<sha>` build artifact. `HA_GITHUB_TOKEN` is required to download build artifacts; without a token requests are anonymous and have a lower rate limit. The channel can be switched off remotely with the Firebase Remote Config flag `enable_ci_update` (default on).
+- The two channels never fall back to each other, and failed checks are not retried automatically: the reason (rate limit, bad token, missing permission, expired artifact, network) is reported and the user retries manually.
 
-📦 Incremental updates:
+📦 Delta (incremental) updates:
 
-- After a CI build, the new APK is diffed against the previous build's APK with bsdiff to produce a patch package that contains only the differences. A patch larger than 80% of the full APK is not published.
-- CI channel: the patch package is uploaded as a separate build artifact named `delta-<sha>-base-<first 16 characters of the old APK's SHA-256>`.
-- Release channel: on release, the APK is diffed against the previous release's APK, and the patch package is uploaded as the release asset `HANiEX-delta-base-<first 16 characters>.zip`.
-- The patch package is a zip containing `update.json` (format, SHA-256 of the base and new APKs, size) and `update.patch` (the bsdiff patch).
-- The app first computes the SHA-256 of the currently installed APK and downloads the patch only if it matches the patch base. It then rebuilds the new APK locally and verifies its size, SHA-256 and signature.
-- If any step fails (base mismatch, expired patch, verification failure, split install and so on), the app automatically falls back to downloading the full APK.
+- After a CI build, the new APK is diffed with bsdiff against up to **three previous successful CI builds and the latest release APK**. Each patch is uploaded as a separate artifact named `delta-<sha>-base-<first 16 characters of the old APK's SHA-256>`. A patch that is 80% or more of the full APK, or an identical APK, is not published.
+- Release channel: on `[release]` builds the APK is diffed against the previous release tag's APK, and the patch is uploaded as the release asset `HANiEX-delta-base-<first 16 characters>.zip`.
+- A patch package contains `update.json` (format `bsdiff40`, SHA-256 of the base and new APKs, sizes) and `update.patch`.
+- The app computes the SHA-256 of the installed APK and picks the published patch whose base matches it, downloads it, rebuilds the new APK with its own pure Kotlin bspatch (`util/Bspatch.kt`), then verifies size, SHA-256 and signing certificate.
+- If anything fails (no patch published, base mismatch, split install, unreadable installed APK, bad metadata, patch or verification failure, signer mismatch), the update screen shows the reason and the app falls back to the full APK.
 
 ⚠️ Notes:
 
-- Incremental updates require the installed APK to be exactly the one the patch was built against; otherwise the full APK is downloaded.
+- Incremental updates require the installed APK to be exactly the one a patch was built against; users further behind get the full APK.
 - The first version that includes incremental updates must be installed manually.
 - Because the package name changed (`com.yenaly.han1meviewer` → `com.yenaly.hani.extended`), the system treats HANiEX as a different app. Old installs will not update to HANiEX, so it must be installed fresh.
+- Debug builds use a hard-coded `COMMIT_SHA`, so CI-channel comparisons are not meaningful for them, and a cached update file is ignored when `BuildConfig.DEBUG` is set.
 
 ## 📲 Install Methods
 
@@ -197,15 +223,12 @@ After the update package is downloaded, it is installed with the "Install method
 
 | Method | Description |
 | --- | --- |
-| System installer (legacy) | Opens the system install screen. Best compatibility. |
-| PackageInstaller | Installs through a PackageInstaller session. On Android 12+ it can update without confirmation when the system allows it. This option is not offered on MIUI devices. |
-| Shizuku | Installs silently with shell permission through Shizuku. Shizuku must be installed and running first, and permission is requested on first use. |
+| System installer (default) | Opens the system install screen (`FileProvider` + `ACTION_VIEW`). Needs the "install unknown apps" permission. Best compatibility. |
+| Shizuku | Installs silently with shell permission through Shizuku. Shizuku must be installed and running, and permission is requested when you select it. |
 
-- The default is the same as Mihon's: PackageInstaller. When the MIUI installer is detected, the default is the system installer.
-- If you choose Shizuku but Shizuku is not detected, the app shows a prompt with a download link and does not switch.
-- PackageInstaller and Shizuku run in the foreground service `ApkInstallService`. If the service cannot start, the app falls back to the system installer.
-- The install button in the "download complete" notification also follows the chosen install method.
-- Mihon's "Private" method only applies to extensions, not to app self-updates, so it is not included.
+- If Shizuku is selected but not installed, not running, denied or the install fails, the app shows the reason and falls back to the system installer.
+- The Shizuku side lives in `shizuku/ShizukuUpdateInstaller.kt` and `shizuku/ShellInterface.kt` (AIDL: `src/main/aidl/com/yenaly/han1meviewer/shizuku/IShellInterface.aidl`), which runs in the Shizuku process and submits the install session.
+- The Shizuku implementation is based on the extension installer of [Mihon](https://github.com/mihonapp/mihon).
 
 ## 📷 Screenshots
 
@@ -228,36 +251,42 @@ After the update package is downloaded, it is installed with the "Install method
 
 ## 🧱 Current Architecture
 
-📦 The project uses a multi-module Gradle structure:
+📦 The project is a Gradle build with a single app module plus build logic:
 
-- `:app`: the main app module, containing UI, navigation, business ViewModels, network parsing, database, download workers, players and resources.
-- `:yenaly_libs`: the in-project common library, wrapping common Activities, Fragments, ViewModels, preferences, utilities and base components.
-- `buildSrc`: build configuration helper code for Gradle logic such as version numbers, build types and commit information.
+- `:app`: the only module included in `settings.gradle.kts` (UI, navigation, ViewModels, network parsing, databases, download workers, players, resources, all site modules).
+- `buildSrc`: build helper code for version numbers, version source (debug / release / ci) and commit SHA.
+- `yenaly_libs/`: a leftover directory of the old common library. It is **not** part of the build (no `build.gradle`, not included in `settings.gradle.kts`, and nothing imports it); it can be removed.
 
-🗂️ The main app is organized in layers:
+🗂️ The app package (`com.yenaly.han1meviewer`) is organized as follows:
 
-- `ui.activity`: entry Activity, login, Cloudflare handling and manual cookie input pages.
-- `ui.navigation`: Navigation Compose route definitions, main navigation, settings navigation and safe navigation wrappers.
-- `ui.screen`: Compose screen implementations, split by business area such as home, search, video, settings, account and downloads.
-- `ui.component`: reusable Compose components such as video cards, dialogs, empty/error/loading states, app bars and comment cards.
-- `ui.viewmodel`: page state and business action entry points, exposing state to the UI mainly through `StateFlow` / `SharedFlow`.
-- `logic.network`: Retrofit services, OkHttp interceptors, DNS, CookieJar, the update service and the network entry point.
-- `logic.model`: domain models produced by pages and network parsing, such as `HanimeVideo`, `HanimeInfo`, `HomePage` and `Playlists`.
-- `logic.dao` / `logic.entity`: Room database, DAOs and entities for local data such as history, downloads, search history, key frames and check-ins.
-- `announcement` pipeline: announcement data is read from the `announcements` node of Firebase Realtime Database, the home page fetches and shows it through `MainViewModel.loadAnnouncements()`, and the admin side maintains it with `HanimeAnnouncementManagerWebUI`.
-- `worker`: WorkManager download tasks and update tasks (`HUpdateWorker`).
-- `logic.network.HUpdater` / `HDeltaUpdater`: update checks, full APK download and incremental patch application; `util.Bspatch` is a pure Kotlin bspatch implementation.
-- `util.install`: install methods (`ApkInstallMethod`), the foreground install service `ApkInstallService`, and the PackageInstaller / Shizuku installers.
-- `shizuku` (with `src/main/aidl`): `ShellInterface`, which runs inside the Shizuku process and submits install sessions with shell permission.
-- `util`: utilities for themes, network, files, permissions, cookies, toasts, video and general helpers.
+- Site modules, one package per site: `MissAV`, `HentaiMama`, `OnAir`, `FapFolder`, `SupJav`, `RouVideo`, `XHamster`, `Buondua`. Each follows the same layout: `common` (constants, URL utils, settings, image loader), `cloudflare`, `data/{remote,parser,model,local,repository}` (Retrofit service, cookie jar, parser, Room history database) and `ui/{home,search,video,history,navigation,...}`.
+- Hanime1 and Javchu live in the shared packages: `logic` (network, parsers, models, DAO, state), `ui` and `worker`.
+- `ui.navigation`: `UnifiedMainNavHost` picks the NavHost of the current `SiteType`; `NavigationManager` (switch site, open video, back stack), `CrossSiteNavigator` (open a video on another site, with reachability / Tor validation), `main/` (Hanime routes), `settings/` (settings routes and categories), `site/` (shared site hub routes).
+- `ui.screen`: Compose screens split by area (`main` for the scaffold and site drawer, `home`, `search`, `video`, `settings`, `account`, `history`, `library`, `login`, `site`, `web`).
+- `ui.component`: reusable components (video cards, dialogs, site chrome, site switch dialog, update dialog, paging and lazy-list wrappers).
+- `ui.player`: the Compose player (kernel abstraction, controller, surface, controls).
+- `ui.viewmodel`: page state and business actions, exposed through `StateFlow` / `SharedFlow`.
+- `logic.network`: Retrofit services, OkHttp interceptors, DNS (`HDns`, DoH presets), `HCookieJar`, proxy selector, per-site profiles (`SiteNetworks`, `SiteMirrorCatalog`, `SiteNetworkPrefs`, `MirrorLatency`), `HUpdater` / `HDeltaUpdater`.
+- `logic.update`: `UpdateManager` (update state machine used by the update dialog and status screen).
+- `logic.dao` / `logic.entity`: Room databases for history, downloads, key frames, check-ins and misc data; each site module has its own database for its history.
+- `logic.BackupManager`, `logic.SiteCheckIn`, `logic.local.LocalPlaylistStore`: cross-site backup, check-in and local playlists.
+- `worker`: WorkManager download tasks (`HanimeDownloadManagerV2`, `HanimeDownloadWorker`, `HlsDownloader`) and update tasks (`HUpdateWorker`, `UpdateActionReceiver`).
+- `shizuku` (with `src/main/aidl`): silent update install through Shizuku.
+- `util`: themes, network, files / SAF, permissions, cookies, translation, site download helpers, `Bspatch` and general helpers.
 
 🔁 Overall data flow:
 
 ```text
-Compose Screen -> ViewModel -> NetworkRepo / DatabaseRepo -> Retrofit + Jsoup / Room -> StateFlow -> Compose Screen
+Compose Screen -> ViewModel -> Repo (NetworkRepo / site Repo / DatabaseRepo) -> Retrofit + Jsoup / Room -> StateFlow -> Compose Screen
 ```
 
-🎞️ Video page data flow:
+🔀 Site switching flow:
+
+```text
+SiteSwitchDialog / CrossSiteNavigator -> Preferences.siteType + NavigationManager.switchSite -> UnifiedMainNavHost -> <Site>NavHost
+```
+
+🎞️ Hanime video page data flow:
 
 ```text
 VideoRoute -> VideoViewModel -> NetworkRepo.getHanimeVideo -> Parser -> HanimeVideo -> VideoScreen / Player / CommentScreen
@@ -266,7 +295,7 @@ VideoRoute -> VideoViewModel -> NetworkRepo.getHanimeVideo -> Parser -> HanimeVi
 🔄 Update data flow:
 
 ```text
-HUpdater checks for updates -> HUpdateWorker -> (HDeltaUpdater delta rebuild | full APK download) -> installApkPackage -> system installer / ApkInstallService (PackageInstaller | Shizuku)
+HUpdater checks for updates -> HUpdateWorker / UpdateManager -> (HDeltaUpdater delta rebuild | full APK download) -> installApkPackage -> system installer | Shizuku
 ```
 
 📥 Download data flow:
@@ -275,31 +304,34 @@ HUpdater checks for updates -> HUpdateWorker -> (HDeltaUpdater delta rebuild | f
 DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Worker -> Room -> Flow -> UI
 ```
 
+For more detail see [README_TECH.md](README_TECH.md).
+
 ## 🛠️ Tech Stack
 
-- Kotlin 2.4.x
-- Java 21 toolchain
-- Android Gradle Plugin 9.3.x
-- Jetpack Compose + Material 3
-- Navigation Compose + Kotlin Serialization typed routes
+Versions follow `gradle/libs.versions.toml` and `app/build.gradle.kts`:
+
+- Kotlin 2.4.x, Java 21 toolchain
+- Android Gradle Plugin 9.1.0
+- Jetpack Compose (BOM 2026.08.00) + Material 3 (1.5.0-beta02, with adaptive navigation suite)
+- Navigation Compose 2.9.x + Kotlin Serialization typed routes
 - ViewModel + StateFlow + SharedFlow
-- Retrofit 3 + kotlinx.serialization converter
+- Retrofit 3 + kotlinx.serialization converter, OkHttp 5 (with `okhttp-brotli`, DNS-over-HTTPS)
 - Jsoup HTML parsing
-- Room + KSP
+- Room 2.8 + KSP
 - WorkManager background tasks
 - Coil 3 Compose image loading
-- Media3 ExoPlayer, JZVD, MPV Android
+- Media3 ExoPlayer (+ HLS, OkHttp data source) and libmpv (`mpv-android`) with Anime4K shaders
 - Firebase Analytics, Crashlytics, Performance, Remote Config, Realtime Database
-- AndroidX Window, Biometric, SplashScreen, Preference
+- AndroidX Window, Biometric, SplashScreen, Preference, Security Crypto
 - Apache Commons Compress (bzip2, used to decompress incremental patches)
 - Shizuku API / Provider (silent install)
-- AboutLibraries open-source license display
+- AboutLibraries open-source license display, CrashX crash screen
 
 ## 🧰 Build Environment
 
 ✅ Recommended environment:
 
-- Android Studio Panda or newer.
+- A recent Android Studio that supports AGP 9.1.
 - JDK 21.
 - The Gradle Wrapper version bundled in the repository.
 - Compile SDK: `37`.
@@ -308,8 +340,9 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 
 ⚡ Build optimizations (`gradle.properties`):
 
-- `org.gradle.caching`, `org.gradle.parallel`, `org.gradle.daemon` and `kotlin.incremental` are enabled, and `org.gradle.jvmargs` is `-Xmx3g -XX:MaxMetaspaceSize=1g`.
-- `org.gradle.configuration-cache` is not enabled by default (the build script reads environment variables and runs git commands at configuration time). Enable it only after confirming compatibility.
+- `org.gradle.caching`, `org.gradle.parallel`, `org.gradle.daemon` and `kotlin.incremental` are enabled, and `org.gradle.jvmargs` is `-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8`.
+- `org.gradle.configuration-cache` is not enabled (the build script reads environment variables and runs git commands at configuration time). Enable it only after confirming compatibility.
+- `android.suppressUnsupportedCompileSdk=37` is set because compileSdk 37 may be newer than the AGP version officially supports.
 
 📌 Key versions follow the repository files:
 
@@ -317,6 +350,8 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 - `gradle/libs.versions.toml`
 - `app/build.gradle.kts`
 - `buildSrc/src/main/java/Config.kt`
+
+🔢 Versioning: the base version is set in `app/build.gradle.kts` (`createVersion(major, minor, patch)`). Debug builds are `debug+1`. Other builds are `<major>.<minor>.<patch>-<source>+<yyMMddHH>` where the source is `release`, or `ci` when `HA1_VERSION_SOURCE=ci` is set (CI does this); the part after `+` is the version code (UTC time).
 
 ## 🚀 Running Locally
 
@@ -352,24 +387,32 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 
 - Keystore file: `$HOME/.android/keystore.jks`
 - Environment variables: `KEYSTORE_PASSWORD` (also used as the key password) and `KEY_ALIAS`
-- Release packages only `arm64-v8a`, and the output file is named `HANiEX-v<versionName>.apk`
+- Release packages only `arm64-v8a`, with R8 minification and resource shrinking enabled, and the output file is named `HANiEX-v<versionName>.apk`
 
 🔑 The GitHub API token can be provided through an environment variable or a local file:
 
 - Environment variable: `HA_GITHUB_TOKEN`
-- Local file: `app/ha1_github_token.txt`
+- Local file: `app/ha1_github_token.txt` (git-ignored)
 
 ## 🤖 CI and Releases
 
-The workflow is at `.github/workflows/ci.yml` and runs on pushes to `main` (changes to `*.md` are ignored):
+Three workflows live in `.github/workflows/`:
 
-1. Check out the code, set up JDK 21, and configure Gradle caching through `gradle/actions/setup-gradle` (`cache-provider: basic`).
-2. Generate `google-services.json` and the signing keystore from secrets, then run `./gradlew assembleRelease --build-cache --parallel`.
-3. Find the last successful build, download its APK and generate an incremental patch (skipped automatically if this fails or the patch is not worthwhile, without affecting the main flow).
-4. Upload the build artifacts: `app-release-<sha>` (full APK) and `delta-<sha>-base-<hash>` (incremental patch, if any).
-5. When the commit message contains `[release]`, also generate release notes, diff against the previous release for an incremental patch, and create a GitHub Release (with the APK and the patch zip).
+| Workflow | Trigger | Purpose |
+| --- | --- | --- |
+| `ci.yml` | push to `main` (changes that only touch `*.md` are ignored) | Build and sign the release APK, generate delta patches, upload artifacts, optionally publish a release |
+| `pr_check.yml` | pull request to `main` (`*.md`-only changes ignored) | Debug build check (`./gradlew buildDebug -x lint`) |
+| `debug-apk.yml` | manual (`workflow_dispatch`) | Build an unminified debug APK and upload it as `app-debug-<sha>`, useful for comparing against R8 problems |
 
-⚡ Cache behavior: the first run downloads dependencies and writes the cache; later runs reuse the cache and reusable build outputs, which shortens build time. The cache is only written on the `main` branch. GitHub removes caches that go unused for a long time or exceed the repository size limit, and the first run after that rebuilds the cache.
+`ci.yml` steps:
+
+1. Check out the code (full history), set up JDK 21, and configure Gradle caching with `gradle/actions/setup-gradle@v6`.
+2. Generate `google-services.json` and the signing keystore from secrets, then run `./gradlew assembleRelease --build-cache --parallel` with `HA1_VERSION_SOURCE=ci`.
+3. Find up to three previous successful CI runs on `main` and download their APK artifacts, download the latest release APK, and generate bsdiff patches against each (duplicated bases are skipped; failures never break the main flow).
+4. Upload the build artifacts: `app-release-<sha>` (full APK), `r8-mapping-<sha>` (R8 mapping to de-obfuscate crash logs), and one `delta-<sha>-base-<hash>` artifact per generated patch.
+5. When the commit message contains `[release]`, also generate release notes from `git log` since the previous tag, diff against the previous release for a release delta, and create a GitHub Release tagged with the version name (with the APK and the patch zip).
+
+⚡ Cache behavior: the first run downloads dependencies and writes the cache; later runs reuse the cache and reusable build outputs. The cache is only written on the `main` branch. GitHub removes caches that go unused for a long time or exceed the repository size limit, and the first run after that rebuilds the cache.
 
 🔐 Secrets to configure:
 
@@ -378,36 +421,43 @@ The workflow is at `.github/workflows/ci.yml` and runs on pushes to `main` (chan
 - `HA_GITHUB_TOKEN`: the token the in-app updater uses to read GitHub build artifacts (written into `BuildConfig`).
 - `APP_TOKEN`: the token used to create GitHub Releases.
 
-Incremental patches are produced by `.github/scripts/make-delta.sh` (requires `bsdiff` and `jq`).
+Incremental patches are produced by `.github/scripts/make-delta.sh` (requires `bsdiff`, `jq`; `MAX_PERCENT` defaults to 80).
 
 ## ✅ Code Conventions
 
-- Prefer Jetpack Compose for UI. A few legacy pages and components still use XML / ViewBinding / DataBinding.
+- Use Jetpack Compose for UI. The only remaining XML layout is the check-in home screen widget; ViewBinding / DataBinding are not enabled.
 - Expose page state through `StateFlow`, and pass events through `SharedFlow` or callbacks.
+- Do not access Retrofit services or Room DAOs from Composables.
 - When appending to network page lists, deduplicate by a stable business key to avoid Compose `Lazy*` list key conflicts.
 - When using stable keys in `LazyColumn`, `LazyVerticalGrid` and `LazyRow`, make sure the data source is unique.
+- A new site belongs in its own package following the existing site layout; see the "new site" checklist in [README_TECH.md](README_TECH.md).
 
 ## 🗺️ Directory Overview
 
 ```text
 HANiEX/                          Repository root
 ├── .github/
-│   ├── workflows/ci.yml          CI: build, cache, incremental patches, release
-│   └── scripts/make-delta.sh     Generates bsdiff incremental patch packages
-├── app/                         Main Android app
-│   ├── src/main/java/.../logic   Network, parsing, models, database, state
-│   ├── src/main/java/.../ui      Activities, Compose screens, navigation, components, ViewModels
-│   ├── src/main/java/.../util    Utilities (including install/ install methods, Bspatch)
-│   ├── src/main/java/.../shizuku ShellInterface used by the Shizuku install method
-│   ├── src/main/aidl             IShellInterface (Shizuku)
-│   ├── src/main/java/.../worker  WorkManager tasks
-│   └── src/main/res              Resources, themes, layouts, icons, widgets
-├── yenaly_libs/                  In-project common library
-├── buildSrc/                     Gradle build helper code
-├── gradle/libs.versions.toml     Dependency version catalog
-├── README.md                     Project description (Chinese)
-├── README-en.md                  Project description (English)
-└── README_TECH.md                Historical technical notes and some implementation notes
+│   ├── workflows/               ci.yml, pr_check.yml, debug-apk.yml
+│   ├── scripts/make-delta.sh    Generates bsdiff incremental patch packages
+│   ├── ISSUE_TEMPLATE/          Bug / feature templates (en, zh-CN, zh-TW)
+│   └── PULL_REQUEST_TEMPLATE/   Bug fix, feature, key-frame submission templates
+├── app/                         Main Android app (the only Gradle module)
+│   ├── src/main/java/.../<Site>/  Site modules: MissAV, HentaiMama, OnAir, FapFolder, SupJav, RouVideo, XHamster, Buondua
+│   ├── src/main/java/.../logic    Network, parsing, models, databases, state, backup, update
+│   ├── src/main/java/.../ui       Activities, Compose screens, navigation, components, player, ViewModels
+│   ├── src/main/java/.../util     Utilities (files, cookies, translation, Bspatch, ...)
+│   ├── src/main/java/.../worker   WorkManager download / update tasks
+│   ├── src/main/java/.../shizuku  Shizuku update installer
+│   ├── src/main/aidl              IShellInterface (Shizuku)
+│   ├── src/main/assets            h_keyframes, search options, per-site option JSON, Anime4K shaders
+│   └── src/main/res               Resources (values, values-en, values-ja, values-zh-rCN), icons, widget
+├── HanimeAnnouncementManagerWebUI/  Announcement admin page and admin-claim script
+├── buildSrc/                    Gradle build helper code
+├── gradle/libs.versions.toml    Dependency version catalog
+├── yenaly_libs/                 Unused leftover of the old common library (not built)
+├── README.md                    Project description (Chinese)
+├── README-en.md                 Project description (English)
+└── README_TECH.md               Technical documentation for maintainers (Chinese)
 ```
 
 ## 🤝 Contributing
@@ -415,8 +465,9 @@ HANiEX/                          Repository root
 - Before submitting code, make sure it passes `:app:compileDebugKotlin`.
 - When changing network lists, paging or Compose `Lazy*` lists, check for duplicate key risks.
 - When changing playback, download, account, cookie, Cloudflare or update logic, please describe how you verified it.
-- When changing update or install logic, also check the Release channel, the CI channel, the incremental update fallback and all three install methods.
-- To submit shared key H frames, see `.github/PULL_REQUEST_TEMPLATE/submit_h_keyframe.md`.
+- When changing update or install logic, also check the Release channel, the CI channel, the incremental update fallback and both install methods (system installer and Shizuku).
+- When changing a site module, test on that site only after switching to it, and check its mirror / Cloudflare handling.
+- Use the issue and pull request templates under `.github/`. To submit shared key H frames, see `.github/PULL_REQUEST_TEMPLATE/submit_h_keyframe.md`.
 
 ## 🧩 TODO
 
