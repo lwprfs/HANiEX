@@ -18,6 +18,10 @@ data class RouVideoCard(
     val isSeries: Boolean = false,
     val isPoster: Boolean = false,
     val seriesLabel: String? = null,
+    /** Short line shown instead of the tag, e.g. "Watched up to 12:30" on the cloud history. */
+    val note: String? = null,
+    /** Watched all the way through (cloud history). */
+    val finished: Boolean = false,
 ) {
     val displayTitle: String get() = RouVideoTranslation.title(RouVideoSettings.pick(title, titleZh))
 }

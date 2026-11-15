@@ -45,6 +45,15 @@ import com.yenaly.han1meviewer.MissAV.ui.home.MissAvSubtitleSettingsScreen
 import com.yenaly.han1meviewer.MissAV.ui.search.MissAvSearchScreen
 import com.yenaly.han1meviewer.MissAV.ui.video.MissAvVideoScreen
 import com.yenaly.han1meviewer.MissAV.ui.history.MissAvHistoryScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvAccountScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvActressScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvActressesScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvCreatePlaylistScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvLoginScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvPlaylistScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvPlaylistsScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvSavedScreen
+import com.yenaly.han1meviewer.MissAV.ui.account.MissAvSiteHistoryScreen
 
 import com.yenaly.han1meviewer.MissAV.ui.home.MissAvHomeViewModel
 import com.yenaly.han1meviewer.MissAV.viewmodel.MissAvViewModel
@@ -74,6 +83,33 @@ data class MissAvVideoRoute(val videoCode: String, val path: String)
 
 @Serializable
 object MissAvHistoryRoute
+
+@Serializable
+object MissAvLoginRoute
+
+@Serializable
+object MissAvAccountRoute
+
+@Serializable
+data class MissAvSavedRoute(val tab: Int = 0)
+
+@Serializable
+object MissAvSiteHistoryRoute
+
+@Serializable
+object MissAvPlaylistsRoute
+
+@Serializable
+data class MissAvPlaylistRoute(val key: String, val name: String)
+
+@Serializable
+object MissAvCreatePlaylistRoute
+
+@Serializable
+object MissAvActressesRoute
+
+@Serializable
+data class MissAvActressRoute(val path: String, val name: String)
 
 @Composable
 fun MissAvNavHost(
@@ -218,7 +254,96 @@ fun MissAvNavHost(
                     }
                     navController.navigateSafely(MissAvSearchRoute(query))
                 },
+                onNavigateToLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onNavigateToActress = { actressPath, actressName ->
+                    navController.navigateSafely(MissAvActressRoute(actressPath, actressName))
+                },
+                onNavigateToPlaylists = { navController.navigateSafely(MissAvPlaylistsRoute) },
                 viewModel = sharedMissAvViewModel,
+            )
+        }
+
+        composable<MissAvLoginRoute> {
+            MissAvLoginScreen(
+                onBack = { navController.popBackStackSafely() },
+                onLoggedIn = { navController.popBackStackSafely() },
+            )
+        }
+
+        composable<MissAvAccountRoute> {
+            MissAvAccountScreen(
+                onBack = { navController.popBackStackSafely() },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onSaved = { navController.navigateSafely(MissAvSavedRoute(0)) },
+                onSavedActresses = { navController.navigateSafely(MissAvSavedRoute(1)) },
+                onPlaylists = { navController.navigateSafely(MissAvPlaylistsRoute) },
+                onSiteHistory = { navController.navigateSafely(MissAvSiteHistoryRoute) },
+                onLocalHistory = { navController.navigateSafely(MissAvHistoryRoute) },
+                onActresses = { navController.navigateSafely(MissAvActressesRoute) },
+            )
+        }
+
+        composable<MissAvSavedRoute> {
+            val route = it.toRoute<MissAvSavedRoute>()
+            MissAvSavedScreen(
+                initialTab = route.tab,
+                onBack = { navController.popBackStackSafely() },
+                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
+                onNavigateToActress = { p, n -> navController.navigateSafely(MissAvActressRoute(p, n)) },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+            )
+        }
+
+        composable<MissAvSiteHistoryRoute> {
+            MissAvSiteHistoryScreen(
+                onBack = { navController.popBackStackSafely() },
+                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+            )
+        }
+
+        composable<MissAvPlaylistsRoute> {
+            MissAvPlaylistsScreen(
+                onBack = { navController.popBackStackSafely() },
+                onOpenPlaylist = { key, name -> navController.navigateSafely(MissAvPlaylistRoute(key, name)) },
+                onCreate = { navController.navigateSafely(MissAvCreatePlaylistRoute) },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+            )
+        }
+
+        composable<MissAvPlaylistRoute> {
+            val route = it.toRoute<MissAvPlaylistRoute>()
+            MissAvPlaylistScreen(
+                playlistKey = route.key,
+                playlistName = route.name,
+                onBack = { navController.popBackStackSafely() },
+                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+            )
+        }
+
+        composable<MissAvCreatePlaylistRoute> {
+            MissAvCreatePlaylistScreen(
+                onBack = { navController.popBackStackSafely() },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+            )
+        }
+
+        composable<MissAvActressesRoute> {
+            MissAvActressesScreen(
+                onBack = { navController.popBackStackSafely() },
+                onNavigateToActress = { p, n -> navController.navigateSafely(MissAvActressRoute(p, n)) },
+            )
+        }
+
+        composable<MissAvActressRoute> {
+            val route = it.toRoute<MissAvActressRoute>()
+            MissAvActressScreen(
+                path = route.path,
+                name = route.name,
+                onBack = { navController.popBackStackSafely() },
+                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
+                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
             )
         }
 

@@ -88,6 +88,9 @@ fun MissAvVideoScreen(
     onBack: () -> Unit,
     onNavigateToVideo: (String, String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
+    onNavigateToLogin: () -> Unit = {},
+    onNavigateToActress: (path: String, name: String) -> Unit = { _, _ -> },
+    onNavigateToPlaylists: () -> Unit = {},
     viewModel: MissAvViewModel = viewModel(),
     modifier: Modifier = Modifier,
 ) {
@@ -800,6 +803,15 @@ fun MissAvVideoScreen(
                                         null
                                     }
                                 },
+                            )
+                        }
+                        item(key = "account") {
+                            com.yenaly.han1meviewer.MissAV.ui.account.MissAvVideoAccountActions(
+                                info = info,
+                                onLogin = onNavigateToLogin,
+                                onNavigateToActress = onNavigateToActress,
+                                onNavigateToPlaylists = onNavigateToPlaylists,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                             )
                         }
                         item(key = "details") {

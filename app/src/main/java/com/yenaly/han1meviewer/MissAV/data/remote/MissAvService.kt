@@ -57,4 +57,39 @@ interface MissAvService {
         @Url url: String,
         @Body body: RequestBody,
     ): Response<ResponseBody>
+
+    // ---- account / session endpoints (absolute URLs built by MissAvAccountRepo) ----
+
+    @GET
+    suspend fun getPageUrl(@Url url: String): Response<ResponseBody>
+
+    @GET
+    suspend fun getJson(
+        @Url url: String,
+        @Header("Accept") accept: String = "application/json, text/plain, */*",
+        @Header("X-XSRF-TOKEN") xsrf: String? = null,
+    ): Response<ResponseBody>
+
+    @POST
+    suspend fun postJson(
+        @Url url: String,
+        @Body body: RequestBody,
+        @Header("Accept") accept: String = "application/json, text/plain, */*",
+        @Header("X-XSRF-TOKEN") xsrf: String? = null,
+    ): Response<ResponseBody>
+
+    @HTTP(method = "DELETE", hasBody = true)
+    suspend fun deleteJson(
+        @Url url: String,
+        @Body body: RequestBody,
+        @Header("Accept") accept: String = "application/json, text/plain, */*",
+        @Header("X-XSRF-TOKEN") xsrf: String? = null,
+    ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @POST
+    suspend fun postForm(
+        @Url url: String,
+        @FieldMap fields: Map<String, String>,
+    ): Response<ResponseBody>
 }

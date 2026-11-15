@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="missav_acc_login_title">Log in to MissAV</string>
+    <string name="missav_acc_login_field">Email or username</string>
+    <string name="missav_acc_password">Password</string>
+    <string name="missav_acc_remember">Remember me</string>
+    <string name="missav_acc_login_btn">Log in</string>
+    <string name="missav_acc_register_web">Register / forgot password (opens website)</string>
+    <string name="missav_acc_logged_in_as">Logged in as %1$s</string>
+    <string name="missav_acc_logged_in">Logged in</string>
+    <string name="missav_acc_not_logged_in">Not logged in</string>
+    <string name="missav_acc_account_title">My account</string>
+    <string name="missav_acc_logout">Log out</string>
+    <string name="missav_acc_saved">Saved videos</string>
+    <string name="missav_acc_saved_actresses">Saved actresses</string>
+    <string name="missav_acc_playlists">Playlists</string>
+    <string name="missav_acc_site_history">Account watch history</string>
+    <string name="missav_acc_local_history">Local watch history</string>
+    <string name="missav_acc_actresses">Actresses</string>
+    <string name="missav_acc_popular">Popular</string>
+    <string name="missav_acc_ranking">Ranking</string>
+    <string name="missav_acc_tab_videos">Videos</string>
+    <string name="missav_acc_tab_actresses">Actresses</string>
+    <string name="missav_acc_login_required">Log in to see this page</string>
+    <string name="missav_acc_login_required_desc">This page belongs to your MissAV account.</string>
+    <string name="missav_acc_login_to_save">Log in to save videos, add them to playlists and more</string>
+    <string name="missav_acc_empty">Nothing here yet</string>
+    <string name="missav_acc_no_playlists">No playlists yet</string>
+    <string name="missav_acc_create_playlist">Create playlist</string>
+    <string name="missav_acc_playlist_name">Playlist name</string>
+    <string name="missav_acc_create">Create</string>
+    <string name="missav_acc_clear_history">Clear watch history</string>
+    <string name="missav_acc_clear_history_confirm">Delete your whole MissAV account watch history? This can\'t be undone.</string>
+    <string name="missav_acc_ok">OK</string>
+    <string name="missav_acc_save">Save</string>
+    <string name="missav_acc_saved_state">Saved</string>
+    <string name="missav_acc_add_playlist">Add to playlist</string>
+    <string name="missav_acc_magnet">Magnet</string>
+    <string name="missav_acc_magnet_copied">No app can open magnet links; copied to clipboard</string>
+    <string name="missav_acc_action_failed">Couldn\'t complete: %1$s</string>
+    <string name="missav_acc_tab_news">News</string>
+    <string name="missav_acc_news_empty">No news yet</string>
+</resources>

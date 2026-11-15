@@ -7,6 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings
 import com.yenaly.han1meviewer.RouVideo.data.model.RouVideoDetail
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAccountRepo
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNotSignedInException
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoRepo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +26,17 @@ sealed interface RouVideoDetailState {
     data class Error(val message: String) : RouVideoDetailState
 }
 
+/** What the signed-in viewer has done with the current video (favorite, follow, saved position). */
+data class RouVideoViewerUi(
+    val loaded: Boolean = false,
+    val favorite: Boolean = false,
+    val followed: Boolean = false,
+    val positionMs: Long = 0L,
+    val busy: Boolean = false,
+    /** The site refused an action because the session is no longer valid. */
+    val sessionExpired: Boolean = false,
+)
+
 class RouVideoVideoViewModel : ViewModel() {
 
     private companion object {
@@ -35,6 +49,11 @@ class RouVideoVideoViewModel : ViewModel() {
     private val _playerState = MutableStateFlow(RouVideoPlayerState())
     val playerState: StateFlow<RouVideoPlayerState> = _playerState.asStateFlow()
 
+    private val _viewer = MutableStateFlow(RouVideoViewerUi())
+    val viewer: StateFlow<RouVideoViewerUi> = _viewer.asStateFlow()
+
+    private var progressSent = false
+
     private var currentId = ""
     private var loadJob: Job? = null
 
@@ -42,6 +61,8 @@ class RouVideoVideoViewModel : ViewModel() {
         if (!force && currentId == id && _detailState.value is RouVideoDetailState.Success) return
         currentId = id
         loadJob?.cancel()
+        _viewer.value = RouVideoViewerUi()
+        progressSent = false
         _detailState.value = RouVideoDetailState.Loading
         _playerState.update {
             it.copy(url = "", quality = "", qualityOptions = emptyMap(), isReady = false, isPlaying = false)
@@ -60,6 +81,7 @@ class RouVideoVideoViewModel : ViewModel() {
                             isReady = true,
                         )
                     }
+                    loadViewer(detail.id, detail.series?.id)
                     if (RouVideoSettings.reportPlays) {
                         launch { RouVideoRepo.reportPlay(detail.id, detail.tags) }
                     }
@@ -68,6 +90,93 @@ class RouVideoVideoViewModel : ViewModel() {
                     Log.e(TAG, "detail failed", it)
                     _detailState.value =
                         RouVideoDetailState.Error(it.message ?: it.javaClass.simpleName)
+                }
+        }
+    }
+
+    /** Loads favorite / follow / saved position when an account is signed in. */
+    fun loadViewer(videoId: String = currentId, seriesId: String? = null) {
+        if (!RouVideoAuth.isLoggedIn) {
+            _viewer.value = RouVideoViewerUi()
+            return
+        }
+        val series = seriesId
+            ?: (_detailState.value as? RouVideoDetailState.Success)?.detail?.series?.id
+        viewModelScope.launch {
+            val state = RouVideoAccountRepo.viewerState(videoId)
+            val followed = if (series != null) {
+                RouVideoAccountRepo.followedSeriesIds().getOrNull()?.contains(series) == true
+            } else false
+            state.onSuccess { v ->
+                _viewer.value = RouVideoViewerUi(
+                    loaded = true,
+                    favorite = v.favorite,
+                    followed = followed,
+                    positionMs = (v.positionSec * 1000).toLong(),
+                )
+            }.onFailure { e ->
+                if (e is RouVideoNotSignedInException) {
+                    RouVideoAuth.onSessionRejected()
+                    _viewer.value = RouVideoViewerUi(sessionExpired = true)
+                }
+            }
+        }
+    }
+
+    fun toggleFavorite() {
+        val v = _viewer.value
+        if (!RouVideoAuth.isLoggedIn || v.busy || currentId.isEmpty()) return
+        _viewer.value = v.copy(favorite = !v.favorite, busy = true)
+        viewModelScope.launch {
+            RouVideoAccountRepo.toggleFavorite(currentId)
+                .onSuccess { _viewer.update { it.copy(busy = false) } }
+                .onFailure { e ->
+                    if (e is RouVideoNotSignedInException) RouVideoAuth.onSessionRejected()
+                    _viewer.update {
+                        it.copy(
+                            favorite = v.favorite,
+                            busy = false,
+                            sessionExpired = e is RouVideoNotSignedInException,
+                        )
+                    }
+                }
+        }
+    }
+
+    fun toggleFollow() {
+        val detail = (_detailState.value as? RouVideoDetailState.Success)?.detail ?: return
+        val series = detail.series ?: return
+        val v = _viewer.value
+        if (!RouVideoAuth.isLoggedIn || v.busy) return
+        val target = !v.followed
+        _viewer.value = v.copy(followed = target, busy = true)
+        viewModelScope.launch {
+            val episode = detail.episodes.firstOrNull { it.id == detail.id }?.episode
+            RouVideoAccountRepo.setFollow(series.id, target, if (target) episode else null)
+                .onSuccess { _viewer.update { it.copy(busy = false) } }
+                .onFailure { e ->
+                    if (e is RouVideoNotSignedInException) RouVideoAuth.onSessionRejected()
+                    _viewer.update {
+                        it.copy(
+                            followed = v.followed,
+                            busy = false,
+                            sessionExpired = e is RouVideoNotSignedInException,
+                        )
+                    }
+                }
+        }
+    }
+
+    /** Saves the playback position to the account (no-op when signed out). */
+    fun syncProgress(positionMs: Long, ended: Boolean) {
+        if (!RouVideoAuth.isLoggedIn || currentId.isEmpty() || positionMs <= 0L) return
+        val id = currentId
+        val first = !progressSent
+        progressSent = true
+        RouVideoAuth.appScope.launch {
+            RouVideoAccountRepo.saveProgress(id, positionMs / 1000.0, ended, first)
+                .onFailure { e ->
+                    if (e is RouVideoNotSignedInException) RouVideoAuth.onSessionRejected()
                 }
         }
     }

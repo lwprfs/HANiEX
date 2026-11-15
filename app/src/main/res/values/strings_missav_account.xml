@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="missav_acc_login_title">登入 MissAV</string>
+    <string name="missav_acc_login_field">電子郵件或使用者名稱</string>
+    <string name="missav_acc_password">密碼</string>
+    <string name="missav_acc_remember">記住我</string>
+    <string name="missav_acc_login_btn">登入</string>
+    <string name="missav_acc_register_web">註冊 / 忘記密碼（開啟網站）</string>
+    <string name="missav_acc_logged_in_as">已登入：%1$s</string>
+    <string name="missav_acc_logged_in">已登入</string>
+    <string name="missav_acc_not_logged_in">尚未登入</string>
+    <string name="missav_acc_account_title">我的帳號</string>
+    <string name="missav_acc_logout">登出</string>
+    <string name="missav_acc_saved">已儲存影片</string>
+    <string name="missav_acc_saved_actresses">已儲存女優</string>
+    <string name="missav_acc_playlists">播放清單</string>
+    <string name="missav_acc_site_history">帳號觀看紀錄</string>
+    <string name="missav_acc_local_history">本機觀看紀錄</string>
+    <string name="missav_acc_actresses">女優</string>
+    <string name="missav_acc_popular">熱門</string>
+    <string name="missav_acc_ranking">排行</string>
+    <string name="missav_acc_tab_videos">影片</string>
+    <string name="missav_acc_tab_actresses">女優</string>
+    <string name="missav_acc_login_required">請登入後查看此頁面</string>
+    <string name="missav_acc_login_required_desc">此頁面屬於你的 MissAV 帳號。</string>
+    <string name="missav_acc_login_to_save">登入後即可儲存影片、加入播放清單等</string>
+    <string name="missav_acc_empty">這裡還沒有內容</string>
+    <string name="missav_acc_no_playlists">還沒有播放清單</string>
+    <string name="missav_acc_create_playlist">建立播放清單</string>
+    <string name="missav_acc_playlist_name">播放清單名稱</string>
+    <string name="missav_acc_create">建立</string>
+    <string name="missav_acc_clear_history">清除觀看紀錄</string>
+    <string name="missav_acc_clear_history_confirm">要刪除整個 MissAV 帳號的觀看紀錄嗎？此操作無法復原。</string>
+    <string name="missav_acc_ok">確定</string>
+    <string name="missav_acc_save">儲存</string>
+    <string name="missav_acc_saved_state">已儲存</string>
+    <string name="missav_acc_add_playlist">加入播放清單</string>
+    <string name="missav_acc_magnet">磁力連結</string>
+    <string name="missav_acc_magnet_copied">沒有可開啟磁力連結的應用程式，已複製到剪貼簿</string>
+    <string name="missav_acc_action_failed">無法完成：%1$s</string>
+    <string name="missav_acc_tab_news">動態</string>
+    <string name="missav_acc_news_empty">還沒有動態</string>
+</resources>

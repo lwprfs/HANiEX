@@ -75,10 +75,14 @@ object MissAvNetwork {
             .addInterceptor(UrlLoggingInterceptor())
             .addInterceptor(MissAvCloudflareInterceptor(context))
             .addInterceptor { chain ->
-                val request = chain.request().newBuilder()
+                val original = chain.request()
+                val builder = original.newBuilder()
                     .addHeader("Origin", baseUrl)
                     .addHeader("Referer", baseUrl)
-                    .addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                if (original.header("Accept") == null) {
+                    builder.addHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+                }
+                val request = builder
                     .addHeader("Accept-Language", "en-US,en;q=0.9")
                     .addHeader("Cache-Control", "no-cache")
                     .build()

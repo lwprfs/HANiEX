@@ -65,7 +65,10 @@ object MissAvParser {
             MissAvVideoInfo(title = title, coverUrl = coverUrl, videoCode = videoCode,
                 jpTitle = "", genres = genres, directors = directors, makers = makers,
                 actresses = actresses, label = label, series = series,
-                description = description, videoUrl = videoUrl, relatedVideos = relatedVideos)
+                description = description, videoUrl = videoUrl, relatedVideos = relatedVideos,
+                itemKey = MissAvAccountParser.extractItemKey(body),
+                actressLinks = MissAvAccountParser.extractActressLinks(document),
+                magnetUrl = MissAvAccountParser.extractMagnet(document, body))
         )
     }
 

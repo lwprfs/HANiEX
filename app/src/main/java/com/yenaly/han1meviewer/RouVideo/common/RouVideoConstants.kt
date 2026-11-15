@@ -46,6 +46,13 @@ object RouVideoConstants {
         FRESH("fresh", R.string.rouvideo_series_filter_fresh),
     }
 
+    /** Sort orders of "My favorites" (`/favorite/{id}?order=`). */
+    enum class FavoriteOrder(val query: String, val labelRes: Int) {
+        SAVED("createdAt", R.string.rouvideo_fav_order_saved),
+        PUBLISHED("published", R.string.rouvideo_fav_order_published),
+        VIEWS("viewCount", R.string.rouvideo_fav_order_views),
+    }
+
     sealed interface TabSource {
         data class Library(val sort: Sort) : TabSource
         data class Tag(val tag: String, val sort: Sort = Sort.NEWEST) : TabSource
@@ -116,6 +123,57 @@ object RouVideoConstants {
         )
 
     fun categoriesUrl(): String = "$BASE_URL/cat"
+
+    // ---- account (login / library / profile) ----
+
+    /** Host of the Keycloak server that renders the sign-in and registration forms. */
+    const val AUTH_HOST = "auth.rou.one"
+
+    /** Starts the OpenID Connect flow; the site redirects to the sign-in form. */
+    fun signInUrl(callbackPath: String = "/home"): String =
+        "$BASE_URL/api/auth/signin" + query(listOf("callbackUrl" to callbackPath))
+
+    fun signOutUrl(callbackPath: String = "/home"): String =
+        "$BASE_URL/api/auth/signout" + query(listOf("callbackUrl" to callbackPath))
+
+    fun homeUrl(): String = "$BASE_URL/home"
+
+    fun favoritesUrl(userId: String, order: FavoriteOrder, page: Int): String =
+        BASE_URL + "/favorite/" + enc(userId) + query(
+            listOf(
+                "order" to if (order == FavoriteOrder.SAVED) "" else order.query,
+                "page" to if (page > 1) page.toString() else "",
+            )
+        )
+
+    fun historyPageUrl(userId: String, page: Int): String =
+        BASE_URL + "/history/" + enc(userId) + query(
+            listOf("page" to if (page > 1) page.toString() else "")
+        )
+
+    fun followsUrl(onlyNew: Boolean, page: Int): String =
+        "$BASE_URL/follows" + query(
+            listOf(
+                "filter" to if (onlyNew) "new" else "",
+                "page" to if (page > 1) page.toString() else "",
+            )
+        )
+
+    fun profileEditPageUrl(userId: String): String = "$BASE_URL/profile/${enc(userId)}/edit"
+
+    fun profileApiUrl(userId: String): String = "$BASE_URL/api/profile/${enc(userId)}"
+
+    fun viewerStateUrl(videoId: String): String = "$BASE_URL/api/v/$videoId"
+
+    fun favoriteApiUrl(videoId: String): String = "$BASE_URL/api/v/$videoId/favorite"
+
+    fun progressApiUrl(videoId: String): String = "$BASE_URL/api/v/$videoId/progress"
+
+    fun seriesFollowApiUrl(seriesId: String): String = "$BASE_URL/api/s/$seriesId/follow"
+
+    fun followIdsApiUrl(): String = "$BASE_URL/api/follows/ids"
+
+    fun followSeenApiUrl(): String = "$BASE_URL/api/follows/seen"
 
     fun videoPageUrl(id: String): String = "$BASE_URL/v/$id"
 

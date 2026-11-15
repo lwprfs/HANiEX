@@ -91,7 +91,7 @@ object RouVideoParser {
         }
 
     fun parseVideoList(html: String): RouVideoListPage {
-        val root = RouVideoLiteral.loaderObject(html)
+        val root = RouVideoLiteral.loaderObject(html, "videos")
         return RouVideoListPage(
             items = root.objList("videos").mapNotNull { videoCard(it) },
             pageNum = root.int("pageNum").coerceAtLeast(1),
@@ -102,7 +102,7 @@ object RouVideoParser {
     }
 
     fun parseSearch(html: String, series: Boolean): RouVideoListPage {
-        val root = RouVideoLiteral.loaderObject(html)
+        val root = RouVideoLiteral.loaderObject(html, "videos", "seriesList")
         val items = if (series) {
             root.objList("seriesList").mapNotNull { seriesCard(it) }
         } else {
@@ -117,7 +117,7 @@ object RouVideoParser {
     }
 
     fun parseSearchLanding(html: String): RouVideoSearchLanding {
-        val root = RouVideoLiteral.loaderObject(html)
+        val root = RouVideoLiteral.loaderObject(html, "hotSearches", "taxonomy", "trending")
         return RouVideoSearchLanding(
             hotSearches = root.strList("hotSearches").filter { it.isNotBlank() && it != "*" },
             cats = root.obj("taxonomy")?.objList("cats")?.mapNotNull { category(it) } ?: emptyList(),
@@ -126,7 +126,7 @@ object RouVideoParser {
     }
 
     fun parseSeriesList(html: String): RouVideoListPage {
-        val root = RouVideoLiteral.loaderObject(html)
+        val root = RouVideoLiteral.loaderObject(html, "list", "tagOptions")
         return RouVideoListPage(
             items = root.objList("list").mapNotNull { seriesCard(it) },
             pageNum = root.int("pageNum").coerceAtLeast(1),
@@ -137,7 +137,7 @@ object RouVideoParser {
     }
 
     fun parseTaxonomy(html: String): RouVideoTaxonomy {
-        val root = RouVideoLiteral.loaderObject(html)
+        val root = RouVideoLiteral.loaderObject(html, "taxonomy")
         val tax = root.obj("taxonomy") ?: error("Category data not found")
         val byParent = LinkedHashMap<String, List<RouVideoTagCount>>()
         tax.obj("byParent")?.forEach { (parent, value) ->
@@ -184,7 +184,7 @@ object RouVideoParser {
     }
 
     fun parseDetail(html: String, requestedId: String): RouVideoDetail? {
-        val root = RouVideoLiteral.loaderObject(html)
+        val root = RouVideoLiteral.loaderObject(html, "video")
         val video = root.obj("video") ?: return null
         val id = video.str("id") ?: requestedId
         val streamPath = RouVideoLiteral.streamPathFromEv(root.obj("ev"))

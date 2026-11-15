@@ -71,7 +71,18 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoFormat
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings
 import com.yenaly.han1meviewer.RouVideo.data.model.RouVideoDetail
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
+import com.yenaly.han1meviewer.RouVideo.ui.login.rememberRouVideoLoginLauncher
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Subscriptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import com.yenaly.han1meviewer.RouVideo.data.repository.RouVideoHistoryRepo
 import com.yenaly.han1meviewer.RouVideo.ui.home.RouVideoCardItem
 import com.yenaly.han1meviewer.SiteType
@@ -96,6 +107,7 @@ private const val RESUME_THRESHOLD_MS = 5_000L
 private const val RESUME_CLAMP_BACKOFF_MS = 5_000L
 private const val SAVE_INTERVAL_MS = 2_000L
 private const val DELTA_GUARD_MS = 10_000L
+private const val ACCOUNT_SYNC_INTERVAL_MS = 15_000L
 
 private tailrec fun Context.findHostActivity(): Activity? = when (this) {
     is Activity -> this
@@ -120,6 +132,7 @@ fun RouVideoVideoScreen(
     onBack: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
     onNavigateToTag: (String) -> Unit,
+    onOpenAccount: () -> Unit = {},
     resumePosition: Long = 0L,
     viewModel: RouVideoVideoViewModel = viewModel(),
 ) {
@@ -128,6 +141,9 @@ fun RouVideoVideoScreen(
 
     val detailState by viewModel.detailState.collectAsStateWithLifecycle()
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val auth by RouVideoAuth.state.collectAsStateWithLifecycle()
+    val viewer by viewModel.viewer.collectAsStateWithLifecycle()
+    val launchLogin = rememberRouVideoLoginLauncher { viewModel.loadViewer() }
 
     var pendingResume by remember { mutableLongStateOf(0L) }
     var resumeApplied by remember { mutableStateOf(false) }
@@ -267,6 +283,34 @@ fun RouVideoVideoScreen(
         }
     }
 
+    // Signed in: resume from the position saved on the account.
+    LaunchedEffect(viewer.loaded, viewer.positionMs, resumePosition) {
+        if (!viewer.loaded || resumePosition > 0L || resumeApplied) return@LaunchedEffect
+        val server = viewer.positionMs
+        if (server > RESUME_THRESHOLD_MS && server > pendingResume) {
+            pendingResume = server
+            if (playerConfig.resumePlayback) showResumeDialog = true
+        }
+    }
+
+    // Signed in: keep the account's watch progress up to date while playing.
+    LaunchedEffect(playerState.isPlaying, auth.loggedIn, detailState) {
+        if (!auth.loggedIn || detailState !is RouVideoDetailState.Success) return@LaunchedEffect
+        if (!playerState.isPlaying) {
+            viewModel.syncProgress(playerState.position, ended = false)
+            return@LaunchedEffect
+        }
+        while (isActive) {
+            delay(ACCOUNT_SYNC_INTERVAL_MS)
+            val total = playerState.duration
+            val pos = playerState.position
+            viewModel.syncProgress(pos, ended = total > 0L && pos >= total - RESUME_CLAMP_BACKOFF_MS)
+        }
+    }
+    DisposableEffect(auth.loggedIn) {
+        onDispose { viewModel.syncProgress(viewModel.playerState.value.position, ended = false) }
+    }
+
     fun enterFullscreen() {
         activity?.requestedOrientation = PlayerOrientation.fullscreenRequest()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -386,6 +430,11 @@ fun RouVideoVideoScreen(
                             playerUrl = playerState.url,
                             videoId = videoId,
                             viewModel = viewModel,
+                            loggedIn = auth.loggedIn,
+                            userName = auth.user?.displayName,
+                            viewer = viewer,
+                            onSignIn = { launchLogin(false) },
+                            onOpenAccount = onOpenAccount,
                             onNavigateToVideo = onNavigateToVideo,
                             onNavigateToTag = onNavigateToTag,
                         )
@@ -404,6 +453,11 @@ private fun RouVideoVideoContent(
     playerUrl: String,
     videoId: String,
     viewModel: RouVideoVideoViewModel,
+    loggedIn: Boolean,
+    userName: String?,
+    viewer: RouVideoViewerUi,
+    onSignIn: () -> Unit,
+    onOpenAccount: () -> Unit,
     onNavigateToVideo: (String) -> Unit,
     onNavigateToTag: (String) -> Unit,
 ) {
@@ -434,6 +488,19 @@ private fun RouVideoVideoContent(
                             viewModel.playerState.first { it.url.isNotBlank() }.url
                         }
                 },
+            )
+        }
+
+        item(key = "account") {
+            RouVideoAccountBar(
+                loggedIn = loggedIn,
+                userName = userName,
+                viewer = viewer,
+                hasSeries = info.series != null,
+                onSignIn = onSignIn,
+                onOpenAccount = onOpenAccount,
+                onToggleFavorite = viewModel::toggleFavorite,
+                onToggleFollow = viewModel::toggleFollow,
             )
         }
 
@@ -554,6 +621,99 @@ private fun RouVideoVideoContent(
                         Spacer(Modifier.weight(1f))
                     }
                 }
+            }
+        }
+    }
+}
+
+
+/** Sign-in status of the video page, with favorite / follow buttons for a signed-in viewer. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun RouVideoAccountBar(
+    loggedIn: Boolean,
+    userName: String?,
+    viewer: RouVideoViewerUi,
+    hasSeries: Boolean,
+    onSignIn: () -> Unit,
+    onOpenAccount: () -> Unit,
+    onToggleFavorite: () -> Unit,
+    onToggleFollow: () -> Unit,
+) {
+    Surface(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().clickable(onClick = if (loggedIn) onOpenAccount else onSignIn),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = null,
+                    tint = if (loggedIn) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = if (loggedIn) {
+                        stringResource(R.string.rouvideo_signed_in_as_short, userName ?: "RouVideo")
+                    } else {
+                        stringResource(R.string.rouvideo_login_to_favorite)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                if (!loggedIn) {
+                    Button(onClick = onSignIn) { Text(stringResource(R.string.login)) }
+                }
+            }
+            if (loggedIn) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    val favIcon = if (viewer.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+                    val favLabel = stringResource(
+                        if (viewer.favorite) R.string.rouvideo_favorited else R.string.rouvideo_favorite
+                    )
+                    if (viewer.favorite) {
+                        Button(onClick = onToggleFavorite, enabled = !viewer.busy) {
+                            Icon(favIcon, contentDescription = null)
+                            Text(favLabel, modifier = Modifier.padding(start = 6.dp))
+                        }
+                    } else {
+                        OutlinedButton(onClick = onToggleFavorite, enabled = !viewer.busy) {
+                            Icon(favIcon, contentDescription = null)
+                            Text(favLabel, modifier = Modifier.padding(start = 6.dp))
+                        }
+                    }
+                    if (hasSeries) {
+                        val followLabel = stringResource(
+                            if (viewer.followed) R.string.rouvideo_following else R.string.rouvideo_follow
+                        )
+                        if (viewer.followed) {
+                            Button(onClick = onToggleFollow, enabled = !viewer.busy) {
+                                Icon(Icons.Default.Subscriptions, contentDescription = null)
+                                Text(followLabel, modifier = Modifier.padding(start = 6.dp))
+                            }
+                        } else {
+                            OutlinedButton(onClick = onToggleFollow, enabled = !viewer.busy) {
+                                Icon(Icons.Default.Subscriptions, contentDescription = null)
+                                Text(followLabel, modifier = Modifier.padding(start = 6.dp))
+                            }
+                        }
+                    }
+                }
+                Text(
+                    text = stringResource(R.string.rouvideo_progress_synced),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

@@ -1,5 +1,10 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
+import com.yenaly.han1meviewer.MissAV.data.remote.MissAvAuth
+import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvAccountRoute
+import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvLoginRoute
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
+import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoAccountRoute
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -170,13 +175,26 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         }
     }
 
-    SiteType.MISSAV -> SiteLoginStatus(
-        title = context.getString(R.string.not_logged_in),
-        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.MISSAV)),
-        avatarUrl = null,
-        loggedIn = false,
-        onClick = null,
-    )
+    SiteType.MISSAV -> {
+        val user = MissAvAuth.currentUser()
+        if (user != null) {
+            SiteLoginStatus(
+                title = user.displayName.ifBlank { context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.MISSAV)) },
+                subtitle = context.getString(R.string.login_status_tap_account),
+                avatarUrl = null,
+                loggedIn = true,
+                onClick = { it.navigateSafely(MissAvAccountRoute) },
+            )
+        } else {
+            SiteLoginStatus(
+                title = context.getString(R.string.not_logged_in),
+                subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.MISSAV)),
+                avatarUrl = null,
+                loggedIn = false,
+                onClick = { it.navigateSafely(MissAvLoginRoute) },
+            )
+        }
+    }
 
     SiteType.HENTAIMAMA -> SiteLoginStatus(
         title = context.getString(R.string.not_logged_in),
@@ -194,13 +212,28 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         onClick = null,
     )
 
-    SiteType.ROUVIDEO -> SiteLoginStatus(
-        title = context.getString(R.string.not_logged_in),
-        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.ROUVIDEO)),
-        avatarUrl = null,
-        loggedIn = false,
-        onClick = null,
-    )
+    SiteType.ROUVIDEO -> {
+        RouVideoAuth.reload()
+        val auth = RouVideoAuth.state.value
+        if (auth.loggedIn) {
+            SiteLoginStatus(
+                title = auth.user?.displayName
+                    ?: context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.ROUVIDEO)),
+                subtitle = context.getString(R.string.login_status_tap_account),
+                avatarUrl = null,
+                loggedIn = true,
+                onClick = { it.navigateSafely(RouVideoAccountRoute) },
+            )
+        } else {
+            SiteLoginStatus(
+                title = context.getString(R.string.not_logged_in),
+                subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.ROUVIDEO)),
+                avatarUrl = null,
+                loggedIn = false,
+                onClick = { it.navigateSafely(RouVideoAccountRoute) },
+            )
+        }
+    }
 
     SiteType.XHAMSTER -> {
         val user = if (XHamsterAuth.isLoggedIn) XHamsterAuth.cachedUser() else null

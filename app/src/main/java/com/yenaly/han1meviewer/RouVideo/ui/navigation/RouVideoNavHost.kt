@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Translate
@@ -22,6 +24,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.RouVideo.ui.account.RouVideoAccountScreen
+import com.yenaly.han1meviewer.RouVideo.ui.account.RouVideoProfileEditScreen
+import com.yenaly.han1meviewer.RouVideo.ui.library.RouVideoLibraryScreen
+import com.yenaly.han1meviewer.RouVideo.ui.library.RouVideoLibraryTab
 import com.yenaly.han1meviewer.RouVideo.ui.categories.RouVideoCategoriesScreen
 import com.yenaly.han1meviewer.RouVideo.ui.history.RouVideoHistoryScreen
 import com.yenaly.han1meviewer.RouVideo.ui.home.RouVideoHomeScreen
@@ -73,6 +79,15 @@ object RouVideoHistoryRoute
 object RouVideoSettingsRoute
 
 @Serializable
+object RouVideoAccountRoute
+
+@Serializable
+object RouVideoProfileEditRoute
+
+@Serializable
+data class RouVideoLibraryRoute(val tab: String = RouVideoLibraryTab.FOLLOWS.name)
+
+@Serializable
 object RouVideoHostSettingsRoute
 
 @Serializable
@@ -116,6 +131,20 @@ fun RouVideoNavHost(
                 activity = activity,
                 site = SiteType.ROUVIDEO,
                 siteEntries = listOfNotNull(
+                    SiteSettingsEntry(
+                        key = "account",
+                        title = stringResource(R.string.rouvideo_account_title),
+                        subtitle = stringResource(R.string.rouvideo_account_summary),
+                        icon = Icons.Default.AccountCircle,
+                        onClick = { navController.navigateSafely(RouVideoAccountRoute) },
+                    ),
+                    SiteSettingsEntry(
+                        key = "library",
+                        title = stringResource(R.string.rouvideo_my_library),
+                        subtitle = stringResource(R.string.rouvideo_library_summary),
+                        icon = Icons.Default.VideoLibrary,
+                        onClick = { navController.navigateSafely(RouVideoLibraryRoute()) },
+                    ),
                     SiteSettingsEntry(
                         key = "host",
                         title = stringResource(R.string.drawer_host_mirror),
@@ -199,6 +228,7 @@ fun RouVideoNavHost(
                 onBack = { navController.popBackStackSafely() },
                 onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
                 onNavigateToTag = { tag -> navController.navigateSafely(RouVideoTagRoute(tag)) },
+                onOpenAccount = { navController.navigateSafely(RouVideoAccountRoute) },
             )
         }
 
@@ -232,6 +262,28 @@ fun RouVideoNavHost(
             site = SiteType.ROUVIDEO,
             config = { rouVideoHubConfig(navController, activity) },
         )
+
+        composable<RouVideoAccountRoute> {
+            RouVideoAccountScreen(
+                onBack = { navController.popBackStackSafely() },
+                onOpenLibrary = { tab -> navController.navigateSafely(RouVideoLibraryRoute(tab.name)) },
+                onEditProfile = { navController.navigateSafely(RouVideoProfileEditRoute) },
+            )
+        }
+
+        composable<RouVideoProfileEditRoute> {
+            RouVideoProfileEditScreen(onBack = { navController.popBackStackSafely() })
+        }
+
+        composable<RouVideoLibraryRoute> {
+            val route = it.toRoute<RouVideoLibraryRoute>()
+            RouVideoLibraryScreen(
+                initialTab = runCatching { RouVideoLibraryTab.valueOf(route.tab) }
+                    .getOrDefault(RouVideoLibraryTab.FOLLOWS),
+                onBack = { navController.popBackStackSafely() },
+                onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
+            )
+        }
 
         registerGlobalSettingsRoutes(
             activity = activity,

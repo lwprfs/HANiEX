@@ -2,12 +2,16 @@ package com.yenaly.han1meviewer.RouVideo.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.FavoriteOrder
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.SeriesFilter
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.SeriesSort
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.Sort
 import com.yenaly.han1meviewer.RouVideo.data.model.RouVideoCard
 import com.yenaly.han1meviewer.RouVideo.data.model.RouVideoListPage
 import com.yenaly.han1meviewer.RouVideo.data.model.RouVideoTagCount
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAccountRepo
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNotSignedInException
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoRepo
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +38,12 @@ sealed interface RouVideoSource {
         val filter: SeriesFilter,
         val sort: SeriesSort,
     ) : RouVideoSource
+
+    /** Signed-in: "My favorites" (`/favorite/{id}`). */
+    data class Favorites(val order: FavoriteOrder) : RouVideoSource
+
+    /** Signed-in: the account's watch history (`/history/{id}`). */
+    data object CloudHistory : RouVideoSource
 }
 
 data class RouVideoListUiState(
@@ -42,6 +52,8 @@ data class RouVideoListUiState(
     val isLoadingMore: Boolean = false,
     val hasNext: Boolean = false,
     val error: String? = null,
+    /** The list needs a signed-in account and there is none (or it expired). */
+    val needsSignIn: Boolean = false,
     val total: Int = 0,
 
     val siblings: List<RouVideoTagCount> = emptyList(),
@@ -67,9 +79,7 @@ class RouVideoListViewModel : ViewModel() {
         job = viewModelScope.launch {
             fetch(newSource, 1)
                 .onSuccess { applyFirst(it) }
-                .onFailure { e ->
-                    _state.value = RouVideoListUiState(error = e.message ?: e.javaClass.simpleName)
-                }
+                .onFailure { e -> _state.value = failureState(e) }
         }
     }
 
@@ -109,6 +119,22 @@ class RouVideoListViewModel : ViewModel() {
         )
     }
 
+    private fun failureState(e: Throwable): RouVideoListUiState {
+        val signedOut = e is RouVideoNotSignedInException
+        if (signedOut) RouVideoAuth.onSessionRejected()
+        return RouVideoListUiState(
+            error = e.message ?: e.javaClass.simpleName,
+            needsSignIn = signedOut,
+        )
+    }
+
+    private suspend fun accountId(): String? {
+        RouVideoAuth.user?.id?.let { return it }
+        if (!RouVideoAuth.isLoggedIn) return null
+        RouVideoAuth.refresh()
+        return RouVideoAuth.user?.id
+    }
+
     private suspend fun fetch(src: RouVideoSource, page: Int): Result<RouVideoListPage> =
         when (src) {
             is RouVideoSource.Library -> RouVideoRepo.library(src.sort, page)
@@ -117,5 +143,13 @@ class RouVideoListViewModel : ViewModel() {
                 RouVideoRepo.search(src.query, src.tag, src.sort, page, src.series)
 
             is RouVideoSource.Series -> RouVideoRepo.series(src.tag, src.filter, src.sort, page)
+
+            is RouVideoSource.Favorites -> accountId()
+                ?.let { RouVideoAccountRepo.favorites(it, src.order, page) }
+                ?: Result.failure(RouVideoNotSignedInException())
+
+            is RouVideoSource.CloudHistory -> accountId()
+                ?.let { RouVideoAccountRepo.history(it, page) }
+                ?: Result.failure(RouVideoNotSignedInException())
         }
 }

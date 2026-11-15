@@ -79,6 +79,11 @@
             android:launchMode="singleTask"/>
 
         <activity
+            android:name=".RouVideo.ui.login.RouVideoLoginActivity"
+            android:theme="@style/Theme.Hanime"
+            android:exported="false"/>
+
+        <activity
             android:name=".XHamster.cloudflare.XHamsterCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"

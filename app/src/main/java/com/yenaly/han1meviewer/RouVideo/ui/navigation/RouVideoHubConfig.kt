@@ -1,7 +1,12 @@
 package com.yenaly.han1meviewer.RouVideo.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Translate
@@ -11,6 +16,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoTranslation
+import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
+import com.yenaly.han1meviewer.RouVideo.ui.library.RouVideoLibraryTab
+import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
@@ -31,11 +39,61 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
             onClick = { navController.navigateSafely(RouVideoTranslationSettingsRoute) },
         )
     } else null
+    fun library(tab: RouVideoLibraryTab) = { navController.navigateSafely(RouVideoLibraryRoute(tab.name)) }
+    val follows = SiteHubEntry(
+        key = "follows",
+        title = stringResource(R.string.rouvideo_my_follows),
+        icon = Icons.Filled.Subscriptions,
+        onClick = library(RouVideoLibraryTab.FOLLOWS),
+    )
+    val loggedIn = RouVideoAuth.isLoggedIn
+    val accountEntries = buildList {
+        add(
+            SiteHubEntry(
+                key = "account",
+                title = stringResource(R.string.rouvideo_account_title),
+                subtitle = stringResource(R.string.login_status_tap_account),
+                icon = Icons.Filled.AccountCircle,
+                onClick = { navController.navigateSafely(RouVideoAccountRoute) },
+            ),
+        )
+        if (loggedIn) {
+            add(
+                SiteHubEntry(
+                    key = "edit_profile",
+                    title = stringResource(R.string.rouvideo_edit_profile),
+                    icon = Icons.Filled.Edit,
+                    onClick = { navController.navigateSafely(RouVideoProfileEditRoute) },
+                ),
+            )
+        }
+    }
     return standardSiteHubConfig(
         site = SiteType.ROUVIDEO,
         navController = navController,
         activity = activity,
         siteSettingsRoute = RouVideoSettingsHubRoute,
+        subscriptionSections = listOf(SiteHubSection(null, listOf(follows))),
+        extraLibrarySections = listOf(
+            SiteHubSection(
+                title = stringResource(R.string.site_drawer_section_account),
+                entries = listOf(
+                    follows,
+                    SiteHubEntry(
+                        key = "favorites",
+                        title = stringResource(R.string.rouvideo_my_favorites),
+                        icon = Icons.Filled.Favorite,
+                        onClick = library(RouVideoLibraryTab.FAVORITES),
+                    ),
+                    SiteHubEntry(
+                        key = "cloud_history",
+                        title = stringResource(R.string.rouvideo_cloud_history),
+                        icon = Icons.Filled.Cloud,
+                        onClick = library(RouVideoLibraryTab.HISTORY),
+                    ),
+                ),
+            ),
+        ),
         siteLibraryEntries = listOf(
             SiteHubEntry(
                 key = "categories",
@@ -52,7 +110,7 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
                 onClick = { navController.navigateSafely(RouVideoHistoryRoute) },
             ),
         ),
-        profileExtraQuickActions = listOfNotNull(translation),
+        profileExtraQuickActions = listOfNotNull(translation) + accountEntries,
         customizeEntries = listOfNotNull(
             SiteHubEntry(
                 key = "host",

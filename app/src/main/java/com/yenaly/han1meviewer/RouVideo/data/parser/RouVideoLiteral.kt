@@ -17,11 +17,31 @@ internal object RouVideoLiteral {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    fun loaderObject(html: String): JsonObject {
-        val match = LOADER_START.find(html)
-            ?: error("Page data not found (the site layout may have changed)")
-        val value = Reader(html, match.range.last).readValue()
-        return value as? JsonObject ?: error("Page data is not an object")
+    /**
+     * Returns the loader data of the page.
+     *
+     * When the visitor is signed in, the root route's loader data (the session) is serialised
+     * before the page's own data, so the first object is not always the page. [keys] lets the
+     * caller say which keys identify the page's object; the first object holding any of them wins.
+     * With no match it falls back to the first object (the old behaviour).
+     */
+    fun loaderObject(html: String, vararg keys: String): JsonObject {
+        val all = allLoaderObjects(html)
+        if (all.isEmpty()) error("Page data not found (the site layout may have changed)")
+        if (keys.isNotEmpty()) {
+            all.firstOrNull { obj -> keys.any { it in obj } }?.let { return it }
+        }
+        return all.first()
+    }
+
+    /** Every `l:$R[n]={...}` loader object found in the page, in document order. */
+    fun allLoaderObjects(html: String): List<JsonObject> {
+        val out = ArrayList<JsonObject>()
+        for (match in LOADER_START.findAll(html)) {
+            val value = runCatching { Reader(html, match.range.last).readValue() }.getOrNull()
+            (value as? JsonObject)?.let { out.add(it) }
+        }
+        return out
     }
 
     fun decodeEv(d: String, k: Int): String {

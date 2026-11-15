@@ -1,23 +1,121 @@
 package com.yenaly.han1meviewer.RouVideo.data.remote
 
 import android.util.Log
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.RouVideo.cloudflare.RouVideoCloudflareCookieManager
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
 class RouVideoCookieJar : CookieJar {
 
     companion object {
         private const val TAG = "RouVideoCookieJar"
+
+        /** Cookie that carries the signed-in session. */
+        const val SESSION_COOKIE = "rouv.session"
+
+        private const val KEY_PERSISTED = "rouvideo_auth_cookies"
+
         private val cookieStore = mutableMapOf<String, MutableMap<String, Cookie>>()
+
+        private val lock = Any()
+
+        private var restored = false
+
+        private fun isAuthCookie(name: String) = name.startsWith("rouv.")
+
+        private fun restoreIfNeeded() = synchronized(lock) {
+            if (restored) return@synchronized
+            restored = true
+            val raw = runCatching { Preferences.preferenceSp.getString(KEY_PERSISTED, null) }
+                .getOrNull().orEmpty()
+            if (raw.isEmpty()) return@synchronized
+            val now = System.currentTimeMillis()
+            raw.split('\n').forEach { line ->
+                val tab = line.indexOf('\t')
+                if (tab <= 0) return@forEach
+                val host = line.substring(0, tab)
+                val header = line.substring(tab + 1)
+                val url = runCatching { HttpUrl.Builder().scheme("https").host(host).build() }
+                    .getOrNull() ?: return@forEach
+                val cookie = Cookie.parse(url, header) ?: return@forEach
+                if (cookie.expiresAt <= now) return@forEach
+                cookieStore.getOrPut(host) { mutableMapOf() }[cookie.name] = cookie
+            }
+        }
+
+        private fun persist() = synchronized(lock) {
+            val lines = cookieStore.flatMap { (host, bucket) ->
+                bucket.values.filter { isAuthCookie(it.name) }.map { "$host\t$it" }
+            }
+            runCatching {
+                Preferences.preferenceSp.edit()
+                    .putString(KEY_PERSISTED, lines.joinToString("\n"))
+                    .apply()
+            }
+        }
+
+        /** True when a sign-in session cookie is stored for [host]. */
+        fun hasSession(host: String): Boolean {
+            restoreIfNeeded()
+            val now = System.currentTimeMillis()
+            return synchronized(lock) {
+                cookieStore[host]?.get(SESSION_COOKIE)?.let { it.expiresAt > now } == true
+            }
+        }
+
+        /**
+         * Copies cookies from a `Cookie:` header string (what the WebView hands out) into the
+         * jar for [host]. Used right after a successful sign-in in the WebView.
+         */
+        fun importHeader(host: String, header: String) {
+            restoreIfNeeded()
+            val cookies = ArrayList<Cookie>()
+            header.split(';').forEach { part ->
+                val eq = part.indexOf('=')
+                if (eq <= 0) return@forEach
+                val name = part.substring(0, eq).trim()
+                val value = part.substring(eq + 1).trim()
+                if (name.isEmpty()) return@forEach
+                if (name == "cf_clearance") {
+                    RouVideoCloudflareCookieManager.saveCloudflareCookie(host, "$name=$value")
+                    return@forEach
+                }
+                val cookie = runCatching {
+                    Cookie.Builder().name(name).value(value).hostOnlyDomain(host).path("/").build()
+                }.getOrNull() ?: return@forEach
+                cookies.add(cookie)
+            }
+            synchronized(lock) {
+                val bucket = cookieStore.getOrPut(host) { mutableMapOf() }
+                cookies.forEach { bucket[it.name] = it }
+            }
+            persist()
+        }
+
+        /** Forgets the sign-in cookies for every host (keeps Cloudflare clearance). */
+        fun clearAuth() {
+            restoreIfNeeded()
+            synchronized(lock) {
+                cookieStore.values.forEach { bucket ->
+                    bucket.keys.removeAll { isAuthCookie(it) }
+                }
+            }
+            persist()
+        }
     }
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
+        restoreIfNeeded()
         val host = url.host
         val cookies = mutableListOf<Cookie>()
 
-        cookieStore[host]?.values?.let { cookies.addAll(it) }
+        synchronized(lock) {
+            val now = System.currentTimeMillis()
+            cookieStore[host]?.values?.filter { it.expiresAt > now }?.let { cookies.addAll(it) }
+        }
         cookies.addAll(RouVideoCloudflareCookieManager.getOkHttpCookies(host))
 
         val deduped = cookies.distinctBy { it.name to it.domain }
@@ -26,16 +124,27 @@ class RouVideoCookieJar : CookieJar {
     }
 
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+        restoreIfNeeded()
         val host = url.host
         val now = System.currentTimeMillis()
 
-        val valid = cookies.filter {
+        val (valid, expired) = cookies.partition {
             it.expiresAt == Long.MAX_VALUE || it.expiresAt > now
         }
-        if (valid.isEmpty()) return
+        if (valid.isEmpty() && expired.isEmpty()) return
 
-        val bucket = cookieStore.getOrPut(host) { mutableMapOf() }
-        valid.forEach { bucket[it.name] = it }
+        var authChanged = false
+        synchronized(lock) {
+            val bucket = cookieStore.getOrPut(host) { mutableMapOf() }
+            valid.forEach {
+                bucket[it.name] = it
+                if (isAuthCookie(it.name)) authChanged = true
+            }
+            expired.forEach {
+                if (bucket.remove(it.name) != null && isAuthCookie(it.name)) authChanged = true
+            }
+        }
+        if (authChanged) persist()
 
         valid.firstOrNull { it.name == "cf_clearance" }?.let { cf ->
             RouVideoCloudflareCookieManager.saveCloudflareCookie(
@@ -45,11 +154,12 @@ class RouVideoCookieJar : CookieJar {
             Log.d(TAG, "Saved cf_clearance from response for $host")
         }
 
-        Log.d(TAG, "saveFromResponse: $host, merged=${valid.size}, total=${bucket.size}")
+        Log.d(TAG, "saveFromResponse: $host, merged=${valid.size}, removed=${expired.size}")
     }
 
     fun clearCookies() {
-        cookieStore.clear()
+        synchronized(lock) { cookieStore.clear() }
+        persist()
         RouVideoCloudflareCookieManager.clearAllCloudflareCookies()
         Log.d(TAG, "Cleared all RouVideo cookies")
     }
