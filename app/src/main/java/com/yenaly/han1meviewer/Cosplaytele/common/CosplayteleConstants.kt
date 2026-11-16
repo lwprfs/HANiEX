@@ -74,10 +74,21 @@ object CosplayteleConstants {
     fun pageUrl(path: String): String {
         val clean = path.trim()
         if (clean.startsWith("http://") || clean.startsWith("https://")) return clean
+        val q = clean.indexOf('?')
+        if (q >= 0) {
+            val base = clean.substring(0, q).trim('/')
+            val query = clean.substring(q)
+            return BASE_URL + (if (base.isEmpty()) "/" else "/$base/") + query
+        }
         return if (clean.isEmpty() || clean == "/") "$BASE_URL/" else BASE_URL + "/" + clean.trim('/') + "/"
     }
 
     fun pagedUrl(path: String, page: Int): String {
+        if (path.contains("?s=")) {
+            val raw = path.substringAfter("?s=").substringBefore('&')
+            val query = runCatching { java.net.URLDecoder.decode(raw, "UTF-8") }.getOrDefault(raw)
+            return searchUrl(query, page)
+        }
         val first = pageUrl(path)
         return if (page <= 1) first else first.trimEnd('/') + "/page/$page/"
     }

@@ -8,6 +8,10 @@ import com.yenaly.han1meviewer.Cosplaytele.data.model.CosplayteleListPage
 import com.yenaly.han1meviewer.Cosplaytele.data.model.CosplayteleTerm
 import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleRepo
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +42,7 @@ class CosplayteleListViewModel : ViewModel() {
     private var nextUrl: String? = null
     private var page = 1
     private var job: Job? = null
+    private var thumbJob: Job? = null
 
     fun setSource(newSource: CosplayteleSource, force: Boolean = false) {
         if (!force && newSource == source && (_state.value.cards.isNotEmpty() || _state.value.terms.isNotEmpty())) return
@@ -45,6 +50,7 @@ class CosplayteleListViewModel : ViewModel() {
         page = 1
         nextUrl = null
         job?.cancel()
+        thumbJob?.cancel()
         _state.value = CosplayteleListUiState(isLoading = true)
         job = viewModelScope.launch {
             fetch(newSource, firstUrl(newSource))
@@ -90,6 +96,49 @@ class CosplayteleListViewModel : ViewModel() {
             terms = result.terms,
             hasNext = result.hasNext && result.cards.isNotEmpty(),
         )
+        fillMissingThumbs(result.terms)
+    }
+
+    /**
+     * Some term pages (Top search in particular) are plain text links with no picture. For those
+     * tiles, use the cover of the first post on the term's own page, a few at a time, and update
+     * the grid as each one arrives.
+     */
+    private fun fillMissingThumbs(terms: List<CosplayteleTerm>) {
+        thumbJob?.cancel()
+        val missing = terms.filter { it.thumbUrl.isBlank() }
+        if (missing.isEmpty()) return
+        thumbJob = viewModelScope.launch {
+            val cached = missing.mapNotNull { t -> thumbCache[t.path]?.let { t.path to it } }.toMap()
+            if (cached.isNotEmpty()) applyThumbs(cached)
+            val todo = missing.filter { it.path !in cached }
+            val gate = Semaphore(3)
+            coroutineScope {
+                for (term in todo) {
+                    launch {
+                        gate.withPermit {
+                            val cover = CosplayteleRepo.page(
+                                CosplayteleConstants.pageUrl(term.path), collectTerms = false,
+                            ).getOrNull()?.cards?.firstOrNull { it.coverUrl.isNotBlank() }?.coverUrl
+                            if (!cover.isNullOrBlank()) {
+                                thumbCache[term.path] = cover
+                                applyThumbs(mapOf(term.path to cover))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun applyThumbs(byPath: Map<String, String>) {
+        _state.update { old ->
+            old.copy(
+                terms = old.terms.map { t ->
+                    if (t.thumbUrl.isNotBlank()) t else byPath[t.path]?.let { t.copy(thumbUrl = it) } ?: t
+                },
+            )
+        }
     }
 
     private fun firstUrl(src: CosplayteleSource): String = when (src) {
@@ -104,4 +153,8 @@ class CosplayteleListViewModel : ViewModel() {
 
     private suspend fun fetch(src: CosplayteleSource, url: String): Result<CosplayteleListPage> =
         CosplayteleRepo.page(url, collectTerms = (src as? CosplayteleSource.Page)?.collectTerms == true)
+
+    private companion object {
+        val thumbCache = ConcurrentHashMap<String, String>()
+    }
 }

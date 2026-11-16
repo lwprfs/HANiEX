@@ -22,6 +22,11 @@ object CosplayteleParser {
     private val EMBED_REGEX = Regex("""https?:\\?/\\?/cossora\.stream\\?/embed\\?/[0-9a-fA-F-]{8,}""")
     private val TRAILING_INDEX_REGEX = Regex("""[-_]?\d+(_result)?$""")
 
+    private val IMG_ATTRS = listOf(
+        "data-src", "data-lazy-src", "data-original", "data-orig-file", "data-pagespeed-lazy-src",
+        "data-full-url", "data-large-file", "src",
+    )
+    private val BG_ATTRS = listOf("data-bg", "data-bg-src", "data-background", "data-background-image")
     private val IMAGE_EXT = setOf("jpg", "jpeg", "png", "webp", "gif", "avif")
     private val VIDEO_EXT = setOf("mp4", "m3u8", "webm", "mov", "m4v")
     private val GENERIC_TITLES = setOf("result image", "read more", "continue reading", "more", "view")
@@ -60,6 +65,10 @@ object CosplayteleParser {
         val url = absUrl.toHttpUrlOrNull() ?: return null
         if (!isSiteHost(url.host)) return null
         val path = url.encodedPath
+        val searchQuery = url.queryParameter("s")
+        if (!searchQuery.isNullOrBlank() && path.trim('/').isEmpty()) {
+            return CosplayteleTermKind.SEARCH to searchQuery.trim()
+        }
         if (path.contains("/page/")) return null
         val single = path.trim('/')
         if (!single.contains('/') && CosplayteleConstants.isPeriodSlug(single)) {
@@ -88,7 +97,7 @@ object CosplayteleParser {
     }
 
     private fun imgUrl(img: Element): String {
-        for (name in listOf("data-src", "data-lazy-src", "data-original", "data-orig-file", "src")) {
+        for (name in IMG_ATTRS) {
             val v = img.absUrl(name)
             if (v.isNotBlank() && !v.startsWith("data:")) return v
         }
@@ -181,13 +190,18 @@ object CosplayteleParser {
         return out
     }
 
+    private fun termKey(a: Element): String? =
+        termOf(a.absUrl("href"))?.let { "${it.first.name}:${it.second}" }
+
+    private fun termKeysIn(el: Element): Set<String> =
+        el.select("a[href]").mapNotNull { termKey(it) }.toSet()
+
     private fun termContainer(anchor: Element, root: Element): Element {
         var best: Element = anchor
         var cur: Element? = anchor.parent()
         var depth = 0
-        while (cur != null && cur !== root && depth < 3) {
-            val terms = cur.select("a[href]").mapNotNull { termOf(it.absUrl("href")) }.toSet()
-            if (terms.size > 1) break
+        while (cur != null && cur !== root && depth < 6) {
+            if (termKeysIn(cur).size > 1) break
             best = cur
             cur = cur.parent()
             depth++
@@ -195,31 +209,141 @@ object CosplayteleParser {
         return best
     }
 
+    private fun looseBackground(el: Element): String {
+        for (name in BG_ATTRS) {
+            val v = el.absUrl(name)
+            if (v.isNotBlank() && !v.startsWith("data:")) return v
+        }
+        return backgroundUrl(el)
+    }
+
+    private fun usableThumb(url: String): Boolean =
+        url.isNotBlank() && !url.startsWith("data:") &&
+                IMAGE_JUNK.none { url.contains(it, ignoreCase = true) } &&
+                (isImageUrl(url) || url.contains("/uploads/"))
+
+    /** First usable picture inside [scope]: <img>, <picture><source>, data-bg / inline background. */
+    private fun thumbIn(scope: Element): String {
+        val candidates = scope.select(
+            "img, source[srcset], source[data-srcset], [data-bg], [data-bg-src], " +
+                    "[data-background], [data-background-image], [style*=background]"
+        )
+        for (el in candidates) {
+            val url = when (el.tagName()) {
+                "img" -> imgUrl(el)
+                "source" -> firstSrcsetUrl(el.attr("srcset").ifBlank { el.attr("data-srcset") }, el)
+                else -> looseBackground(el)
+            }
+            if (usableThumb(url)) return url
+        }
+        return ""
+    }
+
+    /** Walks up from [anchor] while the ancestor still holds only this one term, looking for a picture. */
+    private fun tileThumb(anchor: Element, root: Element): String {
+        var cur: Element? = anchor
+        var depth = 0
+        while (cur != null && cur !== root && depth < 8) {
+            if (termKeysIn(cur).size > 1) break
+            val t = thumbIn(cur)
+            if (t.isNotBlank()) return t
+            cur = cur.parent()
+            depth++
+        }
+        return ""
+    }
+
+    /**
+     * Fallback for layouts where the picture is a sibling of the link rather than inside the same
+     * wrapper: pair each term with the picture directly before it (else directly after it) in
+     * document order. Pictures that sit in a post link or a widget are ignored so the sidebar's
+     * "popular posts" thumbnails never get attached to a term.
+     */
+    private fun positionalThumbs(root: Element): Map<String, String> {
+        val events = ArrayList<Pair<String?, String?>>()
+        for (el in root.allElements) {
+            when (el.tagName()) {
+                "a" -> termKey(el)?.let { events += it to null }
+                "img" -> {
+                    val url = imgUrl(el)
+                    if (usableThumb(url) && !isRelatedContext(el)) events += null to url
+                }
+            }
+        }
+        val termIdx = events.indices.filter { events[it].first != null }
+        val out = HashMap<String, String>()
+        val used = HashSet<String>()
+        for ((n, idx) in termIdx.withIndex()) {
+            val key = events[idx].first!!
+            if (out.containsKey(key)) continue
+            val prevIdx = if (n > 0) termIdx[n - 1] else -1
+            val nextIdx = if (n + 1 < termIdx.size) termIdx[n + 1] else events.size
+            val before = (prevIdx + 1 until idx).mapNotNull { events[it].second }
+            val after = (idx + 1 until nextIdx).mapNotNull { events[it].second }
+            val pick = before.lastOrNull { it !in used } ?: after.firstOrNull { it !in used }
+            if (pick != null) {
+                out[key] = pick
+                used += pick
+            }
+        }
+        return out
+    }
+
+    private class TermAcc(
+        val kind: CosplayteleTermKind,
+        val slug: String,
+        var name: String,
+        var nameIsFallback: Boolean,
+        var thumb: String,
+        var count: Int,
+    )
+
     private fun parseTerms(root: Element): List<CosplayteleTerm> {
-        val out = LinkedHashMap<String, CosplayteleTerm>()
+        val acc = LinkedHashMap<String, TermAcc>()
         for (a in root.select("a[href]")) {
             val (kind, slug) = termOf(a.absUrl("href")) ?: continue
             val key = "${kind.name}:$slug"
             val container = termContainer(a, root)
             var name = clean(a.text())
-            if (name.isBlank()) name = clean(a.attr("title"))
-            if (name.isBlank()) name = clean(container.selectFirst("h1, h2, h3, h4, h5, h6, .title, span")?.text())
-            if (name.isBlank()) name = clean(container.selectFirst("img")?.attr("alt"))
+            if (!usableTitle(name)) name = clean(a.attr("title"))
+            if (!usableTitle(name)) {
+                name = clean(container.selectFirst("h1, h2, h3, h4, h5, h6, .title, .box-text, span")?.text())
+            }
+            if (!usableTitle(name)) name = clean(container.selectFirst("img")?.attr("alt"))
+            if (!usableTitle(name)) name = ""
             var count = 0
             TERM_COUNT_REGEX.find(name)?.let { m ->
                 count = m.groupValues[2].replace(",", "").replace(".", "").toIntOrNull() ?: 0
                 name = clean(m.groupValues[1])
             }
-            if (name.isBlank()) name = slug.replace('-', ' ').replaceFirstChar { it.uppercase() }
-            val thumb = pickCover(container)
-            val existing = out[key]
-            if (existing == null) {
-                out[key] = CosplayteleTerm(kind, slug, name, thumb, count)
-            } else if (existing.thumbUrl.isBlank() && thumb.isNotBlank()) {
-                out[key] = existing.copy(thumbUrl = thumb, count = if (existing.count > 0) existing.count else count)
+            val fallback = name.isBlank()
+            if (fallback) {
+                name = if (kind == CosplayteleTermKind.SEARCH) slug
+                else slug.replace('-', ' ').replaceFirstChar { it.uppercase() }
+            }
+            val thumb = tileThumb(a, root)
+            val cur = acc[key]
+            if (cur == null) {
+                acc[key] = TermAcc(kind, slug, name, fallback, thumb, count)
+            } else {
+                if (cur.thumb.isBlank() && thumb.isNotBlank()) cur.thumb = thumb
+                if (cur.nameIsFallback && !fallback) {
+                    cur.name = name
+                    cur.nameIsFallback = false
+                }
+                if (cur.count == 0) cur.count = count
             }
         }
-        return out.values.toList()
+        if (acc.values.any { it.thumb.isBlank() }) {
+            val positional = positionalThumbs(root)
+            val taken = acc.values.mapNotNull { it.thumb.takeIf { t -> t.isNotBlank() } }.toSet()
+            for ((key, term) in acc) {
+                if (term.thumb.isNotBlank()) continue
+                val url = positional[key] ?: continue
+                if (url !in taken) term.thumb = url
+            }
+        }
+        return acc.values.map { CosplayteleTerm(it.kind, it.slug, it.name, it.thumb, it.count) }
     }
 
     private fun nextUrl(doc: Document): String? {
@@ -235,8 +359,10 @@ object CosplayteleParser {
         val doc = Jsoup.parse(html, CosplayteleConstants.BASE_URL)
         val next = nextUrl(doc)
         val root = contentRoot(doc)
-        val cards = parseCards(root).distinctBy { it.slug }
         val terms = if (collectTerms) parseTerms(root) else emptyList()
+        // Term pages (Best cosplayer / Top search / Categories) are tile grids; the posts the theme
+        // lists around them (popular posts, footer widgets) are not part of the page.
+        val cards = if (terms.isNotEmpty()) emptyList() else parseCards(root).distinctBy { it.slug }
         return CosplayteleListPage(cards = cards, terms = terms, nextUrl = next)
     }
 
@@ -337,7 +463,7 @@ object CosplayteleParser {
         val tags = LinkedHashMap<String, CosplayteleTerm>()
         for (a in article.select("a[href]")) {
             val (kind, slug) = termOf(a.absUrl("href")) ?: continue
-            if (kind == CosplayteleTermKind.PAGE) continue
+            if (kind == CosplayteleTermKind.PAGE || kind == CosplayteleTermKind.SEARCH) continue
             if (isRelatedContext(a)) continue
             var name = clean(a.text())
             if (name.isBlank()) name = clean(a.attr("title"))

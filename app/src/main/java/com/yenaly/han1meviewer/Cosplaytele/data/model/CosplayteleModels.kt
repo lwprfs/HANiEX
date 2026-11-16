@@ -9,7 +9,7 @@ data class CosplayteleCard(
     val videoCount: Int = 0,
 )
 
-enum class CosplayteleTermKind { CATEGORY, TAG, PAGE }
+enum class CosplayteleTermKind { CATEGORY, TAG, PAGE, SEARCH }
 
 data class CosplayteleTerm(
     val kind: CosplayteleTermKind,
@@ -23,6 +23,7 @@ data class CosplayteleTerm(
             CosplayteleTermKind.CATEGORY -> "/category/$slug/"
             CosplayteleTermKind.TAG -> "/tag/$slug/"
             CosplayteleTermKind.PAGE -> "/$slug/"
+            CosplayteleTermKind.SEARCH -> "/?s=" + java.net.URLEncoder.encode(slug, "UTF-8")
         }
 }
 
