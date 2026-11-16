@@ -61,26 +61,27 @@ fun missAvHubConfig(navController: NavHostController, activity: MainActivity): S
         icon = Icons.Filled.Favorite,
         onClick = { navController.navigateSafely(MissAvSavedRoute(1)) },
     )
+    val savedVideos = SiteHubEntry(
+        key = "saved_videos",
+        title = stringResource(R.string.missav_acc_saved),
+        icon = Icons.Filled.Bookmark,
+        onClick = { navController.navigateSafely(MissAvSavedRoute(0)) },
+    )
+    val actresses = SiteHubEntry(
+        key = "actresses",
+        title = stringResource(R.string.missav_acc_actresses),
+        icon = Icons.Filled.Face,
+        onClick = { navController.navigateSafely(MissAvActressesRoute) },
+    )
     return SiteHubConfig(
         site = SiteType.MISSAV,
-        subscriptionSections = listOf(SiteHubSection(null, listOf(savedActresses))),
+        subscriptionSections = listOf(
+            SiteHubSection(null, listOf(savedVideos, savedActresses, actresses)),
+        ),
         librarySections = listOf(
             SiteHubSection(
                 title = stringResource(R.string.site_drawer_section_account),
                 entries = listOf(
-                    SiteHubEntry(
-                        key = "saved_videos",
-                        title = stringResource(R.string.missav_acc_saved),
-                        icon = Icons.Filled.Bookmark,
-                        onClick = { navController.navigateSafely(MissAvSavedRoute(0)) },
-                    ),
-                    savedActresses,
-                    SiteHubEntry(
-                        key = "actresses",
-                        title = stringResource(R.string.missav_acc_actresses),
-                        icon = Icons.Filled.Face,
-                        onClick = { navController.navigateSafely(MissAvActressesRoute) },
-                    ),
                     SiteHubEntry(
                         key = "playlists",
                         title = stringResource(R.string.missav_acc_playlists),

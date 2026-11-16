@@ -61,6 +61,10 @@ object CosplayteleParser {
         if (!isSiteHost(url.host)) return null
         val path = url.encodedPath
         if (path.contains("/page/")) return null
+        val single = path.trim('/')
+        if (!single.contains('/') && CosplayteleConstants.isPeriodSlug(single)) {
+            return CosplayteleTermKind.PAGE to single
+        }
         val match = TERM_PATH_REGEX.find(path) ?: return null
         val kind =
             if (match.groupValues[1] == "category") CosplayteleTermKind.CATEGORY else CosplayteleTermKind.TAG
@@ -333,6 +337,7 @@ object CosplayteleParser {
         val tags = LinkedHashMap<String, CosplayteleTerm>()
         for (a in article.select("a[href]")) {
             val (kind, slug) = termOf(a.absUrl("href")) ?: continue
+            if (kind == CosplayteleTermKind.PAGE) continue
             if (isRelatedContext(a)) continue
             var name = clean(a.text())
             if (name.isBlank()) name = clean(a.attr("title"))

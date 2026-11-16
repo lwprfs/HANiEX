@@ -222,3 +222,85 @@ private fun tabLabel(param: String): String = when (
     FapFolderSearchTab.USERS -> applicationContext.getString(R.string.fap_users)
     FapFolderSearchTab.COMMUNITIES -> applicationContext.getString(R.string.fap_communities)
 }
+
+/**
+ * Search history shown inside the search page while the query box is empty
+ * (replaces the old standalone "Search history" entry in the Library).
+ */
+@Composable
+internal fun FapFolderSearchHistoryPanel(
+    onRunSearch: (query: String, isHashtag: Boolean, tab: String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var entries by remember { mutableStateOf(FapFolderSearchHelper.load()) }
+    var showClearDialog by remember { mutableStateOf(false) }
+
+    if (entries.isEmpty()) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.fap_type_a_query_and_press_enter),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        return
+    }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 4.dp, bottom = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        item(key = "history_header") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.fap_search_history_title),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { showClearDialog = true }) {
+                    Text(stringResource(R.string.site_clear))
+                }
+            }
+        }
+        items(entries, key = { "${it.query}|${it.isHashtag}|${it.tab}|${it.createdAt}" }) { entry ->
+            HistoryRow(
+                entry = entry,
+                onClick = { onRunSearch(entry.query, entry.isHashtag, entry.tab) },
+                onDelete = {
+                    FapFolderSearchHelper.remove(entry)
+                    entries = FapFolderSearchHelper.load()
+                },
+            )
+        }
+    }
+
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text(stringResource(R.string.fap_clear_search_history)) },
+            text = { Text(stringResource(R.string.fap_every_locally_saved_fapfolder_search_w)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showClearDialog = false
+                    FapFolderSearchHelper.clear()
+                    entries = emptyList()
+                }) {
+                    Text(stringResource(R.string.site_clear), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
+    }
+}

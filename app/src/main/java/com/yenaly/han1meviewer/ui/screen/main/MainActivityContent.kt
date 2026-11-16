@@ -9,6 +9,8 @@ import com.yenaly.han1meviewer.ui.navigation.site.SiteLibraryRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteSubscriptionRoute
 import com.yenaly.han1meviewer.ui.navigation.site.navigateSiteTopLevel
+import com.yenaly.han1meviewer.ui.screen.site.subscriptionTabIcon
+import com.yenaly.han1meviewer.ui.screen.site.subscriptionTabTitle
 import com.yenaly.han1meviewer.ui.screen.site.supportsSubscriptions
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Home
@@ -172,8 +174,8 @@ fun MainActivityContent(
                 add(
                     SiteNavItem(
                         key = "subscription",
-                        icon = Icons.Filled.Subscriptions,
-                        title = stringResource(R.string.my_subscribe),
+                        icon = currentSite.subscriptionTabIcon(),
+                        title = currentSite.subscriptionTabTitle(),
                         selected = atSubscription,
                         onClick = { composeNavController.navigateSiteTopLevel(SiteSubscriptionRoute) },
                     ),

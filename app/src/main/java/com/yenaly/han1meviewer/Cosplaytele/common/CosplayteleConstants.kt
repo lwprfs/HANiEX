@@ -36,22 +36,40 @@ object CosplayteleConstants {
         val collectTerms: Boolean get() = kind == SectionKind.TERMS
     }
 
+    val SECTION_LATEST = Section("latest", "Latest", "")
+    val SECTION_24H = Section("24h", "Top 24 hours", "/24-hours/")
+    val SECTION_3D = Section("3d", "Top 3 days", "/3-days/")
+    val SECTION_7D = Section("7d", "Top 7 days", "/7-days/")
+    val SECTION_VIDEOS = Section("video", "Videos", "/category/video-cosplayyy/")
+    val SECTION_TOP_SEARCH = Section("top-search", "Top search", "/top-search/", SectionKind.TERMS)
+    val SECTION_BEST = Section("best", "Best cosplayer", "/best-cosplayer/", SectionKind.TERMS)
+    val SECTION_EXPLORE = Section("explore", "Categories", "/explore-categories/", SectionKind.TERMS)
+
+    /** Chips on the Home screen. Browse-style pages live in the "Pages" tab instead. */
     val HOME_SECTIONS: List<Section> = listOf(
-        Section("latest", "Latest", ""),
-        Section("24h", "Top 24 hours", "/24-hours/"),
-        Section("video", "Videos", "/category/video-cosplayyy/"),
-        Section("top-search", "Top search", "/top-search/", SectionKind.TERMS),
-        Section("best", "Best cosplayer", "/best-cosplayer/", SectionKind.TERMS),
-        Section("explore", "Categories", "/explore-categories/", SectionKind.TERMS),
+        SECTION_LATEST,
+        SECTION_7D,
+        SECTION_VIDEOS,
         Section("cosplay", "Cosplay", "/category/cosplay/"),
         Section("nude", "Nude", "/category/cosplay-nudee/"),
         Section("ero", "Ero", "/category/cosplay-ero/"),
     )
 
-    val SECTION_24H = HOME_SECTIONS[1]
-    val SECTION_TOP_SEARCH = HOME_SECTIONS[3]
-    val SECTION_BEST = HOME_SECTIONS[4]
-    val SECTION_EXPLORE = HOME_SECTIONS[5]
+    /** Chips on the "Pages" tab. Each one is shown as a thumbnail + title grid. */
+    val PAGES_SECTIONS: List<Section> = listOf(
+        SECTION_BEST,
+        SECTION_TOP_SEARCH,
+        SECTION_EXPLORE,
+    )
+
+    /**
+     * Ranking pages such as `/24-hours/`, `/3-days/`, `/7-days/` or `/1-day/`.
+     * They are post lists, not posts, even though they look like a single-segment slug.
+     */
+    private val PERIOD_SLUG_REGEX =
+        Regex("""^(top-)?\d+-(hours?|days?|weeks?|months?)$""", RegexOption.IGNORE_CASE)
+
+    fun isPeriodSlug(slug: String): Boolean = PERIOD_SLUG_REGEX.matches(slug.trim('/'))
 
     fun pageUrl(path: String): String {
         val clean = path.trim()
@@ -98,7 +116,7 @@ object CosplayteleConstants {
         val segments = path.split('/').filter { it.isNotBlank() }
         if (segments.size != 1) return null
         val seg = segments[0].lowercase()
-        if (seg in RESERVED_SEGMENTS || seg.contains('.')) return null
+        if (seg in RESERVED_SEGMENTS || seg.contains('.') || isPeriodSlug(seg)) return null
         return segments[0]
     }
 }

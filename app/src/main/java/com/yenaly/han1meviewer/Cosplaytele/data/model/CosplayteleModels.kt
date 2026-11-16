@@ -9,7 +9,7 @@ data class CosplayteleCard(
     val videoCount: Int = 0,
 )
 
-enum class CosplayteleTermKind { CATEGORY, TAG }
+enum class CosplayteleTermKind { CATEGORY, TAG, PAGE }
 
 data class CosplayteleTerm(
     val kind: CosplayteleTermKind,
@@ -19,7 +19,11 @@ data class CosplayteleTerm(
     val count: Int = 0,
 ) {
     val path: String
-        get() = if (kind == CosplayteleTermKind.CATEGORY) "/category/$slug/" else "/tag/$slug/"
+        get() = when (kind) {
+            CosplayteleTermKind.CATEGORY -> "/category/$slug/"
+            CosplayteleTermKind.TAG -> "/tag/$slug/"
+            CosplayteleTermKind.PAGE -> "/$slug/"
+        }
 }
 
 data class CosplayteleListPage(

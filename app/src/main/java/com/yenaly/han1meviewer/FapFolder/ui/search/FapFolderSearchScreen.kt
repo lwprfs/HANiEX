@@ -315,7 +315,18 @@ fun FapFolderSearchScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 when {
                     uiState.rawQuery.isBlank() && uiState.items.isEmpty() -> {
-                        SearchHint(message = stringResource(R.string.fap_type_a_query_and_press_enter))
+                        FapFolderSearchHistoryPanel(
+                            onRunSearch = { query, isHashtag, tab ->
+                                if (isHashtag) {
+                                    onOpenHashtag(query)
+                                } else {
+                                    queryText = query
+                                    viewModel.initialise(query, false, tab)
+                                    viewModel.saveHistory()
+                                    keyboard?.hide()
+                                }
+                            },
+                        )
                     }
 
                     uiState.isLoading && uiState.items.isEmpty() -> {

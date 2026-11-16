@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.yenaly.han1meviewer.Cosplaytele.ui.browse.CosplayteleBrowseScreen
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -22,6 +23,12 @@ fun cosplayteleHubConfig(navController: NavHostController, activity: MainActivit
         navController = navController,
         activity = activity,
         siteSettingsRoute = CosplayteleSettingsHubRoute,
+        subscriptionContent = {
+            CosplayteleBrowseScreen(
+                onNavigateToPost = { navController.navigateSafely(CosplaytelePostRoute(it)) },
+                onNavigateToTerm = { navController.navigateSafely(it.toListRoute()) },
+            )
+        },
         siteLibraryEntries = listOf(
             SiteHubEntry(
                 key = "history",

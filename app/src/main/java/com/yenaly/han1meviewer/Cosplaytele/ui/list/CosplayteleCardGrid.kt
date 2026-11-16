@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.Cosplaytele.ui.list
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -111,10 +113,12 @@ fun CosplayteleCardGrid(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         if (header != null) item(span = { GridItemSpan(maxLineSpan) }) { header() }
-        if (state.terms.isNotEmpty()) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                CosplayteleTermBlock(state.terms, onOpenTerm)
-            }
+        items(state.terms, key = { "term_${it.kind.name}_${it.slug}" }) { term ->
+            CosplayteleTermCard(
+                term = term,
+                onClick = { onOpenTerm(term) },
+                imageLoader = imageLoader,
+            )
         }
         items(state.cards, key = { it.slug }) { card ->
             val (photos, video) = cosplayteleBadges(card)
@@ -139,64 +143,69 @@ fun CosplayteleCardGrid(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Category / tag / cosplayer tile: same thumbnail + title card as a post, with the post count as a
+ * badge. Terms without a thumbnail get a tinted tile with the initial so the grid stays uniform.
+ */
 @Composable
-private fun CosplayteleTermBlock(terms: List<CosplayteleTerm>, onOpenTerm: (CosplayteleTerm) -> Unit) {
-    val withThumbs = terms.filter { it.thumbUrl.isNotBlank() }
-    val plain = terms.filter { it.thumbUrl.isBlank() }
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-        if (withThumbs.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+fun CosplayteleTermCard(
+    term: CosplayteleTerm,
+    onClick: () -> Unit,
+    imageLoader: coil3.ImageLoader,
+    modifier: Modifier = Modifier,
+) {
+    val badge = if (term.count > 0) stringResource(R.string.cosplaytele_badge_posts, term.count) else null
+    if (term.thumbUrl.isNotBlank()) {
+        SiteVideoCard(
+            title = term.name,
+            coverUrl = term.thumbUrl,
+            onClick = onClick,
+            modifier = modifier,
+            aspectRatio = COSPLAYTELE_CARD_RATIO,
+            topEndBadge = badge,
+            imageLoader = imageLoader,
+            contentScale = ContentScale.Crop,
+        )
+        return
+    }
+    Surface(
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(COSPLAYTELE_CARD_RATIO)
+                    .background(MaterialTheme.colorScheme.secondaryContainer),
+                contentAlignment = Alignment.Center,
             ) {
-                withThumbs.forEach { term -> CosplayteleTermAvatar(term, onOpenTerm) }
-            }
-        }
-        if (plain.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                plain.forEach { term ->
-                    AssistChip(
-                        onClick = { onOpenTerm(term) },
-                        label = {
-                            Text(if (term.count > 0) "${term.name} (${term.count})" else term.name)
-                        },
-                    )
+                Text(
+                    text = term.name.trim().take(1).uppercase(),
+                    style = MaterialTheme.typography.displayMedium,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer,
+                )
+                if (badge != null) {
+                    Surface(
+                        modifier = Modifier.align(Alignment.TopEnd).padding(6.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.scrim.copy(alpha = 0.6f),
+                    ) {
+                        Text(
+                            text = badge,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = androidx.compose.ui.graphics.Color.White,
+                        )
+                    }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun CosplayteleTermAvatar(term: CosplayteleTerm, onOpenTerm: (CosplayteleTerm) -> Unit) {
-    val imageLoader = CosplayteleImageLoader.get(LocalContext.current)
-    Surface(
-        shape = RoundedCornerShape(40.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = Modifier.clip(RoundedCornerShape(40.dp)).clickable { onOpenTerm(term) },
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(end = 14.dp),
-        ) {
-            RetryableImage(
-                model = term.thumbUrl,
-                contentDescription = term.name,
-                modifier = Modifier.size(40.dp).clip(CircleShape),
-                placeholder = painterResource(R.drawable.h_chan_loading),
-                error = painterResource(R.drawable.h_chan_load_failed),
-                contentScale = ContentScale.Crop,
-                imageLoader = imageLoader,
-            )
             Text(
                 text = term.name,
-                modifier = Modifier.padding(start = 8.dp).widthIn(max = 150.dp),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
                 style = MaterialTheme.typography.labelLarge,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
         }

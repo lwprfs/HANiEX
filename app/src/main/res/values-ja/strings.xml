@@ -1059,4 +1059,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="player_replay">再生し直す</string>
     <string name="not_wifi_tips">モバイルネットワークに接続しています。再生にはデータ通信が発生します</string>
     <string name="not_wifi_confirm">再生する</string>
+    <string name="hub_pages_title">ページ</string>
+    <string name="cosplaytele_badge_posts">%d 件</string>
+    <string name="rouvideo_online_watch_history">オンライン視聴履歴</string>
 </resources>

@@ -73,11 +73,10 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
         navController = navController,
         activity = activity,
         siteSettingsRoute = RouVideoSettingsHubRoute,
-        subscriptionSections = listOf(SiteHubSection(null, listOf(follows))),
-        extraLibrarySections = listOf(
+        subscriptionSections = listOf(
             SiteHubSection(
-                title = stringResource(R.string.site_drawer_section_account),
-                entries = listOf(
+                null,
+                listOf(
                     follows,
                     SiteHubEntry(
                         key = "favorites",
@@ -87,7 +86,7 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
                     ),
                     SiteHubEntry(
                         key = "cloud_history",
-                        title = stringResource(R.string.rouvideo_cloud_history),
+                        title = stringResource(R.string.rouvideo_online_watch_history),
                         icon = Icons.Filled.Cloud,
                         onClick = library(RouVideoLibraryTab.HISTORY),
                     ),

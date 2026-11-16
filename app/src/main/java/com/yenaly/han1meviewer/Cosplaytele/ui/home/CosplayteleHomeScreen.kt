@@ -43,7 +43,8 @@ fun CosplayteleHomeScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var selectedKey by rememberSaveable { mutableStateOf(CosplayteleConstants.HOME_SECTIONS.first().key) }
-    val selected = CosplayteleConstants.HOME_SECTIONS.first { it.key == selectedKey }
+    val selected = CosplayteleConstants.HOME_SECTIONS.firstOrNull { it.key == selectedKey }
+        ?: CosplayteleConstants.HOME_SECTIONS.first()
 
     LaunchedEffect(selectedKey) {
         viewModel.setSource(CosplayteleSource.Page(selected.path, selected.collectTerms))

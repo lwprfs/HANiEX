@@ -1098,4 +1098,7 @@
     <string name="player_replay">重播</string>
     <string name="not_wifi_tips">當前使用行動網路，繼續播放將消耗流量</string>
     <string name="not_wifi_confirm">繼續播放</string>
+    <string name="hub_pages_title">頁面</string>
+    <string name="cosplaytele_badge_posts">%d 篇</string>
+    <string name="rouvideo_online_watch_history">線上觀看紀錄</string>
 </resources>

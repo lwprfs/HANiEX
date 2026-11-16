@@ -56,6 +56,12 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
                 icon = Icons.Filled.Star,
                 onClick = { navController.navigateSafely(XHamsterStarsRoute) },
             ),
+            SiteHubEntry(
+                key = "categories",
+                title = stringResource(R.string.xhamster_categories),
+                icon = Icons.Filled.Category,
+                onClick = { navController.navigateSafely(XHamsterCategoriesRoute) },
+            ),
         ),
     )
     val libraryEntries = listOf(
@@ -64,13 +70,6 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         SiteHubEntry("watch_later", stringResource(R.string.watch_later), Icons.Filled.Schedule, library("WATCH_LATER")),
         SiteHubEntry("liked", stringResource(R.string.xhamster_liked_videos), Icons.Filled.ThumbUp, library("LIKED")),
         SiteHubEntry("collections", stringResource(R.string.xhamster_playlists), Icons.Filled.PlaylistAdd, library("PLAYLISTS")),
-        SiteHubEntry("subscriptions", stringResource(R.string.xhamster_subscriptions_feed), Icons.Filled.Subscriptions, library("SUBSCRIPTIONS")),
-        SiteHubEntry(
-            key = "categories",
-            title = stringResource(R.string.xhamster_categories),
-            icon = Icons.Filled.Category,
-            onClick = { navController.navigateSafely(XHamsterCategoriesRoute) },
-        ),
     )
     val accountSettings = SiteHubEntry(
         key = "account_settings",

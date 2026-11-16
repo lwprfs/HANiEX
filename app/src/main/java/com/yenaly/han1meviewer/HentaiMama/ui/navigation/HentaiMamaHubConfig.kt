@@ -16,6 +16,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
+import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
@@ -26,6 +27,27 @@ fun hentaiMamaHubConfig(navController: NavHostController, activity: MainActivity
         navController = navController,
         activity = activity,
         siteSettingsRoute = HentaiMamaSettingsHubRoute,
+        subscriptionSections = listOf(
+            SiteHubSection(
+                title = null,
+                entries = listOf(
+                    SiteHubEntry(
+                        key = "recent_episodes",
+                        title = stringResource(R.string.drawer_recent_episodes),
+                        subtitle = stringResource(R.string.hm_recent_episodes_subtitle),
+                        icon = Icons.Filled.VideoLibrary,
+                        onClick = { navController.navigateSafely(HentaiMamaRecentEpisodesRoute) },
+                    ),
+                    SiteHubEntry(
+                        key = "upcoming",
+                        title = stringResource(R.string.drawer_upcoming),
+                        subtitle = stringResource(R.string.hm_upcoming_subtitle),
+                        icon = Icons.Filled.CalendarMonth,
+                        onClick = { navController.navigateSafely(HentaiMamaUpcomingRoute) },
+                    ),
+                ),
+            ),
+        ),
         siteLibraryEntries = listOf(
             SiteHubEntry(
                 key = "playlists",
@@ -40,20 +62,6 @@ fun hentaiMamaHubConfig(navController: NavHostController, activity: MainActivity
                 subtitle = stringResource(R.string.hm_history_subtitle),
                 icon = Icons.Filled.History,
                 onClick = { navController.navigateSafely(HentaiMamaHistoryRoute) },
-            ),
-            SiteHubEntry(
-                key = "recent_episodes",
-                title = stringResource(R.string.drawer_recent_episodes),
-                subtitle = stringResource(R.string.hm_recent_episodes_subtitle),
-                icon = Icons.Filled.VideoLibrary,
-                onClick = { navController.navigateSafely(HentaiMamaRecentEpisodesRoute) },
-            ),
-            SiteHubEntry(
-                key = "upcoming",
-                title = stringResource(R.string.drawer_upcoming),
-                subtitle = stringResource(R.string.hm_upcoming_subtitle),
-                icon = Icons.Filled.CalendarMonth,
-                onClick = { navController.navigateSafely(HentaiMamaUpcomingRoute) },
             ),
         ),
         customizeEntries = listOf(

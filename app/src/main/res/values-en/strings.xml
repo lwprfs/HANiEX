@@ -1057,4 +1057,7 @@ Recommendations are as follows:\n
     <string name="player_replay">Replay</string>
     <string name="not_wifi_tips">You are on a mobile network. Streaming may use cellular data.</string>
     <string name="not_wifi_confirm">Continue</string>
+    <string name="hub_pages_title">Pages</string>
+    <string name="cosplaytele_badge_posts">%d posts</string>
+    <string name="rouvideo_online_watch_history">Online watch history</string>
 </resources>

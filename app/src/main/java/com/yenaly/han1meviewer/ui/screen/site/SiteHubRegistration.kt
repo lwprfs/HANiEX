@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
@@ -22,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -57,9 +60,24 @@ import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDial
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
 
 fun SiteType.supportsSubscriptions(): Boolean = when (this) {
-    SiteType.MISSAV, SiteType.FAPFOLDER, SiteType.ROUVIDEO, SiteType.XHAMSTER -> true
+    SiteType.MISSAV, SiteType.FAPFOLDER, SiteType.ROUVIDEO, SiteType.XHAMSTER,
+    SiteType.COSPLAYTELE, SiteType.HENTAIMAMA -> true
     else -> false
 }
+
+/** Sites whose second bottom tab is a "Pages" browser (not a followed/saved list). */
+fun SiteType.usesPagesTab(): Boolean = when (this) {
+    SiteType.COSPLAYTELE, SiteType.HENTAIMAMA -> true
+    else -> false
+}
+
+@Composable
+fun SiteType.subscriptionTabTitle(): String =
+    if (usesPagesTab()) stringResource(R.string.hub_pages_title)
+    else stringResource(R.string.my_subscribe)
+
+fun SiteType.subscriptionTabIcon(): ImageVector =
+    if (usesPagesTab()) Icons.Filled.Dashboard else Icons.Filled.Subscriptions
 
 data class SiteHubConfig(
     val site: SiteType,
@@ -69,6 +87,8 @@ data class SiteHubConfig(
     val profileSections: List<SiteHubSection>,
     val customizeSections: List<SiteHubSection>,
     val customizeExtras: (LazyListScope.() -> Unit)? = null,
+    /** When set, replaces the default list/card screen of the subscription ("Pages") tab. */
+    val subscriptionContent: (@Composable () -> Unit)? = null,
 )
 
 class CommonProfileEntries(
@@ -183,11 +203,17 @@ fun NavGraphBuilder.registerSiteHubRoutes(
 ) {
     if (site.supportsSubscriptions()) {
         composable<SiteSubscriptionRoute> {
-            SiteHubListScreen(
-                title = stringResource(R.string.my_subscribe),
-                sections = config().subscriptionSections,
-                onBack = null,
-            )
+            val c = config()
+            val custom = c.subscriptionContent
+            if (custom != null) {
+                custom()
+            } else {
+                SiteHubListScreen(
+                    title = site.subscriptionTabTitle(),
+                    sections = c.subscriptionSections,
+                    onBack = null,
+                )
+            }
         }
     }
     composable<SiteLibraryRoute> {
@@ -377,6 +403,7 @@ fun standardSiteHubConfig(
     includeDownloads: Boolean = true,
     includeImageDownloads: Boolean = site in IMAGE_DOWNLOAD_SITES,
     customizeExtras: (LazyListScope.() -> Unit)? = null,
+    subscriptionContent: (@Composable () -> Unit)? = null,
 ): SiteHubConfig {
     val common = rememberCommonProfileEntries(navController, activity, site, siteSettingsRoute)
     val label = CrossSiteNavigator.siteLabel(site)
@@ -407,5 +434,6 @@ fun standardSiteHubConfig(
         profileSections = emptyList(),
         customizeSections = listOf(SiteHubSection(null, customizeEntries)),
         customizeExtras = customizeExtras,
+        subscriptionContent = subscriptionContent,
     )
 }

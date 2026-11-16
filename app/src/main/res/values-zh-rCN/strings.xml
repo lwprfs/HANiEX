@@ -1059,4 +1059,7 @@
     <string name="player_replay">重新播放</string>
     <string name="not_wifi_tips">当前使用移动网络，继续播放将消耗流量</string>
     <string name="not_wifi_confirm">继续播放</string>
+    <string name="hub_pages_title">页面</string>
+    <string name="cosplaytele_badge_posts">%d 篇</string>
+    <string name="rouvideo_online_watch_history">在线观看记录</string>
 </resources>
