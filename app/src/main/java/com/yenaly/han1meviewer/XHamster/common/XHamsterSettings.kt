@@ -36,6 +36,15 @@ object XHamsterSettings {
         set(value) {
             sp.edit().putBoolean(KEY_SHOW_TOP_CREATORS, value).apply()
         }
+
+    /** Resets the customization only; the signed-in session is left untouched. */
+    fun resetToDefaults() {
+        sp.edit()
+            .remove(KEY_QUALITY)
+            .remove(KEY_SHOW_CHANNELS)
+            .remove(KEY_SHOW_TOP_CREATORS)
+            .apply()
+    }
 }
 
 @Composable

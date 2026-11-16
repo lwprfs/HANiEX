@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.HentaiMama.ui.home
 
 import android.app.Application
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.screen.SiteHomeSettings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,8 +50,9 @@ class HentaiMamaViewModel(application: Application) : AndroidViewModel(applicati
 
     companion object {
         private const val TAG = "HentaiMamaVM"
-        private const val CATEGORY_TTL_MS = 5 * 60 * 1000L
     }
+
+    private fun categoryTtlMs(): Long = SiteHomeSettings.cacheTtlMs(SiteType.HENTAIMAMA)
 
     private val _homeState =
         MutableStateFlow<WebsiteState<com.yenaly.han1meviewer.HentaiMama.data.model.HentaiMamaHomePage>>(
@@ -199,7 +202,7 @@ class HentaiMamaViewModel(application: Application) : AndroidViewModel(applicati
         if (!force && existing != null && existing.isActive) return
         if (!force) {
             val last: Long = categoryFetchedAt[key] ?: 0L
-            if (System.currentTimeMillis() - last < CATEGORY_TTL_MS) return
+            if (System.currentTimeMillis() - last < categoryTtlMs()) return
         }
 
         if (force) existing?.cancel()

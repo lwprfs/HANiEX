@@ -90,7 +90,7 @@ fun XHamsterHomeScreen(
                                 key = { it.key },
                                 horizontalPadding = 0.dp,
                             )
-                            XHamsterDiscoverStrips(discover)
+                            XHamsterDiscoverStrips(discover, showFeed = false)
                         }
                     },
                     state = state,

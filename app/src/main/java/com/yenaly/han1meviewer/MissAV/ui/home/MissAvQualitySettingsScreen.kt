@@ -28,6 +28,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.util.applicationContext
@@ -80,39 +83,19 @@ fun MissAvQualitySettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Text(
+            SettingHintText(
                 text = stringResource(R.string.missav_resolution_a_missav_video_starts_in),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.missav_lock_resolution),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = stringResource(R.string.missav_always_play_the_selected_resolution_an),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = locked,
-                    onCheckedChange = {
-                        locked = it
-                        Preferences.missAvLockQuality = it
-                    },
-                )
-            }
+            SettingSwitchItem(
+                title = stringResource(R.string.missav_lock_resolution),
+                summary = stringResource(R.string.missav_always_play_the_selected_resolution_an),
+                checked = locked,
+                onCheckedChange = {
+                    locked = it
+                    Preferences.missAvLockQuality = it
+                },
+            )
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(MissAvQualityRepo.options, key = { it.value }) { option ->
                     QualityOptionRow(
@@ -135,32 +118,10 @@ private fun QualityOptionRow(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = option.label,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = option.description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (selected) {
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
+    SettingRadioItem(
+        title = option.label,
+        summary = option.description,
+        selected = selected,
+        onClick = onClick,
+    )
 }

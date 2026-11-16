@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.MissAV.ui.home
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.SettingActionItem
+import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import androidx.compose.foundation.background
@@ -110,11 +112,9 @@ fun MissAvHomeSettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Text(
+            SettingHintText(
                 text = stringResource(R.string.missav_tap_a_row_to_toggle_visibility),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
 
             if (categories.isEmpty()) {
@@ -131,13 +131,7 @@ fun MissAvHomeSettingsScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = 12.dp,
-                        end = 12.dp,
-                        top = 4.dp,
-                        bottom = 96.dp,
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    contentPadding = PaddingValues(bottom = 96.dp),
                 ) {
                     itemsIndexed(
                         items = categories,
@@ -250,94 +244,55 @@ private fun CategoryEditorRow(
     onMoveDown: () -> Unit,
 ) {
     val visible = !category.hidden
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp)),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+    val sortSuffix = category.sort?.let { " " + stringResource(R.string.site_sort, it) }.orEmpty()
+    SettingActionItem(
+        title = category.title,
+        summary = category.genrePath + sortSuffix + "\nkey: ${category.key}",
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = category.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = category.genrePath +
-                            (category.sort?.let { " " + stringResource(R.string.site_sort, it) } ?: ""),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = "key: ${category.key}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                IconButton(
-                    onClick = onMoveUp,
-                    enabled = !isFirst,
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(
-                        Icons.Default.ArrowUpward,
-                        contentDescription = stringResource(R.string.site_move_up),
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-                IconButton(
-                    onClick = onMoveDown,
-                    enabled = !isLast,
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(
-                        Icons.Default.ArrowDownward,
-                        contentDescription = stringResource(R.string.site_move_down),
-                        modifier = Modifier.size(18.dp),
-                    )
-                }
-            }
-
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             IconButton(
-                onClick = onEdit,
-                modifier = Modifier.size(36.dp),
+                onClick = onMoveUp,
+                enabled = !isFirst,
+                modifier = Modifier.size(32.dp),
             ) {
                 Icon(
-                    Icons.Default.Edit,
-                    contentDescription = stringResource(R.string.edit),
+                    Icons.Default.ArrowUpward,
+                    contentDescription = stringResource(R.string.site_move_up),
                     modifier = Modifier.size(18.dp),
                 )
             }
-
             IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(36.dp),
+                onClick = onMoveDown,
+                enabled = !isLast,
+                modifier = Modifier.size(32.dp),
             ) {
                 Icon(
-                    Icons.Default.Delete,
-                    contentDescription = stringResource(R.string.delete),
-                    tint = MaterialTheme.colorScheme.error,
+                    Icons.Default.ArrowDownward,
+                    contentDescription = stringResource(R.string.site_move_down),
                     modifier = Modifier.size(18.dp),
                 )
             }
-
-            Switch(
-                checked = visible,
-                onCheckedChange = onToggleHidden,
+        }
+        IconButton(onClick = onEdit, modifier = Modifier.size(36.dp)) {
+            Icon(
+                Icons.Default.Edit,
+                contentDescription = stringResource(R.string.edit),
+                modifier = Modifier.size(18.dp),
             )
         }
+        IconButton(onClick = onDelete, modifier = Modifier.size(36.dp)) {
+            Icon(
+                Icons.Default.Delete,
+                contentDescription = stringResource(R.string.delete),
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        Switch(
+            checked = visible,
+            onCheckedChange = onToggleHidden,
+            modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+        )
     }
 }
 

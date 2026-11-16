@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.OnAir.ui.search
 
 import android.app.Application
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.screen.SiteSearchSettings
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
@@ -36,7 +38,9 @@ class OnAirSearchViewModel(
     private val _date = MutableStateFlow(savedStateHandle.get<String>("date") ?: OnAirConstants.DATE_ANY)
     val date = _date.asStateFlow()
 
-    private val _sort = MutableStateFlow(savedStateHandle.get<String>("sort") ?: OnAirConstants.SORT_NEWEST)
+    private val _sort = MutableStateFlow(
+        savedStateHandle.get<String>("sort") ?: configuredDefaultSort()
+    )
     val sort = _sort.asStateFlow()
 
     private val _tagFilter = MutableStateFlow(savedStateHandle.get<String?>("tag"))
@@ -106,7 +110,7 @@ class OnAirSearchViewModel(
         _field.value = OnAirConstants.SEARCH_FIELD_TITLE
         _length.value = OnAirConstants.LENGTH_ANY
         _date.value = OnAirConstants.DATE_ANY
-        _sort.value = OnAirConstants.SORT_NEWEST
+        _sort.value = configuredDefaultSort()
         _tagFilter.value = null
         _results.value = emptyList()
         _state.value = null
@@ -118,7 +122,7 @@ class OnAirSearchViewModel(
         savedStateHandle["field"] = OnAirConstants.SEARCH_FIELD_TITLE
         savedStateHandle["length"] = OnAirConstants.LENGTH_ANY
         savedStateHandle["date"] = OnAirConstants.DATE_ANY
-        savedStateHandle["sort"] = OnAirConstants.SORT_NEWEST
+        savedStateHandle["sort"] = configuredDefaultSort()
         savedStateHandle["tag"] = null
     }
 
@@ -266,4 +270,7 @@ class OnAirSearchViewModel(
             )
         )
     }
+
+    private fun configuredDefaultSort(): String =
+        SiteSearchSettings.defaultSort(SiteType.ONAIR) ?: OnAirConstants.SORT_NEWEST
 }

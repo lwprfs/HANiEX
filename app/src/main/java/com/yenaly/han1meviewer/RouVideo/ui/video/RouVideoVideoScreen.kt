@@ -636,80 +636,56 @@ private fun RouVideoAccountBar(
     onToggleFavorite: () -> Unit,
     onToggleFollow: () -> Unit,
 ) {
-    Surface(
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+    if (!loggedIn) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().clickable(onClick = if (loggedIn) onOpenAccount else onSignIn),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Icon(
-                    Icons.Default.AccountCircle,
-                    contentDescription = null,
-                    tint = if (loggedIn) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    text = if (loggedIn) {
-                        stringResource(R.string.rouvideo_signed_in_as_short, userName ?: "RouVideo")
-                    } else {
-                        stringResource(R.string.rouvideo_login_to_favorite)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                if (!loggedIn) {
-                    Button(onClick = onSignIn) { Text(stringResource(R.string.login)) }
-                }
+            Text(
+                text = stringResource(R.string.rouvideo_login_to_favorite),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Button(onClick = onSignIn) { Text(stringResource(R.string.login)) }
+        }
+        return
+    }
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        val favIcon = if (viewer.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
+        val favLabel = stringResource(
+            if (viewer.favorite) R.string.rouvideo_favorited else R.string.rouvideo_favorite
+        )
+        if (viewer.favorite) {
+            Button(onClick = onToggleFavorite, enabled = !viewer.busy) {
+                Icon(favIcon, contentDescription = null)
+                Text(favLabel, modifier = Modifier.padding(start = 6.dp))
             }
-            if (loggedIn) {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    val favIcon = if (viewer.favorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder
-                    val favLabel = stringResource(
-                        if (viewer.favorite) R.string.rouvideo_favorited else R.string.rouvideo_favorite
-                    )
-                    if (viewer.favorite) {
-                        Button(onClick = onToggleFavorite, enabled = !viewer.busy) {
-                            Icon(favIcon, contentDescription = null)
-                            Text(favLabel, modifier = Modifier.padding(start = 6.dp))
-                        }
-                    } else {
-                        OutlinedButton(onClick = onToggleFavorite, enabled = !viewer.busy) {
-                            Icon(favIcon, contentDescription = null)
-                            Text(favLabel, modifier = Modifier.padding(start = 6.dp))
-                        }
-                    }
-                    if (hasSeries) {
-                        val followLabel = stringResource(
-                            if (viewer.followed) R.string.rouvideo_following else R.string.rouvideo_follow
-                        )
-                        if (viewer.followed) {
-                            Button(onClick = onToggleFollow, enabled = !viewer.busy) {
-                                Icon(Icons.Default.Subscriptions, contentDescription = null)
-                                Text(followLabel, modifier = Modifier.padding(start = 6.dp))
-                            }
-                        } else {
-                            OutlinedButton(onClick = onToggleFollow, enabled = !viewer.busy) {
-                                Icon(Icons.Default.Subscriptions, contentDescription = null)
-                                Text(followLabel, modifier = Modifier.padding(start = 6.dp))
-                            }
-                        }
-                    }
+        } else {
+            OutlinedButton(onClick = onToggleFavorite, enabled = !viewer.busy) {
+                Icon(favIcon, contentDescription = null)
+                Text(favLabel, modifier = Modifier.padding(start = 6.dp))
+            }
+        }
+        if (hasSeries) {
+            val followLabel = stringResource(
+                if (viewer.followed) R.string.rouvideo_following else R.string.rouvideo_follow
+            )
+            if (viewer.followed) {
+                Button(onClick = onToggleFollow, enabled = !viewer.busy) {
+                    Icon(Icons.Default.Subscriptions, contentDescription = null)
+                    Text(followLabel, modifier = Modifier.padding(start = 6.dp))
                 }
-                Text(
-                    text = stringResource(R.string.rouvideo_progress_synced),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+            } else {
+                OutlinedButton(onClick = onToggleFollow, enabled = !viewer.busy) {
+                    Icon(Icons.Default.Subscriptions, contentDescription = null)
+                    Text(followLabel, modifier = Modifier.padding(start = 6.dp))
+                }
             }
         }
     }

@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.MissAV.ui.home
 import android.app.Application
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.screen.SiteHomeSettings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,8 +29,9 @@ class MissAvHomeViewModel(application: Application) : AndroidViewModel(applicati
 
     companion object {
         private const val TAG = "MissAvHomeViewModel"
-        private const val CACHE_TTL_MS = 5 * 60 * 1000L
     }
+
+    private fun cacheTtlMs(): Long = SiteHomeSettings.cacheTtlMs(SiteType.MISSAV)
 
     private val _homePageFlow = MutableStateFlow<WebsiteState<MissAvHomePage>>(WebsiteState.Loading)
     val homePageFlow = _homePageFlow.asStateFlow()
@@ -152,7 +155,7 @@ class MissAvHomeViewModel(application: Application) : AndroidViewModel(applicati
 
     fun getHomePage(force: Boolean = false) {
         val now = System.currentTimeMillis()
-        if (!force && now - lastHomeFetchAt < CACHE_TTL_MS &&
+        if (!force && now - lastHomeFetchAt < cacheTtlMs() &&
             _homePageFlow.value is WebsiteState.Success
         ) return
 
@@ -186,7 +189,7 @@ class MissAvHomeViewModel(application: Application) : AndroidViewModel(applicati
     private fun fetchCategory(category: MissAvHomeCategory, force: Boolean) {
         val now = System.currentTimeMillis()
         val last = lastCategoryFetchAt[category.key] ?: 0L
-        if (!force && now - last < CACHE_TTL_MS) return
+        if (!force && now - last < cacheTtlMs()) return
 
         categoryJobs[category.key]?.cancel()
         categoryJobs[category.key] = viewModelScope.launch {

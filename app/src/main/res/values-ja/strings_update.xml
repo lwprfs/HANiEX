@@ -88,12 +88,10 @@
     <string name="upd_notif_details">詳細</string>
     <string name="upd_notif_delta_text">差分パッチ · %1$s</string>
     <string name="upd_notif_full_text">完全版 APK · %1$s</string>
-    <string name="upd_home_downloading">ダウンロード中 %1$d%% · %2$s</string>
     <string name="upd_home_open_hint">タップして詳細の確認・キャンセル・インストール</string>
     <string name="upd_home_channel_ci_summary">GitHub Actions のすべての新ビルドを取得</string>
     <string name="hist_all_sites_title">視聴履歴・すべてのサイト</string>
     <string name="hist_all_sites_summary">%1$s の履歴を一つのリストに。項目をタップするとサイトを切り替えて続きから再生します。</string>
-    <string name="hist_all_sites_open">履歴を開く</string>
     <string name="settings_group_links">リンクと共有</string>
     <string name="settings_group_site_history">視聴履歴</string>
 </resources>

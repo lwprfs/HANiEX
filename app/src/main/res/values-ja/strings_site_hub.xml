@@ -14,8 +14,6 @@
     <string name="hub_downloads_desc">ダウンロード済みの動画</string>
     <string name="hub_section_on_device">この端末</string>
     <string name="hub_section_history">履歴</string>
-    <string name="hub_subscription_unavailable_title">%1$s には購読機能がありません</string>
-    <string name="hub_subscription_unavailable_message">このサイトには現在購読機能がありません。対応した場合はここに表示されます。</string>
     <string name="hub_horizontal_cards_title">横スクロールのカード数</string>
     <string name="hub_video_grid_columns_desc">ホームや一覧の縦型動画グリッドの列数</string>
     <string name="hub_search_grid_columns_title">検索グリッドの列数</string>

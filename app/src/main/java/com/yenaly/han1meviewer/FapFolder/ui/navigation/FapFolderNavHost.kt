@@ -371,7 +371,6 @@ fun FapFolderNavHost(
         composable<FapFolderSettingsRoute> {
             val loggedIn = FapFolderNetwork.hasAuthCookies()
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.FAPFOLDER,
                 siteEntries = fapFolderHubEntries(navController, isLoggedIn = loggedIn, full = true),
                 onBack = { navController.popBackStackSafely() },
@@ -572,7 +571,6 @@ private fun GateErrorHost(
         }
         composable<FapFolderSettingsRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.FAPFOLDER,
                 siteEntries = fapFolderHubEntries(navController, isLoggedIn = false, full = false),
                 onBack = { navController.popBackStackSafely() },

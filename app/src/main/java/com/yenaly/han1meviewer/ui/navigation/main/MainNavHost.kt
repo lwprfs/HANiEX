@@ -1,12 +1,6 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
-import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
-import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.MediaControlsSettingsRoute
-import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
 
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationCacheRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -41,34 +35,13 @@ import com.yenaly.han1meviewer.ui.screen.account.AvatarCropScreen
 import com.yenaly.han1meviewer.ui.screen.home.CreatorCenterScreen
 import com.yenaly.han1meviewer.ui.screen.library.ContentLibraryScreen
 import com.yenaly.han1meviewer.ui.screen.main.ProfileScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframeSettingsRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesTopBarActions
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsHomeRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerUnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
-import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
-import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UpdateSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.registerSettingsRoutes
+import com.yenaly.han1meviewer.ui.navigation.settings.registerUnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
 import kotlinx.serialization.json.Json
@@ -289,158 +262,12 @@ fun MainNavHost(
                 },
             )
         }
-        composable<UpdateSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                UpdateStatusScreen(activity = activity)
-            }
-        }
-        composable<AboutAppRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                AboutAppScreen()
-            }
-        }
-        composable<HomeSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeRoute,
-            ) {
-                SettingsHomeRouteScreen(
-                    onOpenCategory = { category ->
-                        navController.navigateSettingsCategoryDestination(category)
-                    },
-                )
-            }
-        }
-        composable<SettingsCategoryRoute> { entry ->
-            val route = entry.toRoute<SettingsCategoryRoute>()
-            val category = SettingsCategory.fromKey(route.categoryKey)
-                ?: SettingsCategory.Appearance
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                SettingsCategoryRouteScreen(
-                    category = category,
-                    activity = activity,
-                    onNavigateToPlayerSettings = {
-                        navController.navigateSettingsDestination(PlayerSettingsRoute)
-                    },
-                    onNavigateToHKeyframes = {
-                        navController.navigateSettingsDestination(HKeyframesRoute)
-                    },
-                    onNavigateToSharedHKeyframes = {
-                        navController.navigateSettingsDestination(SharedHKeyframesRoute)
-                    },
-                    onNavigateToAboutPage = {
-                        navController.navigateSettingsDestination(AboutAppRoute)
-                    },
-                    onNavigateToUpdateStatus = {
-                        navController.navigateSettingsDestination(UpdateSettingsRoute)
-                    },
-                    onNavigateToHKeyframeSettings = { navController.navigateSettingsDestination(HKeyframeSettingsRoute) },
-                    onNavigateToDownloadSettings = { navController.navigateSettingsDestination(DownloadSettingsRoute) },
-                    onNavigateToNetworkSettings = { navController.navigateSettingsDestination(NetworkSettingsRoute) },
-                    onNavigateToUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
-                    onNavigateToTranslationSettings = { navController.navigateSettingsDestination(TranslationSettingsRoute) },
-                )
-            }
-        }
-        composable<MediaControlsSettingsRoute> {
-            MediaControlsSettingsScreen(onBack = { navController.popBackStackSafely() })
-        }
-        composable<TranslationSettingsRoute> {
-            TranslationSettingsScreen(
-                onBack = { navController.popBackStackSafely() },
-                onOpenCache = { navController.navigateSafely(TranslationCacheRoute) },
-            )
-        }
-        composable<TranslationCacheRoute> {
-            TranslationCacheScreen(onBack = { navController.popBackStackSafely() })
-        }
-        composable<PlayerSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                PlayerSettingsRouteScreen(
-                    onNavigateToMpvSettings = {
-                        navController.navigateSettingsDestination(MpvPlayerSettingsRoute)
-                    },
-                    onNavigateToMediaControls = { navController.navigateSettingsDestination(MediaControlsSettingsRoute) },
-                )
-            }
-        }
-        composable<NetworkSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                NetworkSettingsRouteScreen()
-            }
-        }
-        composable<DownloadSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                DownloadSettingsRouteScreen(activity = activity)
-            }
-        }
-        composable<MpvPlayerSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = PlayerSettingsRoute,
-            ) {
-                MpvPlayerSettingsRouteScreen()
-            }
-        }
-        composable<HKeyframesRoute> {
-            var showImportDialog by remember { mutableStateOf(false) }
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HKeyframeSettingsRoute,
-                actions = {
-                    HKeyframesTopBarActions(onImportClick = { showImportDialog = true })
-                },
-            ) {
-                HKeyframesRouteScreen(
-                    onOpenVideo = onNavigateToVideo,
-                    showImportDialog = showImportDialog,
-                    onImportDialogDismiss = { showImportDialog = false },
-                )
-            }
-        }
-        composable<SharedHKeyframesRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HKeyframeSettingsRoute,
-            ) {
-                SharedHKeyframesRouteScreen(
-                    onOpenVideo = onNavigateToVideo,
-                )
-            }
-        }
-        composable<HKeyframeSettingsRoute> {
-            SettingsScaffold(
-                navController = navController,
-                fallbackDestination = HomeSettingsRoute,
-            ) {
-                HKeyframeSettingsRouteScreen(
-                    onNavigateToHKeyframes = {
-                        navController.navigateSettingsDestination(HKeyframesRoute)
-                    },
-                    onNavigateToSharedHKeyframes = {
-                        navController.navigateSettingsDestination(SharedHKeyframesRoute)
-                    },
-                )
-            }
-        }
+        registerSettingsRoutes(
+            activity = activity,
+            navController = navController,
+            homeFallback = HomeRoute,
+            onOpenVideo = onNavigateToVideo,
+        )
         registerUnifiedHistoryRoute(activity, navController)
         composable<SearchRoute> {
             SearchRouteScreen(

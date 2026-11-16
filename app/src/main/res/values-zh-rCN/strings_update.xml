@@ -88,12 +88,10 @@
     <string name="upd_notif_details">详情</string>
     <string name="upd_notif_delta_text">差分更新 · %1$s</string>
     <string name="upd_notif_full_text">完整 APK · %1$s</string>
-    <string name="upd_home_downloading">下载中 %1$d%% · %2$s</string>
     <string name="upd_home_open_hint">点击查看详情、取消或安装</string>
     <string name="upd_home_channel_ci_summary">从 GitHub Actions 获取每一个新构建</string>
     <string name="hist_all_sites_title">观看记录 · 所有站点</string>
     <string name="hist_all_sites_summary">%1$s 的记录整合在同一份列表，点击项目即可切换站点并继续观看。</string>
-    <string name="hist_all_sites_open">打开记录</string>
     <string name="settings_group_links">链接与分享</string>
     <string name="settings_group_site_history">观看记录</string>
 </resources>

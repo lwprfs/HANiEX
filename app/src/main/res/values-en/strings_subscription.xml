@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="subscription_login_required">Your session has expired. Sign in again to see your subscriptions.</string>
+    <string name="subscription_empty">You haven\'t subscribed to any artists yet</string>
+    <string name="subscription_empty_hint">Subscribe to an artist on a video page and their new releases will appear here</string>
+    <string name="login_status_no_account">No account needed</string>
+</resources>

@@ -8,6 +8,8 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -24,6 +26,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.model.SubscriptionItem
 import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -124,7 +127,7 @@ fun SubscriptionScreen(
         ) {
             when (state) {
                 is WebsiteState.Loading -> {
-                    if (cachedArtists.value.isEmpty() || cachedVideos.value.isEmpty()) {
+                    if (cachedArtists.value.isEmpty() && cachedVideos.value.isEmpty()) {
                         LoadingIndicator(Modifier.align(Alignment.Center))
                     } else {
                         SubscriptionContent(
@@ -136,13 +139,23 @@ fun SubscriptionScreen(
                 }
 
                 is WebsiteState.Error -> {
-                    if (cachedArtists.value.isEmpty()) {
+                    if (cachedArtists.value.isEmpty() && cachedVideos.value.isEmpty()) {
+                        val throwable = (state as WebsiteState.Error).throwable
                         EmptyContent(
-                            hint = stringResource(
-                                R.string.load_failed_with_reason,
-                                (state as WebsiteState.Error).throwable.message.orEmpty()
-                            ),
-                            picRes = R.drawable.h_chan_sad
+                            hint = if (throwable is LoginStateExpiredException) {
+                                stringResource(R.string.subscription_login_required)
+                            } else {
+                                stringResource(
+                                    R.string.load_failed_with_reason,
+                                    throwable.message.orEmpty(),
+                                )
+                            },
+                            picRes = R.drawable.h_chan_sad,
+                            action = {
+                                TextButton(onClick = { handleEvent(SubscriptionEvent.OnRefresh) }) {
+                                    Text(stringResource(R.string.retry))
+                                }
+                            },
                         )
                     } else {
                         SubscriptionContent(
@@ -154,11 +167,18 @@ fun SubscriptionScreen(
                 }
 
                 is WebsiteState.Success -> {
-                    SubscriptionContent(
-                        uiState = uiState,
-                        onEvent = handleEvent,
-                        gridState = gridState,
-                    )
+                    if (cachedArtists.value.isEmpty() && cachedVideos.value.isEmpty()) {
+                        EmptyContent(
+                            hint = stringResource(R.string.subscription_empty),
+                            subHint = stringResource(R.string.subscription_empty_hint),
+                        )
+                    } else {
+                        SubscriptionContent(
+                            uiState = uiState,
+                            onEvent = handleEvent,
+                            gridState = gridState,
+                        )
+                    }
                 }
             }
 

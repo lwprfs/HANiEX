@@ -791,9 +791,6 @@
     <string name="site_keeps_its_own_player_settings">%1$s keeps its own player settings.</string>
     <string name="site_customize_settings_2">Customize settings</string>
     <string name="site_reset_to_in_app_player_settings">Reset to in-app player settings</string>
-    <string name="site_app_appearance">App appearance</string>
-    <string name="site_pure_black_dark_mode">Pure black dark mode</string>
-    <string name="site_use_a_pure_black_background_on">Use a pure black background on OLED screens</string>
     <string name="site_layout_column_count">Layout &amp; column count</string>
     <string name="site_video_grid_columns">Video grid columns</string>
     <string name="site_columns_of_search_list_grids_by">Columns of search / list grids by screen width</string>
@@ -976,7 +973,6 @@
     <string name="notification_channel_update">App Update</string>
     <string name="grid_decrease">Decrease</string>
     <string name="grid_increase">Increase</string>
-    <string name="disable_predictive_back_unavailable">Temporarily unavailable</string>
     <string name="video_card_unknown_artist">Artist</string>
     <string name="checkin_date_pattern">MMM d</string>
     <string name="checkin_date_weekday_pattern">MMM d, EEEE</string>

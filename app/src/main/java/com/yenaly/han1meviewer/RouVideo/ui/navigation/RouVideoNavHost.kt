@@ -121,8 +121,8 @@ fun RouVideoNavHost(
 
         composable<RouVideoSettingsHubRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.ROUVIDEO,
+                onResetSite = { com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings.resetToDefaults() },
                 siteEntries = listOfNotNull(
                     SiteSettingsEntry(
                         key = "account",

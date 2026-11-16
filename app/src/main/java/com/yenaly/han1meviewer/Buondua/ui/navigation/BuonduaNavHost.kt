@@ -112,7 +112,6 @@ fun BuonduaNavHost(
 
         composable<BuonduaSettingsHubRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.BUONDUA,
                 siteEntries = listOf(
                     SiteSettingsEntry(

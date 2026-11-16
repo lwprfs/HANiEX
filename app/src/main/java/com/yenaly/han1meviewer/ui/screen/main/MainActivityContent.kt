@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.ui.navigation.site.SiteLibraryRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteSubscriptionRoute
 import com.yenaly.han1meviewer.ui.navigation.site.navigateSiteTopLevel
+import com.yenaly.han1meviewer.ui.screen.site.supportsSubscriptions
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.Icons
@@ -157,36 +158,46 @@ fun MainActivityContent(
             backStackEntry?.destination.isRoute(SITE_PROFILE_ROUTE_NAME)
         }
 
-        val siteNavItems: List<SiteNavItem>? = if (isHanimeFamilySite) null else listOf(
-            SiteNavItem(
-                key = "home",
-                icon = Icons.Filled.Home,
-                title = stringResource(R.string.home_page),
-                selected = isAtSiteHome,
-                onClick = { NavigationManager.navigateToHome() },
-            ),
-            SiteNavItem(
-                key = "subscription",
-                icon = Icons.Filled.Subscriptions,
-                title = stringResource(R.string.my_subscribe),
-                selected = atSubscription,
-                onClick = { composeNavController.navigateSiteTopLevel(SiteSubscriptionRoute) },
-            ),
-            SiteNavItem(
-                key = "library",
-                icon = Icons.Filled.VideoLibrary,
-                title = stringResource(R.string.content_library),
-                selected = atLibrary,
-                onClick = { composeNavController.navigateSiteTopLevel(SiteLibraryRoute) },
-            ),
-            SiteNavItem(
-                key = "profile",
-                icon = Icons.Filled.Person,
-                title = stringResource(R.string.my_account),
-                selected = atProfile,
-                onClick = { composeNavController.navigateSiteTopLevel(SiteProfileRoute) },
-            ),
-        )
+        val siteNavItems: List<SiteNavItem>? = if (isHanimeFamilySite) null else buildList<SiteNavItem> {
+            add(
+                SiteNavItem(
+                    key = "home",
+                    icon = Icons.Filled.Home,
+                    title = stringResource(R.string.home_page),
+                    selected = isAtSiteHome,
+                    onClick = { NavigationManager.navigateToHome() },
+                ),
+            )
+            if (currentSite.supportsSubscriptions()) {
+                add(
+                    SiteNavItem(
+                        key = "subscription",
+                        icon = Icons.Filled.Subscriptions,
+                        title = stringResource(R.string.my_subscribe),
+                        selected = atSubscription,
+                        onClick = { composeNavController.navigateSiteTopLevel(SiteSubscriptionRoute) },
+                    ),
+                )
+            }
+            add(
+                SiteNavItem(
+                    key = "library",
+                    icon = Icons.Filled.VideoLibrary,
+                    title = stringResource(R.string.content_library),
+                    selected = atLibrary,
+                    onClick = { composeNavController.navigateSiteTopLevel(SiteLibraryRoute) },
+                ),
+            )
+            add(
+                SiteNavItem(
+                    key = "profile",
+                    icon = Icons.Filled.Person,
+                    title = stringResource(R.string.my_account),
+                    selected = atProfile,
+                    onClick = { composeNavController.navigateSiteTopLevel(SiteProfileRoute) },
+                ),
+            )
+        }
 
         LaunchedEffect(Unit) {
             pendingNavigationRequests.collect { intent ->

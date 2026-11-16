@@ -154,8 +154,11 @@ fun MissAvNavHost(
 
         composable<MissAvSettingsHubRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.MISSAV,
+                onResetSite = {
+                    com.yenaly.han1meviewer.MissAV.ui.home.MissAvHomeCategoryRepo.resetToDefaults()
+                    com.yenaly.han1meviewer.Preferences.resetMissAvCustomization()
+                },
                 siteEntries = listOf(
                     SiteSettingsEntry(
                         key = "home_categories",

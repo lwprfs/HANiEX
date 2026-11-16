@@ -3,9 +3,11 @@ package com.yenaly.han1meviewer.ui.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,6 +26,7 @@ fun ChoiceDialog(
     onDismiss: () -> Unit,
     onSelect: (String) -> Unit,
     visible: Boolean = true,
+    message: String? = null,
 ) {
     if (!visible) return
 
@@ -37,6 +40,14 @@ fun ChoiceDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                if (!message.isNullOrBlank()) {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp),
+                    )
+                }
                 options.forEach { (label, value) ->
                     SettingChoiceItem(
                         title = label,

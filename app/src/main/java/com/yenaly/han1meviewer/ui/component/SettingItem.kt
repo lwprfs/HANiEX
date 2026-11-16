@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -27,7 +30,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlin.math.roundToInt
 
-private val TileShape = RoundedCornerShape(20.dp)
 private val BadgeShape = RoundedCornerShape(12.dp)
 
 @Composable
@@ -45,13 +50,13 @@ fun SettingSectionHeader(
 ) {
     Text(
         text = title,
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.titleMedium,
         color = MaterialTheme.colorScheme.primary,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 28.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 4.dp),
     )
 }
 
@@ -115,23 +120,21 @@ fun SettingTile(
     enabled: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val tileModifier = modifier
-        .fillMaxWidth()
-        .padding(horizontal = 12.dp, vertical = 2.dp)
+    val tileModifier = modifier.fillMaxWidth()
     if (onClick != null) {
         Surface(
             onClick = onClick,
             enabled = enabled,
             modifier = tileModifier,
-            shape = TileShape,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RectangleShape,
+            color = Color.Transparent,
             content = content,
         )
     } else {
         Surface(
             modifier = tileModifier,
-            shape = TileShape,
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RectangleShape,
+            color = Color.Transparent,
             content = content,
         )
     }
@@ -148,7 +151,7 @@ private fun SettingTexts(
     Column(modifier = modifier) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleSmall,
+            style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
         )
         if (!summary.isNullOrBlank()) {
@@ -171,24 +174,29 @@ fun SettingSwitchItem(
     summary: String? = null,
     iconRes: Int? = null,
     enabled: Boolean = true,
+    icon: ImageVector? = null,
 ) {
     SettingTile(
-        modifier = modifier,
-        onClick = { onCheckedChange(!checked) },
-        enabled = enabled,
+        modifier = modifier.toggleable(
+            value = checked,
+            enabled = enabled,
+            role = Role.Switch,
+            onValueChange = onCheckedChange,
+        ),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             iconRes?.let { SettingIconBadge(it, enabled = enabled) }
+                ?: icon?.let { SettingIconBadge(it, enabled = enabled) }
             SettingTexts(title, summary, Modifier.weight(1f), enabled)
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = null,
                 enabled = enabled,
             )
         }
@@ -204,6 +212,7 @@ fun SettingNavigationItem(
     valueText: String? = null,
     iconRes: Int? = null,
     enabled: Boolean = true,
+    icon: ImageVector? = null,
 ) {
     SettingTile(modifier = modifier, onClick = onClick, enabled = enabled) {
         Row(
@@ -211,14 +220,15 @@ fun SettingNavigationItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             iconRes?.let { SettingIconBadge(it, enabled = enabled) }
+                ?: icon?.let { SettingIconBadge(it, enabled = enabled) }
             SettingTexts(title, summary, Modifier.weight(1f), enabled)
             if (!valueText.isNullOrBlank()) {
                 Text(
                     text = valueText,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -248,14 +258,14 @@ fun SettingInfoItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             iconRes?.let { SettingIconBadge(it) }
             SettingTexts(title, summary, Modifier.weight(1f))
             if (!valueText.isNullOrBlank()) {
                 Text(
                     text = valueText,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -273,6 +283,7 @@ fun SettingSliderItem(
     step: Int = 1,
     summary: String? = null,
     iconRes: Int? = null,
+    valueLabel: String = value.toString(),
 ) {
     val totalSteps = if (step > 0) {
         ((valueRange.last - valueRange.first) / step) - 1
@@ -290,10 +301,16 @@ fun SettingSliderItem(
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 iconRes?.let { SettingIconBadge(it) }
                 SettingTexts(title, summary, Modifier.weight(1f))
+                Text(
+                    text = valueLabel,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                )
             }
             Slider(
                 value = sliderValue,
@@ -304,6 +321,19 @@ fun SettingSliderItem(
                 valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
                 steps = totalSteps.coerceAtLeast(0),
             )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = valueRange.first.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = valueRange.last.toString(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 }
@@ -317,13 +347,12 @@ fun SettingChoiceItem(
     summary: String? = null,
     iconRes: Int? = null,
 ) {
-    val shape = RoundedCornerShape(16.dp)
     Surface(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-        shape = shape,
-        color = if (selected) MaterialTheme.colorScheme.secondaryContainer
-        else androidx.compose.ui.graphics.Color.Transparent,
+        modifier = modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
         contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer
         else MaterialTheme.colorScheme.onSurface,
     ) {
@@ -332,7 +361,7 @@ fun SettingChoiceItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             iconRes?.let {
                 Icon(
@@ -345,7 +374,7 @@ fun SettingChoiceItem(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 if (!summary.isNullOrBlank()) {
                     Text(
@@ -357,12 +386,92 @@ fun SettingChoiceItem(
                 }
             }
             if (selected) {
+                // The check mark is decorative: the selected state is exposed through semantics.
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                 )
             }
+        }
+    }
+}
+
+/** Muted helper paragraph shown under a section header. */
+@Composable
+fun SettingHintText(
+    text: String,
+    modifier: Modifier = Modifier,
+    isError: Boolean = false,
+) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        color = if (isError) MaterialTheme.colorScheme.error
+        else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 8.dp),
+    )
+}
+
+/** Single-choice row in the same style as the other setting rows (title, summary, check mark). */
+@Composable
+fun SettingRadioItem(
+    title: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    summary: String? = null,
+    iconRes: Int? = null,
+    icon: ImageVector? = null,
+) {
+    SettingTile(
+        modifier = modifier.selectable(
+            selected = selected,
+            role = Role.RadioButton,
+            onClick = onClick,
+        ),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            iconRes?.let { SettingIconBadge(it) } ?: icon?.let { SettingIconBadge(it) }
+            SettingTexts(title, summary, Modifier.weight(1f))
+            if (selected) {
+                Icon(
+                    imageVector = Icons.Filled.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+        }
+    }
+}
+
+/** Row with an optional trailing action area, e.g. reorder buttons plus a switch. */
+@Composable
+fun SettingActionItem(
+    title: String,
+    modifier: Modifier = Modifier,
+    summary: String? = null,
+    enabled: Boolean = true,
+    trailing: @Composable () -> Unit,
+) {
+    SettingTile(modifier = modifier) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            SettingTexts(title, summary, Modifier.weight(1f), enabled)
+            trailing()
         }
     }
 }

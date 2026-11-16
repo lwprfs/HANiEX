@@ -14,6 +14,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -23,6 +27,10 @@ import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.screen.settings.SettingsCategoryItem
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsSearchEmpty
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsSearchField
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsSearchResultItem
+import com.yenaly.han1meviewer.ui.screen.settings.rememberSettingsSearchResults
 
 @Composable
 fun SettingsHomeRouteScreen(
@@ -35,26 +43,40 @@ fun SettingsHomeRouteScreen(
     if (useTwoPane) {
         SettingsEmptyDetailPane()
     } else {
+        var query by rememberSaveable { mutableStateOf("") }
+        val results = rememberSettingsSearchResults(query)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(
-                start = 12.dp,
-                end = 12.dp,
-                top = 8.dp,
-                bottom = 24.dp,
-            ),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            items(
-                items = SettingsCategory.entries,
-                key = { it.key },
-            ) { category ->
-                SettingsCategoryItem(
-                    category = category,
-                    onClick = { onOpenCategory(category) },
-                    showDescription = true,
-                    showChevron = true,
+            item(key = "search") {
+                SettingsSearchField(
+                    query = query,
+                    onQueryChange = { query = it },
+                    modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
                 )
+            }
+            if (query.isBlank()) {
+                items(
+                    items = SettingsCategory.entries,
+                    key = { it.key },
+                ) { category ->
+                    SettingsCategoryItem(
+                        category = category,
+                        onClick = { onOpenCategory(category) },
+                        showChevron = true,
+                    )
+                }
+            } else if (results.isEmpty()) {
+                item(key = "search_empty") { SettingsSearchEmpty() }
+            } else {
+                items(results, key = { "${it.category.key}/${it.title}" }) { result ->
+                    SettingsSearchResultItem(
+                        result = result,
+                        onClick = { onOpenCategory(result.category) },
+                    )
+                }
             }
         }
     }

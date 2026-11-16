@@ -1,18 +1,9 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
-import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
-import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
-import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
-import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
-
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
@@ -22,12 +13,11 @@ import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRouteScreen
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
+import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.screen.history.UnifiedHistoryScreen
-import com.yenaly.han1meviewer.ui.screen.settings.SitePlayerSettingsPage
-import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
-import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
+import com.yenaly.han1meviewer.ui.screen.library.ImageDownloadsScreen
+import com.yenaly.han1meviewer.ui.screen.library.LocalPlaylistsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -48,147 +38,12 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
         activity.requestCrossSiteOpen(PendingVideoOpen(site = SiteType.HANIME, videoCode = code))
     }
 
-    composable<HomeSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = homeFallback,
-        ) {
-            SettingsHomeRouteScreen(
-                onOpenCategory = { category ->
-                    navController.navigateSettingsCategoryDestination(category)
-                },
-            )
-        }
-    }
-    composable<SettingsCategoryRoute> { entry ->
-        val route = entry.toRoute<SettingsCategoryRoute>()
-        val category = SettingsCategory.fromKey(route.categoryKey) ?: SettingsCategory.Appearance
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            SettingsCategoryRouteScreen(
-                category = category,
-                activity = activity,
-                onNavigateToPlayerSettings = { navController.navigateSafely(PlayerSettingsRoute) },
-                onNavigateToHKeyframes = { navController.navigateSafely(HKeyframesRoute) },
-                onNavigateToSharedHKeyframes = { navController.navigateSafely(SharedHKeyframesRoute) },
-                onNavigateToAboutPage = { navController.navigateSafely(AboutAppRoute) },
-                onNavigateToHKeyframeSettings = { navController.navigateSafely(HKeyframeSettingsRoute) },
-                onNavigateToDownloadSettings = { navController.navigateSafely(DownloadSettingsRoute) },
-                onNavigateToNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onNavigateToUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
-                onNavigateToTranslationSettings = { navController.navigateSafely(TranslationSettingsRoute) },
-                onNavigateToUpdateStatus = { navController.navigateSafely(UpdateSettingsRoute) },
-            )
-        }
-    }
-
-    composable<AboutAppRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            AboutAppScreen()
-        }
-    }
-    composable<UpdateSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            UpdateStatusScreen(activity = activity)
-        }
-    }
-    composable<PlayerSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            PlayerSettingsRouteScreen(
-                onNavigateToMpvSettings = { navController.navigateSafely(MpvPlayerSettingsRoute) },
-                onNavigateToMediaControls = { navController.navigateSafely(MediaControlsSettingsRoute) },
-            )
-        }
-    }
-    composable<SitePlayerSettingsRoute> { entry ->
-        val route = entry.toRoute<SitePlayerSettingsRoute>()
-        val site = runCatching { SiteType.valueOf(route.site) }.getOrDefault(SiteType.SUPJAV)
-        SitePlayerSettingsPage(site = site, onBack = { navController.popBackStackSafely() })
-    }
-    composable<MediaControlsSettingsRoute> {
-        MediaControlsSettingsScreen(onBack = { navController.popBackStackSafely() })
-    }
-    composable<TranslationSettingsRoute> {
-        TranslationSettingsScreen(
-            onBack = { navController.popBackStackSafely() },
-            onOpenCache = { navController.navigateSafely(TranslationCacheRoute) },
-        )
-    }
-    composable<TranslationCacheRoute> {
-        TranslationCacheScreen(onBack = { navController.popBackStackSafely() })
-    }
-    composable<NetworkSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            NetworkSettingsRouteScreen()
-        }
-    }
-    composable<DownloadSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            DownloadSettingsRouteScreen(activity = activity)
-        }
-    }
-    composable<MpvPlayerSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = PlayerSettingsRoute,
-        ) {
-            MpvPlayerSettingsRouteScreen()
-        }
-    }
-    composable<HKeyframesRoute> {
-        var showImportDialog by remember { mutableStateOf(false) }
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HKeyframeSettingsRoute,
-            actions = {
-                HKeyframesTopBarActions(onImportClick = { showImportDialog = true })
-            },
-        ) {
-            HKeyframesRouteScreen(
-                onOpenVideo = openHanimeVideo,
-                showImportDialog = showImportDialog,
-                onImportDialogDismiss = { showImportDialog = false },
-            )
-        }
-    }
-    composable<SharedHKeyframesRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HKeyframeSettingsRoute,
-        ) {
-            SharedHKeyframesRouteScreen(
-                onOpenVideo = openHanimeVideo,
-            )
-        }
-    }
-    composable<HKeyframeSettingsRoute> {
-        SettingsScaffold(
-            navController = navController,
-            fallbackDestination = HomeSettingsRoute,
-        ) {
-            HKeyframeSettingsRouteScreen(
-                onNavigateToHKeyframes = { navController.navigateSafely(HKeyframesRoute) },
-                onNavigateToSharedHKeyframes = { navController.navigateSafely(SharedHKeyframesRoute) },
-            )
-        }
-    }
+    registerSettingsRoutes(
+        activity = activity,
+        navController = navController,
+        homeFallback = homeFallback,
+        onOpenVideo = openHanimeVideo,
+    )
     registerUnifiedHistoryRoute(activity, navController)
 
     composable<DailyCheckInRoute> {
@@ -200,7 +55,7 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
     }
 
     composable<ImageDownloadsRoute> {
-        com.yenaly.han1meviewer.ui.screen.library.ImageDownloadsScreen(
+        ImageDownloadsScreen(
             onBack = { navController.popBackStackSafely() },
         )
     }
@@ -234,7 +89,7 @@ fun NavGraphBuilder.registerUnifiedHistoryRoute(
         )
     }
     composable<LocalPlaylistsRoute> {
-        com.yenaly.han1meviewer.ui.screen.library.LocalPlaylistsScreen(
+        LocalPlaylistsScreen(
             activity = activity,
             onBack = { navController.popBackStackSafely() },
         )

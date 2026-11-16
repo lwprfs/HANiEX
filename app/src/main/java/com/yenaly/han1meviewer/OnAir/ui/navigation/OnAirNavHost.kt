@@ -272,7 +272,6 @@ fun OnAirNavHost(
 
             composable<OnAirSettingsRoute> {
                 SiteSettingsHubScreen(
-                    activity = activity,
                     site = SiteType.ONAIR,
                     siteEntries = onAirHubEntries(navController, signedInContent = true),
                     onBack = { navController.popBackStackSafely() },
@@ -392,7 +391,6 @@ fun OnAirNavHost(
             }
             composable<OnAirSettingsRoute> {
                 SiteSettingsHubScreen(
-                    activity = activity,
                     site = SiteType.ONAIR,
                     siteEntries = onAirHubEntries(navController, signedInContent = false),
                     onBack = { navController.popBackStackSafely() },

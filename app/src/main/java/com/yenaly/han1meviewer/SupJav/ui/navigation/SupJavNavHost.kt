@@ -92,8 +92,8 @@ fun SupJavNavHost(
 
         composable<SupJavSettingsHubRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.SUPJAV,
+                onResetSite = { com.yenaly.han1meviewer.SupJav.common.SupJavSettings.resetToDefaults() },
                 siteEntries = listOf(
                     SiteSettingsEntry(
                         key = "playback",

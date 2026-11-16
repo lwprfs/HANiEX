@@ -27,12 +27,14 @@ import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldValue
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -41,6 +43,10 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
 import com.yenaly.han1meviewer.ui.screen.settings.SettingsCategoryItem
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsSearchEmpty
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsSearchField
+import com.yenaly.han1meviewer.ui.screen.settings.SettingsSearchResultItem
+import com.yenaly.han1meviewer.ui.screen.settings.rememberSettingsSearchResults
 import com.yenaly.han1meviewer.util.findActivityOrNull
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 
@@ -102,21 +108,19 @@ private fun SettingsSinglePaneScaffold(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            if (currentScreen.showToolbar) {
-                TopAppBar(
-                    title = { Text(stringResource(currentScreen.titleRes)) },
-                    navigationIcon = {
-                        FilledIconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.back),
-                            )
-                        }
-                    },
-                    actions = { actions() },
-                    modifier = Modifier.statusBarsPadding(),
-                )
-            }
+            TopAppBar(
+                title = { Text(stringResource(currentScreen.titleRes)) },
+                navigationIcon = {
+                    FilledIconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                        )
+                    }
+                },
+                actions = { actions() },
+                modifier = Modifier.statusBarsPadding(),
+            )
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
@@ -189,7 +193,7 @@ private fun SettingsListPane(
             modifier = Modifier.padding(
                 start = 24.dp,
                 end = 24.dp,
-                top = 20.dp,
+                top = 16.dp,
                 bottom = 12.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -197,7 +201,6 @@ private fun SettingsListPane(
             Text(
                 text = stringResource(R.string.settings),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.SemiBold,
             )
             Text(
                 text = stringResource(R.string.settings_pane_subtitle),
@@ -205,24 +208,45 @@ private fun SettingsListPane(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+        var query by rememberSaveable { mutableStateOf("") }
+        val results = rememberSettingsSearchResults(query)
+        SettingsSearchField(
+            query = query,
+            onQueryChange = { query = it },
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 8.dp),
+        )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = 12.dp,
-                end = 12.dp,
+                start = 8.dp,
+                end = 8.dp,
                 bottom = 24.dp,
             ),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            items(
-                items = SettingsCategory.entries,
-                key = { it.key },
-            ) { category ->
-                SettingsCategoryItem(
-                    category = category,
-                    selected = category == selectedCategory,
-                    onClick = { onSelect(category) },
-                )
+            if (query.isBlank()) {
+                items(
+                    items = SettingsCategory.entries,
+                    key = { it.key },
+                ) { category ->
+                    SettingsCategoryItem(
+                        category = category,
+                        selected = category == selectedCategory,
+                        onClick = { onSelect(category) },
+                    )
+                }
+            } else if (results.isEmpty()) {
+                item(key = "search_empty") { SettingsSearchEmpty() }
+            } else {
+                items(results, key = { "${it.category.key}/${it.title}" }) { result ->
+                    SettingsSearchResultItem(
+                        result = result,
+                        onClick = {
+                            query = ""
+                            onSelect(result.category)
+                        },
+                    )
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.HentaiMama.ui.home
 
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteIconBadge
@@ -117,8 +118,6 @@ fun HentaiMamaSettingsHubScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             items(entries, key = { it.key }) { entry ->
                 HubRow(entry = entry)
@@ -129,38 +128,10 @@ fun HentaiMamaSettingsHubScreen(
 
 @Composable
 private fun HubRow(entry: HubEntry) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = entry.onClick),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            SiteIconBadge(imageVector = entry.icon)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = entry.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    SettingNavigationItem(
+        title = entry.title,
+        summary = entry.subtitle,
+        icon = entry.icon,
+        onClick = entry.onClick,
+    )
 }

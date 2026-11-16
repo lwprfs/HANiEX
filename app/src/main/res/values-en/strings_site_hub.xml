@@ -14,8 +14,6 @@
     <string name="hub_downloads_desc">Downloaded videos</string>
     <string name="hub_section_on_device">On this device</string>
     <string name="hub_section_history">History</string>
-    <string name="hub_subscription_unavailable_title">No subscriptions on %1$s</string>
-    <string name="hub_subscription_unavailable_message">This site doesn\'t offer subscriptions right now. They will show up here if support is added.</string>
     <string name="hub_horizontal_cards_title">Horizontal cards per row</string>
     <string name="hub_video_grid_columns_desc">Columns used by vertical video grids on home and list pages</string>
     <string name="hub_search_grid_columns_title">Search grid columns</string>

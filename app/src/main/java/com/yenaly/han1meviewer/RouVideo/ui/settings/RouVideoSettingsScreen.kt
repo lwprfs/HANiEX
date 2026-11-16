@@ -33,6 +33,14 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
+import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingActionItem
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
@@ -84,7 +92,6 @@ fun RouVideoSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.rouvideo_title_language)) }
             item { HintText(stringResource(R.string.rouvideo_title_language_hint)) }
             item {
@@ -108,7 +115,6 @@ fun RouVideoSettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.rouvideo_playback)) }
             item {
                 SwitchRow(
@@ -122,40 +128,30 @@ fun RouVideoSettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.rouvideo_troubleshooting)) }
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            RouVideoNetwork.clearCookies()
-                            cookiesCleared = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            if (cookiesCleared) stringResource(R.string.rouvideo_cf_cleared)
-                            else stringResource(R.string.rouvideo_cf_clear)
-                        )
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            RouVideoSettings.resetToDefaults()
-                            order = RouVideoSettings.tabOrder
-                            hidden = RouVideoSettings.hiddenTabs
-                            language = RouVideoSettings.titleLanguage
-                            reportPlays = RouVideoSettings.reportPlays
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.rouvideo_reset_defaults))
-                    }
-                }
+                SettingNavigationItem(
+                    title = if (cookiesCleared) stringResource(R.string.rouvideo_cf_cleared)
+                    else stringResource(R.string.rouvideo_cf_clear),
+                    icon = Icons.Filled.CleaningServices,
+                    onClick = {
+                        RouVideoNetwork.clearCookies()
+                        cookiesCleared = true
+                    },
+                )
+            }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.rouvideo_reset_defaults),
+                    icon = Icons.Filled.Restore,
+                    onClick = {
+                        RouVideoSettings.resetToDefaults()
+                        order = RouVideoSettings.tabOrder
+                        hidden = RouVideoSettings.hiddenTabs
+                        language = RouVideoSettings.titleLanguage
+                        reportPlays = RouVideoSettings.reportPlays
+                    },
+                )
             }
         }
     }
@@ -163,48 +159,17 @@ fun RouVideoSettingsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun SectionHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
-    )
+    SettingSectionHeader(text)
 }
 
 @Composable
 private fun HintText(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-    )
+    SettingHintText(text)
 }
 
 @Composable
 private fun RadioRow(title: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        if (selected) {
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
+    SettingRadioItem(title = title, selected = selected, onClick = onClick)
 }
 
 @Composable
@@ -214,27 +179,12 @@ private fun SwitchRow(
     checked: Boolean,
     onChange: (Boolean) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = checked, onCheckedChange = onChange)
-    }
+    SettingSwitchItem(
+        title = title,
+        summary = subtitle,
+        checked = checked,
+        onCheckedChange = onChange,
+    )
 }
 
 @Composable
@@ -247,25 +197,17 @@ private fun TabRow(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
+    SettingActionItem(title = title) {
         IconButton(onClick = onMoveUp, enabled = canMoveUp) {
             Icon(Icons.Filled.ArrowUpward, contentDescription = null)
         }
         IconButton(onClick = onMoveDown, enabled = canMoveDown) {
             Icon(Icons.Filled.ArrowDownward, contentDescription = null)
         }
-        Switch(checked = enabled, onCheckedChange = onToggle)
+        Switch(
+            checked = enabled,
+            onCheckedChange = onToggle,
+            modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+        )
     }
 }

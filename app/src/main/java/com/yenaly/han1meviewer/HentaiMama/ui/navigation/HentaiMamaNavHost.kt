@@ -395,8 +395,12 @@ fun HentaiMamaNavHost(
                 if (navController.canNavigateSafely()) navController.navigateSafely(route)
             }
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.HENTAIMAMA,
+                onResetSite = {
+                    com.yenaly.han1meviewer.HentaiMama.ui.home.HentaiMamaHomeCategoryRepo.resetToDefaults()
+                    com.yenaly.han1meviewer.HentaiMama.settings.HentaiMamaCardSettings.resetAllToDefaults()
+                    com.yenaly.han1meviewer.HentaiMama.settings.HentaiMamaVideoSettings.resetToDefaults()
+                },
                 siteEntries = listOf(
                     SiteSettingsEntry(
                         key = "video",

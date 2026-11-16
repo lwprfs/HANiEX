@@ -36,7 +36,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -136,23 +135,14 @@ fun SiteHubListScreen(
     sections: List<SiteHubSection>,
     onBack: (() -> Unit)?,
     modifier: Modifier = Modifier,
-    emptyState: (@Composable () -> Unit)? = null,
     extraContent: (@Composable () -> Unit)? = null,
 ) {
-    val hasEntries = sections.any { it.entries.isNotEmpty() }
     HanimeScaffold(
         title = title,
         onBack = onBack,
         modifier = modifier,
     ) { padding ->
-        if (!hasEntries && emptyState != null) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center,
-            ) { emptyState() }
-        } else if (onBack == null) {
+        if (onBack == null) {
             SiteHubCardGrid(
                 sections = sections,
                 padding = padding,
@@ -248,49 +238,6 @@ private fun SiteHubCard(entry: SiteHubEntry) {
         modifier = Modifier.height(CardHeight),
         onClick = entry.onClick,
     )
-}
-
-@Composable
-fun SiteHubUnavailableState(
-    title: String,
-    message: String,
-    icon: ImageVector,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 32.dp, vertical = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
-            modifier = Modifier.size(72.dp),
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(34.dp),
-                )
-            }
-        }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            textAlign = TextAlign.Center,
-        )
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-        )
-    }
 }
 
 @Composable

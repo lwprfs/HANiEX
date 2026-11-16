@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.MissAV.viewmodel
 import android.app.Application
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.screen.SiteSearchSettings
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -52,7 +54,8 @@ class MissAvViewModel(application: Application) : AndroidViewModel(application) 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    private val _selectedSort = MutableStateFlow<String?>(null)
+    private val _selectedSort =
+        MutableStateFlow<String?>(SiteSearchSettings.defaultSort(SiteType.MISSAV))
     val selectedSort = _selectedSort.asStateFlow()
 
     private val _selectedFilter = MutableStateFlow<String?>(null)

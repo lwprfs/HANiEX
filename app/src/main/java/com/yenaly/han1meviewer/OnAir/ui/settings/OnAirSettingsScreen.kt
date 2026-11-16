@@ -57,6 +57,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.automirrored.filled.Login
+import androidx.compose.material.icons.filled.Cookie
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Person
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.OnAir.common.OnAirConstants
 import com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences
@@ -158,16 +167,9 @@ fun OnAirSettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(12.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    ),
-                ) {
+                run {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier
@@ -272,221 +274,79 @@ fun OnAirSettingsScreen(
                                 }
                             }
                         }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 14.dp, end = 14.dp, bottom = 14.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        ) {
-                            OutlinedButton(
-                                onClick = onOpenCookies,
-                                modifier = Modifier.weight(1f),
-                            ) {
-                                Text(if (hasCookies) stringResource(R.string.onair_manage_cookies) else stringResource(R.string.onair_add_cookies))
-                            }
-                            if (!hasCookies) {
-                                OutlinedButton(
-                                    onClick = onOpenLogin,
-                                    modifier = Modifier.weight(1f),
-                                ) { Text(stringResource(R.string.site_log_in)) }
-                            } else if (profile != null) {
-                                OutlinedButton(
-                                    onClick = { profile?.let { onOpenProfile(it.username) } },
-                                    modifier = Modifier.weight(1f),
-                                ) { Text(stringResource(R.string.onair_view_my_profile)) }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    ),
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = stringResource(R.string.site_drawer_section_browse),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
+                        SettingNavigationItem(
+                            title = if (hasCookies) stringResource(R.string.onair_manage_cookies)
+                            else stringResource(R.string.onair_add_cookies),
+                            icon = Icons.Default.Cookie,
+                            onClick = onOpenCookies,
                         )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.onair_announcements_chat_and_tags_moved_here),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(onClick = onOpenAnnouncements)
-                                .padding(vertical = 10.dp, horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Campaign,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                        if (!hasCookies) {
+                            SettingNavigationItem(
+                                title = stringResource(R.string.site_log_in),
+                                icon = Icons.AutoMirrored.Filled.Login,
+                                onClick = onOpenLogin,
                             )
-                            Spacer(Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.onair_announcements_title),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                                Text(
-                                    text = stringResource(R.string.onair_site_news_and_mirror_updates),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(onClick = onOpenChat)
-                                .padding(vertical = 10.dp, horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
+                        } else if (profile != null) {
+                            SettingNavigationItem(
+                                title = stringResource(R.string.onair_view_my_profile),
+                                icon = Icons.Default.Person,
+                                onClick = { profile?.let { onOpenProfile(it.username) } },
                             )
-                            Spacer(Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.drawer_chat),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                                Text(
-                                    text = stringResource(R.string.onair_site_wide_community_chat),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable(onClick = onOpenTags)
-                                .padding(vertical = 10.dp, horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = stringResource(R.string.drawer_tags),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold,
-                                )
-                                Text(
-                                    text = stringResource(R.string.onair_browse_all_tags),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
                         }
                     }
                 }
             }
 
+            item { SettingSectionHeader(stringResource(R.string.site_drawer_section_browse)) }
+            item { SettingHintText(stringResource(R.string.onair_announcements_chat_and_tags_moved_here)) }
             item {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    ),
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = stringResource(R.string.onair_mirror_host),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.onair_onair_is_a_tor_only_site),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        Text(
-                            text = currentHost,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        TextButton(onClick = { showHostDialog = true }) {
-                            Text(stringResource(R.string.onair_change_host))
-                        }
-                    }
-                }
+                SettingNavigationItem(
+                    title = stringResource(R.string.onair_announcements_title),
+                    summary = stringResource(R.string.onair_site_news_and_mirror_updates),
+                    icon = Icons.Default.Campaign,
+                    onClick = onOpenAnnouncements,
+                )
+            }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.drawer_chat),
+                    summary = stringResource(R.string.onair_site_wide_community_chat),
+                    icon = Icons.Default.Email,
+                    onClick = onOpenChat,
+                )
+            }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.drawer_tags),
+                    summary = stringResource(R.string.onair_browse_all_tags),
+                    icon = Icons.Default.Info,
+                    onClick = onOpenTags,
+                )
             }
 
+            item { SettingSectionHeader(stringResource(R.string.onair_mirror_host)) }
+            item { SettingHintText(stringResource(R.string.onair_onair_is_a_tor_only_site)) }
             item {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    ),
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = stringResource(R.string.site_history),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.onair_clear_all_watch_history_stored_on),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(6.dp))
-                        TextButton(onClick = { showClearHistoryDialog = true }) {
-                            Text(stringResource(R.string.site_clear_history))
-                        }
-                    }
-                }
+                SettingNavigationItem(
+                    title = stringResource(R.string.onair_change_host),
+                    summary = currentHost,
+                    icon = Icons.Default.Dns,
+                    onClick = { showHostDialog = true },
+                )
             }
 
+            item { SettingSectionHeader(stringResource(R.string.site_history)) }
             item {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    ),
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(
-                            text = stringResource(R.string.onair_about_onair),
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.Bold,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.onair_self_hosted_video_site_run_by),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_clear_history),
+                    summary = stringResource(R.string.onair_clear_all_watch_history_stored_on),
+                    icon = Icons.Default.Delete,
+                    onClick = { showClearHistoryDialog = true },
+                )
             }
+
+            item { SettingSectionHeader(stringResource(R.string.onair_about_onair)) }
+            item { SettingHintText(stringResource(R.string.onair_self_hosted_video_site_run_by)) }
         }
     }
 
@@ -495,26 +355,18 @@ fun OnAirSettingsScreen(
             onDismissRequest = { showHostDialog = false },
             title = { Text(stringResource(R.string.onair_choose_onair_host)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column {
                     OnAirConstants.ONAIR_HOSTNAME.forEachIndexed { index, host ->
-                        val selected = currentHost == host
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    OnAirSitePreferences.setMirrorIndex(index)
-                                    currentHost = host
-                                    OnAirNetwork.rebuildNetwork()
-                                    showHostDialog = false
-                                }
-                                .padding(vertical = 8.dp, horizontal = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = selected, onClick = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(host, style = MaterialTheme.typography.bodySmall)
-                        }
+                        SettingRadioItem(
+                            title = host,
+                            selected = currentHost == host,
+                            onClick = {
+                                OnAirSitePreferences.setMirrorIndex(index)
+                                currentHost = host
+                                OnAirNetwork.rebuildNetwork()
+                                showHostDialog = false
+                            },
+                        )
                     }
                 }
             },

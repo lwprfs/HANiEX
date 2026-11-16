@@ -26,6 +26,11 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.XHamster.common.XHamsterConstants
 import com.yenaly.han1meviewer.XHamster.common.XHamsterSettings
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
@@ -45,55 +50,21 @@ fun XHamsterSettingsScreen(onBack: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
+                .padding(padding),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_settings_high_quality_24),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(22.dp),
-                )
-                Text(
-                    text = stringResource(R.string.xhamster_pref_quality),
-                    style = MaterialTheme.typography.titleMedium,
-                )
-            }
-            Text(
-                text = stringResource(R.string.xhamster_pref_quality_summary),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
-            )
+            SettingSectionHeader(stringResource(R.string.xhamster_pref_quality))
+            SettingHintText(stringResource(R.string.xhamster_pref_quality_summary))
             XHamsterConstants.QUALITIES.forEach { quality ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            selected = quality
-                            XHamsterSettings.preferredQuality = quality
-                        }
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    RadioButton(
-                        selected = selected == quality,
-                        onClick = {
-                            selected = quality
-                            XHamsterSettings.preferredQuality = quality
-                        },
-                    )
-                    Text(
-                        text = if (quality == "auto") {
-                            stringResource(R.string.xhamster_quality_auto)
-                        } else quality,
-                        modifier = Modifier.padding(start = 8.dp),
-                    )
-                }
+                SettingRadioItem(
+                    title = if (quality == "auto") {
+                        stringResource(R.string.xhamster_quality_auto)
+                    } else quality,
+                    selected = selected == quality,
+                    onClick = {
+                        selected = quality
+                        XHamsterSettings.preferredQuality = quality
+                    },
+                )
             }
         }
     }

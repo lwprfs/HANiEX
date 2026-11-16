@@ -56,6 +56,8 @@ import com.yenaly.han1meviewer.FapFolder.data.local.FapFolderHistoryRepo
 import com.yenaly.han1meviewer.FapFolder.data.local.FapFolderSearchHistoryRepo
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.launch
 
@@ -207,47 +209,9 @@ fun FapFolderSettingsHubScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
-            item(key = "site_card") {
-                Card(
-                    shape = RoundedCornerShape(14.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Filled.Settings,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(20.dp),
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                text = "FapFolder",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
-                        Text(
-                            text = "https://fapfolder.club",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
-                        )
-                    }
-                }
+            item(key = "site_header") {
+                SettingSectionHeader("FapFolder · https://fapfolder.club")
             }
 
             items(entries, key = { it.key }) { entry ->
@@ -342,38 +306,10 @@ fun FapFolderSettingsHubScreen(
 
 @Composable
 private fun FapFolderHubRow(entry: FapFolderHubEntry) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = entry.onClick),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            SiteIconBadge(imageVector = entry.icon)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    text = entry.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    SettingNavigationItem(
+        title = entry.title,
+        summary = entry.subtitle,
+        icon = entry.icon,
+        onClick = entry.onClick,
+    )
 }

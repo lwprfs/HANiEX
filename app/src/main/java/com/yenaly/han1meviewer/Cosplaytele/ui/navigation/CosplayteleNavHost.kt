@@ -106,8 +106,8 @@ fun CosplayteleNavHost(
 
         composable<CosplayteleSettingsHubRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.COSPLAYTELE,
+                onResetSite = { com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleSettings.resetToDefaults() },
                 siteEntries = listOf(
                     SiteSettingsEntry(
                         key = "playback",

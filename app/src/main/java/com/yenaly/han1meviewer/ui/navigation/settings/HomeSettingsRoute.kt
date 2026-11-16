@@ -1,25 +1,9 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.annotation.SuppressLint
-import android.content.Context
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,25 +12,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.core.content.edit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.analytics
-import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.HA1_GITHUB_FORUM_URL
 import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
 import com.yenaly.han1meviewer.HanimeApplication
-import com.yenaly.han1meviewer.HanimeConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.shizuku.ShizukuInstallResult
@@ -58,15 +32,10 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.ui.screen.home.homepage.defaultHomeCategoryPreferenceItems
-import com.yenaly.han1meviewer.ui.screen.home.homepage.hiddenHomeCategoryKeys
-import com.yenaly.han1meviewer.ui.screen.home.homepage.homeCategoryOrder
 import com.yenaly.han1meviewer.ui.screen.home.homepage.saveHomeCategoryPreferences
 import com.yenaly.han1meviewer.ui.screen.runAfterUiSettles
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.LicenseDialog
-import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
-import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.ActivityManager
 import com.yenaly.han1meviewer.util.ThemeUtils
@@ -76,37 +45,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private const val HOME_VIDEO_LANGUAGE = "video_language"
-private const val HOME_DEFAULT_VIDEO_QUALITY = "default_video_quality"
-private const val HOME_SHOW_PLAYED_INDICATOR = "show_played_indicator"
-private const val HOME_WATCHED_PROGRESS_THRESHOLD = "watched_progress_threshold"
-private const val HOME_SEARCH_PAGINATION = "search_pagination"
-private const val HOME_RELATED_VIDEO_AS_TAB = "related_video_as_tab"
-private const val HOME_ALLOW_PIP_MODE = "allow_pip_mode"
-private const val HOME_UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
-private const val HOME_USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
-private const val HOME_USE_ANALYTICS = "use_analytics"
-private const val HOME_FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
-private const val HOME_USE_DARK_MODE = "use_dark_mode"
-private const val HOME_ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
-private const val HOME_SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
-private const val HOME_DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
-private const val HOME_DISABLE_PREDICTIVE_BACK = "disable_predictive_back"
-private const val HOME_SHOW_EXIT_CONFIRM = "show_exit_confirm"
-private const val HOME_DISABLE_COMMENTS = "disable_comments"
-private const val HOME_USE_LOCK_SCREEN = "use_lock_screen"
-private const val HOME_APP_LANGUAGE = "app_language"
-private const val HOME_THEME_COLOR = "theme_color"
-private const val HOME_PURE_BLACK_DARK_MODE = "pure_black_dark_mode"
-private const val HOME_SEARCH_GRID_COLUMNS_COMPACT = "search_grid_columns_compact"
-private const val HOME_SEARCH_GRID_COLUMNS_MEDIUM = "search_grid_columns_medium"
-private const val HOME_SEARCH_GRID_COLUMNS_EXPANDED = "search_grid_columns_expanded"
-private const val HOME_SEARCH_GRID_COLUMNS_LARGE = "search_grid_columns_large"
-private const val HOME_HORIZONTAL_CARD_COUNT_NARROW = "horizontal_card_count_narrow"
-private const val HOME_HORIZONTAL_CARD_COUNT_COMPACT = "horizontal_card_count_compact"
-private const val HOME_HORIZONTAL_CARD_COUNT_MEDIUM = "horizontal_card_count_medium"
-private const val HOME_HORIZONTAL_CARD_COUNT_EXPANDED = "horizontal_card_count_expanded"
-
 @SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -114,12 +52,8 @@ fun SettingsCategoryRouteScreen(
     category: SettingsCategory,
     activity: MainActivity,
     onNavigateToPlayerSettings: () -> Unit,
-    onNavigateToHKeyframeSettings: () -> Unit,
-    onNavigateToDownloadSettings: () -> Unit,
-    onNavigateToNetworkSettings: () -> Unit,
     onNavigateToUnifiedHistory: () -> Unit = {},
     onNavigateToTranslationSettings: () -> Unit = {},
-    onNavigateToUpdateStatus: () -> Unit = {},
     onNavigateToHKeyframes: () -> Unit,
     onNavigateToSharedHKeyframes: () -> Unit,
     onNavigateToAboutPage: () -> Unit,
@@ -267,18 +201,18 @@ fun SettingsCategoryRouteScreen(
         state = uiState,
         onVideoLanguageChange = { value ->
             if (value != Preferences.videoLanguage) {
-                saveString(HOME_VIDEO_LANGUAGE, value)
+                saveString(SettingsPreferenceKeys.VIDEO_LANGUAGE, value)
                 showRestartConfirmDialog = true
             }
         },
         onVideoQualityChange = { value ->
-            saveString(HOME_DEFAULT_VIDEO_QUALITY, value)
+            saveString(SettingsPreferenceKeys.DEFAULT_VIDEO_QUALITY, value)
             refreshKey++
             GlobalToasts.show(context.getString(R.string.success_value, value), level = GlobalToasts.ToastLevel.SUCCESS)
         },
         onDarkModeChange = { value ->
             if (value != Preferences.useDarkMode) {
-                saveString(HOME_USE_DARK_MODE, value)
+                saveString(SettingsPreferenceKeys.USE_DARK_MODE, value)
 
                 refreshKey++
 
@@ -291,51 +225,47 @@ fun SettingsCategoryRouteScreen(
             if (enabled && !isPipPermissionGranted(context)) {
                 GlobalToasts.show(requestPipAlert, level = GlobalToasts.ToastLevel.WARNING)
                 openPipPermissionSettings(context)
-                saveBoolean(HOME_ALLOW_PIP_MODE, false)
+                saveBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, false)
                 refreshKey++
                 return@HomeSettingsScreen
             }
-            saveBoolean(HOME_ALLOW_PIP_MODE, enabled)
+            saveBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, enabled)
             refreshKey++
         },
         onAllowResumePlaybackChange = {
-            saveBoolean(HOME_ALLOW_RESUME_PLAYBACK, it)
+            saveBoolean(SettingsPreferenceKeys.ALLOW_RESUME_PLAYBACK, it)
             refreshKey++
         },
         onShowPlayedIndicatorChange = {
-            saveBoolean(HOME_SHOW_PLAYED_INDICATOR, it)
+            saveBoolean(SettingsPreferenceKeys.SHOW_PLAYED_INDICATOR, it)
             refreshKey++
         },
         onWatchedProgressThresholdChange = {
-            saveInt(HOME_WATCHED_PROGRESS_THRESHOLD, it)
+            saveInt(SettingsPreferenceKeys.WATCHED_PROGRESS_THRESHOLD, it)
             refreshKey++
         },
         onSearchPaginationChange = {
-            saveBoolean(HOME_SEARCH_PAGINATION, it)
+            saveBoolean(SettingsPreferenceKeys.SEARCH_PAGINATION, it)
             refreshKey++
         },
         onRelatedVideoAsTabChange = {
-            saveBoolean(HOME_RELATED_VIDEO_AS_TAB, it)
+            saveBoolean(SettingsPreferenceKeys.RELATED_VIDEO_AS_TAB, it)
             refreshKey++
         },
         onSearchArtistIgnoreVideoTypeChange = {
-            saveBoolean(HOME_SEARCH_ARTIST_IGNORE_VIDEO_TYPE, it)
+            saveBoolean(SettingsPreferenceKeys.SEARCH_ARTIST_IGNORE_VIDEO_TYPE, it)
             refreshKey++
         },
         onDisableMobileDataWarningChange = {
-            saveBoolean(HOME_DISABLE_MOBILE_DATA_WARNING, it)
-            refreshKey++
-        },
-        onDisablePredictiveBackChange = {
-            saveBoolean(HOME_DISABLE_PREDICTIVE_BACK, it)
+            saveBoolean(SettingsPreferenceKeys.DISABLE_MOBILE_DATA_WARNING, it)
             refreshKey++
         },
         onShowExitConfirmChange = {
-            saveBoolean(HOME_SHOW_EXIT_CONFIRM, it)
+            saveBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, it)
             refreshKey++
         },
         onDisableCommentsChange = {
-            saveBoolean(HOME_DISABLE_COMMENTS, it)
+            saveBoolean(SettingsPreferenceKeys.DISABLE_COMMENTS, it)
             refreshKey++
         },
         onVideoGridColumnsConfigChange = { config ->
@@ -346,27 +276,27 @@ fun SettingsCategoryRouteScreen(
             refreshKey++
         },
         onSearchGridColumnsConfigChange = { config ->
-            saveInt(HOME_SEARCH_GRID_COLUMNS_COMPACT, config.compactColumns)
-            saveInt(HOME_SEARCH_GRID_COLUMNS_MEDIUM, config.mediumColumns)
-            saveInt(HOME_SEARCH_GRID_COLUMNS_EXPANDED, config.expandedColumns)
-            saveInt(HOME_SEARCH_GRID_COLUMNS_LARGE, config.largeColumns)
+            saveInt(SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_COMPACT, config.compactColumns)
+            saveInt(SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_MEDIUM, config.mediumColumns)
+            saveInt(SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_EXPANDED, config.expandedColumns)
+            saveInt(SettingsPreferenceKeys.SEARCH_GRID_COLUMNS_LARGE, config.largeColumns)
             refreshKey++
         },
         onHorizontalCardCountConfigChange = { config ->
-            saveString(HOME_HORIZONTAL_CARD_COUNT_NARROW, config.narrowCount.toString())
-            saveString(HOME_HORIZONTAL_CARD_COUNT_COMPACT, config.compactCount.toString())
-            saveString(HOME_HORIZONTAL_CARD_COUNT_MEDIUM, config.mediumCount.toString())
-            saveString(HOME_HORIZONTAL_CARD_COUNT_EXPANDED, config.expandedCount.toString())
+            saveString(SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_NARROW, config.narrowCount.toString())
+            saveString(SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_COMPACT, config.compactCount.toString())
+            saveString(SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_MEDIUM, config.mediumCount.toString())
+            saveString(SettingsPreferenceKeys.HORIZONTAL_CARD_COUNT_EXPANDED, config.expandedCount.toString())
             refreshKey++
         },
         onThemeColorChange = { key ->
-            saveString(HOME_THEME_COLOR, key)
+            saveString(SettingsPreferenceKeys.THEME_COLOR, key)
             refreshKey++
             recreateAfterDialogDismiss()
         },
         onPureBlackDarkModeChange = { enabled ->
             if (enabled != Preferences.pureBlackDarkMode) {
-                saveBoolean(HOME_PURE_BLACK_DARK_MODE, enabled)
+                saveBoolean(SettingsPreferenceKeys.PURE_BLACK_DARK_MODE, enabled)
                 refreshKey++
                 recreateAfterDialogDismiss()
             }
@@ -376,7 +306,7 @@ fun SettingsCategoryRouteScreen(
             refreshKey++
         },
         onUseCIUpdateChannelChange = { value ->
-            saveBoolean(HOME_USE_CI_UPDATE_CHANNEL, value)
+            saveBoolean(SettingsPreferenceKeys.USE_CI_UPDATE_CHANNEL, value)
             refreshKey++
             AppViewModel.getLatestVersion()
         },
@@ -411,7 +341,7 @@ fun SettingsCategoryRouteScreen(
                 showAnalyticsDialog = true
                 return@HomeSettingsScreen
             }
-            saveBoolean(HOME_USE_ANALYTICS, true)
+            saveBoolean(SettingsPreferenceKeys.USE_ANALYTICS, true)
             refreshKey++
             Firebase.analytics.setAnalyticsCollectionEnabled(true)
         },
@@ -423,20 +353,16 @@ fun SettingsCategoryRouteScreen(
                     return@HomeSettingsScreen
                 }
             }
-            saveBoolean(HOME_USE_LOCK_SCREEN, value)
+            saveBoolean(SettingsPreferenceKeys.USE_LOCK_SCREEN, value)
             refreshKey++
         },
         onOpenPlayerSettings = onNavigateToPlayerSettings,
-        onOpenHKeyframeSettings = onNavigateToHKeyframeSettings,
-        onOpenDownloadSettings = onNavigateToDownloadSettings,
-        onOpenNetworkSettings = onNavigateToNetworkSettings,
         onOpenUnifiedHistory = onNavigateToUnifiedHistory,
         onOpenTranslationSettings = onNavigateToTranslationSettings,
-        onOpenUpdateStatus = onNavigateToUpdateStatus,
-        onOpenAppLanguageSettings = { value ->
-            val old = Preferences.preferenceSp.getString(HOME_APP_LANGUAGE, "system") ?: "system"
+        onAppLanguageChange = { value ->
+            val old = Preferences.preferenceSp.getString(SettingsPreferenceKeys.APP_LANGUAGE, "system") ?: "system"
             if (old != value) {
-                Preferences.preferenceSp.edit { putString(HOME_APP_LANGUAGE, value) }
+                Preferences.preferenceSp.edit { putString(SettingsPreferenceKeys.APP_LANGUAGE, value) }
                 refreshKey++
                 recreateAfterDialogDismiss()
             }
@@ -450,7 +376,7 @@ fun SettingsCategoryRouteScreen(
             }
         },
         onUpdatePopupIntervalDaysChange = {
-            Preferences.preferenceSp.edit { putInt(HOME_UPDATE_POPUP_INTERVAL_DAYS, it) }
+            Preferences.preferenceSp.edit { putInt(SettingsPreferenceKeys.UPDATE_POPUP_INTERVAL_DAYS, it) }
             refreshKey++
         },
         onOpenFakeLauncherIcon = { showLauncherPicker = true },
@@ -532,6 +458,7 @@ fun SettingsCategoryRouteScreen(
         message = stringResource(R.string.sure_to_clear_cache),
         confirmText = stringResource(R.string.confirm),
         dismissText = stringResource(R.string.cancel),
+        destructive = true,
         onConfirm = {
             showClearCacheConfirm = false
             coroutineScope.launch(Dispatchers.IO) {
@@ -558,31 +485,14 @@ fun SettingsCategoryRouteScreen(
     }
 
     if (showAnalyticsDialog) {
-        val analyticsHtml = stringResource(R.string.about_analytics_summary)
-        val analyticsMessage = remember(analyticsHtml) {
-            AnnotatedString.fromHtml(analyticsHtml)
-        }
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text(stringResource(R.string.about_analytics)) },
-            text = {
-                Text(text = analyticsMessage)
+        AnalyticsInfoDialog(
+            onDeny = {
+                saveBoolean(SettingsPreferenceKeys.USE_ANALYTICS, false)
+                refreshKey++
+                Firebase.analytics.setAnalyticsCollectionEnabled(false)
+                showAnalyticsDialog = false
             },
-            confirmButton = {
-                TextButton(onClick = { showAnalyticsDialog = false }) {
-                    Text(stringResource(R.string.ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = {
-                    saveBoolean(HOME_USE_ANALYTICS, false)
-                    refreshKey++
-                    Firebase.analytics.setAnalyticsCollectionEnabled(false)
-                    showAnalyticsDialog = false
-                }) {
-                    Text(stringResource(R.string.deny))
-                }
-            },
+            onDismiss = { showAnalyticsDialog = false },
         )
     }
 
@@ -603,165 +513,18 @@ fun SettingsCategoryRouteScreen(
     )
 
     if (showLauncherPicker) {
-        Dialog(
-            onDismissRequest = { showLauncherPicker = false },
-        ) {
-            Surface(
-                shape = RoundedCornerShape(28.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Text(
-                        stringResource(R.string.fake_app_icon),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    launcherItems.forEach { item ->
-                        TextButton(
-                            onClick = {
-                                Preferences.preferenceSp.edit {
-                                    putString(HOME_FAKE_LAUNCHER_ICON, item.alias)
-                                }
-                                (context.applicationContext as? HanimeApplication)?.switchLauncher(
-                                    item.alias
-                                )
-                                GlobalToasts.show(fakeIconHint, level = GlobalToasts.ToastLevel.INFO)
-                                refreshKey++
-                                showLauncherPicker = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Icon(
-                                    painter = painterResource(item.iconRes),
-                                    contentDescription = null,
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.size(30.dp),
-                                )
-                                Text(item.name)
-                            }
-                        }
-                    }
+        LauncherPickerDialog(
+            items = launcherItems,
+            onSelect = { item ->
+                Preferences.preferenceSp.edit {
+                    putString(SettingsPreferenceKeys.FAKE_LAUNCHER_ICON, item.alias)
                 }
-            }
-        }
+                (context.applicationContext as? HanimeApplication)?.switchLauncher(item.alias)
+                GlobalToasts.show(fakeIconHint, level = GlobalToasts.ToastLevel.INFO)
+                refreshKey++
+                showLauncherPicker = false
+            },
+            onDismiss = { showLauncherPicker = false },
+        )
     }
-
-}
-
-private data class LauncherItem(
-    val name: String,
-    @param:DrawableRes val iconRes: Int,
-    val alias: String,
-)
-
-private fun buildHomeSettingsUiState(
-    context: Context,
-    launcherItems: List<LauncherItem>,
-    updateSummary: String,
-    cacheSummary: String,
-): HomeSettingsUiState {
-    val currentAlias = Preferences.fakeLauncherIcon
-    val currentItem = launcherItems.find { it.alias == currentAlias } ?: launcherItems.first()
-    val videoLanguageLabel = when (Preferences.videoLanguage) {
-        "zht" -> context.getString(R.string.traditional_chinese)
-        "zhs" -> context.getString(R.string.simplified_chinese)
-        else -> Preferences.videoLanguage
-    }
-    val darkModeLabel = when (Preferences.useDarkMode) {
-        "follow_system" -> context.getString(R.string.follow_system)
-        "always_off" -> context.getString(R.string.always_off)
-        "always_on" -> context.getString(R.string.always_on)
-        else -> Preferences.useDarkMode
-    }
-    val updateInstallerLabel = when (Preferences.updateInstaller) {
-        UpdateInstaller.SHIZUKU -> context.getString(R.string.update_installer_shizuku)
-        else -> context.getString(R.string.update_installer_system)
-    }
-    val appLanguageValue =
-        Preferences.preferenceSp.getString(HOME_APP_LANGUAGE, "system") ?: "system"
-    val appLanguageLabel = when (appLanguageValue) {
-        "system" -> context.getString(R.string.follow_system)
-        "zh-rCN" -> context.getString(R.string.simplified_chinese)
-        "zh" -> context.getString(R.string.traditional_chinese)
-        "ja" -> context.getString(R.string.japanese_lang)
-        "en" -> context.getString(R.string.english_lang)
-        else -> appLanguageValue
-    }
-    val searchGridColumnsConfig = Preferences.searchGridColumnsConfig
-    val videoGridColumnsConfig = Preferences.videoGridColumnsConfig
-    val horizontalCardCountConfig = Preferences.horizontalCardCountConfig
-    return HomeSettingsUiState(
-        videoLanguage = Preferences.videoLanguage,
-        videoLanguageLabel = videoLanguageLabel,
-        defaultVideoQuality = Preferences.videoQuality,
-        darkMode = Preferences.useDarkMode,
-        darkModeLabel = darkModeLabel,
-        appLanguage = appLanguageValue,
-        appLanguageLabel = appLanguageLabel,
-        allowPipMode = Preferences.preferenceSp.getBoolean(HOME_ALLOW_PIP_MODE, false),
-        allowResumePlayback = Preferences.allowResumePlayback,
-        showPlayedIndicator = Preferences.showPlayedIndicator,
-        watchedProgressThreshold = Preferences.watchedProgressThreshold,
-        searchPagination = Preferences.searchPagination,
-        relatedVideoAsTab = Preferences.relatedVideoAsTab,
-        searchArtistIgnoreVideoType = Preferences.searchArtistIgnoreVideoType,
-        disableMobileDataWarning = Preferences.disableMobileDataWarning,
-        disablePredictiveBack = Preferences.disablePredictiveBack,
-        showExitConfirm = Preferences.showExitConfirm,
-        disableComments = Preferences.preferenceSp.getBoolean(HOME_DISABLE_COMMENTS, false),
-        collapseDownloadedGroup = Preferences.collapseDownloadedGroup,
-        useCIUpdateChannel = Preferences.useCIUpdateChannel,
-        updateInstaller = Preferences.updateInstaller,
-        updateInstallerLabel = updateInstallerLabel,
-        useAnalytics = Preferences.isAnalyticsEnabled,
-        useLockScreen = Preferences.preferenceSp.getBoolean(HOME_USE_LOCK_SCREEN, false),
-        fakeLauncherIconName = currentItem.name,
-        updateSummary = updateSummary,
-        cacheSummary = cacheSummary,
-        versionSummary = context.getString(
-            R.string.current_version,
-            "v${BuildConfig.VERSION_NAME}"
-        ),
-        updatePopupIntervalSummary = toIntervalDaysPrettyString(
-            context,
-            Preferences.updatePopupIntervalDays
-        ),
-        updatePopupIntervalDays = Preferences.updatePopupIntervalDays,
-        dynamicColorEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
-        themeColorKey = Preferences.themeColor ?: ThemeColorPreset.DEFAULT.key,
-        themeColorName = context.getString(ThemeColorPreset.fromKey(Preferences.themeColor).displayNameRes),
-        pureBlackDarkMode = Preferences.pureBlackDarkMode,
-        searchGridColumnsSummary = listOf(
-            searchGridColumnsConfig.compactColumns,
-            searchGridColumnsConfig.mediumColumns,
-            searchGridColumnsConfig.expandedColumns,
-            searchGridColumnsConfig.largeColumns,
-        ).joinToString(" / "),
-        searchGridColumnsConfig = searchGridColumnsConfig,
-        videoGridColumnsSummary = listOf(
-            videoGridColumnsConfig.compactColumns,
-            videoGridColumnsConfig.mediumColumns,
-            videoGridColumnsConfig.expandedColumns,
-            videoGridColumnsConfig.largeColumns,
-        ).joinToString(" / "),
-        videoGridColumnsConfig = videoGridColumnsConfig,
-        horizontalCardCountSummary = listOf(
-            horizontalCardCountConfig.narrowCount,
-            horizontalCardCountConfig.compactCount,
-            horizontalCardCountConfig.mediumCount,
-            horizontalCardCountConfig.expandedCount,
-        ).joinToString(" / "),
-        horizontalCardCountConfig = horizontalCardCountConfig,
-        homeCategoryItems = defaultHomeCategoryPreferenceItems,
-        homeCategoryOrder = homeCategoryOrder,
-        hiddenHomeCategoryKeys = hiddenHomeCategoryKeys,
-        useAvHomeCategoryTitles = Preferences.isAvSite,
-    )
 }

@@ -59,6 +59,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import com.yenaly.han1meviewer.ui.screen.SiteCardSettings
+import com.yenaly.han1meviewer.Preferences
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -291,6 +294,53 @@ fun SiteVideoSectionHeader(
 
 @Composable
 fun SiteVideoCard(
+    title: String,
+    coverUrl: Any,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onLongClick: (() -> Unit)? = null,
+    aspectRatio: Float = 16f / 9f,
+    views: String? = null,
+    duration: String? = null,
+    subtitle: String? = null,
+    reviews: String? = null,
+    uploadTime: String? = null,
+    topEndBadge: String? = null,
+    bottomStartBadge: String? = null,
+    isWatched: Boolean = false,
+    imageLoader: ImageLoader? = null,
+    contentScale: ContentScale = ContentScale.FillWidth,
+    placeholder: androidx.compose.ui.graphics.painter.Painter? = null,
+) {
+    val site = if (LocalInspectionMode.current) null else Preferences.siteType
+    val shown = { detail: SiteCardSettings.Detail ->
+        site == null || site !in SiteCardSettings.sites || SiteCardSettings.isShown(site, detail)
+    }
+    SiteVideoCardLayout(
+        title = title,
+        coverUrl = coverUrl,
+        onClick = onClick,
+        modifier = modifier,
+        onLongClick = onLongClick,
+        aspectRatio = (site
+            ?.takeIf { it in SiteCardSettings.sites }
+            ?.let { SiteCardSettings.aspect(it).ratio }) ?: aspectRatio,
+        views = views.takeIf { shown(SiteCardSettings.Detail.Views) },
+        duration = duration.takeIf { shown(SiteCardSettings.Detail.Duration) },
+        subtitle = subtitle.takeIf { shown(SiteCardSettings.Detail.Subtitle) },
+        reviews = reviews,
+        uploadTime = uploadTime.takeIf { shown(SiteCardSettings.Detail.Date) },
+        topEndBadge = topEndBadge,
+        bottomStartBadge = bottomStartBadge,
+        isWatched = isWatched,
+        imageLoader = imageLoader,
+        contentScale = contentScale,
+        placeholder = placeholder,
+    )
+}
+
+@Composable
+private fun SiteVideoCardLayout(
     title: String,
     coverUrl: Any,
     onClick: () -> Unit,

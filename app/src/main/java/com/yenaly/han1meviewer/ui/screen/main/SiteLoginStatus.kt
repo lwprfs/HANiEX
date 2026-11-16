@@ -195,37 +195,14 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         }
     }
 
-    SiteType.HENTAIMAMA -> SiteLoginStatus(
-        title = context.getString(R.string.not_logged_in),
-        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.HENTAIMAMA)),
-        avatarUrl = null,
-        loggedIn = false,
-        onClick = null,
-    )
-
-    SiteType.SUPJAV -> SiteLoginStatus(
-        title = context.getString(R.string.not_logged_in),
-        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.SUPJAV)),
-        avatarUrl = null,
-        loggedIn = false,
-        onClick = null,
-    )
-
-    SiteType.BUONDUA -> SiteLoginStatus(
-        title = context.getString(R.string.not_logged_in),
-        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.BUONDUA)),
-        avatarUrl = null,
-        loggedIn = false,
-        onClick = null,
-    )
-
-    SiteType.COSPLAYTELE -> SiteLoginStatus(
-        title = context.getString(R.string.not_logged_in),
-        subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(SiteType.COSPLAYTELE)),
-        avatarUrl = null,
-        loggedIn = false,
-        onClick = null,
-    )
+    SiteType.HENTAIMAMA, SiteType.SUPJAV, SiteType.BUONDUA, SiteType.COSPLAYTELE ->
+        SiteLoginStatus(
+            title = context.getString(R.string.login_status_no_account),
+            subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(site)),
+            avatarUrl = null,
+            loggedIn = false,
+            onClick = null,
+        )
 
     SiteType.ROUVIDEO -> {
         RouVideoAuth.reload()

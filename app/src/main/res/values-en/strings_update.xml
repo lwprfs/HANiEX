@@ -88,12 +88,10 @@
     <string name="upd_notif_details">Details</string>
     <string name="upd_notif_delta_text">Delta patch · %1$s</string>
     <string name="upd_notif_full_text">Full APK · %1$s</string>
-    <string name="upd_home_downloading">Downloading %1$d%% · %2$s</string>
     <string name="upd_home_open_hint">Tap to see details, cancel or install</string>
     <string name="upd_home_channel_ci_summary">Get every new build from GitHub Actions</string>
     <string name="hist_all_sites_title">Watch history · all sites</string>
     <string name="hist_all_sites_summary">One list for %1$s. Tap an item to switch site and keep watching.</string>
-    <string name="hist_all_sites_open">Open history</string>
     <string name="settings_group_links">Links &amp; sharing</string>
     <string name="settings_group_site_history">Watch history</string>
 </resources>

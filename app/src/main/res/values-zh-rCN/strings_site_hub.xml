@@ -14,8 +14,6 @@
     <string name="hub_downloads_desc">已下载的视频</string>
     <string name="hub_section_on_device">此设备</string>
     <string name="hub_section_history">记录</string>
-    <string name="hub_subscription_unavailable_title">%1$s 没有订阅功能</string>
-    <string name="hub_subscription_unavailable_message">此站点目前没有可用的订阅功能，日后支持时会显示在这里。</string>
     <string name="hub_horizontal_cards_title">横向卡片每行数量</string>
     <string name="hub_video_grid_columns_desc">首页与列表中垂直视频网格的列数</string>
     <string name="hub_search_grid_columns_title">搜索网格列数</string>

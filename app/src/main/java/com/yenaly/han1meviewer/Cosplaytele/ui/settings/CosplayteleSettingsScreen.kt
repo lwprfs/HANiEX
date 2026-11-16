@@ -29,6 +29,14 @@ import com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleConstants
 import com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleSettings
 import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
 import com.yenaly.han1meviewer.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
@@ -60,7 +68,6 @@ fun CosplayteleSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { Header(stringResource(R.string.cosplaytele_photo_columns)) }
             item { Hint(stringResource(R.string.cosplaytele_photo_columns_hint)) }
             CosplayteleConstants.PHOTO_COLUMN_OPTIONS.forEach { n ->
@@ -82,33 +89,30 @@ fun CosplayteleSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { Header(stringResource(R.string.cosplaytele_troubleshooting)) }
             item {
-                OutlinedButton(
+                SettingNavigationItem(
+                    title = stringResource(
+                        if (cookiesCleared) R.string.cosplaytele_cf_cleared else R.string.cosplaytele_cf_clear
+                    ),
+                    icon = Icons.Filled.CleaningServices,
                     onClick = {
                         CosplayteleNetwork.clearCookies()
                         cookiesCleared = true
                     },
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                ) {
-                    Text(
-                        stringResource(
-                            if (cookiesCleared) R.string.cosplaytele_cf_cleared else R.string.cosplaytele_cf_clear
-                        )
-                    )
-                }
+                )
             }
             item {
-                OutlinedButton(
+                SettingNavigationItem(
+                    title = stringResource(R.string.cosplaytele_reset_defaults),
+                    icon = Icons.Filled.Restore,
                     onClick = {
                         CosplayteleSettings.resetToDefaults()
                         quality = CosplayteleSettings.preferredQuality
                         columns = CosplayteleSettings.photoColumns
                         tapFlip = CosplayteleSettings.viewerTapToFlip
                     },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                ) { Text(stringResource(R.string.cosplaytele_reset_defaults)) }
+                )
             }
         }
     }
@@ -116,51 +120,25 @@ fun CosplayteleSettingsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun Header(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-    )
+    SettingSectionHeader(text)
 }
 
 @Composable
 private fun Hint(text: String) {
-    Text(
-        text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-    )
+    SettingHintText(text)
 }
 
 @Composable
 private fun RadioRow(title: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth()
-            .selectable(selected = selected, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(selected = selected, onClick = null)
-        Text(title, modifier = Modifier.padding(start = 12.dp))
-    }
+    SettingRadioItem(title = title, selected = selected, onClick = onClick)
 }
 
 @Composable
 private fun SwitchRow(title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = checked, onCheckedChange = onChange)
-    }
+    SettingSwitchItem(
+        title = title,
+        summary = subtitle,
+        checked = checked,
+        onCheckedChange = onChange,
+    )
 }

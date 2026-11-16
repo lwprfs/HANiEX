@@ -88,57 +88,53 @@ fun MissAvVideoAccountActions(
     }
 
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                val u = user
-                if (u == null) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Icon(Icons.Default.AccountCircle, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary)
-                        Text(stringResource(R.string.missav_acc_login_to_save), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        FilledTonalButton(onClick = onLogin) { Text(stringResource(R.string.missav_acc_login_btn)) }
-                    }
-                } else {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.AccountCircle, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
-                        Text(
-                            stringResource(R.string.missav_acc_logged_in_as, u.displayName),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Medium,
-                        )
-                    }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val key = info.itemKey
-                        FilledTonalButton(
-                            enabled = key != null && !savingBusy && saved != null,
-                            onClick = {
-                                val k = key ?: return@FilledTonalButton
-                                val want = saved != true
-                                scope.launch {
-                                    savingBusy = true
-                                    try { saved = MissAvAccountRepo.setItemSaved(k, want) }
-                                    catch (e: CancellationException) { throw e }
-                                    catch (e: Exception) { fail(e) }
-                                    finally { savingBusy = false }
-                                }
-                            },
-                        ) {
-                            if (savingBusy) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
-                            else Icon(if (saved == true) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, null, Modifier.size(18.dp))
-                            Text(
-                                stringResource(if (saved == true) R.string.missav_acc_saved_state else R.string.missav_acc_save),
-                                Modifier.padding(start = 6.dp),
-                            )
+        val u = user
+        if (u == null) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    stringResource(R.string.missav_acc_login_to_save),
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                FilledTonalButton(onClick = onLogin) { Text(stringResource(R.string.missav_acc_login_btn)) }
+            }
+        } else {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val key = info.itemKey
+                FilledTonalButton(
+                    enabled = key != null && !savingBusy && saved != null,
+                    onClick = {
+                        val k = key ?: return@FilledTonalButton
+                        val want = saved != true
+                        scope.launch {
+                            savingBusy = true
+                            try { saved = MissAvAccountRepo.setItemSaved(k, want) }
+                            catch (e: CancellationException) { throw e }
+                            catch (e: Exception) { fail(e) }
+                            finally { savingBusy = false }
                         }
-                        FilledTonalButton(onClick = { showPlaylists = true }) {
-                            Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null, Modifier.size(18.dp))
-                            Text(stringResource(R.string.missav_acc_add_playlist), Modifier.padding(start = 6.dp))
-                        }
-                        info.magnetUrl?.let { magnet ->
-                            FilledTonalButton(onClick = { openMagnet(context, magnet) }) {
-                                Icon(Icons.Default.Link, null, Modifier.size(18.dp))
-                                Text(stringResource(R.string.missav_acc_magnet), Modifier.padding(start = 6.dp))
-                            }
-                        }
+                    },
+                ) {
+                    if (savingBusy) CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                    else Icon(if (saved == true) Icons.Default.Bookmark else Icons.Default.BookmarkBorder, null, Modifier.size(18.dp))
+                    Text(
+                        stringResource(if (saved == true) R.string.missav_acc_saved_state else R.string.missav_acc_save),
+                        Modifier.padding(start = 6.dp),
+                    )
+                }
+                FilledTonalButton(onClick = { showPlaylists = true }) {
+                    Icon(Icons.AutoMirrored.Filled.PlaylistAdd, null, Modifier.size(18.dp))
+                    Text(stringResource(R.string.missav_acc_add_playlist), Modifier.padding(start = 6.dp))
+                }
+                info.magnetUrl?.let { magnet ->
+                    FilledTonalButton(onClick = { openMagnet(context, magnet) }) {
+                        Icon(Icons.Default.Link, null, Modifier.size(18.dp))
+                        Text(stringResource(R.string.missav_acc_magnet), Modifier.padding(start = 6.dp))
                     }
                 }
             }

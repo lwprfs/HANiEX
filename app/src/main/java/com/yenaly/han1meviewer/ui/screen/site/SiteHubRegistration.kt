@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.runtime.Composable
@@ -56,6 +55,16 @@ import com.yenaly.han1meviewer.ui.navigation.site.SiteSubscriptionRoute
 import com.yenaly.han1meviewer.ui.screen.main.siteLoginStatus
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
+
+/**
+ * Sites whose hub config exposes followed/saved creators. Keep in sync with the
+ * `subscriptionSections` passed in each site's `*HubConfig`; every other site has no
+ * subscription concept, so the tab is hidden instead of showing an empty page.
+ */
+fun SiteType.supportsSubscriptions(): Boolean = when (this) {
+    SiteType.MISSAV, SiteType.FAPFOLDER, SiteType.ROUVIDEO, SiteType.XHAMSTER -> true
+    else -> false
+}
 
 data class SiteHubConfig(
     val site: SiteType,
@@ -177,23 +186,14 @@ fun NavGraphBuilder.registerSiteHubRoutes(
     site: SiteType,
     config: @Composable () -> SiteHubConfig,
 ) {
-    composable<SiteSubscriptionRoute> {
-        val c = config()
-        SiteHubListScreen(
-            title = stringResource(R.string.my_subscribe),
-            sections = c.subscriptionSections,
-            onBack = null,
-            emptyState = {
-                SiteHubUnavailableState(
-                    title = stringResource(
-                        R.string.hub_subscription_unavailable_title,
-                        CrossSiteNavigator.siteLabel(site),
-                    ),
-                    message = stringResource(R.string.hub_subscription_unavailable_message),
-                    icon = Icons.Filled.Subscriptions,
-                )
-            },
-        )
+    if (site.supportsSubscriptions()) {
+        composable<SiteSubscriptionRoute> {
+            SiteHubListScreen(
+                title = stringResource(R.string.my_subscribe),
+                sections = config().subscriptionSections,
+                onBack = null,
+            )
+        }
     }
     composable<SiteLibraryRoute> {
         val c = config()

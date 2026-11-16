@@ -1,7 +1,6 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Handler
@@ -46,17 +45,13 @@ import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
-import com.yenaly.han1meviewer.logic.Parser
-import com.yenaly.han1meviewer.logic.network.DohConfig
 import com.yenaly.han1meviewer.logic.network.HDns
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logic.network.MirrorLatency
 import com.yenaly.han1meviewer.logic.network.MirrorProbeResult
-import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.network.SiteNetworkPrefs
 import com.yenaly.han1meviewer.logic.network.SiteNetworks
-import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
@@ -65,11 +60,9 @@ import com.yenaly.han1meviewer.ui.screen.settings.DelayResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.DohTestResultUi
 import com.yenaly.han1meviewer.ui.screen.settings.MirrorRowUi
 import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsScreen
-import com.yenaly.han1meviewer.ui.screen.settings.NetworkSettingsUiState
 import com.yenaly.han1meviewer.util.ActivityManager
 import com.yenaly.han1meviewer.util.applicationContext
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import okhttp3.Request
 import java.net.InetAddress
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicInteger
@@ -684,186 +677,5 @@ fun NetworkSettingsRouteScreen() {
                 }
             },
         )
-    }
-}
-
-private fun buildNetworkSettingsUiState(context: Context, site: SiteType): NetworkSettingsUiState {
-    val profile = SiteNetworks.forSite(site)
-    val selected = SiteNetworkPrefs.selectedMirrorUrl(site)
-    val inheritedSuffix = " " + context.getString(R.string.network_inherited_suffix)
-    val proxyInherited = site != SiteType.HANIME && SiteNetworkPrefs.isProxyInherited(site)
-    val proxyText = when (SiteNetworkPrefs.proxyType(site)) {
-        HProxySelector.TYPE_DIRECT -> context.getString(R.string.direct)
-        HProxySelector.TYPE_SYSTEM -> context.getString(R.string.system_proxy)
-        HProxySelector.TYPE_HTTP -> context.getString(
-            R.string.http_proxy,
-            SiteNetworkPrefs.proxyIp(site),
-            SiteNetworkPrefs.proxyPort(site)
-        )
-
-        HProxySelector.TYPE_SOCKS -> context.getString(
-            R.string.socks_proxy,
-            SiteNetworkPrefs.proxyIp(site),
-            SiteNetworkPrefs.proxyPort(site)
-        )
-
-        else -> context.getString(R.string.direct)
-    }
-    return NetworkSettingsUiState(
-        domainName = selected,
-        domainDisplay = profile.mirrors.firstOrNull { it.baseUrl == selected }?.host ?: selected,
-        proxySummary = if (proxyInherited) proxyText + inheritedSuffix else proxyText,
-        useBuiltInHosts = SiteNetworkPrefs.useBuiltInHosts(site),
-        useBackupMediaCdn = Preferences.useBackupMediaCdn,
-        useCustomMirrorSite = SiteNetworkPrefs.useCustomMirror(site),
-        customMirrorSite = SiteNetworkPrefs.customMirror(site),
-        appendCustomMirrorPath = SiteNetworkPrefs.appendCustomPath(site),
-        useDoH = SiteNetworkPrefs.useDoH(site),
-        dohSummary = buildDohSummary(context, site),
-        delaySummary = context.getString(R.string.node_latency_sum),
-    )
-}
-
-private fun normalizeCustomMirrorSite(url: String): String? {
-    val trimmed = url.trim().trimEnd('/')
-    val uri = runCatching { trimmed.toUri() }.getOrNull() ?: return null
-    val host = uri.host
-    if (host.isNullOrBlank()) return null
-    val schemeOk = uri.scheme == "https" || (uri.scheme == "http" && host.endsWith(".onion"))
-    if (!schemeOk) return null
-    if (!uri.query.isNullOrBlank() || !uri.fragment.isNullOrBlank()) return null
-    return url.trim()
-}
-
-private fun testCustomMirrorSite(
-    context: Context,
-    site: SiteType,
-    homeUrl: String,
-    appendPath: Boolean,
-): String {
-    if (site != SiteType.HANIME && site != SiteType.JAVCHU) {
-        return testGenericMirrorSite(context, homeUrl, appendPath)
-    }
-    return runCatching {
-        val request = Request.Builder().url(homeUrl).get().build()
-        ServiceCreator.hClient.newCall(request).execute().use { response ->
-            val finalUrl = response.request.url.toString()
-            val body = response.body.string()
-            if (!response.isSuccessful) {
-                return context.getString(
-                    R.string.custom_mirror_site_test_failed_http,
-                    response.code,
-                    finalUrl,
-                )
-            }
-
-            val apiBaseUrl = buildCustomMirrorApiBaseUrl(homeUrl, appendPath)
-            val watchTestResult = testCustomMirrorWatchUrl(context, apiBaseUrl)
-            when (val parseResult = Parser.homePageVer2(body)) {
-                is WebsiteState.Success -> if (watchTestResult == null) {
-                    context.getString(
-                        R.string.custom_mirror_site_test_success,
-                        finalUrl,
-                        apiBaseUrl,
-                    )
-                } else {
-                    context.getString(
-                        R.string.custom_mirror_site_test_partial_success,
-                        finalUrl,
-                        apiBaseUrl,
-                        watchTestResult,
-                    )
-                }
-
-                is WebsiteState.Error -> context.getString(
-                    R.string.custom_mirror_site_test_parse_failed,
-                    finalUrl,
-                    parseResult.throwable.message ?: parseResult.throwable::class.java.simpleName,
-                )
-
-                WebsiteState.Loading -> context.getString(
-                    R.string.custom_mirror_site_test_parse_failed,
-                    finalUrl,
-                    context.getString(R.string.loading),
-                )
-            }
-        }
-    }.getOrElse { throwable ->
-        context.getString(
-            R.string.custom_mirror_site_test_failed,
-            throwable.message ?: throwable::class.java.simpleName,
-        )
-    }
-}
-
-private fun testGenericMirrorSite(context: Context, homeUrl: String, appendPath: Boolean): String {
-    return runCatching {
-        val request = Request.Builder().url(homeUrl).get().build()
-        MirrorLatency.httpClient.newCall(request).execute().use { response ->
-            val finalUrl = response.request.url.toString()
-            val code = response.code
-            if (code >= 500 || (code in 400..499 && code != 403)) {
-                context.getString(R.string.custom_mirror_site_test_failed_http, code, finalUrl)
-            } else {
-                context.getString(
-                    R.string.custom_mirror_site_test_success,
-                    finalUrl,
-                    buildCustomMirrorApiBaseUrl(homeUrl, appendPath),
-                )
-            }
-        }
-    }.getOrElse { throwable ->
-        context.getString(
-            R.string.custom_mirror_site_test_failed,
-            throwable.message ?: throwable::class.java.simpleName,
-        )
-    }
-}
-
-private fun testCustomMirrorWatchUrl(context: Context, apiBaseUrl: String): String? {
-    return runCatching {
-        val url = apiBaseUrl + "search"
-        val request = Request.Builder().url(url).get().build()
-        ServiceCreator.hClient.newCall(request).execute().use { response ->
-            if (response.isSuccessful) {
-                null
-            } else {
-                context.getString(
-                    R.string.custom_mirror_site_watch_test_failed_http,
-                    response.code,
-                    response.request.url.toString(),
-                )
-            }
-        }
-    }.getOrElse { throwable ->
-        context.getString(
-            R.string.custom_mirror_site_watch_test_failed,
-            throwable.message ?: throwable::class.java.simpleName,
-        )
-    }
-}
-
-private fun buildCustomMirrorApiBaseUrl(homeUrl: String, appendPath: Boolean): String {
-    val url = if (appendPath) homeUrl else {
-        val uri = homeUrl.toUri()
-        "${uri.scheme}://${uri.encodedAuthority}"
-    }
-    return if (url.endsWith('/')) url else "$url/"
-}
-
-private fun buildDohSummary(context: Context, site: SiteType): String {
-    if (!SiteNetworkPrefs.useDoH(site)) return context.getString(R.string.doh_disabled_summary)
-    if (SiteNetworkPrefs.useBuiltInHosts(site)) return context.getString(R.string.doh_conflict_message)
-    val core = if (SiteNetworkPrefs.dohPreset(site) == "custom") {
-        SiteNetworkPrefs.dohCustomUrl(site).ifBlank { context.getString(R.string.custom) }
-    } else {
-        DohConfig.selectedPreset(site).title
-    }
-    val bootstrap = DohConfig.bootstrapIps(site).takeIf { it.isNotEmpty() }?.joinToString()
-    val text = if (bootstrap != null) "$core\nBootstrap: $bootstrap" else core
-    return if (site != SiteType.HANIME && SiteNetworkPrefs.isDohInherited(site)) {
-        text + "\n" + context.getString(R.string.network_inherited_suffix)
-    } else {
-        text
     }
 }

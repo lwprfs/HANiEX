@@ -1,6 +1,8 @@
 package com.yenaly.han1meviewer.MissAV.ui.home
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import android.content.Context
@@ -99,11 +101,9 @@ fun MissAvHostSettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Text(
+            SettingHintText(
                 text = stringResource(R.string.missav_choose_which_missav_hostname_the_app),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
 
             LazyColumn(
@@ -155,33 +155,10 @@ private fun HostOptionRow(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = option.label,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = option.url,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (selected) {
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
+    SettingRadioItem(
+        title = option.label,
+        summary = option.url,
+        selected = selected,
+        onClick = onClick,
+    )
 }

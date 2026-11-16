@@ -176,6 +176,17 @@ object Preferences {
         get() = preferenceSp.getString("missav_preferred_quality", "auto") ?: "auto"
         set(value) = preferenceSp.edit { putString("missav_preferred_quality", value) }
 
+    /** Resets MissAV customization (quality, subtitles); host, cookies and history are kept. */
+    fun resetMissAvCustomization() {
+        preferenceSp.edit {
+            remove("missav_lock_quality")
+            remove("missav_subtitle_source")
+            remove("missav_subtitlecat_language")
+            remove("missav_subtitlecat_translate")
+            remove("missav_preferred_quality")
+        }
+    }
+
     val hentaiMamaBaseUrl: String
         get() = SiteNetworkPrefs.baseUrl(SiteType.HENTAIMAMA)
 
@@ -461,8 +472,6 @@ object Preferences {
     val disableMobileDataWarning: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_MOBILE_DATA_WARNING,false)
 
-    val disablePredictiveBack: Boolean
-        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_PREDICTIVE_BACK, false)
 
     val showExitConfirm: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, true)

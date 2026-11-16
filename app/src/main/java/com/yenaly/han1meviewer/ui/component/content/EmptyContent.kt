@@ -25,6 +25,7 @@ fun EmptyContent(
     hint: String,
     subHint: String = "",
     picRes: Int = R.drawable.h_chan_speechless,
+    action: (@Composable () -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
@@ -53,6 +54,7 @@ fun EmptyContent(
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
             )
+            action?.invoke()
         }
     }
 }

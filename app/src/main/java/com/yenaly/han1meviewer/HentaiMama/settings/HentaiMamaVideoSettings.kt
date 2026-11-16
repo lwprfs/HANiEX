@@ -18,4 +18,11 @@ object HentaiMamaVideoSettings {
     var preferredQuality: String
         get() = Preferences.preferenceSp.getString(PREF_QUALITY_KEY, QUALITY_AUTO) ?: QUALITY_AUTO
         set(value) = Preferences.preferenceSp.edit { putString(PREF_QUALITY_KEY, value) }
+
+    fun resetToDefaults() {
+        Preferences.preferenceSp.edit {
+            remove(PREF_SERVER_KEY)
+            remove(PREF_QUALITY_KEY)
+        }
+    }
 }

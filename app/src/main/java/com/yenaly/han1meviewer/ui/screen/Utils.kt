@@ -25,6 +25,7 @@ import androidx.window.core.layout.WindowSizeClass
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import coil3.size.Size
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
@@ -47,13 +48,25 @@ fun RetryableImage(
     val context = LocalContext.current
     val resolvedLoader = imageLoader ?: SingletonImageLoader.get(context)
 
+    val site = if (LocalInspectionMode.current) null else Preferences.siteType
+    val siteOptions = site?.let { SiteImageSettings.options(it) }
+    val limit = siteOptions?.retries ?: retryLimit
+    val fade = siteOptions?.fade == true
+    val isFullImage = contentScale == ContentScale.Fit || contentScale == ContentScale.Inside
+    // Smaller decoding only applies to thumbnails; full-size viewers keep full resolution.
+    val reduced = siteOptions?.reduced == true && !isFullImage
+
     var retryCount by remember(model) { mutableIntStateOf(0) }
-    val request = remember(model, retryCount, contentScale) {
+    val request = remember(model, retryCount, contentScale, fade, reduced) {
         ImageRequest.Builder(context)
             .data(model)
-
-            .crossfade(contentScale == ContentScale.Fit || contentScale == ContentScale.Inside)
-            .memoryCacheKey("$model#r$retryCount")
+            .crossfade(isFullImage || fade)
+            .apply {
+                if (reduced) {
+                    size(Size(SiteImageSettings.REDUCED_EDGE_PX, SiteImageSettings.REDUCED_EDGE_PX))
+                }
+            }
+            .memoryCacheKey("$model#r$retryCount${if (reduced) "#s" else ""}")
             .diskCacheKey("$model#r$retryCount")
             .listener(
                 onError = { _, result ->
@@ -71,7 +84,7 @@ fun RetryableImage(
         error = error,
         modifier = modifier,
         onError = {
-            if (retryCount < retryLimit) {
+            if (retryCount < limit) {
                 retryCount++
             }
         },
@@ -142,8 +155,16 @@ private fun rememberGridColumns(minCardWidth: Dp, search: Boolean): Int {
         minCardWidth
     }
     val maxFittingColumns = videoGridColumnsForWidth(availableWidthDp, fittingMinWidth)
+    val siteColumns = if (isPreview) SiteLayoutSettings.FOLLOW_APP else rememberSiteGridColumns(Preferences.siteType)
 
     if (isPreview) return maxOf(2, maxFittingColumns)
+
+    if (siteColumns != SiteLayoutSettings.FOLLOW_APP) {
+        // The person picked a column count for this site; keep cards from getting unusably small.
+        return siteColumns.coerceAtMost(
+            videoGridColumnsForWidth(availableWidthDp, MinUserGridCardWidth)
+        ).coerceAtLeast(1)
+    }
 
     val useTabletColumns = windowWidthDp.value >=
             WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND

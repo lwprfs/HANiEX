@@ -1,6 +1,11 @@
 package com.yenaly.han1meviewer.MissAV.ui.home
 
 import com.yenaly.han1meviewer.util.applicationContext
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.AnimatedVisibility
@@ -259,56 +264,45 @@ fun MissAvSubtitleSettingsScreen(onBack: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .verticalScroll(rememberScrollState()),
         ) {
-            Text(
+            SettingHintText(
                 text = stringResource(R.string.missav_subtitle_intro),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 4.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
 
-            SectionTitle(stringResource(R.string.missav_subtitle_source))
-            SettingsCard {
-                MissAvSubtitleSettingsRepo.sources.forEachIndexed { index, option ->
-                    if (index > 0) CardDivider()
-                    SourceRow(
-                        title = option.label,
-                        description = option.description,
-                        selected = source == option.value,
-                        onClick = {
-                            source = option.value
-                            Preferences.missAvSubtitleSource = option.value
-                        },
-                    )
-                }
+            SettingSectionHeader(stringResource(R.string.missav_subtitle_source))
+            MissAvSubtitleSettingsRepo.sources.forEach { option ->
+                SettingRadioItem(
+                    title = option.label,
+                    summary = option.description,
+                    selected = source == option.value,
+                    onClick = {
+                        source = option.value
+                        Preferences.missAvSubtitleSource = option.value
+                    },
+                )
             }
 
             AnimatedVisibility(
                 visible = source == MissAvSubtitleSettingsRepo.SOURCE_SUBTITLECAT,
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Spacer(Modifier.height(8.dp))
-                    SectionTitle("SubtitleCat")
-                    SettingsCard {
-                        ValueRow(
-                            title = stringResource(R.string.supjav_subtitle_language),
-                            value = MissAvSubtitleSettingsRepo.languageName(catLanguage),
-                            onClick = { showLanguageDialog = true },
-                        )
-                        CardDivider()
-                        SwitchRow(
-                            title = stringResource(R.string.missav_subtitle_translate_if_missing),
-                            description = stringResource(R.string.missav_subtitle_translate_if_missing_desc),
-                            checked = translate,
-                            onCheckedChange = {
-                                translate = it
-                                Preferences.missAvSubtitleCatTranslate = it
-                            },
-                        )
-                    }
+                Column {
+                    SettingSectionHeader("SubtitleCat")
+                    SettingNavigationItem(
+                        title = stringResource(R.string.supjav_subtitle_language),
+                        valueText = MissAvSubtitleSettingsRepo.languageName(catLanguage),
+                        onClick = { showLanguageDialog = true },
+                    )
+                    SettingSwitchItem(
+                        title = stringResource(R.string.missav_subtitle_translate_if_missing),
+                        summary = stringResource(R.string.missav_subtitle_translate_if_missing_desc),
+                        checked = translate,
+                        onCheckedChange = {
+                            translate = it
+                            Preferences.missAvSubtitleCatTranslate = it
+                        },
+                    )
                 }
             }
         }
@@ -324,128 +318,6 @@ fun MissAvSubtitleSettingsScreen(onBack: () -> Unit) {
             },
             onDismiss = { showLanguageDialog = false },
         )
-    }
-}
-
-@Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 4.dp, top = 8.dp),
-    )
-}
-
-@Composable
-private fun SettingsCard(content: @Composable () -> Unit) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column { content() }
-    }
-}
-
-@Composable
-private fun CardDivider() {
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .fillMaxWidth()
-            .height(1.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-    )
-}
-
-@Composable
-private fun SourceRow(
-    title: String,
-    description: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        RadioButton(selected = selected, onClick = null)
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
-}
-
-@Composable
-private fun ValueRow(title: String, value: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(start = 16.dp, end = 8.dp, top = 14.dp, bottom = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Icon(
-            imageVector = Icons.Default.ArrowDropDown,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun SwitchRow(
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
@@ -479,28 +351,11 @@ private fun LanguageDialog(
                 )
                 LazyColumn(modifier = Modifier.heightIn(max = 360.dp)) {
                     items(filtered, key = { it.code }) { lang ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelect(lang.code) }
-                                .padding(vertical = 12.dp, horizontal = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = lang.label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (lang.code == selected) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.weight(1f),
-                            )
-                            if (lang.code == selected) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                            }
-                        }
+                        SettingRadioItem(
+                            title = lang.label,
+                            selected = lang.code == selected,
+                            onClick = { onSelect(lang.code) },
+                        )
                     }
                     if (filtered.isEmpty()) {
                         item {

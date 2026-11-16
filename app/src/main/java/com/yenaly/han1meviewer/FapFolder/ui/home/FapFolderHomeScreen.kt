@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.FapFolder.ui.home
 
+import com.yenaly.han1meviewer.ui.screen.SiteHomeSettings
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -86,7 +87,15 @@ fun FapFolderHomeScreen(
     onLoadFailure: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val rawUiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val showTrending = SiteHomeSettings.isShown(SiteHomeSettings.Section.FapFolderTrending)
+    val showSuggested = SiteHomeSettings.isShown(SiteHomeSettings.Section.FapFolderSuggested)
+    val uiState = remember(rawUiState, showTrending, showSuggested) {
+        rawUiState.copy(
+            trending = if (showTrending) rawUiState.trending else emptyList(),
+            suggested = if (showSuggested) rawUiState.suggested else emptyList(),
+        )
+    }
     val listState = rememberLazyListState()
     val refreshState = rememberPullToRefreshState()
     val scope = rememberCoroutineScope()

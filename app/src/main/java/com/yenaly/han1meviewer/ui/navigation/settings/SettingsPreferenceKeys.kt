@@ -23,7 +23,6 @@ object SettingsPreferenceKeys {
     const val DOWNLOAD_AUTO_GROUP = "download_auto_group"
     const val DOWNLOAD_GROUP_NAME_FROM_SERIES_NAME = "download_group_name_from_series_name"
     const val DOWNLOAD_GROUP_TRADITIONAL = "download_group_traditional"
-    const val DISABLE_PREDICTIVE_BACK = "disable_predictive_back"
     const val SHOW_EXIT_CONFIRM = "show_exit_confirm"
     const val SEARCH_GRID_COLUMNS_COMPACT = "search_grid_columns_compact"
     const val SEARCH_GRID_COLUMNS_MEDIUM = "search_grid_columns_medium"
@@ -80,4 +79,8 @@ object SettingsPreferenceKeys {
     const val MPV_NETWORK_TIMEOUT = "mpv_network_timeout"
     const val CUSTOM_PARAMS = "mpv_custom_parameters"
     const val LAST_UPDATE_POPUP_TIME = "last_update_popup_time"
+    const val ALLOW_PIP_MODE = "allow_pip_mode"
+    const val DISABLE_COMMENTS = "disable_comments"
+    const val USE_LOCK_SCREEN = "use_lock_screen"
+    const val APP_LANGUAGE = "app_language"
 }

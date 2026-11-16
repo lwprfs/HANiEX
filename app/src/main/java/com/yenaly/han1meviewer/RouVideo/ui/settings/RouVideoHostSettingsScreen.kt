@@ -42,6 +42,11 @@ import com.yenaly.han1meviewer.logic.network.MirrorNode
 import com.yenaly.han1meviewer.logic.network.MirrorProbeResult
 import com.yenaly.han1meviewer.logic.network.SiteNetworkPrefs
 import com.yenaly.han1meviewer.logic.network.SiteNetworks
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
+import androidx.compose.material.icons.filled.Speed
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.screen.settings.MirrorLatencyDialog
@@ -111,33 +116,30 @@ fun RouVideoHostSettingsScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Text(
+            SettingHintText(
                 text = stringResource(R.string.rouvideo_host_hint),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
             if (customActive) {
-                Text(
+                SettingHintText(
                     text = stringResource(
                         R.string.rouvideo_host_custom_active,
                         SiteNetworkPrefs.customMirror(SiteType.ROUVIDEO),
                     ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                    isError = true,
                 )
             }
-            OutlinedButton(
+            SettingNavigationItem(
+                title = stringResource(R.string.mirror_latency_entry),
+                icon = Icons.Filled.Speed,
                 onClick = {
                     showLatency = true
                     startTest()
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            ) { Text(stringResource(R.string.mirror_latency_entry)) }
-            OutlinedButton(
+            )
+            SettingNavigationItem(
+                title = stringResource(R.string.rouvideo_host_open_address_page),
+                icon = Icons.AutoMirrored.Filled.OpenInNew,
                 onClick = {
                     runCatching {
                         context.startActivity(
@@ -146,45 +148,20 @@ fun RouVideoHostSettingsScreen(onBack: () -> Unit) {
                         )
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            ) { Text(stringResource(R.string.rouvideo_host_open_address_page)) }
+            )
 
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 items(mirrors, key = { it.host }) { node ->
                     val isSelected = !customActive &&
                             node.baseUrl.trimEnd('/') == selected.trimEnd('/')
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(selected = isSelected, onClick = { if (!isSelected) pending = node })
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = if (node == mirrors.first()) {
-                                    stringResource(R.string.rouvideo_host_default, node.host)
-                                } else node.host,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = node.baseUrl,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        if (isSelected) {
-                            Icon(
-                                imageVector = Icons.Filled.CheckCircle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                        }
-                    }
+                    SettingRadioItem(
+                        title = if (node == mirrors.first()) {
+                            stringResource(R.string.rouvideo_host_default, node.host)
+                        } else node.host,
+                        summary = node.baseUrl,
+                        selected = isSelected,
+                        onClick = { if (!isSelected) pending = node },
+                    )
                 }
             }
         }

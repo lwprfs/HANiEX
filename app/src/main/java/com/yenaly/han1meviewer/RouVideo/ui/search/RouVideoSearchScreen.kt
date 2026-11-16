@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.RouVideo.ui.search
 
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.screen.SiteSearchSettings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -72,7 +74,9 @@ fun RouVideoSearchScreen(
     var query by rememberSaveable { mutableStateOf(initialQuery.orEmpty()) }
     var submitted by rememberSaveable { mutableStateOf(initialQuery.orEmpty()) }
     var tagFilter by rememberSaveable { mutableStateOf(initialTag.orEmpty()) }
-    var sortName by rememberSaveable { mutableStateOf(Sort.RELEVANCE.name) }
+    var sortName by rememberSaveable {
+        mutableStateOf(SiteSearchSettings.defaultSort(SiteType.ROUVIDEO) ?: Sort.RELEVANCE.name)
+    }
     var seriesTab by rememberSaveable { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val focus = remember { FocusRequester() }

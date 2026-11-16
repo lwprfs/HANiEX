@@ -169,8 +169,8 @@ fun XHamsterNavHost(
 
         composable<XHamsterSettingsHubRoute> {
             SiteSettingsHubScreen(
-                activity = activity,
                 site = SiteType.XHAMSTER,
+                onResetSite = { com.yenaly.han1meviewer.XHamster.common.XHamsterSettings.resetToDefaults() },
                 siteEntries = listOf(
                     SiteSettingsEntry(
                         key = "playback",

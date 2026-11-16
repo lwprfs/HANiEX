@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.MissAV.ui.home
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import androidx.compose.foundation.clickable
@@ -84,33 +85,10 @@ fun MissAvSettingsHubScreen(
 
 @Composable
 private fun SettingsHubRow(entry: SettingsHubEntry) {
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = entry.onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(
-            imageVector = entry.icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(22.dp),
-        )
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = entry.title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = entry.subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
-    }
+    SettingNavigationItem(
+        title = entry.title,
+        summary = entry.subtitle,
+        icon = entry.icon,
+        onClick = entry.onClick,
+    )
 }

@@ -38,6 +38,14 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.SupJav.common.SupJavConstants
 import com.yenaly.han1meviewer.SupJav.common.SupJavSettings
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
+import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingActionItem
+import com.yenaly.han1meviewer.ui.component.SettingHintText
+import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
+import com.yenaly.han1meviewer.ui.component.SettingRadioItem
+import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
+import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
@@ -112,7 +120,6 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.supjav_servers)) }
             item {
                 HintText(
@@ -159,7 +166,6 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.supjav_site_language)) }
             item {
                 HintText(stringResource(R.string.supjav_site_language_hint))
@@ -177,7 +183,6 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.supjav_subtitles)) }
             item {
                 HintText(
@@ -201,27 +206,11 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
             }
             if (subSource == MissAvSubtitleSettingsRepo.SOURCE_SUBTITLECAT) {
                 item(key = "sublang") {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(selected = false, onClick = { showLanguageDialog = true })
-                            .padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(R.string.supjav_subtitle_language),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = MissAvSubtitleSettingsRepo.languageName(subLanguage),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                    SettingNavigationItem(
+                        title = stringResource(R.string.supjav_subtitle_language),
+                        valueText = MissAvSubtitleSettingsRepo.languageName(subLanguage),
+                        onClick = { showLanguageDialog = true },
+                    )
                 }
                 item(key = "subtranslate") {
                     SwitchRow(
@@ -236,44 +225,34 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { HorizontalDivider(Modifier.padding(vertical = 8.dp)) }
             item { SectionHeader(stringResource(R.string.supjav_troubleshooting)) }
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            SupJavNetwork.clearCookies()
-                            cookiesCleared = true
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(
-                            if (cookiesCleared) stringResource(R.string.supjav_cf_cleared)
-                            else stringResource(R.string.supjav_cf_clear)
-                        )
-                    }
-                    OutlinedButton(
-                        onClick = {
-                            SupJavSettings.resetToDefaults()
-                            quality = SupJavSettings.preferredQuality
-                            order = SupJavSettings.serverOrder
-                            disabled = SupJavSettings.disabledServers
-                            fallback = SupJavSettings.autoFallback
-                            language = SupJavSettings.language
-                            subSource = SupJavSettings.subtitleSource
-                            subLanguage = SupJavSettings.subtitleLanguage
-                            subTranslate = SupJavSettings.subtitleTranslate
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(stringResource(R.string.supjav_reset_defaults))
-                    }
-                }
+                SettingNavigationItem(
+                    title = if (cookiesCleared) stringResource(R.string.supjav_cf_cleared)
+                    else stringResource(R.string.supjav_cf_clear),
+                    icon = Icons.Filled.CleaningServices,
+                    onClick = {
+                        SupJavNetwork.clearCookies()
+                        cookiesCleared = true
+                    },
+                )
+            }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.supjav_reset_defaults),
+                    icon = Icons.Filled.Restore,
+                    onClick = {
+                        SupJavSettings.resetToDefaults()
+                        quality = SupJavSettings.preferredQuality
+                        order = SupJavSettings.serverOrder
+                        disabled = SupJavSettings.disabledServers
+                        fallback = SupJavSettings.autoFallback
+                        language = SupJavSettings.language
+                        subSource = SupJavSettings.subtitleSource
+                        subLanguage = SupJavSettings.subtitleLanguage
+                        subTranslate = SupJavSettings.subtitleTranslate
+                    },
+                )
             }
         }
     }
@@ -281,48 +260,17 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
 
 @Composable
 private fun SectionHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 4.dp),
-    )
+    SettingSectionHeader(text)
 }
 
 @Composable
 private fun HintText(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-    )
+    SettingHintText(text)
 }
 
 @Composable
 private fun RadioRow(title: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
-        )
-        if (selected) {
-            Icon(
-                imageVector = Icons.Filled.CheckCircle,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
+    SettingRadioItem(title = title, selected = selected, onClick = onClick)
 }
 
 @Composable
@@ -332,27 +280,12 @@ private fun SwitchRow(
     checked: Boolean,
     onChange: (Boolean) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        Switch(checked = checked, onCheckedChange = onChange)
-    }
+    SettingSwitchItem(
+        title = title,
+        summary = subtitle,
+        checked = checked,
+        onCheckedChange = onChange,
+    )
 }
 
 @Composable
@@ -366,33 +299,20 @@ private fun ServerRow(
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    SettingActionItem(
+        title = title,
+        summary = description.takeIf { it.isNotBlank() },
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (description.isNotBlank()) {
-                Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
         IconButton(onClick = onMoveUp, enabled = canMoveUp) {
             Icon(Icons.Filled.ArrowUpward, contentDescription = null)
         }
         IconButton(onClick = onMoveDown, enabled = canMoveDown) {
             Icon(Icons.Filled.ArrowDownward, contentDescription = null)
         }
-        Switch(checked = enabled, onCheckedChange = onToggle)
+        Switch(
+            checked = enabled,
+            onCheckedChange = onToggle,
+            modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+        )
     }
 }
