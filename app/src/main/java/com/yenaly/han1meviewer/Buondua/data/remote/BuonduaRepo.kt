@@ -36,14 +36,33 @@ object BuonduaRepo {
         }
     }
 
-    suspend fun allPhotoUrls(code: String, loaded: List<String>, totalPages: Int): List<String> {
-        val urls = ArrayList<String>(loaded)
-        for (p in 2..totalPages) {
-            val next = album(code, p).getOrNull() ?: continue
-            urls += next.photos.map { it.url }
+    suspend fun allPhotoUrls(
+        code: String,
+        loaded: List<String>,
+        totalPages: Int,
+        expectedCount: Int? = null,
+    ): List<String> {
+        val urls = LinkedHashSet<String>(loaded)
+        var page = 2
+        while (page <= MAX_PAGES) {
+            val probing = page > totalPages
+            // Past the advertised page count only keep going while photos are still missing.
+            if (probing && (expectedCount == null || urls.size >= expectedCount)) break
+            val next = album(code, page).getOrNull()
+                ?: album(code, page).getOrNull() // one retry
+            if (next == null) {
+                if (probing) break
+            } else {
+                val before = urls.size
+                urls += next.photos.map { it.url }
+                if (probing && urls.size == before) break
+            }
+            page++
         }
-        return urls.distinct()
+        return urls.toList()
     }
+
+    const val MAX_PAGES = 200
 
     suspend fun allVideos(code: String, first: BuonduaAlbumPage) =
         buildList {

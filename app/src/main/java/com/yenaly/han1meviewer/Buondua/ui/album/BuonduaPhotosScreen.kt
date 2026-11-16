@@ -25,16 +25,15 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,8 +52,6 @@ import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteErrorContent
 import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 @Composable
@@ -71,18 +68,6 @@ fun BuonduaPhotosScreen(
     var viewerIndex by rememberSaveable { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(code) { viewModel.load(code, photosOnly = true) }
-
-    val nearEnd by remember(gridState) {
-        derivedStateOf {
-            val info = gridState.layoutInfo
-            val last = info.visibleItemsInfo.lastOrNull()?.index ?: 0
-            info.totalItemsCount > 0 && last >= info.totalItemsCount - 8
-        }
-    }
-    LaunchedEffect(gridState, state.photos.size) {
-        snapshotFlow { nearEnd }.distinctUntilChanged().filter { it }
-            .collect { viewModel.loadNextPage() }
-    }
 
     viewerIndex?.let { start ->
         BuonduaPhotoLightbox(
@@ -117,6 +102,7 @@ fun BuonduaPhotosScreen(
                                     title = state.title,
                                     loadedUrls = state.photos.map { it.url },
                                     totalPages = state.totalPages,
+                                    expectedCount = state.photoCount,
                                 )
                             }
                         },
@@ -162,6 +148,11 @@ fun BuonduaPhotosScreen(
                         Box(Modifier.fillMaxWidth().padding(8.dp), contentAlignment = Alignment.Center) {
                             if (state.isLoadingMore) {
                                 CircularProgressIndicator()
+                            } else if (state.loadMoreFailed) {
+                                TextButton(onClick = { viewModel.retryMissingPages() }) {
+                                    Text("${state.photos.size} / ${state.photoCount ?: state.photos.size} – " +
+                                        stringResource(R.string.retry))
+                                }
                             } else {
                                 Text(
                                     text = "${state.loadedPages} / ${state.totalPages}",

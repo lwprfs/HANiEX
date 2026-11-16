@@ -47,12 +47,13 @@ object BuonduaDownloads {
         title: String,
         loadedUrls: List<String>,
         totalPages: Int,
+        expectedCount: Int? = null,
     ) {
         GlobalToasts.show(
             context.getString(R.string.buondua_photos_download_started),
             level = GlobalToasts.ToastLevel.INFO,
         )
-        val urls = BuonduaRepo.allPhotoUrls(code, loadedUrls, totalPages)
+        val urls = BuonduaRepo.allPhotoUrls(code, loadedUrls, totalPages, expectedCount)
         SiteImageSaver.saveBatchInBackground(
             context = context,
             urls = urls,

@@ -14,8 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -68,6 +69,9 @@ import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
+import com.yenaly.han1meviewer.ui.component.HistoryGridCard
+import com.yenaly.han1meviewer.ui.component.SiteImageLoaders
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -440,13 +444,15 @@ fun UnifiedHistoryScreen(
                     )
                 }
 
-                else -> LazyColumn(
+                else -> LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 160.dp),
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     items(visible, key = { it.key }) { item ->
-                        UnifiedHistoryRow(
+                        UnifiedHistoryCard(
                             item = item,
                             onClick = { activity.requestCrossSiteOpen(item.toRequest()) },
                             onDelete = { itemToDelete = item },
@@ -494,75 +500,27 @@ fun UnifiedHistoryScreen(
 }
 
 @Composable
-private fun UnifiedHistoryRow(
+private fun UnifiedHistoryCard(
     item: UnifiedHistoryItem,
     onClick: () -> Unit,
     onDelete: () -> Unit,
 ) {
+    val context = LocalContext.current
     val dateText = remember(item.watchDate) {
         DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
             .format(Date(item.watchDate))
     }
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            AsyncImage(
-                model = item.coverUrl.ifBlank { null },
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .width(112.dp)
-                    .height(64.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-            )
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                Text(
-                    text = item.title.ifBlank { item.code },
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                item.subtitle?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                Text(
-                    text = "${siteBadge(item.site)} · $dateText",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                item.progress?.let { progress ->
-                    LinearProgressIndicator(
-                        progress = { if (item.completed) 1f else progress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 2.dp),
-                    )
-                }
-            }
-            IconButton(onClick = onDelete, modifier = Modifier.size(40.dp)) {
-                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.remove))
-            }
-        }
-    }
+    // Covers of several sites are hot-link protected: use that site's own loader.
+    val loader = remember(item.site) { SiteImageLoaders.forSite(item.site, context) }
+    HistoryGridCard(
+        title = item.title.ifBlank { item.code },
+        coverUrl = item.coverUrl.ifBlank { "" },
+        onClick = onClick,
+        onDelete = onDelete,
+        siteBadge = siteBadge(item.site),
+        subtitle = item.subtitle,
+        meta = dateText,
+        progress = item.progress?.let { if (item.completed) 1f else it },
+        imageLoader = loader,
+    )
 }

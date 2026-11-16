@@ -11,6 +11,7 @@ import com.yenaly.han1meviewer.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.ui.component.player.SitePlayerState
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +34,7 @@ data class BuonduaAlbumUiState(
     val tags: List<BuonduaLink> = emptyList(),
     val related: List<HanimeInfo> = emptyList(),
     val isLoadingMore: Boolean = false,
+    val loadMoreFailed: Boolean = false,
 ) {
     val hasMorePages: Boolean get() = loadedPages in 1 until totalPages
 
@@ -53,20 +55,35 @@ class BuonduaAlbumViewModel : ViewModel() {
     private var code: String = ""
     private var photosOnly: Boolean = false
     private var job: Job? = null
+    private var autoJob: Job? = null
+
+    // Photos are kept per page so the order stays correct even if a page has to be retried later.
+    private val photosByPage = java.util.TreeMap<Int, List<String>>()
+    private val donePages = HashSet<Int>()
+    private val failedPages = HashSet<Int>()
 
     fun load(albumCode: String, force: Boolean = false, photosOnly: Boolean = false) {
         if (!force && code == albumCode && _state.value.loadedPages > 0) return
         code = albumCode
         this.photosOnly = photosOnly
         job?.cancel()
+        autoJob?.cancel()
+        photosByPage.clear()
+        donePages.clear()
+        failedPages.clear()
         _selectedVideo.value = 0
         _player.value = SitePlayerState()
         _state.value = BuonduaAlbumUiState(code = albumCode)
         job = viewModelScope.launch {
             BuonduaRepo.album(albumCode, 1)
                 .onSuccess { page ->
-                    apply(page, replace = true)
-                    if (!photosOnly) {
+                    apply(page, requested = 1, replace = true)
+                    donePages += 1
+                    if (photosOnly) {
+                        // The photo grid must show the WHOLE album, not just what the user
+                        // happens to scroll to, so fetch every remaining page in order.
+                        loadAllPages()
+                    } else {
                         runCatching {
                             BuonduaHistoryRepo.recordVisit(albumCode, page.title, page.coverUrl, 1)
                         }
@@ -87,20 +104,68 @@ class BuonduaAlbumViewModel : ViewModel() {
 
     fun loadNextPage() {
         val s = _state.value
+        if (autoJob?.isActive == true) return // the auto-loader is already doing this
         if (s.isLoading || s.isLoadingMore || !s.hasMorePages) return
         _state.update { it.copy(isLoadingMore = true) }
         val next = s.loadedPages + 1
         job = viewModelScope.launch {
-            BuonduaRepo.album(code, next)
-                .onSuccess { apply(it, replace = false) }
-                .onFailure { _state.update { old -> old.copy(isLoadingMore = false) } }
+            val page = fetchPage(next)
+            if (page != null) {
+                apply(page, requested = next, replace = false)
+                donePages += next
+            } else {
+                _state.update { old -> old.copy(isLoadingMore = false, loadMoreFailed = true) }
+            }
         }
     }
 
-    private fun apply(page: BuonduaAlbumPage, replace: Boolean) {
+    /** Re-runs the loader; pages that already loaded are skipped, failed ones are retried. */
+    fun retryMissingPages() = loadAllPages()
+
+    private suspend fun fetchPage(page: Int): BuonduaAlbumPage? {
+        repeat(3) { attempt ->
+            BuonduaRepo.album(code, page).onSuccess { return it }
+            delay(400L * (attempt + 1))
+        }
+        return null
+    }
+
+    private fun loadAllPages() {
+        if (autoJob?.isActive == true) return
+        autoJob = viewModelScope.launch {
+            _state.update { it.copy(isLoadingMore = true, loadMoreFailed = false) }
+            var next = 2
+            while (next <= BuonduaRepo.MAX_PAGES) {
+                val s = _state.value
+                // Past the advertised page count only continue while photos are still missing.
+                val probing = next > s.totalPages
+                val expected = s.photoCount
+                if (probing && (expected == null || s.photos.size >= expected)) break
+                if (next in donePages) { next++; continue }
+
+                val page = fetchPage(next)
+                if (page == null) {
+                    if (probing) break
+                    failedPages += next
+                } else {
+                    val before = _state.value.photos.size
+                    apply(page, requested = next, replace = false)
+                    donePages += next
+                    failedPages -= next
+                    _state.update { it.copy(isLoadingMore = true) }
+                    if (probing && _state.value.photos.size == before) break
+                }
+                next++
+            }
+            _state.update { it.copy(isLoadingMore = false, loadMoreFailed = failedPages.isNotEmpty()) }
+        }
+    }
+
+    private fun apply(page: BuonduaAlbumPage, requested: Int, replace: Boolean) {
+        if (replace) photosByPage.clear()
+        photosByPage[requested] = page.photos.map { it.url }
         _state.update { old ->
-            val photos = if (replace) page.photos
-            else (old.photos.map { it.url } + page.photos.map { it.url }).distinct()
+            val photos = photosByPage.values.flatten().distinct()
                 .mapIndexed { i, u -> BuonduaPhoto(u, i) }
             val videos = (if (replace) page.videos else old.videos + page.videos).distinctBy { it.url }
             old.copy(
@@ -111,8 +176,8 @@ class BuonduaAlbumViewModel : ViewModel() {
                 coverUrl = old.coverUrl.ifBlank { page.coverUrl },
                 photoCount = page.photoCount ?: old.photoCount,
                 videoCount = page.videoCount ?: old.videoCount,
-                loadedPages = page.page.coerceAtLeast(if (replace) 1 else old.loadedPages + 1),
-                totalPages = page.totalPages,
+                loadedPages = maxOf(old.loadedPages, requested),
+                totalPages = maxOf(old.totalPages, page.totalPages, requested),
                 photos = photos,
                 videos = videos,
                 tags = if (replace) page.tags else old.tags,

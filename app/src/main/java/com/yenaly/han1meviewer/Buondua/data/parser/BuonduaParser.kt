@@ -15,6 +15,7 @@ object BuonduaParser {
 
     private val PAGE_SUFFIX = Regex("""\s*-?\s*\(\s*Page\s+\d+\s*/\s*\d+\s*\)\s*$""", RegexOption.IGNORE_CASE)
     private val PAGE_OF = Regex("""Page\s+(\d+)\s*/\s*(\d+)""", RegexOption.IGNORE_CASE)
+    private val PAGE_PARAM = Regex("""[?&]page=(\d+)""")
     private val PHOTO_COUNT = Regex("""(\d+)\s+photos?""", RegexOption.IGNORE_CASE)
     private val VIDEO_COUNT = Regex("""(\d+)\s+videos?""", RegexOption.IGNORE_CASE)
     private val IMAGE_EXT = Regex("""\.(jpe?g|png|webp|gif|avif)(\?|$)""", RegexOption.IGNORE_CASE)
@@ -84,15 +85,20 @@ object BuonduaParser {
         val title = cleanTitle(rawTitle)
         if (title.isBlank()) return null
 
-        val pageInfo = PAGE_OF.find(doc.title()) ?: PAGE_OF.find(
-            doc.selectFirst("meta[name=description]")?.attr("content").orEmpty()
-        )
-        val page = pageInfo?.groupValues?.get(1)?.toIntOrNull() ?: requestedPage
-        val totalPages = pageInfo?.groupValues?.get(2)?.toIntOrNull()
-            ?: doc.select(".pagination a[href*=page=]").mapNotNull {
-                Regex("""[?&]page=(\d+)""").find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
-            }.maxOrNull()
-            ?: 1
+        // Every place that can carry "Page N / M" – <title>, meta description, the article header.
+        val pageInfos = listOf(
+            doc.title(),
+            doc.selectFirst("meta[name=description]")?.attr("content").orEmpty(),
+            doc.selectFirst(".article-header")?.text().orEmpty(),
+        ).mapNotNull { PAGE_OF.find(it) }
+        val page = pageInfos.firstOrNull()?.groupValues?.get(1)?.toIntOrNull() ?: requestedPage
+        // Take the largest figure seen anywhere (title total, pagination links, "last" link),
+        // so one missing/odd signal can no longer truncate the album.
+        val totalFromText = pageInfos.mapNotNull { it.groupValues[2].toIntOrNull() }.maxOrNull() ?: 1
+        val totalFromLinks = doc.select("nav.pagination a[href*=page=], .pagination a[href*=page=]").mapNotNull {
+            PAGE_PARAM.find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
+        }.maxOrNull() ?: 1
+        val totalPages = maxOf(totalFromText, totalFromLinks)
 
         val body = doc.selectFirst(".article-fulltext") ?: doc.selectFirst(".article") ?: doc.body()
         val photos = parsePhotos(doc, body)
@@ -224,8 +230,10 @@ object BuonduaParser {
     private fun hostOf(url: String): String =
         runCatching { java.net.URI(url).host }.getOrNull().orEmpty()
 
+    private val NON_PHOTO_EXT = Regex("""\.(svg|ico)(\?|$)""", RegexOption.IGNORE_CASE)
+
     private fun parsePhotos(doc: Document, body: Element): List<BuonduaPhoto> {
-        fun collect(scope: Element, strict: Boolean): List<String> = scope.select("img")
+        fun collect(scope: Element, strictHost: Boolean): List<String> = scope.select("img")
             .asSequence()
             .filter { img ->
                 img.parents().none {
@@ -237,13 +245,22 @@ object BuonduaParser {
             .mapNotNull { imageUrlOf(it) }
             .filter { url ->
                 val host = hostOf(url)
-                BuonduaConstants.isImageHost(host) &&
-                        (IMAGE_EXT.containsMatchIn(url) || !strict)
+                when {
+                    !url.startsWith("http") || host.isBlank() -> false
+                    BuonduaConstants.isAdHost(host) -> false
+                    NON_PHOTO_EXT.containsMatchIn(url) -> false
+                    // Inside the article body every non-ad <img> is a photo, whatever CDN/host
+                    // serves it and whether or not the URL ends in an extension. The old host
+                    // whitelist silently dropped photos served from other hosts.
+                    !strictHost -> true
+                    else -> BuonduaConstants.isImageHost(host) && IMAGE_EXT.containsMatchIn(url)
+                }
             }
             .toList()
 
-        var urls = collect(body, strict = true)
-        if (urls.isEmpty()) urls = collect(doc.body(), strict = true)
+        var urls = collect(body, strictHost = false)
+        // No article container matched -> scan the whole page, but only trust known image hosts.
+        if (urls.isEmpty()) urls = collect(doc.body(), strictHost = true)
         return urls.distinct().mapIndexed { i, u -> BuonduaPhoto(u, i) }
     }
 

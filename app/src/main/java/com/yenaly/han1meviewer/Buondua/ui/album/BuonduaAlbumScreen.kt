@@ -270,6 +270,7 @@ fun BuonduaAlbumScreen(
                                         title = state.title,
                                         loadedUrls = state.photos.map { it.url },
                                         totalPages = state.totalPages,
+                                        expectedCount = state.photoCount,
                                     )
                                 }
                             },

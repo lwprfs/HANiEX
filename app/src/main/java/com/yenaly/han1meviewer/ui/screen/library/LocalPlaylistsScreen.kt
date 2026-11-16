@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -63,6 +64,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.local.LocalPlaylist
 import com.yenaly.han1meviewer.logic.local.LocalPlaylistItem
@@ -75,6 +77,13 @@ import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.res.painterResource
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.component.SiteImageLoaders
+import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -137,13 +146,14 @@ fun LocalPlaylistsScreen(
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(Modifier.fillMaxWidth().height(200.dp)) {
-                    open.items.firstOrNull()?.let { first ->
+                    open.items.firstOrNull { !it.coverUrl.isNullOrBlank() }?.let { first ->
                         RetryableImage(
-                            model = first.coverUrl ?: "",
+                            model = first.coverUrl.orEmpty(),
                             contentDescription = first.title,
                             placeholder = painterResource(R.drawable.h_chan_loading),
                             error = painterResource(R.drawable.h_chan_load_failed),
                             contentScale = ContentScale.Crop,
+                            imageLoader = SiteImageLoaders.forSiteName(first.site, LocalContext.current),
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
@@ -212,13 +222,49 @@ fun LocalPlaylistsScreen(
                 if (open.items.isEmpty()) {
                     EmptyContent(stringResource(R.string.local_playlist_empty_items))
                 } else {
+                    // Sites present in this playlist; the check-chips below show only the ticked
+                    // sites and hide the rest. Nothing ticked = show everything.
+                    val sitesInPlaylist = remember(open.items) {
+                        val current = runCatching { Preferences.siteType.name }.getOrNull()
+                        open.items.map { it.site }.distinct()
+                            .sortedWith(compareByDescending<String> { it == current })
+                    }
+                    var siteFilter by remember(open.id) { mutableStateOf(emptySet<String>()) }
+                    val activeFilter = remember(siteFilter, sitesInPlaylist) {
+                        siteFilter.intersect(sitesInPlaylist.toSet())
+                    }
+                    val shownItems = remember(open.items, activeFilter) {
+                        if (activeFilter.isEmpty()) open.items
+                        else open.items.filter { it.site in activeFilter }
+                    }
+                    if (sitesInPlaylist.size > 1) {
+                        LazyRow(
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(sitesInPlaylist, key = { it }) { site ->
+                                val selected = site in activeFilter
+                                val count = open.items.count { it.site == site }
+                                FilterChip(
+                                    selected = selected,
+                                    onClick = {
+                                        siteFilter = if (selected) activeFilter - site else activeFilter + site
+                                    },
+                                    label = { Text("${siteLabelOf(site)} ($count)") },
+                                    leadingIcon = if (selected) {
+                                        { Icon(Icons.Default.Check, null, Modifier.size(FilterChipDefaults.IconSize)) }
+                                    } else null,
+                                )
+                            }
+                        }
+                    }
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(minSize = 160.dp),
                         contentPadding = PaddingValues(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        items(open.items, key = { it.key }) { item ->
+                        items(shownItems, key = { it.key }) { item ->
                             LocalPlaylistVideoCard(
                                 item = item,
                                 onClick = {
@@ -295,12 +341,14 @@ private fun LocalPlaylistCard(
     ) {
         Column {
             Box(modifier = Modifier.height(100.dp)) {
+                val coverItem = playlist.items.firstOrNull { !it.coverUrl.isNullOrBlank() }
                 RetryableImage(
-                    model = playlist.items.firstOrNull()?.coverUrl ?: "",
+                    model = coverItem?.coverUrl.orEmpty(),
                     contentDescription = playlist.name,
                     placeholder = painterResource(R.drawable.h_chan_loading),
                     error = painterResource(R.drawable.h_chan_load_failed),
                     contentScale = ContentScale.Crop,
+                    imageLoader = coverItem?.let { SiteImageLoaders.forSiteName(it.site, LocalContext.current) },
                     modifier = Modifier.fillMaxSize(),
                 )
                 Box(
@@ -345,12 +393,26 @@ private fun LocalPlaylistVideoCard(
         Column {
             Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
                 RetryableImage(
-                    model = item.coverUrl ?: "",
+                    model = item.coverUrl.orEmpty(),
                     contentDescription = item.title,
                     placeholder = painterResource(R.drawable.h_chan_loading),
                     error = painterResource(R.drawable.h_chan_load_failed),
                     contentScale = ContentScale.Crop,
+                    imageLoader = SiteImageLoaders.forSiteName(item.site, LocalContext.current),
                     modifier = Modifier.fillMaxSize(),
+                )
+                Text(
+                    text = siteLabelOf(item.site),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(6.dp)
+                        .widthIn(max = 110.dp)
+                        .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
                 )
                 IconButton(
                     onClick = onRemove,
@@ -373,15 +435,13 @@ private fun LocalPlaylistVideoCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                Text(
-                    item.site,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                )
             }
         }
     }
 }
+
+private fun siteLabelOf(site: String): String =
+    runCatching { SiteType.valueOf(site) }.getOrNull()?.let(CrossSiteNavigator::siteLabel) ?: site
 
 @Composable
 private fun NameDialog(initial: String?, onDismiss: () -> Unit, onConfirm: (String) -> Unit) {

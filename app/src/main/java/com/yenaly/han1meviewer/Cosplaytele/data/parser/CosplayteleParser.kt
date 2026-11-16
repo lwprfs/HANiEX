@@ -355,7 +355,7 @@ object CosplayteleParser {
         val photos = collectPhotos(entry)
         val (categories, tags) = collectArticleTerms(article)
 
-        val og = doc.selectFirst("meta[property=og:image]")?.attr("content").orEmpty()
+        val og = doc.selectFirst("meta[property=og:image]")?.absUrl("content").orEmpty()
         val cover = og.ifBlank { photos.firstOrNull().orEmpty() }
         val posted = doc.selectFirst("meta[property=article:published_time]")?.attr("content")
             ?.substringBefore('T')
