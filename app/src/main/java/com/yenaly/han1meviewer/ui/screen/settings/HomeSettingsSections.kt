@@ -16,7 +16,6 @@ import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
 
-/** Choice dialogs that can be opened from the category sections. */
 internal enum class HomeSettingsChoiceDialog {
     VideoLanguage,
     VideoQuality,

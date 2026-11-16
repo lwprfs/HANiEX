@@ -30,10 +30,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 
-/**
- * One searchable setting. Titles and summaries are string resources, so search follows the
- * active app language and the same texts the settings screens display.
- */
 internal class SettingsSearchEntry(
     val category: SettingsCategory,
     @param:StringRes val titleRes: Int,
@@ -41,12 +37,8 @@ internal class SettingsSearchEntry(
     val isAvailable: () -> Boolean = { true },
 )
 
-/**
- * Index of every setting reachable from a category screen. When a setting is added to or
- * removed from a category screen, update its entry here.
- */
 internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
-    // Appearance
+
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.dark_theme),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.theme_color),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.pure_black_dark_mode, R.string.pure_black_dark_mode_summary),
@@ -61,7 +53,7 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.rouvideo_tr_title, R.string.rouvideo_tr_privacy) { AppTranslation.available },
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.show_exit_confirm, R.string.show_exit_confirm_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.site_visibility_title, R.string.site_visibility_summary),
-    // Playback
+
     SettingsSearchEntry(SettingsCategory.Playback, R.string.video_language),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.default_video_quilty),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.allow_pip_title, R.string.allow_pip_disc),
@@ -71,7 +63,7 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Playback, R.string.disable_mobile_data_warning, R.string.disable_mobile_data_warning_summary),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.disable_comments_title, R.string.disable_comments_sum),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.player_settings),
-    // Network
+
     SettingsSearchEntry(SettingsCategory.Network, R.string.network_settings_site, R.string.network_settings_site_summary),
     SettingsSearchEntry(SettingsCategory.Network, R.string.domain_name),
     SettingsSearchEntry(SettingsCategory.Network, R.string.mirror_latency_entry),
@@ -83,14 +75,14 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Network, R.string.use_doh),
     SettingsSearchEntry(SettingsCategory.Network, R.string.test_doh, R.string.test_doh_summary),
     SettingsSearchEntry(SettingsCategory.Network, R.string.apply_deep_links, R.string.apply_deep_links_summary),
-    // Download
+
     SettingsSearchEntry(SettingsCategory.Download, R.string.download_path),
     SettingsSearchEntry(SettingsCategory.Download, R.string.pref_export_downloads_title, R.string.pref_export_downloads_summary),
     SettingsSearchEntry(SettingsCategory.Download, R.string.download_count_limit),
     SettingsSearchEntry(SettingsCategory.Download, R.string.download_speed_limit),
     SettingsSearchEntry(SettingsCategory.Download, R.string.download_auto_group, R.string.download_auto_group_summary),
     SettingsSearchEntry(SettingsCategory.Download, R.string.collapse_downloaded_groups, R.string.collapse_downloaded_groups_summary),
-    // Keyframes
+
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.h_keyframes_enable),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.h_keyframe_manage),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.shared_h_keyframes_enable, R.string.shared_h_keyframes_enable_tip),
@@ -98,16 +90,16 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.shared_h_keyframe_manage, R.string.shared_h_keyframe_manage_tip),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.show_prompt_when_countdown),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.when_countdown_remind),
-    // Privacy
+
     SettingsSearchEntry(SettingsCategory.Privacy, R.string.analytics_title, R.string.analytics_summary),
     SettingsSearchEntry(SettingsCategory.Privacy, R.string.use_lock_screen, R.string.use_lock_screen_sum),
     SettingsSearchEntry(SettingsCategory.Privacy, R.string.fake_app_icon, R.string.select_fake_icon),
-    // Data
+
     SettingsSearchEntry(SettingsCategory.Data, R.string.hist_all_sites_title),
     SettingsSearchEntry(SettingsCategory.Data, R.string.backup_export_title, R.string.backup_export_summary),
     SettingsSearchEntry(SettingsCategory.Data, R.string.backup_import_title, R.string.backup_import_summary),
     SettingsSearchEntry(SettingsCategory.Data, R.string.clear_cache),
-    // About
+
     SettingsSearchEntry(SettingsCategory.About, R.string.check_update),
     SettingsSearchEntry(SettingsCategory.About, R.string.use_ci_update_channel),
     SettingsSearchEntry(SettingsCategory.About, R.string.update_installer, R.string.update_installer_summary),
@@ -124,7 +116,6 @@ internal data class SettingsSearchResult(
     val categoryTitle: String,
 )
 
-/** Settings whose title, summary or category name contains every word of [query]. */
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 internal fun rememberSettingsSearchResults(query: String): List<SettingsSearchResult> {
@@ -180,7 +171,6 @@ internal fun SettingsSearchField(
     )
 }
 
-/** A matching setting: its title with the category it lives in. Opens that category. */
 @Composable
 internal fun SettingsSearchResultItem(
     result: SettingsSearchResult,

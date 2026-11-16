@@ -226,7 +226,6 @@ object HentaiMamaCardSettings {
         widthMultiplier = DEFAULT_WIDTH_MULTIPLIER
     }
 
-    /** Resets the main, recent and upcoming card sizes. */
     fun resetAllToDefaults() {
         resetToDefaults()
         recentCardMultiplier = DEFAULT_RECENT_CARD_MULTIPLIER

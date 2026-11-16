@@ -176,7 +176,6 @@ object Preferences {
         get() = preferenceSp.getString("missav_preferred_quality", "auto") ?: "auto"
         set(value) = preferenceSp.edit { putString("missav_preferred_quality", value) }
 
-    /** Resets MissAV customization (quality, subtitles); host, cookies and history are kept. */
     fun resetMissAvCustomization() {
         preferenceSp.edit {
             remove("missav_lock_quality")
@@ -471,7 +470,6 @@ object Preferences {
 
     val disableMobileDataWarning: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_MOBILE_DATA_WARNING,false)
-
 
     val showExitConfirm: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, true)

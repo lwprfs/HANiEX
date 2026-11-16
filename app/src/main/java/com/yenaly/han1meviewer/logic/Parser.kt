@@ -1122,8 +1122,7 @@ object Parser {
         val subscriptionsRoot = parseBody.selectFirst("div.subscriptions-nav")
         val subscriptionsVideosRoot = parseBody.selectFirst("div.content-padding-new")
         if (subscriptionsRoot == null && subscriptionsVideosRoot == null) {
-            // Neither section exists: either the session expired (we were bounced to the
-            // login form) or the page is not the subscriptions page at all.
+
             val isLoginPage = parseBody.selectFirst("input[name=password]") != null
             return WebsiteState.Error(
                 if (isLoginPage) LoginStateExpiredException(getString(R.string.login_state_expired))

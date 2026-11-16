@@ -36,7 +36,6 @@ internal data class LauncherItem(
     val alias: String,
 )
 
-/** Explains what analytics collects; the person can acknowledge it or turn analytics off. */
 @Composable
 internal fun AnalyticsInfoDialog(
     onDeny: () -> Unit,
@@ -63,7 +62,6 @@ internal fun AnalyticsInfoDialog(
     )
 }
 
-/** Lists the selectable launcher icons / names. */
 @Composable
 internal fun LauncherPickerDialog(
     items: List<LauncherItem>,

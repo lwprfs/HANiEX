@@ -14,6 +14,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.filled.PhotoSizeSelectSmall
+import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Subtitles
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.filled.Groups
+import com.yenaly.han1meviewer.ui.component.SettingHintText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -155,27 +171,11 @@ fun SiteSettingsHubScreen(
             contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
         ) {
             item(key = "intro") {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(text = siteLabel, style = MaterialTheme.typography.headlineSmall)
-                    Text(
-                        text = stringResource(R.string.site_settings_intro, siteLabel),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        text = summaryText,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
+                SettingSectionHeader(siteLabel)
+                SettingHintText(stringResource(R.string.site_settings_intro, siteLabel))
+                SettingHintText(summaryText)
             }
 
-            // Site-specific options come first: they are what the person opened this hub for.
             if (siteEntries.isNotEmpty()) {
                 item { HubSectionTitle(stringResource(R.string.site_settings_2, siteLabel)) }
                 items(siteEntries.size, key = { siteEntries[it].key }) { index ->
@@ -189,6 +189,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_preset_title),
                         summary = stringResource(R.string.site_preset_summary),
+                        icon = Icons.Default.Tune,
                         onClick = { showPresetDialog = true },
                     )
                 }
@@ -198,6 +199,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_grid_columns_title),
                         summary = stringResource(R.string.site_grid_columns_summary),
+                        icon = Icons.Default.GridView,
                         valueText = if (gridColumns == SiteLayoutSettings.FOLLOW_APP) {
                             stringResource(R.string.site_grid_columns_follow_app)
                         } else {
@@ -221,6 +223,12 @@ fun SiteSettingsHubScreen(
                                 SiteCardSettings.Detail.Date -> R.string.site_card_show_date
                             }
                         ),
+                        icon = when (detail) {
+                            SiteCardSettings.Detail.Views -> Icons.Default.Visibility
+                            SiteCardSettings.Detail.Duration -> Icons.Default.Timer
+                            SiteCardSettings.Detail.Subtitle -> Icons.Default.Subtitles
+                            SiteCardSettings.Detail.Date -> Icons.Default.CalendarMonth
+                        },
                         checked = SiteCardSettings.isShown(site, detail),
                         onCheckedChange = { SiteCardSettings.setShown(site, detail, it) },
                     )
@@ -232,6 +240,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_card_aspect_title),
                         summary = stringResource(R.string.site_card_aspect_summary),
+                        icon = Icons.Default.AspectRatio,
                         valueText = stringResource(cardAspect.labelRes()),
                         onClick = { showAspectDialog = true },
                     )
@@ -244,6 +253,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_default_sort_title),
                         summary = stringResource(R.string.site_default_sort_summary),
+                        icon = Icons.Default.Sort,
                         valueText = sortChoices.firstOrNull { it.second == defaultSort }?.first
                             ?: stringResource(R.string.site_default_sort_none),
                         onClick = { showSortDialog = true },
@@ -258,6 +268,7 @@ fun SiteSettingsHubScreen(
                         SettingNavigationItem(
                             title = stringResource(R.string.site_home_cache_title),
                             summary = stringResource(R.string.site_home_cache_summary),
+                            icon = Icons.Default.Update,
                             valueText = stringResource(R.string.site_minutes, cacheMinutes),
                             onClick = { showCacheDialog = true },
                         )
@@ -272,6 +283,10 @@ fun SiteSettingsHubScreen(
                                 SiteHomeSettings.Section.FapFolderSuggested -> R.string.fap_suggested_communities
                             }
                         ),
+                        icon = when (section) {
+                            SiteHomeSettings.Section.FapFolderTrending -> Icons.Default.TrendingUp
+                            SiteHomeSettings.Section.FapFolderSuggested -> Icons.Default.Groups
+                        },
                         checked = SiteHomeSettings.isShown(section),
                         onCheckedChange = { SiteHomeSettings.setShown(section, it) },
                     )
@@ -284,6 +299,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_image_retries_title),
                         summary = stringResource(R.string.site_image_retries_summary),
+                        icon = Icons.Default.Refresh,
                         valueText = stringResource(imageOptions.retries.retriesLabelRes()),
                         onClick = { showRetriesDialog = true },
                     )
@@ -292,6 +308,7 @@ fun SiteSettingsHubScreen(
                     SettingSwitchItem(
                         title = stringResource(R.string.site_image_fade_title),
                         summary = stringResource(R.string.site_image_fade_summary),
+                        icon = Icons.Default.Animation,
                         checked = imageOptions.fade,
                         onCheckedChange = { SiteImageSettings.setFade(site, it) },
                     )
@@ -300,13 +317,13 @@ fun SiteSettingsHubScreen(
                     SettingSwitchItem(
                         title = stringResource(R.string.site_image_reduced_title),
                         summary = stringResource(R.string.site_image_reduced_summary),
+                        icon = Icons.Default.PhotoSizeSelectSmall,
                         checked = imageOptions.reduced,
                         onCheckedChange = { SiteImageSettings.setReduced(site, it) },
                     )
                 }
             }
 
-            // Global settings (appearance, language, ...) live in the app settings only.
             item { HubSectionTitle(stringResource(R.string.site_all_app_settings)) }
             item {
                 HubRow(
@@ -340,6 +357,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_reset_title, siteLabel),
                         summary = stringResource(R.string.site_reset_summary),
+                        icon = Icons.Default.Restore,
                         onClick = { showResetConfirm = true },
                     )
                 }
@@ -502,34 +520,12 @@ private fun HubSectionTitle(text: String) {
 
 @Composable
 private fun HubRow(entry: SiteSettingsEntry) {
-    SettingTile(onClick = entry.onClick) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            SettingIconBadge(imageVector = entry.icon)
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = entry.title,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = entry.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    SettingNavigationItem(
+        title = entry.title,
+        summary = entry.subtitle,
+        icon = entry.icon,
+        onClick = entry.onClick,
+    )
 }
 
 private fun SiteCardSettings.Aspect.labelRes(): Int = when (this) {

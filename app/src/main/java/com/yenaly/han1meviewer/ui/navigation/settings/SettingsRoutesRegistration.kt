@@ -21,14 +21,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
 
-/**
- * Single registration point for every settings destination. Used by the Hanime-family
- * [com.yenaly.han1meviewer.ui.navigation.main.MainNavHost] and by every site NavHost so the
- * settings tree behaves identically no matter which site is active.
- *
- * @param homeFallback where the settings home goes when there is nothing to pop back to.
- * @param onOpenVideo opens a Hanime video (used by the H-Keyframe lists).
- */
 fun NavGraphBuilder.registerSettingsRoutes(
     activity: MainActivity,
     navController: NavHostController,

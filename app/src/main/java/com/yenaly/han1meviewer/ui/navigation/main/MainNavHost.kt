@@ -1,6 +1,5 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
-
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import androidx.compose.animation.AnimatedContentTransitionScope

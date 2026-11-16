@@ -386,7 +386,7 @@ fun SettingChoiceItem(
                 }
             }
             if (selected) {
-                // The check mark is decorative: the selected state is exposed through semantics.
+
                 Icon(
                     imageVector = Icons.Filled.CheckCircle,
                     contentDescription = null,
@@ -397,7 +397,6 @@ fun SettingChoiceItem(
     }
 }
 
-/** Muted helper paragraph shown under a section header. */
 @Composable
 fun SettingHintText(
     text: String,
@@ -415,7 +414,6 @@ fun SettingHintText(
     )
 }
 
-/** Single-choice row in the same style as the other setting rows (title, summary, check mark). */
 @Composable
 fun SettingRadioItem(
     title: String,
@@ -453,7 +451,6 @@ fun SettingRadioItem(
     }
 }
 
-/** Row with an optional trailing action area, e.g. reorder buttons plus a switch. */
 @Composable
 fun SettingActionItem(
     title: String,

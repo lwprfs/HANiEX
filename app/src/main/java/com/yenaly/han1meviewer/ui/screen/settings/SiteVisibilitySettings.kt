@@ -24,10 +24,6 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 
-/**
- * "Available sites" row. Looks like every other setting row; tapping it opens a popup that lists
- * all sites with an on/off switch, each one in whatever position it currently is.
- */
 @Composable
 fun SiteVisibilitySettings() {
     var disabled by remember { mutableStateOf(Preferences.disabledSites) }

@@ -24,10 +24,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 
-/**
- * A flat category row: tinted icon badge, title, short description and (on compact screens)
- * a chevron. In the expanded list pane the [selected] row is filled with the secondary container.
- */
 @Composable
 fun SettingsCategoryItem(
     category: SettingsCategory,

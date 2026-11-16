@@ -56,11 +56,6 @@ import com.yenaly.han1meviewer.ui.screen.main.siteLoginStatus
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
 
-/**
- * Sites whose hub config exposes followed/saved creators. Keep in sync with the
- * `subscriptionSections` passed in each site's `*HubConfig`; every other site has no
- * subscription concept, so the tab is hidden instead of showing an empty page.
- */
 fun SiteType.supportsSubscriptions(): Boolean = when (this) {
     SiteType.MISSAV, SiteType.FAPFOLDER, SiteType.ROUVIDEO, SiteType.XHAMSTER -> true
     else -> false

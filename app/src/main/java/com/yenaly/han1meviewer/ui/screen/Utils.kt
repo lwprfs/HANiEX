@@ -53,7 +53,7 @@ fun RetryableImage(
     val limit = siteOptions?.retries ?: retryLimit
     val fade = siteOptions?.fade == true
     val isFullImage = contentScale == ContentScale.Fit || contentScale == ContentScale.Inside
-    // Smaller decoding only applies to thumbnails; full-size viewers keep full resolution.
+
     val reduced = siteOptions?.reduced == true && !isFullImage
 
     var retryCount by remember(model) { mutableIntStateOf(0) }
@@ -160,7 +160,7 @@ private fun rememberGridColumns(minCardWidth: Dp, search: Boolean): Int {
     if (isPreview) return maxOf(2, maxFittingColumns)
 
     if (siteColumns != SiteLayoutSettings.FOLLOW_APP) {
-        // The person picked a column count for this site; keep cards from getting unusably small.
+
         return siteColumns.coerceAtMost(
             videoGridColumnsForWidth(availableWidthDp, MinUserGridCardWidth)
         ).coerceAtLeast(1)

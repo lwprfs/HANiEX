@@ -242,7 +242,6 @@ fun HomeSettingsScreen(
                 )
             }
 
-            // Rendered by their own route screens, see SettingsCategoryRouteScreen.
             SettingsCategory.Network,
             SettingsCategory.Download,
             SettingsCategory.Keyframes -> Unit

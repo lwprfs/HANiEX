@@ -12,16 +12,11 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.util.applicationContext
 
-/**
- * Per-site layout customization. Every site stores its own value under its own key, so changing
- * one site never affects another. [FOLLOW_APP] (0) means the app-wide grid settings are used.
- */
 object SiteLayoutSettings {
 
     const val FOLLOW_APP = 0
     val COLUMN_OPTIONS = listOf(2, 3, 4, 5, 6)
 
-    /** Sites whose lists are laid out by the shared grid-column logic. */
     val gridColumnSites: Set<SiteType> = setOf(
         SiteType.MISSAV,
         SiteType.ONAIR,
@@ -53,7 +48,6 @@ object SiteLayoutSettings {
         SiteImageSettings.reset(site)
     }
 
-    /** A named combination of the layout and card options below. */
     enum class Preset(
         val columns: Int,
         val shownDetails: Set<SiteCardSettings.Detail>,
@@ -64,10 +58,6 @@ object SiteLayoutSettings {
         Minimal(FOLLOW_APP, setOf(SiteCardSettings.Detail.Duration)),
     }
 
-    /**
-     * Applies only the options this site actually has, and leaves every unrelated
-     * setting (host, account, playback, ...) untouched.
-     */
     fun applyPreset(site: SiteType, preset: Preset) {
         if (site in gridColumnSites) setGridColumns(site, preset.columns)
         if (site in SiteCardSettings.sites) {
@@ -78,7 +68,6 @@ object SiteLayoutSettings {
     }
 }
 
-/** Which details a site's video cards show. Stored separately for every site. */
 object SiteCardSettings {
 
     enum class Detail(val keySuffix: String) {
@@ -88,7 +77,6 @@ object SiteCardSettings {
         Date("date"),
     }
 
-    /** Sites whose cards are drawn by the shared site video card. */
     val sites: Set<SiteType> = setOf(
         SiteType.HENTAIMAMA,
         SiteType.ONAIR,
@@ -97,7 +85,6 @@ object SiteCardSettings {
         SiteType.XHAMSTER,
     )
 
-    /** Bumped on every change so cards recompose; one shared listener serves all cards. */
     private var version by mutableIntStateOf(0)
     private var listening = false
 
@@ -113,11 +100,10 @@ object SiteCardSettings {
             Preferences.preferenceSp.registerOnSharedPreferenceChangeListener(listener)
             listening = true
         }
-        version // read so the caller recomposes after a change
+        version
         return Preferences.preferenceSp.getBoolean(key(site, detail), true)
     }
 
-    /** Thumbnail shape a site's cards use; [Default] keeps what the screen draws itself. */
     enum class Aspect(val keyValue: String, val ratio: Float?) {
         Default("default", null),
         Wide("16_9", 16f / 9f),
@@ -129,7 +115,7 @@ object SiteCardSettings {
     private fun aspectKey(site: SiteType) = "site_${site.name.lowercase()}_card_aspect"
 
     fun aspect(site: SiteType): Aspect {
-        isShown(site, Detail.Views) // registers the shared listener and subscribes to changes
+        isShown(site, Detail.Views)
         val stored = Preferences.preferenceSp.getString(aspectKey(site), null)
         return Aspect.entries.firstOrNull { it.keyValue == stored } ?: Aspect.Default
     }
@@ -155,7 +141,6 @@ object SiteCardSettings {
     }
 }
 
-/** Observes the site's grid-column override so a change applies immediately. */
 @Composable
 fun rememberSiteGridColumns(site: SiteType): Int {
     val sp = Preferences.preferenceSp
@@ -172,7 +157,6 @@ fun rememberSiteGridColumns(site: SiteType): Int {
     return value
 }
 
-/** Home sections a site lets the person hide. Stored separately for every site. */
 object SiteHomeSettings {
 
     enum class Section(val site: SiteType, val keySuffix: String) {
@@ -182,7 +166,6 @@ object SiteHomeSettings {
 
     fun sectionsOf(site: SiteType): List<Section> = Section.entries.filter { it.site == site }
 
-    /** Bumped on every change so home screens recompose; one shared listener serves them all. */
     private var version by mutableIntStateOf(0)
     private var listening = false
 
@@ -198,7 +181,7 @@ object SiteHomeSettings {
             Preferences.preferenceSp.registerOnSharedPreferenceChangeListener(listener)
             listening = true
         }
-        version // read so the caller recomposes after a change
+        version
         return Preferences.preferenceSp.getBoolean(key(section), true)
     }
 
@@ -208,7 +191,6 @@ object SiteHomeSettings {
         }
     }
 
-    /** Sites whose home content is cached for a configurable time before it is re-fetched. */
     val cacheSites: Set<SiteType> = setOf(SiteType.MISSAV, SiteType.HENTAIMAMA)
     val cacheMinuteChoices = listOf(1, 5, 15, 30, 60)
     const val DEFAULT_CACHE_MINUTES = 5
@@ -236,10 +218,8 @@ object SiteHomeSettings {
     }
 }
 
-/** Default sort order for a site's search. Stored separately for every site. */
 object SiteSearchSettings {
 
-    /** Label to stored value pairs the site offers, or null when it has no default-sort option. */
     fun sortChoices(site: SiteType): List<Pair<String, String>>? = when (site) {
         SiteType.ONAIR -> com.yenaly.han1meviewer.OnAir.data.model.OnAirOptions.sorts
             .map { it.label to it.value }
@@ -252,7 +232,6 @@ object SiteSearchSettings {
 
     private fun key(site: SiteType) = "site_${site.name.lowercase()}_default_sort"
 
-    /** The stored default if the site still offers it, otherwise null. */
     fun defaultSort(site: SiteType): String? {
         val stored = Preferences.preferenceSp.getString(key(site), null)
         return stored?.takeIf { value -> sortChoices(site)?.any { it.second == value } == true }
@@ -269,7 +248,6 @@ object SiteSearchSettings {
     }
 }
 
-/** How a site's images load. Stored separately for every site. */
 object SiteImageSettings {
 
     class Options(val retries: Int, val fade: Boolean, val reduced: Boolean)
@@ -277,16 +255,13 @@ object SiteImageSettings {
     val retryChoices = listOf(0, 2, 4)
     const val DEFAULT_RETRIES = 2
 
-    /** Longest edge, in pixels, thumbnails are decoded at when "smaller images" is on. */
     const val REDUCED_EDGE_PX = 360
 
-    /** Every site loads its pictures through the shared image component. */
     val sites: Set<SiteType> = setOf(
         SiteType.MISSAV, SiteType.HENTAIMAMA, SiteType.ONAIR, SiteType.FAPFOLDER, SiteType.SUPJAV,
         SiteType.ROUVIDEO, SiteType.XHAMSTER, SiteType.BUONDUA, SiteType.COSPLAYTELE,
     )
 
-    /** Bumped on every change so images recompose; one shared listener serves them all. */
     private var version by mutableIntStateOf(0)
     private var listening = false
 
@@ -312,7 +287,6 @@ object SiteImageSettings {
         return Preferences.preferenceSp.getBoolean(key(site, "reduced"), false)
     }
 
-    /** The site's options, or null when the site has none (images then load as before). */
     fun options(site: SiteType): Options? =
         if (site in sites) Options(retries(site), fade(site), reduced(site)) else null
 
@@ -348,6 +322,6 @@ object SiteImageSettings {
             Preferences.preferenceSp.registerOnSharedPreferenceChangeListener(listener)
             listening = true
         }
-        version // read so the caller recomposes after a change
+        version
     }
 }
