@@ -96,6 +96,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
@@ -564,7 +566,7 @@ internal fun DrawerNavItem(
         badge = if (locked) {
             {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Filled.Lock,
+                    imageVector = Icons.Filled.Lock,
                     contentDescription = stringResource(R.string.login_first),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(18.dp),
