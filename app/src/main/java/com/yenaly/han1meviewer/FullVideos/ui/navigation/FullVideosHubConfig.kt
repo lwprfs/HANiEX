@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.yenaly.han1meviewer.FullVideos.ui.pages.FullVideosPagesScreen
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -22,6 +23,16 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
         navController = navController,
         activity = activity,
         siteSettingsRoute = FullVideosSettingsHubRoute,
+        subscriptionContent = {
+            FullVideosPagesScreen(
+                onNavigateToVideo = { code ->
+                    navController.navigateSafely(FullVideosVideoRoute(code))
+                },
+                onOpenEntity = { title, path ->
+                    navController.navigateSafely(FullVideosListRoute(title, path))
+                },
+            )
+        },
         siteLibraryEntries = listOf(
             SiteHubEntry(
                 key = "history",

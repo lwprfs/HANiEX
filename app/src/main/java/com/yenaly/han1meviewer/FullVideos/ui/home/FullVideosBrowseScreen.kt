@@ -163,7 +163,7 @@ fun FullVideosBrowseScreen(
 }
 
 @Composable
-private fun EntityCard(
+internal fun EntityCard(
     entity: FullVideosEntity,
     imageLoader: coil3.ImageLoader,
     onClick: () -> Unit,

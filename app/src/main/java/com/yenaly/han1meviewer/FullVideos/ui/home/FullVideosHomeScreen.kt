@@ -1,19 +1,12 @@
 package com.yenaly.han1meviewer.FullVideos.ui.home
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material3.AssistChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,18 +31,16 @@ fun FullVideosHomeScreen(
     onNavigateToVideo: (String) -> Unit,
     onNavigateToSearch: (String?) -> Unit,
     onNavigateToHistory: () -> Unit,
-    onNavigateToBrowse: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: FullVideosListViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var sectionKey by rememberSaveable { mutableStateOf(FullVideosConstants.SECTIONS.first().key) }
     var filterKey by rememberSaveable { mutableStateOf("") }
-    val section = FullVideosConstants.SECTIONS.first { it.key == sectionKey }
+    val section = FullVideosConstants.SECTIONS.first { it.key == "latest" }
     val filters = FullVideosConstants.TIME_FILTERS[section.key].orEmpty()
     val filter = filters.firstOrNull { it.key == filterKey } ?: filters.firstOrNull()
 
-    LaunchedEffect(sectionKey, filter?.key) {
+    LaunchedEffect(filter?.key) {
         viewModel.setSource(FullVideosSource.Path(section.path + filter?.path.orEmpty()))
     }
 
@@ -83,39 +74,15 @@ fun FullVideosHomeScreen(
             ) {
                 FullVideosVideoGrid(
                     header = {
-                        Column {
-                            LazyRow(
-                                contentPadding = PaddingValues(vertical = 6.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                items(FullVideosConstants.EntityKind.entries.toList()) { kind ->
-                                    AssistChip(
-                                        onClick = { onNavigateToBrowse(kind.key) },
-                                        label = { Text(browseLabel(kind)) },
-                                    )
-                                }
-                            }
+                        if (filters.isNotEmpty() && filter != null) {
                             SiteChipRow(
-                                options = FullVideosConstants.SECTIONS,
-                                selected = section,
+                                options = filters,
+                                selected = filter,
                                 label = { it.title },
-                                onSelect = {
-                                    sectionKey = it.key
-                                    filterKey = ""
-                                },
+                                onSelect = { filterKey = it.key },
                                 key = { it.key },
                                 horizontalPadding = 0.dp,
                             )
-                            if (filters.isNotEmpty() && filter != null) {
-                                SiteChipRow(
-                                    options = filters,
-                                    selected = filter,
-                                    label = { it.title },
-                                    onSelect = { filterKey = it.key },
-                                    key = { it.key },
-                                    horizontalPadding = 0.dp,
-                                )
-                            }
                         }
                     },
                     state = state,

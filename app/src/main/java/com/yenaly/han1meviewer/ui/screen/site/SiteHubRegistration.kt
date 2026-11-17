@@ -61,12 +61,12 @@ import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
 
 fun SiteType.supportsSubscriptions(): Boolean = when (this) {
     SiteType.MISSAV, SiteType.FAPFOLDER, SiteType.ROUVIDEO, SiteType.XHAMSTER,
-    SiteType.COSPLAYTELE, SiteType.HENTAIMAMA -> true
+    SiteType.COSPLAYTELE, SiteType.HENTAIMAMA, SiteType.FULLVIDEOS -> true
     else -> false
 }
 
 fun SiteType.usesPagesTab(): Boolean = when (this) {
-    SiteType.COSPLAYTELE, SiteType.HENTAIMAMA -> true
+    SiteType.COSPLAYTELE, SiteType.HENTAIMAMA, SiteType.FULLVIDEOS -> true
     else -> false
 }
 

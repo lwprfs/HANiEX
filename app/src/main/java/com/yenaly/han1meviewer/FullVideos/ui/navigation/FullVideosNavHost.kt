@@ -94,9 +94,6 @@ fun FullVideosNavHost(
                         navController.navigateSafely(FullVideosSearchRoute(query))
                     },
                     onNavigateToHistory = { navController.navigateSafely(FullVideosHistoryRoute) },
-                    onNavigateToBrowse = { kind ->
-                        navController.navigateSafely(FullVideosBrowseRoute(kind))
-                    },
                 )
             }
         }
