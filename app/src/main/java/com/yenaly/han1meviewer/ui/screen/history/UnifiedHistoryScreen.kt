@@ -58,6 +58,7 @@ import com.yenaly.han1meviewer.SupJav.data.repository.SupJavHistoryRepo
 import com.yenaly.han1meviewer.RouVideo.data.repository.RouVideoHistoryRepo
 import com.yenaly.han1meviewer.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.Cosplaytele.data.repository.CosplayteleHistoryRepo
+import com.yenaly.han1meviewer.FullVideos.data.repository.FullVideosHistoryRepo
 import com.yenaly.han1meviewer.XHamster.data.repository.XHamsterHistoryRepo
 import com.yenaly.han1meviewer.HentaiMama.data.local.HentaiMamaHistoryRepo
 import com.yenaly.han1meviewer.MissAV.data.repository.MissAvHistoryRepo
@@ -124,6 +125,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         XHamsterHistoryRepo.init(application)
         BuonduaHistoryRepo.init(application)
         CosplayteleHistoryRepo.init(application)
+        FullVideosHistoryRepo.init(application)
     }
 
     private fun <T> safe(flow: kotlinx.coroutines.flow.Flow<List<T>>) =
@@ -292,6 +294,22 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                         it.lastPosition >= it.totalDuration - 3_000L,
             )
         }).sortedByDescending { it.watchDate }
+    }.combine(safe(FullVideosHistoryRepo.loadAll())) { base, fullvideos ->
+        (base + fullvideos.map {
+            UnifiedHistoryItem(
+                site = SiteType.FULLVIDEOS,
+                code = it.videoCode,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = it.lastPosition,
+                durationMs = it.totalDuration,
+                path = null,
+                subtitle = null,
+                completed = it.totalDuration > 0 &&
+                        it.lastPosition >= it.totalDuration - 3_000L,
+            )
+        }).sortedByDescending { it.watchDate }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private fun WatchHistoryEntity.toItem() = UnifiedHistoryItem(
@@ -327,6 +345,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     SiteType.XHAMSTER -> XHamsterHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.BUONDUA -> BuonduaHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.COSPLAYTELE -> CosplayteleHistoryRepo.deleteByVideoCode(item.code)
+                    SiteType.FULLVIDEOS -> FullVideosHistoryRepo.deleteByVideoCode(item.code)
                 }
             }
         }
@@ -345,6 +364,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                 if (site == null || site == SiteType.XHAMSTER) XHamsterHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.BUONDUA) BuonduaHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.COSPLAYTELE) CosplayteleHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.FULLVIDEOS) FullVideosHistoryRepo.deleteAll()
             }
         }
     }
@@ -361,6 +381,7 @@ private val filterSites = listOf(
     SiteType.XHAMSTER,
     SiteType.BUONDUA,
     SiteType.COSPLAYTELE,
+    SiteType.FULLVIDEOS,
 )
 
 private fun siteBadge(site: SiteType): String = when (site) {
@@ -510,7 +531,7 @@ private fun UnifiedHistoryCard(
         DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
             .format(Date(item.watchDate))
     }
-    // Covers of several sites are hot-link protected: use that site's own loader.
+
     val loader = remember(item.site) { SiteImageLoaders.forSite(item.site, context) }
     HistoryGridCard(
         title = item.title.ifBlank { item.code },

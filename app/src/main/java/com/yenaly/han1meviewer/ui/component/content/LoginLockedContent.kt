@@ -22,10 +22,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 
-/**
- * Shown in place of a login-only page while the user is signed out.
- * Mirrors how Hanime keeps its account pages visible but locked (lock badge + "login first").
- */
 @Composable
 fun LoginLockedContent(
     onSignIn: () -> Unit,

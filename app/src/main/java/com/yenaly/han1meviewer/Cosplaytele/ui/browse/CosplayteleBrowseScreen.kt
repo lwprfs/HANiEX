@@ -26,10 +26,6 @@ import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 
-/**
- * Content of the "Pages" bottom tab: Best cosplayer / Top search / Categories, each rendered as a
- * thumbnail + title grid (same look as the post grid on the home screen).
- */
 @Composable
 fun CosplayteleBrowseScreen(
     onNavigateToPost: (String) -> Unit,

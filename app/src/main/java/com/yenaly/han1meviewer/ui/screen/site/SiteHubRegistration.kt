@@ -65,7 +65,6 @@ fun SiteType.supportsSubscriptions(): Boolean = when (this) {
     else -> false
 }
 
-/** Sites whose second bottom tab is a "Pages" browser (not a followed/saved list). */
 fun SiteType.usesPagesTab(): Boolean = when (this) {
     SiteType.COSPLAYTELE, SiteType.HENTAIMAMA -> true
     else -> false
@@ -87,7 +86,7 @@ data class SiteHubConfig(
     val profileSections: List<SiteHubSection>,
     val customizeSections: List<SiteHubSection>,
     val customizeExtras: (LazyListScope.() -> Unit)? = null,
-    /** When set, replaces the default list/card screen of the subscription ("Pages") tab. */
+
     val subscriptionContent: (@Composable () -> Unit)? = null,
 )
 

@@ -193,11 +193,6 @@ object CosplayteleParser {
     private fun termKey(a: Element): String? =
         termOf(a.absUrl("href"))?.let { "${it.first.name}:${it.second}" }
 
-    /**
-     * Memoised "does this element hold more than one distinct term link" lookup. The old
-     * implementation re-selected and re-parsed every link under every ancestor for every anchor,
-     * which is quadratic and left big pages (Best cosplayer, ~150 tiles) loading for ages.
-     */
     private class TermIndex {
         class Info(val key: String?, val multi: Boolean)
 
@@ -249,7 +244,6 @@ object CosplayteleParser {
                 IMAGE_JUNK.none { url.contains(it, ignoreCase = true) } &&
                 (isImageUrl(url) || url.contains("/uploads/"))
 
-    /** First usable picture inside [scope]: <img>, <picture><source>, data-bg / inline background. */
     private fun thumbIn(scope: Element): String {
         val candidates = scope.select(
             "img, source[srcset], source[data-srcset], [data-bg], [data-bg-src], " +
@@ -266,7 +260,6 @@ object CosplayteleParser {
         return ""
     }
 
-    /** Walks up from [anchor] while the ancestor still holds only this one term, looking for a picture. */
     private fun tileThumb(anchor: Element, root: Element, idx: TermIndex): String {
         var cur: Element? = anchor
         var depth = 0
@@ -280,12 +273,6 @@ object CosplayteleParser {
         return ""
     }
 
-    /**
-     * Fallback for layouts where the picture is a sibling of the link rather than inside the same
-     * wrapper: pair each term with the picture directly before it (else directly after it) in
-     * document order. Pictures that sit in a post link or a widget are ignored so the sidebar's
-     * "popular posts" thumbnails never get attached to a term.
-     */
     private fun positionalThumbs(root: Element): Map<String, String> {
         val events = ArrayList<Pair<String?, String?>>()
         for (el in root.allElements) {
@@ -388,13 +375,11 @@ object CosplayteleParser {
         val next = nextUrl(doc)
         val root = contentRoot(doc)
         val terms = if (collectTerms) parseTerms(root) else emptyList()
-        // Term pages (Best cosplayer / Top search / Categories) are tile grids; the posts the theme
-        // lists around them (popular posts, footer widgets) are not part of the page.
+
         val cards = if (terms.isNotEmpty()) emptyList() else parseCards(root).distinctBy { it.slug }
         return CosplayteleListPage(cards = cards, terms = terms, nextUrl = next)
     }
 
-    /** What is needed to ask the site's WordPress Popular Posts widget for a ranking page. */
     class WppRequest(val endpoint: String, val body: String, val token: String)
 
     fun parseWppRequest(html: String): WppRequest? {

@@ -30,6 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosBrowseRoute
+import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosHistoryRoute
+import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosSearchRoute
+import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosSettingsRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavHistoryRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSearchRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSettingsRoute
@@ -139,10 +143,6 @@ data class SiteDrawerEntry(
 private fun entry(title: String, icon: Int, route: Any) =
     SiteDrawerEntry(title, icon) { nav -> nav.navigateSafely(route) }
 
-/**
- * A login-only entry. Always visible (like Hanime's library); while signed out it shows a lock
- * and opens [loginRoute] instead of [route].
- */
 private fun gatedEntry(
     title: String,
     icon: Int,
@@ -297,6 +297,31 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 customize,
                 listOf(
                     entry(str(R.string.supjav_settings_playback_title), R.drawable.ic_video_quilty, SupJavSettingsRoute),
+                    playerSettings,
+                ),
+            ),
+        )
+
+        SiteType.FULLVIDEOS -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, FullVideosSearchRoute()),
+                    entry(str(R.string.fullvideos_categories), R.drawable.baseline_grid_24, FullVideosBrowseRoute("categories")),
+                    entry(str(R.string.fullvideos_models), R.drawable.baseline_grid_24, FullVideosBrowseRoute("models")),
+                    entry(str(R.string.fullvideos_sites), R.drawable.baseline_grid_24, FullVideosBrowseRoute("sites")),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(entry(str(R.string.watch_history), history, FullVideosHistoryRoute)),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(
+                    entry(str(R.string.fullvideos_settings_playback_title), R.drawable.ic_video_quilty, FullVideosSettingsRoute),
                     playerSettings,
                 ),
             ),

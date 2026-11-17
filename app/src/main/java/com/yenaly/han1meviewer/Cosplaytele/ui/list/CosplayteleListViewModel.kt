@@ -99,11 +99,6 @@ class CosplayteleListViewModel : ViewModel() {
         fillMissingThumbs(result.terms)
     }
 
-    /**
-     * Some term pages (Top search in particular) are plain text links with no picture. For those
-     * tiles, use the cover of the first post on the term's own page, a few at a time, and update
-     * the grid as each one arrives.
-     */
     private fun fillMissingThumbs(terms: List<CosplayteleTerm>) {
         thumbJob?.cancel()
         val missing = terms.filter { it.thumbUrl.isBlank() }

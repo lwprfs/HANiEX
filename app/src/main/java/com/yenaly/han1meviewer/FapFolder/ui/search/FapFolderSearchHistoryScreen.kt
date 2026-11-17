@@ -223,10 +223,6 @@ private fun tabLabel(param: String): String = when (
     FapFolderSearchTab.COMMUNITIES -> applicationContext.getString(R.string.fap_communities)
 }
 
-/**
- * Search history shown inside the search page while the query box is empty
- * (replaces the old standalone "Search history" entry in the Library).
- */
 @Composable
 internal fun FapFolderSearchHistoryPanel(
     onRunSearch: (query: String, isHashtag: Boolean, tab: String) -> Unit,

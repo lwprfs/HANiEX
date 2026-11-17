@@ -85,15 +85,13 @@ object BuonduaParser {
         val title = cleanTitle(rawTitle)
         if (title.isBlank()) return null
 
-        // Every place that can carry "Page N / M" – <title>, meta description, the article header.
         val pageInfos = listOf(
             doc.title(),
             doc.selectFirst("meta[name=description]")?.attr("content").orEmpty(),
             doc.selectFirst(".article-header")?.text().orEmpty(),
         ).mapNotNull { PAGE_OF.find(it) }
         val page = pageInfos.firstOrNull()?.groupValues?.get(1)?.toIntOrNull() ?: requestedPage
-        // Take the largest figure seen anywhere (title total, pagination links, "last" link),
-        // so one missing/odd signal can no longer truncate the album.
+
         val totalFromText = pageInfos.mapNotNull { it.groupValues[2].toIntOrNull() }.maxOrNull() ?: 1
         val totalFromLinks = doc.select("nav.pagination a[href*=page=], .pagination a[href*=page=]").mapNotNull {
             PAGE_PARAM.find(it.attr("href"))?.groupValues?.get(1)?.toIntOrNull()
@@ -249,9 +247,7 @@ object BuonduaParser {
                     !url.startsWith("http") || host.isBlank() -> false
                     BuonduaConstants.isAdHost(host) -> false
                     NON_PHOTO_EXT.containsMatchIn(url) -> false
-                    // Inside the article body every non-ad <img> is a photo, whatever CDN/host
-                    // serves it and whether or not the URL ends in an extension. The old host
-                    // whitelist silently dropped photos served from other hosts.
+
                     !strictHost -> true
                     else -> BuonduaConstants.isImageHost(host) && IMAGE_EXT.containsMatchIn(url)
                 }
@@ -259,7 +255,7 @@ object BuonduaParser {
             .toList()
 
         var urls = collect(body, strictHost = false)
-        // No article container matched -> scan the whole page, but only trust known image hosts.
+
         if (urls.isEmpty()) urls = collect(doc.body(), strictHost = true)
         return urls.distinct().mapIndexed { i, u -> BuonduaPhoto(u, i) }
     }

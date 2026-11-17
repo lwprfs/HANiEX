@@ -46,10 +46,10 @@ object BuonduaRepo {
         var page = 2
         while (page <= MAX_PAGES) {
             val probing = page > totalPages
-            // Past the advertised page count only keep going while photos are still missing.
+
             if (probing && (expectedCount == null || urls.size >= expectedCount)) break
             val next = album(code, page).getOrNull()
-                ?: album(code, page).getOrNull() // one retry
+                ?: album(code, page).getOrNull()
             if (next == null) {
                 if (probing) break
             } else {

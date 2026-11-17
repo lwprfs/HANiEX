@@ -22,4 +22,5 @@
     <string name="image_dl_delete_items">要刪除 %1$s 個項目嗎？</string>
     <string name="image_dl_delete_items_message">所選相片與資料夾（含資料夾內所有內容）將從你的裝置移除。</string>
     <string name="image_dl_deleted_items">已刪除 %1$s 個項目</string>
+    <string name="backup_section_fullvideos_history">FullVideos 觀看歷史</string>
 </resources>

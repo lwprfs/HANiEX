@@ -157,6 +157,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         logoRes = R.drawable.s_switch_cosplaytele,
         accentColor = Color(0xFFE91E63),
     ),
+    SiteSwitchOption(
+        name = "FullVideos",
+        description = applicationContext.getString(R.string.site_fullvideos_description),
+        siteType = SiteType.FULLVIDEOS,
+        logoRes = R.drawable.s_switch_fullvideos,
+        accentColor = Color(0xFF8AB4F8),
+    ),
 )
 
 private const val SitesPerPage = 6

@@ -195,7 +195,7 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         }
     }
 
-    SiteType.HENTAIMAMA, SiteType.SUPJAV, SiteType.BUONDUA, SiteType.COSPLAYTELE ->
+    SiteType.HENTAIMAMA, SiteType.SUPJAV, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.FULLVIDEOS ->
         SiteLoginStatus(
             title = context.getString(R.string.login_status_no_account),
             subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(site)),

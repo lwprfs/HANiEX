@@ -52,6 +52,7 @@ object DownloadLayout {
         SiteType.XHAMSTER -> "xHamster"
         SiteType.BUONDUA -> "Buondua"
         SiteType.COSPLAYTELE -> "Cosplaytele"
+        SiteType.FULLVIDEOS -> "FullVideos"
     }
 
     fun segmentsFor(videoCode: String): List<String> {
@@ -183,6 +184,8 @@ object SiteDownloadClients {
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.COSPLAYTELE -> runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
             else -> ServiceCreator.downloadClient
         }
 
@@ -218,6 +221,11 @@ object SiteDownloadClients {
                         }
                     }
                 }
+            }
+            SiteType.FULLVIDEOS -> {
+                val referer = com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
             }
             SiteType.SUPJAV -> {
                 val referer = com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork

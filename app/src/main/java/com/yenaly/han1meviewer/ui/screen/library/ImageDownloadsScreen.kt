@@ -151,7 +151,6 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
     return out
 }
 
-/** A folder tile: [chain] is the run of single-branch folders collapsed into one jump. */
 private data class FolderItem(
     val chain: List<FolderCrumb>,
     val coverUri: Uri,
@@ -168,7 +167,6 @@ private class FolderScanner(private val context: Context, private val tree: Uri)
     fun children(docId: String): List<PhotoEntry> =
         listings[docId] ?: listChildren(context, tree, docId).also { listings[docId] = it }
 
-    /** First photo found anywhere inside [docId], or null when the folder holds no photos at all. */
     fun cover(docId: String): PhotoEntry? {
         covers[docId]?.let { return it.firstOrNull() }
         val kids = children(docId)
@@ -184,11 +182,6 @@ private class FolderScanner(private val context: Context, private val tree: Uri)
         return found
     }
 
-    /**
-     * Null for folders without photos (empty, or video only). Otherwise walks down while the
-     * folder has no photos of its own and exactly one subfolder with photos, so several levels
-     * become a single tile.
-     */
     fun summarize(dir: PhotoEntry): FolderItem? {
         cover(dir.docId) ?: return null
         val chain = arrayListOf(FolderCrumb(dir.docId, dir.name))

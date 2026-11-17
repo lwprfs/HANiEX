@@ -20,6 +20,7 @@ object SitePlayerSettings {
         SiteType.ROUVIDEO,
         SiteType.XHAMSTER,
         SiteType.COSPLAYTELE,
+        SiteType.FULLVIDEOS,
     )
 
     fun label(site: SiteType): String = when (site) {
@@ -34,6 +35,7 @@ object SitePlayerSettings {
         SiteType.XHAMSTER -> applicationContext.getString(R.string.site_xhamster_name)
         SiteType.BUONDUA -> "Buondua"
         SiteType.COSPLAYTELE -> "Cosplaytele"
+        SiteType.FULLVIDEOS -> "FullVideos"
     }
 
     sealed class Spec(val id: String, val title: String, val summary: String?) {

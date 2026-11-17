@@ -28,6 +28,8 @@ import com.yenaly.han1meviewer.Buondua.data.local.BuonduaDatabase
 import com.yenaly.han1meviewer.Buondua.data.local.BuonduaHistoryEntity
 import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleDatabase
 import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleHistoryEntity
+import com.yenaly.han1meviewer.FullVideos.data.local.FullVideosDatabase
+import com.yenaly.han1meviewer.FullVideos.data.local.FullVideosHistoryEntity
 import com.yenaly.han1meviewer.logic.local.LocalPlaylist
 import com.yenaly.han1meviewer.logic.local.LocalPlaylistStore
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
@@ -70,6 +72,7 @@ object BackupManager {
         XHAMSTER_HISTORY(R.string.backup_section_xhamster_history, Group.DATA),
         BUONDUA_HISTORY(R.string.backup_section_buondua_history, Group.DATA),
         COSPLAYTELE_HISTORY(R.string.backup_section_cosplaytele_history, Group.DATA),
+        FULLVIDEOS_HISTORY(R.string.backup_section_fullvideos_history, Group.DATA),
         LOCAL_PLAYLISTS(R.string.backup_section_local_playlists, Group.DATA),
         COOKIES_HANIME(R.string.backup_section_cookies_hanime, Group.COOKIES),
         COOKIES_MISSAV(R.string.backup_section_cookies_missav, Group.COOKIES),
@@ -121,6 +124,7 @@ object BackupManager {
         val xHamsterHistories: List<XHamsterHistoryEntity>? = null,
         val buonduaHistories: List<BuonduaHistoryEntity>? = null,
         val cosplayteleHistories: List<CosplayteleHistoryEntity>? = null,
+        val fullVideosHistories: List<FullVideosHistoryEntity>? = null,
         val localPlaylists: List<LocalPlaylist>? = null,
     )
 
@@ -272,6 +276,11 @@ object BackupManager {
                 deleteAll(); insertAll(it)
             }
         }
+        backup.fullVideosHistories?.takeIf { Section.FULLVIDEOS_HISTORY in sections }?.let {
+            FullVideosDatabase.getInstance(context).fullVideosHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
         backup.localPlaylists?.takeIf { Section.LOCAL_PLAYLISTS in sections }?.let {
             LocalPlaylistStore.replaceAll(it)
         }
@@ -369,6 +378,8 @@ object BackupManager {
                 BuonduaDatabase.getInstance(context).buonduaHistoryDao().getAllHistorySync() else null,
             cosplayteleHistories = if (Section.COSPLAYTELE_HISTORY in sections)
                 CosplayteleDatabase.getInstance(context).cosplayteleHistoryDao().getAllHistorySync() else null,
+            fullVideosHistories = if (Section.FULLVIDEOS_HISTORY in sections)
+                FullVideosDatabase.getInstance(context).fullVideosHistoryDao().getAllHistorySync() else null,
             localPlaylists = if (Section.LOCAL_PLAYLISTS in sections)
                 LocalPlaylistStore.playlists.value else null,
         )

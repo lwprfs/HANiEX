@@ -35,7 +35,6 @@ import coil3.ImageLoader
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 
-/** Grid card used by every history screen: thumbnail on top, title + meta underneath. */
 @Composable
 fun HistoryGridCard(
     title: String,

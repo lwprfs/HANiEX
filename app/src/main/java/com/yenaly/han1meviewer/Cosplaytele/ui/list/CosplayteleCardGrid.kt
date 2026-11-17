@@ -143,10 +143,6 @@ fun CosplayteleCardGrid(
     }
 }
 
-/**
- * Category / tag / cosplayer tile: same thumbnail + title card as a post, with the post count as a
- * badge. Terms without a thumbnail get a tinted tile with the initial so the grid stays uniform.
- */
 @Composable
 fun CosplayteleTermCard(
     term: CosplayteleTerm,

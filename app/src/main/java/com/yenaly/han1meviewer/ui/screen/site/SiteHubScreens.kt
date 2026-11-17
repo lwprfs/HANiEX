@@ -54,14 +54,10 @@ data class SiteHubEntry(
     val icon: ImageVector,
     val onClick: () -> Unit,
     val subtitle: String? = null,
-    /** Login-only entry shown while signed out: rendered with a lock and its [onClick] opens sign-in. */
+
     val locked: Boolean = false,
 )
 
-/**
- * Marks a login-only entry. It stays visible while signed out (like Hanime's library cards),
- * but is locked and sends the user to [onLogin] instead of opening the page.
- */
 fun SiteHubEntry.gated(loggedIn: Boolean, onLogin: () -> Unit): SiteHubEntry =
     if (loggedIn) this else copy(locked = true, onClick = onLogin)
 

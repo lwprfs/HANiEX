@@ -57,7 +57,6 @@ class BuonduaAlbumViewModel : ViewModel() {
     private var job: Job? = null
     private var autoJob: Job? = null
 
-    // Photos are kept per page so the order stays correct even if a page has to be retried later.
     private val photosByPage = java.util.TreeMap<Int, List<String>>()
     private val donePages = HashSet<Int>()
     private val failedPages = HashSet<Int>()
@@ -80,8 +79,7 @@ class BuonduaAlbumViewModel : ViewModel() {
                     apply(page, requested = 1, replace = true)
                     donePages += 1
                     if (photosOnly) {
-                        // The photo grid must show the WHOLE album, not just what the user
-                        // happens to scroll to, so fetch every remaining page in order.
+
                         loadAllPages()
                     } else {
                         runCatching {
@@ -104,7 +102,7 @@ class BuonduaAlbumViewModel : ViewModel() {
 
     fun loadNextPage() {
         val s = _state.value
-        if (autoJob?.isActive == true) return // the auto-loader is already doing this
+        if (autoJob?.isActive == true) return
         if (s.isLoading || s.isLoadingMore || !s.hasMorePages) return
         _state.update { it.copy(isLoadingMore = true) }
         val next = s.loadedPages + 1
@@ -119,7 +117,6 @@ class BuonduaAlbumViewModel : ViewModel() {
         }
     }
 
-    /** Re-runs the loader; pages that already loaded are skipped, failed ones are retried. */
     fun retryMissingPages() = loadAllPages()
 
     private suspend fun fetchPage(page: Int): BuonduaAlbumPage? {
@@ -137,7 +134,7 @@ class BuonduaAlbumViewModel : ViewModel() {
             var next = 2
             while (next <= BuonduaRepo.MAX_PAGES) {
                 val s = _state.value
-                // Past the advertised page count only continue while photos are still missing.
+
                 val probing = next > s.totalPages
                 val expected = s.photoCount
                 if (probing && (expected == null || s.photos.size >= expected)) break

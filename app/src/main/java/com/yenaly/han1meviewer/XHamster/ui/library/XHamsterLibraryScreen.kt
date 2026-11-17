@@ -150,7 +150,7 @@ fun XHamsterLibraryScreen(
     onSignIn: () -> Unit = {},
 ) {
     var tabName by rememberSaveable { mutableStateOf(initialTab) }
-    // Re-read on every (re)entry: returning from the login page recomposes this destination.
+
     val loggedIn = remember { XHamsterAuth.isLoggedIn }
     val ctx = LocalContext.current
     val tab = XHamsterLibraryTab.entries.firstOrNull { it.name == tabName } ?: XHamsterLibraryTab.HISTORY

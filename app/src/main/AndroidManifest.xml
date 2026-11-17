@@ -85,6 +85,12 @@
             android:launchMode="singleTask"/>
 
         <activity
+            android:name=".FullVideos.cloudflare.FullVideosCloudflareActivity"
+            android:theme="@style/Theme.Hanime"
+            android:exported="false"
+            android:launchMode="singleTask"/>
+
+        <activity
             android:name=".RouVideo.cloudflare.RouVideoCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"

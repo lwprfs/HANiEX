@@ -222,8 +222,7 @@ fun LocalPlaylistsScreen(
                 if (open.items.isEmpty()) {
                     EmptyContent(stringResource(R.string.local_playlist_empty_items))
                 } else {
-                    // Sites present in this playlist; the check-chips below show only the ticked
-                    // sites and hide the rest. Nothing ticked = show everything.
+
                     val sitesInPlaylist = remember(open.items) {
                         val current = runCatching { Preferences.siteType.name }.getOrNull()
                         open.items.map { it.site }.distinct()

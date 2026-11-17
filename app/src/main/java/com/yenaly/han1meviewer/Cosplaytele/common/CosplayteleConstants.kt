@@ -45,7 +45,6 @@ object CosplayteleConstants {
     val SECTION_BEST = Section("best", "Best cosplayer", "/best-cosplayer/", SectionKind.TERMS)
     val SECTION_EXPLORE = Section("explore", "Categories", "/explore-categories/", SectionKind.TERMS)
 
-    /** Chips on the Home screen. Browse-style pages live in the "Pages" tab instead. */
     val HOME_SECTIONS: List<Section> = listOf(
         SECTION_LATEST,
         SECTION_7D,
@@ -55,7 +54,6 @@ object CosplayteleConstants {
         Section("ero", "Ero", "/category/cosplay-ero/"),
     )
 
-    /** Chips on the "Pages" tab. Each one is shown as a thumbnail + title grid. */
     val PAGES_SECTIONS: List<Section> = listOf(
         SECTION_24H,
         SECTION_3D,
@@ -65,20 +63,11 @@ object CosplayteleConstants {
         SECTION_EXPLORE,
     )
 
-    /**
-     * Ranking pages such as `/24-hours/`, `/3-days/`, `/7-days/` or `/1-day/`.
-     * They are post lists, not posts, even though they look like a single-segment slug.
-     */
     private val PERIOD_SLUG_REGEX =
         Regex("""^(top-)?\d+-(hours?|days?|weeks?|months?)$""", RegexOption.IGNORE_CASE)
 
     fun isPeriodSlug(slug: String): Boolean = PERIOD_SLUG_REGEX.matches(slug.trim('/'))
 
-    /**
-     * True for the ranking pages (`/24-hours/`, `/3-day/`, `/7-day/`). Their body is an empty
-     * WordPress Popular Posts placeholder that the site fills through its REST API, so the HTML
-     * itself holds no post list.
-     */
     fun isRankingUrl(url: String): Boolean {
         val path = url.substringBefore('?').substringBefore('#')
             .substringAfter("://").substringAfter('/', "")

@@ -171,6 +171,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = true,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.FULLVIDEOS,
+            displayName = "FullVideos",
+            catalogKey = null,
+            defaultUrls = { listOf("https://www.fullvideos.to") },
+            trailingSlash = false,
+            cloudflareFronted = true,
+        ),
     )
 
     val hubSites: List<HubSite>

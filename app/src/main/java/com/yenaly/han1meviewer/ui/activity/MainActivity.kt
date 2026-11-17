@@ -81,6 +81,7 @@ import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
+import com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
 import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
@@ -406,6 +407,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.COSPLAYTELE -> {
                 CosplayteleNetwork.rebuildNetwork()
+            }
+
+            SiteType.FULLVIDEOS -> {
+                FullVideosNetwork.rebuildNetwork()
             }
         }
 
