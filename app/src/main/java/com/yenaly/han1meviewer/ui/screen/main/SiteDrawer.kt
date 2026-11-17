@@ -1,5 +1,13 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
+import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvSavedRoute
+import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvPlaylistsRoute
+import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvSiteHistoryRoute
+import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvLoginRoute
+import com.yenaly.han1meviewer.RouVideo.ui.library.RouVideoLibraryTab
+import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoLibraryRoute
+import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoAccountRoute
+import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderAccountRoute
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -124,11 +132,26 @@ import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 data class SiteDrawerEntry(
     val title: String,
     val iconRes: Int,
+    val locked: Boolean = false,
     val onClick: (NavHostController) -> Unit,
 )
 
 private fun entry(title: String, icon: Int, route: Any) =
     SiteDrawerEntry(title, icon) { nav -> nav.navigateSafely(route) }
+
+/**
+ * A login-only entry. Always visible (like Hanime's library); while signed out it shows a lock
+ * and opens [loginRoute] instead of [route].
+ */
+private fun gatedEntry(
+    title: String,
+    icon: Int,
+    route: Any,
+    loggedIn: Boolean,
+    loginRoute: Any,
+) = SiteDrawerEntry(title, icon, locked = !loggedIn) { nav ->
+    nav.navigateSafely(if (loggedIn) route else loginRoute)
+}
 
 data class SiteDrawerSection(val title: String, val entries: List<SiteDrawerEntry>)
 
@@ -154,7 +177,13 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             SiteDrawerSection(browse, listOf(home, checkIn)),
             SiteDrawerSection(
                 library,
-                listOf(entry(str(R.string.watch_history), history, MissAvHistoryRoute)),
+                listOf(
+                    entry(str(R.string.watch_history), history, MissAvHistoryRoute),
+                    gatedEntry(str(R.string.missav_acc_saved), R.drawable.ic_drawer_bookmark, MissAvSavedRoute(0), loggedIn, MissAvLoginRoute),
+                    gatedEntry(str(R.string.missav_acc_saved_actresses), R.drawable.ic_baseline_favorite_24, MissAvSavedRoute(1), loggedIn, MissAvLoginRoute),
+                    gatedEntry(str(R.string.missav_acc_playlists), R.drawable.baseline_format_list_bulleted_24, MissAvPlaylistsRoute, loggedIn, MissAvLoginRoute),
+                    gatedEntry(str(R.string.missav_acc_site_history), history, MissAvSiteHistoryRoute, loggedIn, MissAvLoginRoute),
+                ),
             ),
             SiteDrawerSection(
                 customize,
@@ -215,9 +244,7 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 account,
                 buildList {
                     add(entry(str(R.string.drawer_cookies_sign_in), R.drawable.ic_baseline_cookie_24, OnAirCookieRoute))
-                    if (loggedIn) {
-                        add(entry(str(R.string.drawer_account_session), R.drawable.ic_baseline_person_24, OnAirAccountSettingsRoute))
-                    }
+                    add(gatedEntry(str(R.string.drawer_account_session), R.drawable.ic_baseline_person_24, OnAirAccountSettingsRoute, loggedIn, OnAirCookieRoute))
                 },
             ),
             SiteDrawerSection(customize, listOf(playerSettings)),
@@ -237,15 +264,16 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(
                     entry(str(R.string.watch_history), history, FapFolderHistoryRoute),
-                    entry(str(R.string.saved), R.drawable.ic_drawer_bookmark, FapFolderSavedRoute),
+                    gatedEntry(str(R.string.saved), R.drawable.ic_drawer_bookmark, FapFolderSavedRoute, loggedIn, FapFolderLoginRoute),
                     entry(str(R.string.drawer_downloaded_photos), R.drawable.ic_baseline_image_24, FapFolderImageFolderRoute),
-                    entry(str(R.string.drawer_followed_communities), R.drawable.ic_drawer_groups, FapFolderFollowedCommunitiesRoute),
+                    gatedEntry(str(R.string.drawer_followed_communities), R.drawable.ic_drawer_groups, FapFolderFollowedCommunitiesRoute, loggedIn, FapFolderLoginRoute),
                 ),
             ),
             SiteDrawerSection(
                 account,
                 buildList {
                     if (!loggedIn) add(entry(str(R.string.login), R.drawable.ic_baseline_unlock_24, FapFolderLoginRoute))
+                    add(gatedEntry(str(R.string.site_my_account), R.drawable.ic_baseline_person_24, FapFolderAccountRoute, loggedIn, FapFolderLoginRoute))
                     add(entry(str(R.string.cookies_label), R.drawable.ic_baseline_cookie_24, FapFolderCookiesRoute))
                 },
             ),
@@ -308,7 +336,12 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             ),
             SiteDrawerSection(
                 library,
-                listOf(entry(str(R.string.watch_history), history, RouVideoHistoryRoute)),
+                listOf(
+                    entry(str(R.string.watch_history), history, RouVideoHistoryRoute),
+                    gatedEntry(str(R.string.rouvideo_my_follows), R.drawable.ic_subscribtion, RouVideoLibraryRoute(RouVideoLibraryTab.FOLLOWS.name), loggedIn, RouVideoAccountRoute),
+                    gatedEntry(str(R.string.rouvideo_my_favorites), R.drawable.ic_baseline_favorite_24, RouVideoLibraryRoute(RouVideoLibraryTab.FAVORITES.name), loggedIn, RouVideoAccountRoute),
+                    gatedEntry(str(R.string.rouvideo_online_watch_history), history, RouVideoLibraryRoute(RouVideoLibraryTab.HISTORY.name), loggedIn, RouVideoAccountRoute),
+                ),
             ),
             SiteDrawerSection(
                 customize,
@@ -342,12 +375,12 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(
                     entry(str(R.string.watch_history), history, XHamsterHistoryRoute),
-                    entry(str(R.string.xhamster_watch_history), history, XHamsterLibraryRoute("HISTORY")),
-                    entry(str(R.string.xhamster_my_favorites), R.drawable.ic_baseline_favorite_24, XHamsterLibraryRoute("FAVORITES")),
-                    entry(str(R.string.watch_later), R.drawable.ic_baseline_watch_later_24, XHamsterLibraryRoute("WATCH_LATER")),
-                    entry(str(R.string.xhamster_liked_videos), R.drawable.ic_baseline_thumb_up_alt_24, XHamsterLibraryRoute("LIKED")),
-                    entry(str(R.string.xhamster_playlists), R.drawable.ic_drawer_category, XHamsterLibraryRoute("PLAYLISTS")),
-                    entry(str(R.string.xhamster_my_subscriptions), R.drawable.ic_subscribtion, XHamsterLibraryRoute("SUBSCRIPTIONS")),
+                    gatedEntry(str(R.string.xhamster_watch_history), history, XHamsterLibraryRoute("HISTORY"), loggedIn, XHamsterAccountRoute),
+                    gatedEntry(str(R.string.xhamster_my_favorites), R.drawable.ic_baseline_favorite_24, XHamsterLibraryRoute("FAVORITES"), loggedIn, XHamsterAccountRoute),
+                    gatedEntry(str(R.string.watch_later), R.drawable.ic_baseline_watch_later_24, XHamsterLibraryRoute("WATCH_LATER"), loggedIn, XHamsterAccountRoute),
+                    gatedEntry(str(R.string.xhamster_liked_videos), R.drawable.ic_baseline_thumb_up_alt_24, XHamsterLibraryRoute("LIKED"), loggedIn, XHamsterAccountRoute),
+                    gatedEntry(str(R.string.xhamster_playlists), R.drawable.ic_drawer_category, XHamsterLibraryRoute("PLAYLISTS"), loggedIn, XHamsterAccountRoute),
+                    gatedEntry(str(R.string.xhamster_my_subscriptions), R.drawable.ic_subscribtion, XHamsterLibraryRoute("SUBSCRIPTIONS"), loggedIn, XHamsterAccountRoute),
                     entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
                 ),
             ),
@@ -484,6 +517,7 @@ internal fun DrawerNavItem(
     iconRes: Int,
     selected: Boolean,
     onClick: () -> Unit,
+    locked: Boolean = false,
 ) {
     NavigationDrawerItem(
         label = {
@@ -502,6 +536,16 @@ internal fun DrawerNavItem(
                 modifier = Modifier.size(22.dp),
             )
         },
+        badge = if (locked) {
+            {
+                Icon(
+                    imageVector = androidx.compose.material.icons.Icons.Filled.Lock,
+                    contentDescription = stringResource(R.string.login_first),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        } else null,
         selected = selected,
         onClick = onClick,
         shape = RoundedCornerShape(16.dp),
@@ -526,6 +570,7 @@ private fun DrawerItem(entry: SiteDrawerEntry, onClick: () -> Unit) {
         iconRes = entry.iconRes,
         selected = false,
         onClick = onClick,
+        locked = entry.locked,
     )
 }
 

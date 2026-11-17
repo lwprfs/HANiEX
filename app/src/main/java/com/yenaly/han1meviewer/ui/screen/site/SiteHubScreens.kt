@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -53,7 +54,16 @@ data class SiteHubEntry(
     val icon: ImageVector,
     val onClick: () -> Unit,
     val subtitle: String? = null,
+    /** Login-only entry shown while signed out: rendered with a lock and its [onClick] opens sign-in. */
+    val locked: Boolean = false,
 )
+
+/**
+ * Marks a login-only entry. It stays visible while signed out (like Hanime's library cards),
+ * but is locked and sends the user to [onLogin] instead of opening the page.
+ */
+fun SiteHubEntry.gated(loggedIn: Boolean, onLogin: () -> Unit): SiteHubEntry =
+    if (loggedIn) this else copy(locked = true, onClick = onLogin)
 
 data class SiteHubSection(
     val title: String?,
@@ -104,8 +114,12 @@ internal fun SiteHubRow(entry: SiteHubEntry) {
                 }
             }
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
+                imageVector = if (entry.locked) {
+                    Icons.Filled.Lock
+                } else {
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight
+                },
+                contentDescription = if (entry.locked) stringResource(R.string.login_first) else null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -236,6 +250,7 @@ private fun SiteHubCard(entry: SiteHubEntry) {
 
         subtitleMinLines = 2,
         modifier = Modifier.height(CardHeight),
+        locked = entry.locked,
         onClick = entry.onClick,
     )
 }

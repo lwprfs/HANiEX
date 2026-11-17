@@ -233,6 +233,7 @@ fun XHamsterNavHost(
                     navController.navigateSafely(XHamsterCollectionRoute(path, title))
                 },
                 discover = discover,
+                onSignIn = { navController.navigateSafely(XHamsterAccountRoute) },
             )
         }
 

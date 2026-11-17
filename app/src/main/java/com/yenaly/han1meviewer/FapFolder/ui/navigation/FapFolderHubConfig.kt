@@ -22,24 +22,26 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
 fun fapFolderHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
     val loggedIn = FapFolderNetwork.hasAuthCookies()
+    val onLogin = { navController.navigateSafely(FapFolderLoginRoute) }
     val followed = SiteHubEntry(
         key = "followed",
         title = stringResource(R.string.drawer_followed_communities),
         subtitle = stringResource(R.string.fap_followed_subtitle),
         icon = Icons.Filled.Groups,
         onClick = { navController.navigateSafely(FapFolderFollowedCommunitiesRoute) },
-    )
+    ).gated(loggedIn, onLogin)
     val account = SiteHubEntry(
         key = "account",
         title = stringResource(R.string.site_my_account),
         icon = Icons.Filled.AccountCircle,
         onClick = { navController.navigateSafely(FapFolderAccountRoute) },
-    )
+    ).gated(loggedIn, onLogin)
     val cookies = SiteHubEntry(
         key = "cookies",
         title = stringResource(R.string.site_cookies),
@@ -47,20 +49,19 @@ fun fapFolderHubConfig(navController: NavHostController, activity: MainActivity)
         icon = Icons.Filled.Cookie,
         onClick = { navController.navigateSafely(FapFolderCookiesRoute) },
     )
+    val privacy = SiteHubEntry(
+        key = "privacy",
+        title = stringResource(R.string.site_privacy),
+        subtitle = stringResource(R.string.fap_privacy_subtitle),
+        icon = Icons.Filled.Lock,
+        onClick = { navController.navigateSafely(FapFolderPrivacyRoute) },
+    ).gated(loggedIn, onLogin)
     val authEntries = if (loggedIn) {
-        listOf(
-            account,
-            SiteHubEntry(
-                key = "privacy",
-                title = stringResource(R.string.site_privacy),
-                subtitle = stringResource(R.string.fap_privacy_subtitle),
-                icon = Icons.Filled.Lock,
-                onClick = { navController.navigateSafely(FapFolderPrivacyRoute) },
-            ),
-            cookies,
-        )
+        listOf(account, privacy, cookies)
     } else {
         listOf(
+            account,
+            privacy,
             SiteHubEntry(
                 key = "login",
                 title = stringResource(R.string.site_sign_in),
@@ -98,7 +99,7 @@ fun fapFolderHubConfig(navController: NavHostController, activity: MainActivity)
                 subtitle = stringResource(R.string.fap_saved_posts_subtitle),
                 icon = Icons.Filled.Bookmark,
                 onClick = { navController.navigateSafely(FapFolderSavedRoute) },
-            ),
+            ).gated(loggedIn, onLogin),
         ),
         extraLibrarySections = emptyList(),
         profileExtraQuickActions = authEntries,

@@ -19,7 +19,9 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
+import com.yenaly.han1meviewer.MissAV.data.remote.MissAvAuth
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
+import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberCommonProfileEntries
@@ -33,6 +35,8 @@ fun missAvHubConfig(navController: NavHostController, activity: MainActivity): S
         site = SiteType.MISSAV,
         siteSettingsRoute = MissAvSettingsHubRoute,
     )
+    val loggedIn = MissAvAuth.currentUser() != null
+    val onLogin = { navController.navigateSafely(MissAvLoginRoute) }
     val subtitles = SiteHubEntry(
         key = "video_subtitles",
         title = stringResource(R.string.missav_subtitle_title),
@@ -54,19 +58,19 @@ fun missAvHubConfig(navController: NavHostController, activity: MainActivity): S
         subtitle = stringResource(R.string.login_status_tap_account),
         icon = Icons.Filled.AccountCircle,
         onClick = { navController.navigateSafely(MissAvAccountRoute) },
-    )
+    ).gated(loggedIn, onLogin)
     val savedActresses = SiteHubEntry(
         key = "saved_actresses",
         title = stringResource(R.string.missav_acc_saved_actresses),
         icon = Icons.Filled.Favorite,
         onClick = { navController.navigateSafely(MissAvSavedRoute(1)) },
-    )
+    ).gated(loggedIn, onLogin)
     val savedVideos = SiteHubEntry(
         key = "saved_videos",
         title = stringResource(R.string.missav_acc_saved),
         icon = Icons.Filled.Bookmark,
         onClick = { navController.navigateSafely(MissAvSavedRoute(0)) },
-    )
+    ).gated(loggedIn, onLogin)
     val actresses = SiteHubEntry(
         key = "actresses",
         title = stringResource(R.string.missav_acc_actresses),
@@ -87,13 +91,13 @@ fun missAvHubConfig(navController: NavHostController, activity: MainActivity): S
                         title = stringResource(R.string.missav_acc_playlists),
                         icon = Icons.AutoMirrored.Filled.PlaylistPlay,
                         onClick = { navController.navigateSafely(MissAvPlaylistsRoute) },
-                    ),
+                    ).gated(loggedIn, onLogin),
                     SiteHubEntry(
                         key = "site_history",
                         title = stringResource(R.string.missav_acc_site_history),
                         icon = Icons.Filled.History,
                         onClick = { navController.navigateSafely(MissAvSiteHistoryRoute) },
-                    ),
+                    ).gated(loggedIn, onLogin),
                 ),
             ),
             SiteHubSection(

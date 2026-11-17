@@ -26,6 +26,7 @@ import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -39,14 +40,15 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
             onClick = { navController.navigateSafely(TranslationSettingsRoute) },
         )
     } else null
+    val loggedIn = RouVideoAuth.isLoggedIn
+    val onLogin = { navController.navigateSafely(RouVideoAccountRoute) }
     fun library(tab: RouVideoLibraryTab) = { navController.navigateSafely(RouVideoLibraryRoute(tab.name)) }
     val follows = SiteHubEntry(
         key = "follows",
         title = stringResource(R.string.rouvideo_my_follows),
         icon = Icons.Filled.Subscriptions,
         onClick = library(RouVideoLibraryTab.FOLLOWS),
-    )
-    val loggedIn = RouVideoAuth.isLoggedIn
+    ).gated(loggedIn, onLogin)
     val accountEntries = buildList {
         add(
             SiteHubEntry(
@@ -57,16 +59,14 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
                 onClick = { navController.navigateSafely(RouVideoAccountRoute) },
             ),
         )
-        if (loggedIn) {
-            add(
-                SiteHubEntry(
-                    key = "edit_profile",
-                    title = stringResource(R.string.rouvideo_edit_profile),
-                    icon = Icons.Filled.Edit,
-                    onClick = { navController.navigateSafely(RouVideoProfileEditRoute) },
-                ),
-            )
-        }
+        add(
+            SiteHubEntry(
+                key = "edit_profile",
+                title = stringResource(R.string.rouvideo_edit_profile),
+                icon = Icons.Filled.Edit,
+                onClick = { navController.navigateSafely(RouVideoProfileEditRoute) },
+            ).gated(loggedIn, onLogin),
+        )
     }
     return standardSiteHubConfig(
         site = SiteType.ROUVIDEO,
@@ -83,13 +83,13 @@ fun rouVideoHubConfig(navController: NavHostController, activity: MainActivity):
                         title = stringResource(R.string.rouvideo_my_favorites),
                         icon = Icons.Filled.Favorite,
                         onClick = library(RouVideoLibraryTab.FAVORITES),
-                    ),
+                    ).gated(loggedIn, onLogin),
                     SiteHubEntry(
                         key = "cloud_history",
                         title = stringResource(R.string.rouvideo_online_watch_history),
                         icon = Icons.Filled.Cloud,
                         onClick = library(RouVideoLibraryTab.HISTORY),
-                    ),
+                    ).gated(loggedIn, onLogin),
                 ),
             ),
         ),

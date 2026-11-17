@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
@@ -18,11 +19,14 @@ import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.main.siteLoginStatus
+import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
-fun onAirHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
-    standardSiteHubConfig(
+fun onAirHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+    val loggedIn = siteLoginStatus(LocalContext.current, SiteType.ONAIR).loggedIn
+    return standardSiteHubConfig(
         site = SiteType.ONAIR,
         navController = navController,
         activity = activity,
@@ -70,7 +74,7 @@ fun onAirHubConfig(navController: NavHostController, activity: MainActivity): Si
                 subtitle = stringResource(R.string.onair_account_subtitle),
                 icon = Icons.Filled.AccountCircle,
                 onClick = { navController.navigateSafely(OnAirAccountSettingsRoute) },
-            ),
+            ).gated(loggedIn) { navController.navigateSafely(OnAirCookieRoute) },
             SiteHubEntry(
                 key = "cookies",
                 title = stringResource(R.string.drawer_cookies_sign_in),
@@ -81,3 +85,4 @@ fun onAirHubConfig(navController: NavHostController, activity: MainActivity): Si
         ),
         customizeEntries = listOf(rememberPlayerSettingsEntry(navController, SiteType.ONAIR)),
     )
+}

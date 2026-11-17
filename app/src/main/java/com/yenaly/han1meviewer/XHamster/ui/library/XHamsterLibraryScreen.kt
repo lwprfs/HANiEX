@@ -58,6 +58,7 @@ import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterListUiState
 import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterVideoGrid
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.content.LoginLockedContent
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.ui.component.SiteEmptyContent
 import com.yenaly.han1meviewer.ui.component.SiteErrorContent
@@ -146,8 +147,11 @@ fun XHamsterLibraryScreen(
     onNavigateToVideo: (String) -> Unit,
     onOpenCollection: (path: String, title: String) -> Unit,
     discover: XHamsterDiscoverActions,
+    onSignIn: () -> Unit = {},
 ) {
     var tabName by rememberSaveable { mutableStateOf(initialTab) }
+    // Re-read on every (re)entry: returning from the login page recomposes this destination.
+    val loggedIn = remember { XHamsterAuth.isLoggedIn }
     val ctx = LocalContext.current
     val tab = XHamsterLibraryTab.entries.firstOrNull { it.name == tabName } ?: XHamsterLibraryTab.HISTORY
     Scaffold(
@@ -167,7 +171,9 @@ fun XHamsterLibraryScreen(
                 onSelect = { tabName = it.name },
                 key = { it.name },
             )
-            when (tab) {
+            if (!loggedIn) {
+                LoginLockedContent(onSignIn = onSignIn)
+            } else when (tab) {
                 XHamsterLibraryTab.PLAYLISTS -> PlaylistsTab(onOpenCollection)
                 XHamsterLibraryTab.SUBSCRIPTIONS -> FeedTab(onNavigateToVideo, discover)
                 else -> VideosTab(tab, onNavigateToVideo, discover)

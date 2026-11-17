@@ -29,10 +29,14 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
+import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
 
 @Composable
 fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+    val loggedIn = XHamsterAuth.isLoggedIn
+    val onLogin = { navController.navigateSafely(XHamsterAccountRoute) }
     fun library(tab: String) = { navController.navigateSafely(XHamsterLibraryRoute(tab)) }
 
     val subscription = SiteHubSection(
@@ -43,7 +47,7 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
                 title = stringResource(R.string.xhamster_subscriptions_feed),
                 icon = Icons.Filled.Subscriptions,
                 onClick = library("SUBSCRIPTIONS"),
-            ),
+            ).gated(loggedIn, onLogin),
             SiteHubEntry(
                 key = "channels",
                 title = stringResource(R.string.xhamster_channels),
@@ -65,11 +69,11 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         ),
     )
     val libraryEntries = listOf(
-        SiteHubEntry("history", stringResource(R.string.xhamster_watch_history), Icons.Filled.History, library("HISTORY")),
-        SiteHubEntry("favorites", stringResource(R.string.xhamster_favorites), Icons.Filled.Favorite, library("FAVORITES")),
-        SiteHubEntry("watch_later", stringResource(R.string.watch_later), Icons.Filled.Schedule, library("WATCH_LATER")),
-        SiteHubEntry("liked", stringResource(R.string.xhamster_liked_videos), Icons.Filled.ThumbUp, library("LIKED")),
-        SiteHubEntry("collections", stringResource(R.string.xhamster_playlists), Icons.Filled.PlaylistAdd, library("PLAYLISTS")),
+        SiteHubEntry("history", stringResource(R.string.xhamster_watch_history), Icons.Filled.History, library("HISTORY")).gated(loggedIn, onLogin),
+        SiteHubEntry("favorites", stringResource(R.string.xhamster_favorites), Icons.Filled.Favorite, library("FAVORITES")).gated(loggedIn, onLogin),
+        SiteHubEntry("watch_later", stringResource(R.string.watch_later), Icons.Filled.Schedule, library("WATCH_LATER")).gated(loggedIn, onLogin),
+        SiteHubEntry("liked", stringResource(R.string.xhamster_liked_videos), Icons.Filled.ThumbUp, library("LIKED")).gated(loggedIn, onLogin),
+        SiteHubEntry("collections", stringResource(R.string.xhamster_playlists), Icons.Filled.PlaylistAdd, library("PLAYLISTS")).gated(loggedIn, onLogin),
     )
     val accountSettings = SiteHubEntry(
         key = "account_settings",
@@ -77,7 +81,7 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         subtitle = stringResource(R.string.xhamster_account_settings_summary),
         icon = Icons.Filled.AccountCircle,
         onClick = { navController.navigateSafely(XHamsterAccountSettingsRoute) },
-    )
+    ).gated(loggedIn, onLogin)
     val playback = SiteHubEntry(
         key = "playback",
         title = stringResource(R.string.xhamster_settings_title),
