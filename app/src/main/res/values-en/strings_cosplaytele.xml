@@ -32,4 +32,12 @@
     <string name="cosplaytele_drawer_best">Best cosplayer</string>
     <string name="cosplaytele_drawer_explore">Explore categories</string>
     <string name="cosplaytele_drawer_videos">Videos</string>
+    <string name="cosplaytele_drawer_3d">Top 3 days</string>
+    <string name="cosplaytele_drawer_7d">Top 7 days</string>
+    <string name="cosplaytele_pages_24h_desc">Most viewed posts of the last 24 hours</string>
+    <string name="cosplaytele_pages_3d_desc">Most viewed posts of the last 3 days</string>
+    <string name="cosplaytele_pages_7d_desc">Most viewed posts of the last 7 days</string>
+    <string name="cosplaytele_pages_best_desc">The most popular cosplayers</string>
+    <string name="cosplaytele_pages_top_search_desc">What people search for most</string>
+    <string name="cosplaytele_pages_explore_desc">Browse every category and tag</string>
 </resources>

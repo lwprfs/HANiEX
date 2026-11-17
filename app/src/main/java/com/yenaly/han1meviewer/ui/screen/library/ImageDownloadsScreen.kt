@@ -14,6 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
@@ -44,6 +46,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
@@ -73,6 +76,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
@@ -86,6 +90,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.net.toUri
+import coil3.SingletonImageLoader
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
@@ -94,6 +99,13 @@ import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.util.FapFolderImageLocation
 import com.yenaly.han1meviewer.util.ImageDownloadTracker
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -137,6 +149,80 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
         }
     }
     return out
+}
+
+/** A folder tile: [chain] is the run of single-branch folders collapsed into one jump. */
+private data class FolderItem(
+    val chain: List<FolderCrumb>,
+    val coverUri: Uri,
+    val photoCount: Int,
+) {
+    val key: String get() = chain.first().docId
+    val label: String get() = chain.joinToString(" / ") { it.name }
+}
+
+private class FolderScanner(private val context: Context, private val tree: Uri) {
+    private val listings = ConcurrentHashMap<String, List<PhotoEntry>>()
+    private val covers = ConcurrentHashMap<String, List<PhotoEntry>>()
+
+    fun children(docId: String): List<PhotoEntry> =
+        listings[docId] ?: listChildren(context, tree, docId).also { listings[docId] = it }
+
+    /** First photo found anywhere inside [docId], or null when the folder holds no photos at all. */
+    fun cover(docId: String): PhotoEntry? {
+        covers[docId]?.let { return it.firstOrNull() }
+        val kids = children(docId)
+        var found: PhotoEntry? = kids.firstOrNull { !it.isDir }
+        if (found == null) {
+            for (d in kids) {
+                if (!d.isDir) continue
+                found = cover(d.docId)
+                if (found != null) break
+            }
+        }
+        covers[docId] = listOfNotNull(found)
+        return found
+    }
+
+    /**
+     * Null for folders without photos (empty, or video only). Otherwise walks down while the
+     * folder has no photos of its own and exactly one subfolder with photos, so several levels
+     * become a single tile.
+     */
+    fun summarize(dir: PhotoEntry): FolderItem? {
+        cover(dir.docId) ?: return null
+        val chain = arrayListOf(FolderCrumb(dir.docId, dir.name))
+        var cur = dir.docId
+        while (true) {
+            val kids = children(cur)
+            val hasPhotos = kids.any { !it.isDir }
+            val live = kids.filter { it.isDir && cover(it.docId) != null }
+            if (!hasPhotos && live.size == 1) {
+                chain += FolderCrumb(live[0].docId, live[0].name)
+                cur = live[0].docId
+            } else {
+                val cover = cover(dir.docId) ?: return null
+                return FolderItem(chain, cover.uri, kids.count { !it.isDir })
+            }
+        }
+    }
+}
+
+private suspend fun scanFolder(
+    context: Context,
+    tree: Uri,
+    parentDocId: String,
+): Pair<List<PhotoEntry>, List<FolderItem>> = coroutineScope {
+    val scanner = FolderScanner(context, tree)
+    val kids = scanner.children(parentDocId)
+    val photos = kids.filter { !it.isDir }.sortedBy { it.name.lowercase() }
+    val gate = Semaphore(6)
+    val folders = kids.filter { it.isDir }
+        .map { dir -> async { gate.withPermit { scanner.summarize(dir) } } }
+        .awaitAll()
+        .filterNotNull()
+        .sortedBy { it.label.lowercase() }
+    photos to folders
 }
 
 private fun listAllImages(
@@ -193,27 +279,31 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
 
     var loading by remember { mutableStateOf(false) }
     var entries by remember { mutableStateOf<List<PhotoEntry>>(emptyList()) }
+    var folders by remember { mutableStateOf<List<FolderItem>>(emptyList()) }
 
     val activeCount = jobs.size
     LaunchedEffect(ready, treeUri, currentDocId, showAll, refresh, activeCount) {
         if (!ready || treeUri == null || currentDocId == null) {
             entries = emptyList()
+            folders = emptyList()
             return@LaunchedEffect
         }
         loading = true
-        entries = withContext(Dispatchers.IO) {
-            if (showAll) listAllImages(context, treeUri, currentDocId)
-            else listChildren(context, treeUri, currentDocId)
-                .sortedWith(compareByDescending<PhotoEntry> { it.isDir }.thenBy { it.name.lowercase() })
+        val result = withContext(Dispatchers.IO) {
+            if (showAll) listAllImages(context, treeUri, currentDocId) to emptyList<FolderItem>()
+            else scanFolder(context, treeUri, currentDocId)
         }
+        entries = result.first
+        folders = result.second
         loading = false
     }
 
-    val photos = remember(entries) { entries.filter { !it.isDir } }
-    val dirs = remember(entries) { entries.filter { it.isDir } }
+    val photos = entries
 
-    LaunchedEffect(entries) {
-        val valid = entries.mapTo(HashSet()) { it.docId }
+    LaunchedEffect(entries, folders) {
+        val valid = HashSet<String>()
+        entries.forEach { valid += it.docId }
+        folders.forEach { valid += it.key }
         selected.removeAll { it !in valid }
     }
     LaunchedEffect(currentDocId, showAll) { selected.clear() }
@@ -228,19 +318,16 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
 
     HanimeScaffold(
         title = if (selecting) stringResource(R.string.fap_selected, selected.size)
-        else crumbs.lastOrNull()?.name ?: stringResource(R.string.image_dl_title),
+        else stringResource(R.string.image_dl_title),
         onBack = {
-            when {
-                selecting -> selected.clear()
-                crumbs.isNotEmpty() -> crumbs.removeAt(crumbs.lastIndex)
-                else -> onBack()
-            }
+            if (selecting) selected.clear() else onBack()
         },
         actions = {
             if (selecting) {
                 FilledIconButton(onClick = {
                     selected.clear()
                     selected.addAll(photos.map { it.docId })
+                    selected.addAll(folders.map { it.key }.filter { it !in selected })
                 }) {
                     Icon(Icons.Default.SelectAll, contentDescription = stringResource(R.string.fap_select_all))
                 }
@@ -248,18 +335,43 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
                     Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.fap_delete_selected))
                 }
             } else {
+                FilledIconButton(onClick = {
+                    scope.launch(Dispatchers.IO) {
+                        val loader = SingletonImageLoader.get(context)
+                        loader.memoryCache?.clear()
+                        runCatching { loader.diskCache?.clear() }
+                    }
+                    refresh++
+                }) {
+                    Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.image_dl_refresh))
+                }
                 FilledIconButton(onClick = { picker.launch(null) }) {
                     Icon(Icons.Default.FolderOpen, contentDescription = stringResource(R.string.fap_change_folder))
                 }
             }
         },
     ) { padding ->
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(110.dp),
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .background(MaterialTheme.colorScheme.background),
+        ) {
+        if (ready) {
+            BreadcrumbBar(
+                rootLabel = stringResource(R.string.image_dl_title),
+                crumbs = crumbs,
+                onNavigate = { index ->
+                    if (index < 0) crumbs.clear()
+                    else while (crumbs.size > index + 1) crumbs.removeAt(crumbs.lastIndex)
+                },
+            )
+        }
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(110.dp),
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth(),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -334,40 +446,19 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
                     }
                 }
                 if (!showAll) {
-                    items(dirs, key = { "d:" + it.docId }, span = { GridItemSpan(maxLineSpan) }) { dir ->
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { crumbs.add(FolderCrumb(dir.docId, dir.name)) },
-                            shape = RoundedCornerShape(16.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                            ),
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            ) {
-                                Icon(
-                                    Icons.Default.Folder,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
-                                Text(
-                                    dir.name,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                Icon(
-                                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
+                    items(folders, key = { "d:" + it.key }) { folder ->
+                        val isSelected = folder.key in selected
+                        val toggle = {
+                            if (isSelected) selected.remove(folder.key) else selected.add(folder.key)
+                            Unit
                         }
+                        FolderGridCard(
+                            folder = folder,
+                            selecting = selecting,
+                            isSelected = isSelected,
+                            onClick = { if (selecting) toggle() else crumbs.addAll(folder.chain) },
+                            onLongClick = { toggle() },
+                        )
                     }
                 }
                 items(photos, key = { "p:" + it.docId }) { photo ->
@@ -433,7 +524,7 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
                             CircularProgressIndicator(Modifier.size(32.dp))
                         }
                     }
-                } else if (entries.isEmpty() && jobs.isEmpty()) {
+                } else if (entries.isEmpty() && folders.isEmpty() && jobs.isEmpty()) {
                     item(key = "empty", span = { GridItemSpan(maxLineSpan) }) {
                         Box(Modifier.fillMaxWidth().height(320.dp)) {
                             EmptyContent(stringResource(R.string.fap_no_downloaded_photos_here_yet))
@@ -442,23 +533,27 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
                 }
             }
         }
+        }
     }
 
     if (confirmBatchDelete && selecting) {
         val count = selected.size
         AlertDialog(
             onDismissRequest = { confirmBatchDelete = false },
-            title = { Text(stringResource(R.string.fap_delete_photo_s, count)) },
-            text = { Text(stringResource(R.string.fap_the_selected_photos_will_be_removed)) },
+            title = { Text(stringResource(R.string.image_dl_delete_items, count)) },
+            text = { Text(stringResource(R.string.image_dl_delete_items_message)) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmBatchDelete = false
-                    val targets = photos.filter { it.docId in selected }
+                    val targets = photos.filter { it.docId in selected }.map { it.uri } +
+                            folders.filter { it.key in selected }.mapNotNull { f ->
+                                treeUri?.let { DocumentsContract.buildDocumentUriUsingTree(it, f.key) }
+                            }
                     scope.launch {
                         val deleted = withContext(Dispatchers.IO) {
                             targets.count { t ->
                                 runCatching {
-                                    DocumentsContract.deleteDocument(context.contentResolver, t.uri)
+                                    DocumentsContract.deleteDocument(context.contentResolver, t)
                                 }.getOrDefault(false)
                             }
                         }
@@ -467,7 +562,7 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
                         val failed = targets.size - deleted
                         Toast.makeText(
                             context,
-                            if (failed == 0) context.getString(R.string.fap_deleted_photo_s, deleted)
+                            if (failed == 0) context.getString(R.string.image_dl_deleted_items, deleted)
                             else context.getString(R.string.fap_deleted_failed, deleted, failed),
                             Toast.LENGTH_SHORT,
                         ).show()
@@ -581,6 +676,148 @@ fun ImageDownloadsScreen(onBack: () -> Unit) {
                             Icon(Icons.Default.Delete, stringResource(R.string.delete), tint = Color.White)
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BreadcrumbBar(
+    rootLabel: String,
+    crumbs: List<FolderCrumb>,
+    onNavigate: (Int) -> Unit,
+) {
+    val scroll = rememberScrollState()
+    LaunchedEffect(crumbs.size) {
+        delay(60)
+        scroll.animateScrollTo(scroll.maxValue)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(scroll)
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        FilterChip(
+            selected = crumbs.isEmpty(),
+            onClick = { onNavigate(-1) },
+            label = { Text(rootLabel, maxLines = 1) },
+        )
+        crumbs.forEachIndexed { index, crumb ->
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            FilterChip(
+                selected = index == crumbs.lastIndex,
+                onClick = { onNavigate(index) },
+                label = { Text(crumb.name, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun FolderGridCard(
+    folder: FolderItem,
+    selecting: Boolean,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+    ) {
+        AsyncImage(
+            model = folder.coverUri,
+            contentDescription = folder.label,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize(),
+        )
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        0.45f to Color.Transparent,
+                        1f to Color.Black.copy(alpha = 0.78f),
+                    )
+                ),
+        )
+        if (isSelected) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Icon(
+                Icons.Default.Folder,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp),
+            )
+            Text(
+                text = folder.label,
+                color = Color.White,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        if (!selecting && folder.photoCount > 0) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(6.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Black.copy(alpha = 0.55f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+            ) {
+                Text(
+                    text = folder.photoCount.toString(),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelSmall,
+                )
+            }
+        }
+        if (selecting) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(6.dp)
+                    .size(22.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isSelected) MaterialTheme.colorScheme.primary
+                        else Color.Black.copy(alpha = 0.45f)
+                    ),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (isSelected) {
+                    Icon(
+                        Icons.Default.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.size(16.dp),
+                    )
                 }
             }
         }

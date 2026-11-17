@@ -4,20 +4,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.Cosplaytele.data.model.CosplayteleTerm
-import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
-import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
+import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 
 @Composable
 fun CosplayteleListScreen(
@@ -34,15 +30,8 @@ fun CosplayteleListScreen(
         viewModel.setSource(CosplayteleSource.Page(path, collectTerms))
     }
     val gridState = rememberLazyGridState()
-    Scaffold(
-        topBar = {
-            SiteTopAppBar(
-                title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-                navigationIcon = { SiteBackButton(onClick = onBack) },
-            )
-        },
-    ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding)) {
+    HanimeScaffold(title = title, onBack = onBack) { padding ->
+        Box(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {
             SitePullToRefresh(
                 loading = state.isLoading,
                 onRefresh = { viewModel.refresh() },

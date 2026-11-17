@@ -32,4 +32,12 @@
     <string name="cosplaytele_drawer_best">最佳 Coser</string>
     <string name="cosplaytele_drawer_explore">探索分類</string>
     <string name="cosplaytele_drawer_videos">影片</string>
+    <string name="cosplaytele_drawer_3d">3 天熱門</string>
+    <string name="cosplaytele_drawer_7d">7 天熱門</string>
+    <string name="cosplaytele_pages_24h_desc">過去 24 小時最多人觀看的文章</string>
+    <string name="cosplaytele_pages_3d_desc">過去 3 天最多人觀看的文章</string>
+    <string name="cosplaytele_pages_7d_desc">過去 7 天最多人觀看的文章</string>
+    <string name="cosplaytele_pages_best_desc">最受歡迎的 Coser</string>
+    <string name="cosplaytele_pages_top_search_desc">大家最常搜尋的內容</string>
+    <string name="cosplaytele_pages_explore_desc">瀏覽所有分類與標籤</string>
 </resources>

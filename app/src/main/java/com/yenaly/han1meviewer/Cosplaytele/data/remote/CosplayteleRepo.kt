@@ -8,6 +8,8 @@ import com.yenaly.han1meviewer.Cosplaytele.data.parser.CosplayteleParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.FormBody
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Request
 import java.io.IOException
 
@@ -23,8 +25,31 @@ object CosplayteleRepo {
         response.body()?.string().orEmpty()
     }
 
+    private suspend fun rankingPage(url: String, html: String): CosplayteleListPage {
+        val req = CosplayteleParser.parseWppRequest(html) ?: throw IOException("Ranking is not available")
+        val request = Request.Builder()
+            .url(req.endpoint)
+            .header("Accept", "*/*")
+            .header("X-Requested-With", "XMLHttpRequest")
+            .header("X-WP-Nonce", req.token)
+            .header("Origin", CosplayteleConstants.BASE_URL)
+            .header("Referer", url)
+            .post(req.body.toRequestBody("application/json".toMediaType()))
+            .build()
+        val json = withContext(Dispatchers.IO) {
+            CosplayteleNetwork.sharedOkHttpClient.newCall(request).execute().use { resp ->
+                if (!resp.isSuccessful) throw IOException("HTTP ${resp.code}")
+                resp.body.string()
+            }
+        }
+        val cards = withContext(Dispatchers.Default) { CosplayteleParser.parseWppWidget(json) }
+        if (cards.isEmpty()) throw IOException("Nothing ranked yet")
+        return CosplayteleListPage(cards = cards, terms = emptyList(), nextUrl = null)
+    }
+
     suspend fun page(url: String, collectTerms: Boolean): Result<CosplayteleListPage> = runCatching {
         val html = fetchHtml(url)
+        if (CosplayteleConstants.isRankingUrl(url)) return@runCatching rankingPage(url, html)
         withContext(Dispatchers.Default) { CosplayteleParser.parseListPage(html, collectTerms) }
     }
 

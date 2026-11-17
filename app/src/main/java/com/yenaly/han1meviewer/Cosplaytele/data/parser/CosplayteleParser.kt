@@ -193,15 +193,42 @@ object CosplayteleParser {
     private fun termKey(a: Element): String? =
         termOf(a.absUrl("href"))?.let { "${it.first.name}:${it.second}" }
 
-    private fun termKeysIn(el: Element): Set<String> =
-        el.select("a[href]").mapNotNull { termKey(it) }.toSet()
+    /**
+     * Memoised "does this element hold more than one distinct term link" lookup. The old
+     * implementation re-selected and re-parsed every link under every ancestor for every anchor,
+     * which is quadratic and left big pages (Best cosplayer, ~150 tiles) loading for ages.
+     */
+    private class TermIndex {
+        class Info(val key: String?, val multi: Boolean)
 
-    private fun termContainer(anchor: Element, root: Element): Element {
+        private val cache = java.util.IdentityHashMap<Element, Info>()
+
+        fun info(el: Element): Info {
+            cache[el]?.let { return it }
+            var key: String? = if (el.tagName() == "a") termKey(el) else null
+            var multi = false
+            for (child in el.children()) {
+                val ci = info(child)
+                if (ci.multi) {
+                    multi = true
+                    break
+                }
+                val ck = ci.key ?: continue
+                if (key == null) key = ck else if (key != ck) {
+                    multi = true
+                    break
+                }
+            }
+            return Info(key, multi).also { cache[el] = it }
+        }
+    }
+
+    private fun termContainer(anchor: Element, root: Element, idx: TermIndex): Element {
         var best: Element = anchor
         var cur: Element? = anchor.parent()
         var depth = 0
         while (cur != null && cur !== root && depth < 6) {
-            if (termKeysIn(cur).size > 1) break
+            if (idx.info(cur).multi) break
             best = cur
             cur = cur.parent()
             depth++
@@ -240,11 +267,11 @@ object CosplayteleParser {
     }
 
     /** Walks up from [anchor] while the ancestor still holds only this one term, looking for a picture. */
-    private fun tileThumb(anchor: Element, root: Element): String {
+    private fun tileThumb(anchor: Element, root: Element, idx: TermIndex): String {
         var cur: Element? = anchor
         var depth = 0
         while (cur != null && cur !== root && depth < 8) {
-            if (termKeysIn(cur).size > 1) break
+            if (idx.info(cur).multi) break
             val t = thumbIn(cur)
             if (t.isNotBlank()) return t
             cur = cur.parent()
@@ -300,10 +327,11 @@ object CosplayteleParser {
 
     private fun parseTerms(root: Element): List<CosplayteleTerm> {
         val acc = LinkedHashMap<String, TermAcc>()
+        val idx = TermIndex()
         for (a in root.select("a[href]")) {
             val (kind, slug) = termOf(a.absUrl("href")) ?: continue
             val key = "${kind.name}:$slug"
-            val container = termContainer(a, root)
+            val container = termContainer(a, root, idx)
             var name = clean(a.text())
             if (!usableTitle(name)) name = clean(a.attr("title"))
             if (!usableTitle(name)) {
@@ -321,7 +349,7 @@ object CosplayteleParser {
                 name = if (kind == CosplayteleTermKind.SEARCH) slug
                 else slug.replace('-', ' ').replaceFirstChar { it.uppercase() }
             }
-            val thumb = tileThumb(a, root)
+            val thumb = tileThumb(a, root, idx)
             val cur = acc[key]
             if (cur == null) {
                 acc[key] = TermAcc(kind, slug, name, fallback, thumb, count)
@@ -364,6 +392,45 @@ object CosplayteleParser {
         // lists around them (popular posts, footer widgets) are not part of the page.
         val cards = if (terms.isNotEmpty()) emptyList() else parseCards(root).distinctBy { it.slug }
         return CosplayteleListPage(cards = cards, terms = terms, nextUrl = next)
+    }
+
+    /** What is needed to ask the site's WordPress Popular Posts widget for a ranking page. */
+    class WppRequest(val endpoint: String, val body: String, val token: String)
+
+    fun parseWppRequest(html: String): WppRequest? {
+        val doc = Jsoup.parse(html, CosplayteleConstants.BASE_URL)
+        val js = doc.selectFirst("script#wpp-js") ?: doc.selectFirst("script[data-api-url]") ?: return null
+        val api = js.attr("data-api-url").trimEnd('/')
+        val token = js.attr("data-token")
+        if (api.isBlank()) return null
+        val post = js.attr("data-post").ifBlank { "0" }
+        val lang = js.attr("data-lang")
+        val options = doc.selectFirst(".wpp-shortcode script[type=application/json]")
+            ?: doc.selectFirst("script[type=application/json][data-id=wpp-shortcode-inline-js]")
+            ?: doc.selectFirst("script[type=application/json]")
+            ?: return null
+        val body = runCatching {
+            JSONObject(options.data().replace(Regex("[\\n\\r]"), "")).toString()
+        }.getOrNull() ?: return null
+        val endpoint = "$api/v2/widget?is_single=$post" +
+                if (lang.isNotBlank() && lang != "0") "&lang=$lang" else ""
+        return WppRequest(endpoint, body, token)
+    }
+
+    fun parseWppWidget(json: String): List<CosplayteleCard> {
+        val html = runCatching { JSONObject(json).optString("widget") }.getOrDefault("")
+        if (html.isBlank()) return emptyList()
+        val doc = Jsoup.parseBodyFragment(html, CosplayteleConstants.BASE_URL)
+        val out = ArrayList<CosplayteleCard>()
+        for (li in doc.select("li")) {
+            val a = li.selectFirst("a.wpp-post-title") ?: li.selectFirst("a[href]") ?: continue
+            val slug = postSlug(a.absUrl("href")) ?: continue
+            val title = clean(a.text()).ifBlank { clean(a.attr("title")) }
+            if (title.isBlank()) continue
+            val cover = li.selectFirst("img")?.let { imgUrl(it) }.orEmpty()
+            out += buildCard(slug, title, cover)
+        }
+        return out.distinctBy { it.slug }
     }
 
     fun parseAjaxSearch(json: String): List<CosplayteleCard> {

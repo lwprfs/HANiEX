@@ -38,8 +38,8 @@ object CosplayteleConstants {
 
     val SECTION_LATEST = Section("latest", "Latest", "")
     val SECTION_24H = Section("24h", "Top 24 hours", "/24-hours/")
-    val SECTION_3D = Section("3d", "Top 3 days", "/3-days/")
-    val SECTION_7D = Section("7d", "Top 7 days", "/7-days/")
+    val SECTION_3D = Section("3d", "Top 3 days", "/3-day/")
+    val SECTION_7D = Section("7d", "Top 7 days", "/7-day/")
     val SECTION_VIDEOS = Section("video", "Videos", "/category/video-cosplayyy/")
     val SECTION_TOP_SEARCH = Section("top-search", "Top search", "/top-search/", SectionKind.TERMS)
     val SECTION_BEST = Section("best", "Best cosplayer", "/best-cosplayer/", SectionKind.TERMS)
@@ -57,6 +57,9 @@ object CosplayteleConstants {
 
     /** Chips on the "Pages" tab. Each one is shown as a thumbnail + title grid. */
     val PAGES_SECTIONS: List<Section> = listOf(
+        SECTION_24H,
+        SECTION_3D,
+        SECTION_7D,
         SECTION_BEST,
         SECTION_TOP_SEARCH,
         SECTION_EXPLORE,
@@ -70,6 +73,18 @@ object CosplayteleConstants {
         Regex("""^(top-)?\d+-(hours?|days?|weeks?|months?)$""", RegexOption.IGNORE_CASE)
 
     fun isPeriodSlug(slug: String): Boolean = PERIOD_SLUG_REGEX.matches(slug.trim('/'))
+
+    /**
+     * True for the ranking pages (`/24-hours/`, `/3-day/`, `/7-day/`). Their body is an empty
+     * WordPress Popular Posts placeholder that the site fills through its REST API, so the HTML
+     * itself holds no post list.
+     */
+    fun isRankingUrl(url: String): Boolean {
+        val path = url.substringBefore('?').substringBefore('#')
+            .substringAfter("://").substringAfter('/', "")
+        val segments = path.split('/').filter { it.isNotBlank() }
+        return segments.size == 1 && isPeriodSlug(segments[0])
+    }
 
     fun pageUrl(path: String): String {
         val clean = path.trim()
