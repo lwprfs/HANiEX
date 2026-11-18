@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.ui.component
 
 import androidx.compose.foundation.background

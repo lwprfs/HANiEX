@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.XHamster.ui.gallery
 
 import androidx.activity.compose.BackHandler

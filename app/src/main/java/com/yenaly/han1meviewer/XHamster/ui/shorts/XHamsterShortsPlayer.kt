@@ -602,7 +602,7 @@ fun XHamsterShortsPlayer(
                                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                                     ) {
                                         RetryableImage(
-                                            model = c.avatarUrl,
+                                            model = c.avatarUrl.orEmpty(),
                                             modifier = Modifier.size(32.dp).clip(CircleShape),
                                             placeholder = painterResource(R.drawable.h_chan_loading),
                                             error = painterResource(R.drawable.h_chan_load_failed),

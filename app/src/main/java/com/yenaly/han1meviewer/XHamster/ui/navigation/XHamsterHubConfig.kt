@@ -12,7 +12,7 @@ import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HighQuality
-import androidx.compose.material.icons.filled.PlaylistAdd
+import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
@@ -117,7 +117,7 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         SiteHubEntry("favorites", stringResource(R.string.xhamster_favorites), Icons.Filled.Favorite, library("FAVORITES")).gated(loggedIn, onLogin),
         SiteHubEntry("watch_later", stringResource(R.string.watch_later), Icons.Filled.Schedule, library("WATCH_LATER")).gated(loggedIn, onLogin),
         SiteHubEntry("liked", stringResource(R.string.xhamster_liked_videos), Icons.Filled.ThumbUp, library("LIKED")).gated(loggedIn, onLogin),
-        SiteHubEntry("collections", stringResource(R.string.xhamster_playlists), Icons.Filled.PlaylistAdd, library("PLAYLISTS")).gated(loggedIn, onLogin),
+        SiteHubEntry("collections", stringResource(R.string.xhamster_playlists), Icons.AutoMirrored.Filled.PlaylistAdd, library("PLAYLISTS")).gated(loggedIn, onLogin),
     )
     val accountSettings = SiteHubEntry(
         key = "account_settings",

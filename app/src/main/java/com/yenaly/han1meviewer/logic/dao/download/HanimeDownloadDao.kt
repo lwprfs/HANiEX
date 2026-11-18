@@ -117,6 +117,22 @@ abstract class HanimeDownloadDao {
         return update(entity.copy(groupId = currentGroup))
     }
 
+    /**
+     * 仅更新封面 URI。
+     *
+     * 封面是异步下载的，完成时如果用 [update] 整行覆盖，
+     * 会把期间已变化的状态字段（state/downloadedLength）用旧快照冲掉，
+     * 曾导致"文件已下完却显示卡在队列中/被重新下载"。
+     */
+    @Query("UPDATE HanimeDownloadEntity SET coverUri = :coverUri WHERE (`videoCode` = :videoCode AND `quality` = :quality)")
+    abstract suspend fun updateCoverUri(videoCode: String, quality: String, coverUri: String)
+
+    /**
+     * 查询这些影片中已归入非默认分组的分组 id，用于下载时推荐同系列已用的分组。
+     * 同一系列散落在多个分组时，取影片数量最多的那个。
+     *
+     * [videoCodes] 不可为空，调用方需自行过滤。
+     */
     @Query(
         "SELECT groupId FROM HanimeDownloadEntity WHERE videoCode IN (:videoCodes) " +
                 "AND groupId != ${DownloadGroupEntity.DEFAULT_GROUP_ID} " +

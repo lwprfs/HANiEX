@@ -91,6 +91,7 @@ import com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.base.BaseFragmentActivity
@@ -117,6 +118,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.util.Locale
 import com.yenaly.han1meviewer.MissAV.common.MissAvConstants
@@ -347,6 +349,8 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     fun confirmLogout() {
         showLogoutConfirm = false
+        // 登出埋点
+        HAnalytics.logEvent(FirebaseConstants.EVENT_LOGOUT)
         if (logoutCloseCurrentPage) {
             navController.popBackStack()
         }
@@ -524,9 +528,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         val currentFragment = currentVideoHost
-
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
-        val allowPip = prefs.getBoolean("allow_pip_mode", true)
+        val allowPip = Preferences.allowPipMode
 
         Log.i("pipmode", "enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
 
@@ -637,6 +639,11 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) {
+                // 剪贴板链接跳转埋点
+                HAnalytics.logEvent(
+                    FirebaseConstants.EVENT_CLIPBOARD_LINK_OPEN,
+                    FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+                )
                 showVideoDetailFragment(videoCode)
             }
         }

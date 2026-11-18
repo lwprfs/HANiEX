@@ -193,7 +193,7 @@ object XHamsterListsParser {
             if (news.str("contentType") != "video") continue
             val author = news.obj("author")
             val authorName = author?.str("name") ?: continue
-            val authorPath = (author?.str("pageURL") ?: author?.str("pageUrl"))?.let { XHamsterConstants.relativePath(it) }
+            val authorPath = (author.str("pageURL") ?: author.str("pageUrl"))?.let { XHamsterConstants.relativePath(it) }
             val cards = XHamsterParser.parseCards(news.arr("content"))
             for (card in cards) {
                 if (seen.add(card.videoCode)) out += XHamsterFeedItem(authorName, authorPath, card)

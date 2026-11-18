@@ -95,10 +95,25 @@ android {
         compose  =  true
         aidl = true
     }
+    androidResources {
+        // 只打包应用自身支持的语言（默认繁中在无修饰符的 values/ 中，始终保留）。
+        // Compose / Firebase / Play-Services 等依赖自带 80+ 语言，全量打包会白白多出 1~2MB。
+        // 注：bundle.language.enableSplit 只影响 Play 商店的 AAB 动态分发，与 APK 直发无关。
+        localeFilters += listOf("en", "ja", "zh-rCN", "zh-rTW")
+        // 排除 mpv AAR 里的字幕回退字体 subfont.ttf（约 6MB，应用无外挂字幕功能）。
+        // packaging.resources.excludes 管不到 assets，需用 aapt 的 ignoreAssetsPattern（'!' = 忽略匹配项）。
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:<dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~:!subfont.ttf"
+    }
     bundle {
         language {
             // 应用内切换语言需要打包全部语言资源
             enableSplit = false
+        }
+    }
+    packaging {
+        jniLibs {
+            // APK 内压缩 .so：显著减小下载体积（代价是安装时解压、磁盘占用略增）
+            useLegacyPackaging = true
         }
     }
     compileOptions {
@@ -136,19 +151,22 @@ androidComponents {
 
 dependencies {
     implementation(libs.appcompat)
-    implementation(libs.androidx.window)
-    implementation(libs.androidx.window.java)
+    // 仅使用 WindowSizeClass 的断点常量（androidx.window.core.layout），
+    // 无需完整的 window / window-java 库
+    implementation(libs.androidx.window.core)
     implementation(libs.aboutlibraries.core)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.material.icons.extended)
+
     // android related
 
     implementation(libs.bundles.android.base)
     implementation(libs.bundles.android.jetpack)
-    implementation(libs.palette)
     implementation(libs.material)
+
     //compose
+
     implementation(platform(libs.compose.compose.bom))
     implementation(libs.compose.ui.graphics)
     implementation(libs.compose.material3)
@@ -167,6 +185,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.aboutlibraries.compose.m3)
     implementation(libs.compose.avatar.cropper)
+
     // datetime
 
     implementation(libs.datetime)
@@ -183,16 +202,14 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.dns.over.https)
 
-    // pic
-
     // (图片加载统一使用 coil3，见 compose 依赖)
-
     // video
 
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.exoplayer.hls)
     implementation(libs.media3.datasource.okhttp)
-    implementation(libs.mpv.lib)
+    // mpv 精简版（ffmpeg n7.1.1 + mpv v0.42.0 按需裁剪，四架构，
+    implementation(files("libs/mpv-android-lite-0.1.7.aar"))
 
     // firebase
 
@@ -206,11 +223,8 @@ dependencies {
     ksp(libs.room.compiler)
 
     coreLibraryDesugaring(libs.desugar.jdk.libs)
-
     testImplementation(libs.junit)
-
     androidTestImplementation(libs.test.junit)
-
     implementation(libs.crashx)
     // debugImplementation(libs.leak.canary)
     implementation("com.squareup.okhttp3:okhttp-brotli:4.12.0")

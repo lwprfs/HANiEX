@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.MissAV.ui.account
 
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
@@ -62,7 +64,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -347,7 +349,7 @@ fun MissAvSavedScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             if (user == null) { LoginRequired(onLogin); return@Column }
-            TabRow(selectedTabIndex = tab) {
+            PrimaryTabRow(selectedTabIndex = tab) {
                 Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.missav_acc_tab_videos)) })
                 Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.missav_acc_tab_actresses)) })
             }
@@ -518,7 +520,7 @@ fun MissAvActressesScreen(
         SiteTopAppBar(title = { Text(stringResource(R.string.missav_acc_actresses)) }, navigationIcon = { SiteBackButton(onClick = onBack) })
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
-            TabRow(selectedTabIndex = tab) {
+            PrimaryTabRow(selectedTabIndex = tab) {
                 Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.missav_acc_popular)) })
                 Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.missav_acc_ranking)) })
             }
@@ -657,7 +659,7 @@ fun MissAvActressScreen(
     }) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             ActressHero(profile, name, id)
-            TabRow(selectedTabIndex = tab) {
+            PrimaryTabRow(selectedTabIndex = tab) {
                 Tab(selected = tab == 0, onClick = { tab = 0 }, text = { Text(stringResource(R.string.missav_acc_tab_videos)) })
                 Tab(selected = tab == 1, onClick = { tab = 1 }, text = { Text(stringResource(R.string.missav_acc_tab_news)) })
             }

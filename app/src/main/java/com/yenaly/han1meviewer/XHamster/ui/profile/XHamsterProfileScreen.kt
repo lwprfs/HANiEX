@@ -54,7 +54,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -204,7 +204,7 @@ private fun ProfileContent(
     Column(Modifier.fillMaxSize()) {
         ProfileHeader(profile, subscribed, busy, canSubscribe, toggleSubscribe, onOpenPath)
         if (tabs.size > 1) {
-            ScrollableTabRow(selectedTabIndex = selected, edgePadding = 8.dp) {
+            PrimaryScrollableTabRow(selectedTabIndex = selected, edgePadding = 8.dp) {
                 tabs.forEachIndexed { i, tab ->
                     val count = if (tab == ProfileTab.VIDEOS) profile.videoCount else profile.shortsCount
                     Tab(

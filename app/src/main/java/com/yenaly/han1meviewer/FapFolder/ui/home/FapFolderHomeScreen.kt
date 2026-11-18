@@ -234,7 +234,7 @@ fun FapFolderHomeScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Text(
-                                        text = uiState.errorMessage ?: stringResource(R.string.site_failed_to_load),
+                                        text = uiState.errorMessage.orEmpty().ifBlank { stringResource(R.string.site_failed_to_load) },
                                         color = MaterialTheme.colorScheme.error,
                                         style = MaterialTheme.typography.bodyMedium,
                                     )

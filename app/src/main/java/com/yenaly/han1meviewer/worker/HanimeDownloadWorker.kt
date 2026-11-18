@@ -26,6 +26,7 @@ import coil3.request.ImageRequest
 import coil3.toBitmap
 import com.yenaly.han1meviewer.DOWNLOAD_NOTIFICATION_CHANNEL
 import com.yenaly.han1meviewer.EMPTY_STRING
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HFileManager.createVideoName
 import com.yenaly.han1meviewer.R
@@ -35,6 +36,7 @@ import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.DownloadFailure
 import com.yenaly.han1meviewer.util.DownloadFailureKind
@@ -186,6 +188,11 @@ class HanimeDownloadWorker(
     private val dbScope = CoroutineScope(Dispatchers.IO)
 
     override suspend fun doWork(): Result {
+        Log.i(
+            TAG,
+            "▶ Worker 开始：videoCode=$videoCode, quality=$quality, redownload=$shouldRedownload, " +
+                    "waiting=$isInWaitingQueue, delete=$shouldDelete, attempt=$runAttemptCount"
+        )
         if (fastPathCancel) return Result.success()
 
         if (!isInWaitingQueue && !shouldDelete) {
@@ -208,7 +215,12 @@ class HanimeDownloadWorker(
                     raf = RandomAccessFile(file, "rwd")
                 }
 
-                val len = fetchContentLength() ?: return@withContext null
+                val len = fetchContentLength()
+                if (len == null) {
+                    Log.e(TAG, "❌ 文件长度获取失败：videoCode=$videoCode, url=${downloadUrl.take(80)}...")
+                    return@withContext null
+                }
+                Log.i(TAG, "文件长度获取成功：videoCode=$videoCode, length=$len")
                 if (len > 0) {
 
                     val entity = HanimeDownloadEntity(
@@ -227,7 +239,8 @@ class HanimeDownloadWorker(
                         state = if (isInWaitingQueue) DownloadState.Queued else DownloadState.Downloading
                     )
                     DatabaseRepo.HanimeDownload.insert(entity)
-
+                    Log.i(TAG, "📥 实体入库：videoCode=$videoCode, quality=$quality, length=$len")
+                    // 预写入长度（只有 File 支持）
                     raf?.setLength(len)
                     return@withContext entity
                 }
@@ -269,7 +282,13 @@ class HanimeDownloadWorker(
                     response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
                         ?: response.contentLengthFromContentRange()
                 } else {
-                    response.contentLengthFromContentRange()
+                    // #683: 服务器忽略 Range 请求头时会返回 200，此时 Content-Length 即完整大小；
+                    // 206 时 Content-Length 只有分片大小（恒为 1），必须解析 Content-Range。
+                    if (response.code == 200) {
+                        response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
+                    } else {
+                        response.contentLengthFromContentRange()
+                    }
                 }
             }
         } catch (e: CancellationException) {
@@ -477,6 +496,7 @@ class HanimeDownloadWorker(
                 }
                 DatabaseRepo.HanimeDownload.delete(videoCode)
                 if (shouldDelete) {
+                    logDownloadResult("deleted")
                     return@withContext Result.success()
                 }
             }
@@ -523,12 +543,41 @@ class HanimeDownloadWorker(
             if (entity.downloadedLength >= entity.length && entity.length > 0) {
                 DatabaseRepo.HanimeDownload.updateKeepingGroup(entity.copy(state = DownloadState.Finished))
                 showSuccessNotification()
+                logDownloadResult("finished")
                 return@withContext Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
                 )
             }
 
+            Log.i(
+                TAG,
+                "实体就绪：videoCode=$videoCode, state=${entity.state}, " +
+                        "downloaded=${entity.downloadedLength}/${entity.length}, " +
+                        "hasCover=${entity.coverUri != null}"
+            )
+
+            // UI 层占位入库的实体 length=0，此处补全真实长度
+            if (entity.length <= 0) {
+                val len = fetchContentLength()
+                if (len == null || len <= 0) {
+                    Log.e(TAG, "❌ 占位实体长度补全失败：videoCode=$videoCode")
+                    DatabaseRepo.HanimeDownload.delete(videoCode, quality)
+                    logDownloadResult("failure", "placeholder_len")
+                    return@withContext Result.failure(
+                        workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
+                    )
+                }
+                entity = entity.copy(
+                    length = len,
+                    // 占位实体的 videoUri 为空，本地播放需要它，一并补上
+                    videoUri = safUri?.toString() ?: file.toUri().toString()
+                )
+                DatabaseRepo.HanimeDownload.update(entity)
+                Log.i(TAG, "占位实体长度已补全：videoCode=$videoCode, length=$len")
+            }
+
             if (entity.downloadedLength < 0 || entity.downloadedLength > entity.length) {
+                Log.w(TAG, "断点异常，重置为 0：videoCode=$videoCode, ${entity.downloadedLength}/${entity.length}")
                 entity = entity.copy(downloadedLength = 0, state = DownloadState.Queued)
                 DatabaseRepo.HanimeDownload.updateKeepingGroup(entity)
             }
@@ -540,6 +589,7 @@ class HanimeDownloadWorker(
                 DatabaseRepo.HanimeDownload.updateKeepingGroup(
                     entity.copy(state = DownloadState.Queued)
                 )
+                logDownloadResult("queued")
                 return@withContext Result.success()
             }
 
@@ -593,9 +643,30 @@ class HanimeDownloadWorker(
                     }
                     try {
                         response = call.await()
-                        val canWrite = (requestNeedRange && response.code == 206) || (!requestNeedRange && response.isSuccessful)
+                        // #683: server ignored the Range header (200) -> restart from the beginning
+                        if (requestNeedRange && response.code == 200) {
+                            Log.i(TAG, "download: server ignored Range header (200), restart from beginning")
+                            logDownloadResult("restart", "range_ignored")
+                            downloadedLength = 0
+                            raf?.seek(0L)
+                            safChannel?.position(0L)
+                        }
+                        // #683: resume point no longer satisfiable -> retry from the beginning
+                        else if (requestNeedRange && response.code == 416) {
+                            Log.i(TAG, "download: 416 Range Not Satisfiable, restart from beginning")
+                            logDownloadResult("restart", "range_not_satisfiable")
+                            downloadedLength = 0
+                            raf?.seek(0L)
+                            safChannel?.position(0L)
+                            response.closeQuietly()
+                            response = null
+                            continue
+                        }
+                        val canWrite = if (requestNeedRange) {
+                            response.code == 206 || response.code == 200
+                        } else response.isSuccessful
                         if (!canWrite) {
-                            val reason = response.toDownloadErrorMessage(requestNeedRange)
+                            val reason = response.toDownloadErrorMessage()
                             recordFailure(null, response.code, reason)
                             showFailureNotification(reason)
                             mainScope.launch {
@@ -654,7 +725,9 @@ class HanimeDownloadWorker(
                     throw IOException("Download incomplete: $downloadedLength/${entity.length}")
                 }
 
+                Log.i(TAG, "✅ 下载写入完成：videoCode=$videoCode, $downloadedLength/${entity.length}")
                 showSuccessNotification()
+                logDownloadResult("finished")
                 result = Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
                 )
@@ -664,11 +737,14 @@ class HanimeDownloadWorker(
                 cancelled = e is CancellationException || isStopped || e.isStoppedCancellation()
                 result = if (cancelled) {
                     cancelDownloadNotification()
+                    logDownloadResult("paused", e.javaClass.simpleName)
+                    mainScope.launch { GlobalToasts.show(context.getString(R.string.download_error_cancelled), level = GlobalToasts.ToastLevel.INFO) }
                     Result.success(
                         workDataOf(DownloadState.STATE to DownloadState.Paused.mask)
                     )
                 } else if (e.isRetryableNetworkError() && runAttemptCount < MAX_WORK_RETRY_COUNT) {
                     val reason = e.toDownloadErrorMessage()
+                    logDownloadResult("retry", e.javaClass.simpleName)
                     showRetryNotification(reason)
                     mainScope.launch {
                         GlobalToasts.show(context.getString(R.string.download_task_retrying_s_reason_s, hanimeName, reason), level = GlobalToasts.ToastLevel.WARNING)
@@ -719,6 +795,22 @@ class HanimeDownloadWorker(
         return message?.contains("stream was reset: CANCEL", ignoreCase = true) == true
     }
 
+    /**
+     * 下载任务结果埋点。
+     *
+     * @param state finished / failure / retry / paused / queued / deleted / restart
+     * @param reason 失败/重试原因摘要（异常类名或 http_状态码），便于聚合
+     */
+    private fun logDownloadResult(state: String, reason: String? = null) {
+        HAnalytics.logEvent(
+            FirebaseConstants.EVENT_DOWNLOAD_RESULT,
+            FirebaseConstants.PARAM_VIDEO_CODE to videoCode,
+            FirebaseConstants.PARAM_QUALITY to quality,
+            FirebaseConstants.PARAM_RESULT to state,
+            FirebaseConstants.PARAM_REASON to reason,
+        )
+    }
+
     private fun Exception.isStoppedCancellation(): Boolean {
         return isStopped && this is IOException && message.equals("Canceled", ignoreCase = true)
     }
@@ -756,13 +848,12 @@ class HanimeDownloadWorker(
         }
     }
 
-    private fun Response.toDownloadErrorMessage(requestNeedRange: Boolean): String {
+    private fun Response.toDownloadErrorMessage(): String {
         return when {
-            requestNeedRange && code == 416 -> {
-                context.getString(R.string.download_error_range_not_supported)
-            }
-            requestNeedRange -> context.getString(R.string.download_error_range_not_supported)
             code in 500..599 -> context.getString(R.string.download_error_network)
+            // 401/403/404 通常是下载链接已失效（如签名过期），不再误报为「不支持断点续传」
+            code == 401 || code == 403 || code == 404 ->
+                context.getString(R.string.download_error_link_invalid)
             else -> message.takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_download_error)
         }
     }

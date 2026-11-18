@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.ui.screen.library
 
 import androidx.compose.foundation.clickable

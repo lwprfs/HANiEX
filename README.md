@@ -26,11 +26,13 @@ OnAir 站点需要 [Tor VPN](https://play.google.com/store/apps/details?id=org.t
 
 # 🚫 请不要在任何公开平台宣传本软件
 
-本软件不接受任何形式的公开宣传。若出现公开宣传、搬运或引流，仓库维护者可能随时归档或隐藏仓库，并删除已编译的发行版。
+> 本软件不接受任何形式的公开宣传。若出现公开宣传、搬运或引流，仓库维护者可能随时归档或隐藏仓库，并删除已编译的发行版。
+
+<div align="center">
 
 # 🌸 HANiEX
 
-🔞 R18 警告：未满 18 岁禁止下载和使用。
+🔞 **R18 警告：未满 18 岁禁止下载和使用。**
 
 HANiEX（Han1meViewer Extended）是基于 Han1meViewer 的扩展分支，应用名称为 **HANiEX**，应用包名（applicationId）为 `com.yenaly.hani.extended`。它是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理公开的视频与图集页面内容。除原有的 Hanime1 外，现在内置 **十个站点模块**（见「支持的站点」），共用同一个应用外壳：站点切换器、各站点独立的首页/搜索/视频/历史页面、按站点配置的镜像与网络设置、跨站点链接打开、统一历史记录和本地播放列表。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3 ExoPlayer / libmpv（通过 Compose 播放器统一使用）为主要技术栈。
 
@@ -49,41 +51,37 @@ HANiEX（Han1meViewer Extended）是基于 Han1meViewer 的扩展分支，应用
 - CI 增加 Gradle 缓存与构建优化，并在构建时生成增量更新包（对比最近三次 CI 构建和最新 Release）。
 - 安装方式中的 Shizuku 实现参考了 [Mihon](https://github.com/mihonapp/mihon) 的扩展安装器（Apache 2.0 / MIT）。
 
-根据 Apache 2.0 许可证要求：
+根据 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 许可证要求：
 
-- 保留原版权声明。
-- 包含许可证文件副本。
+- 保留原版权声明；
+- 包含许可证文件副本（见 [LICENSE](LICENSE)）；
 - 说明修改内容。
-
-原始仓库：[YenalyLiew/Han1meViewer](https://github.com/YenalyLiew/Han1meViewer)
-
-许可证文件：[LICENSE](LICENSE)
 
 ## ⚠️ 免责声明
 
 本应用程序与 `https://hanime1.me/` 以及本应用可浏览的其他任何网站（见「支持的站点」）及其关联方均无任何隶属、合作或授权关系。
 
-🔍 数据来源：
+#### 🔍 数据来源
 
-- 本应用仅通过常规网络请求和 HTML DOM 解析获取目标网站公开显示的信息。
-- 本应用不访问网站后端数据库。
-- 本应用不进行注入攻击、绕过授权或获取非公开用户隐私数据。
+- 本应用仅通过常规网络请求和 HTML DOM 解析获取目标网站公开显示的信息；
+- 不访问网站后端数据库；
+- 不进行注入攻击、绕过授权或获取非公开用户隐私数据。
 
-⚖️ 使用限制：
+#### ⚖️ 使用限制
 
 - 本应用仅用于技术研究、学习交流和移动端体验优化。
 - 本应用不提供商业化服务。
 - 使用者应自行遵守所在地区法律法规和各目标网站规则。
 
-©️ 版权归属：
+#### ©️ 版权归属
 
 - 原始视频、图文和相关内容版权归各对应网站或原始制作、发行方所有。
 - 本应用不存储版权内容，不修改原始内容，不声称拥有内容所有权。
 
-🛡️ 责任豁免：
+#### 🛡️ 责任豁免
 
-- 本应用不保证数据完整性、准确性和实时性。
-- 使用本应用产生的一切后果由用户自行承担。
+- 本应用不保证数据完整性、准确性和实时性；
+- 使用本应用产生的一切后果由用户自行承担；
 - 不得将本应用用于任何非法用途。
 
 若任一目标网站认为本应用行为不当，可通过 GitHub 仓库内置功能联系维护者。
@@ -344,12 +342,13 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 - 未启用 `org.gradle.configuration-cache`（构建脚本在配置阶段会读取环境变量并执行 git 命令），确认兼容后再开启。
 - 设置了 `android.suppressUnsupportedCompileSdk=37`，因为 compileSdk 37 可能比 AGP 官方支持的版本更新。
 
-📌 关键版本以仓库文件为准：
+| 配置项 | 值 |
+|:---:|:---:|
+| 编译 SDK | `37` |
+| 最低支持 | Android 8.1（API `27`） |
+| 目标 SDK | `37` |
 
-- `gradle.properties`
-- `gradle/libs.versions.toml`
-- `app/build.gradle.kts`
-- `buildSrc/src/main/java/Config.kt`
+📌 关键版本以仓库文件为准：`gradle.properties`、`gradle/libs.versions.toml`、`app/build.gradle.kts`、`buildSrc/src/main/java/Config.kt`。
 
 🔢 版本号：基础版本在 `app/build.gradle.kts` 中通过 `createVersion(major, minor, patch)` 设置。Debug 构建为 `debug+1`；其他构建为 `<major>.<minor>.<patch>-<来源>+<yyMMddHH>`，来源为 `release`，设置 `HA1_VERSION_SOURCE=ci`（CI 会设置）时为 `ci`；`+` 后面是版本号（UTC 时间）。
 
@@ -367,16 +366,17 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 
 4. 选择 `debug` 变体，运行到设备或模拟器。
 
-💻 常用命令：
+<details>
+<summary>💻 常用命令</summary>
 
 ```bash
+# Linux / macOS
 ./gradlew :app:compileDebugKotlin
 ./gradlew :app:assembleDebug
 ```
 
-🪟 Windows PowerShell：
-
 ```powershell
+# Windows PowerShell
 .\gradlew.bat :app:compileDebugKotlin
 .\gradlew.bat :app:assembleDebug
 ```
@@ -473,14 +473,80 @@ HANiEX/                          仓库根目录
 
 - 随时有想法随时写。
 
+## 💬 参与讨论
+
+[![Telegram](https://img.shields.io/badge/Telegram-Han1meViewer-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/Han1meViewer)
+
+Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
+
 ## 📄 许可证
 
-本项目继承原始项目的 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)。主要条款包括：
+本项目继承原始项目的 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)，主要条款包括：
 
-- 允许商用、修改和分发。
-- 要求保留版权声明和许可证文件。
-- 要求提供修改说明。
-- 不提供质量担保。
-- 不承担用户使用风险。
+- ✅ 允许商用、修改和分发；
+- 📋 要求保留版权声明和许可证文件；
+- ✏️ 要求提供修改说明；
+- ❌ 不提供质量担保，不承担用户使用风险。
 
 完整条款请参阅项目根目录下的 [LICENSE](LICENSE) 文件。
+
+---
+
+<details>
+<summary>🗞️ 公告系统使用须知（维护者向）</summary>
+
+公告系统分为两部分：
+
+- **用户侧**：应用启动后由 `MainViewModel.loadAnnouncements()` 从 Firebase Realtime Database 读取 `announcements` 节点，首页会展示有效公告，并可点开公告详情弹窗。
+- **维护侧**：`HanimeAnnouncementManagerWebUI` 用于维护公告数据，负责向同一个 `announcements` 节点写入、更新或下线公告。
+
+`HanimeAnnouncementManagerWebUI` 目录包含两个文件：
+
+- `HanimeAnnouncementManager.html`：公告管理网页，用于增删改查公告、切换启用状态；
+- `PermitAdmin.py`：给 Firebase Auth 用户写入 `isAdmin` 自定义声明，用于控制谁能访问管理端。
+
+#### 前置条件
+
+- 应用必须能够正常访问网络；
+- 项目中配置的 Firebase Realtime Database 地址必须可用；
+- `announcements` 节点下的公告数据结构需要和 `Announcement` 模型一致，至少包含 `title`、`content`、`isActive` 等字段；
+- 公告内容会按 `priority` 排序，只有 `isActive = true` 的公告才会显示；
+- 管理端需要启用 Firebase Authentication 和 Realtime Database；
+- 管理端需要准备 Firebase Web 配置参数和可登录的管理员邮箱、密码；
+- 若使用 `PermitAdmin.py`，还需要 Firebase Admin SDK 的 `serviceAccountKey.json`。
+
+#### 使用规则
+
+- 首页公告默认会展示为有效公告列表；
+- 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出；
+- 公告详情支持标题、内容、发布时间、图片和按钮文案；
+- 若公告配置了链接，内容中可直接展示可点击的 URL。
+
+#### 管理端使用步骤
+
+1. 在 `HanimeAnnouncementManager.html` 中填写 `firebaseConfig`；
+2. 在 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 中填入可登录 Firebase Auth 的管理员账号；
+3. 确保 Realtime Database 规则允许该管理员账号读写 `announcements` 节点；
+4. 如需批量授权管理员，先安装 `firebase-admin`，准备 `serviceAccountKey.json`，再运行 `PermitAdmin.py` 并填写目标用户 UID；
+5. 打开管理页后即可新增、编辑、启用、停用或删除公告。
+
+#### 公告字段说明
+
+| 字段 | 说明 |
+|:---:|:---|
+| `title` | 公告标题 |
+| `content` | 公告正文 |
+| `imageUrl` | 公告图片地址（可选） |
+| `positiveText` | 确认按钮文案（可选） |
+| `negativeText` | 取消按钮文案（可选） |
+| `priority` | 排序优先级 |
+| `timestamp` | 公告时间戳（秒） |
+| `isActive` | 是否启用 |
+
+#### 维护建议
+
+- 新公告建议先在 WebUI 中预览，再切换为 `isActive = true`；
+- 过期或不再需要显示的公告应直接下线，而不是删除，以便回溯；
+- 重要公告优先级数值应更高或更低需与 WebUI 约定保持一致，避免排序混乱。
+
+</details>

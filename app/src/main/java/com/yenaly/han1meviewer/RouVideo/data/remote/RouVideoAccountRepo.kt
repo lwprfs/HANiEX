@@ -58,7 +58,7 @@ object RouVideoAccountRepo {
             else -> error("Unsupported method $method")
         }
         RouVideoNetwork.sharedOkHttpClient.newCall(builder.build()).execute().use {
-            Reply(it.code, it.body?.string().orEmpty())
+            Reply(it.code, it.body.string())
         }
     }
 

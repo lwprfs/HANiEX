@@ -17,7 +17,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.AspectRatio
-import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Animation
@@ -27,7 +27,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material.icons.filled.Groups
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -253,7 +253,7 @@ fun SiteSettingsHubScreen(
                     SettingNavigationItem(
                         title = stringResource(R.string.site_default_sort_title),
                         summary = stringResource(R.string.site_default_sort_summary),
-                        icon = Icons.Default.Sort,
+                        icon = Icons.AutoMirrored.Filled.Sort,
                         valueText = sortChoices.firstOrNull { it.second == defaultSort }?.first
                             ?: stringResource(R.string.site_default_sort_none),
                         onClick = { showSortDialog = true },
@@ -284,7 +284,7 @@ fun SiteSettingsHubScreen(
                             }
                         ),
                         icon = when (section) {
-                            SiteHomeSettings.Section.FapFolderTrending -> Icons.Default.TrendingUp
+                            SiteHomeSettings.Section.FapFolderTrending -> Icons.AutoMirrored.Filled.TrendingUp
                             SiteHomeSettings.Section.FapFolderSuggested -> Icons.Default.Groups
                         },
                         checked = SiteHomeSettings.isShown(section),

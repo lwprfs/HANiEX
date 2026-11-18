@@ -2,10 +2,12 @@ package com.yenaly.han1meviewer.worker
 
 import android.util.Log
 import androidx.work.ExistingWorkPolicy
-import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.await
 import androidx.work.workDataOf
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
@@ -92,6 +94,11 @@ object HanimeDownloadManagerV2 {
                 } catch (e: Exception) {
                     Log.e(TAG, "failed to handle $msg", e)
                 }
+
+                // 自愈：每处理完一条消息都尝试推进等待队列。
+                // 否则一旦出现"槽位被误占/无人触发 ProcessNext"的情况（比如历史版本的
+                // 观察者泄漏），等待队列里的任务会在有空位时也永远无人启动。
+                if (waitingQueue.isNotEmpty()) pump()
             }
         }
     }
@@ -377,6 +384,7 @@ object HanimeDownloadManagerV2 {
     private suspend fun markQueued(args: HanimeDownloadWorker.Args, redownload: Boolean) {
         val entity = DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())
         if (entity == null) {
+            Log.d(TAG, "入库占位 work 已入队（waiting=true）：videoCode=${args.videoCode}")
             startWork(args, redownload = redownload, waiting = true)
         } else {
             DatabaseRepo.HanimeDownload.markQueued(args.videoCode)

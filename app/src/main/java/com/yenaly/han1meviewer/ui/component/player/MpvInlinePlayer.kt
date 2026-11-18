@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.ui.component.player
 
 import android.graphics.SurfaceTexture
@@ -64,6 +66,9 @@ fun MpvInlinePlayer(
     var durationSec by remember(url) { mutableFloatStateOf(0f) }
     var paused by remember(url) { mutableStateOf(false) }
     var buffering by remember(url) { mutableStateOf(true) }
+    var startSeen by remember(url) { mutableStateOf(false) }
+    var started by remember(url) { mutableStateOf(false) }
+    var failed by remember(url) { mutableStateOf(false) }
     var controlsVisible by remember(url) { mutableStateOf(true) }
     var scrubbing by remember(url) { mutableStateOf(false) }
     var scrubValue by remember(url) { mutableFloatStateOf(0f) }
@@ -86,6 +91,9 @@ fun MpvInlinePlayer(
 
             override fun eventProperty(property: String, value: String) = Unit
 
+            // lite AAR (tag 版 MPVLib) 新增的重载：本应用不观察 MPVNode 属性
+            override fun eventProperty(property: String, value: `is`.xyz.mpv.MPVNode) = Unit
+
             override fun eventProperty(property: String, value: Double) {
                 main.post {
                     when (property) {
@@ -98,8 +106,22 @@ fun MpvInlinePlayer(
             override fun event(eventId: Int) {
                 main.post {
                     when (eventId) {
-                        MPVLib.mpvEventId.MPV_EVENT_PLAYBACK_RESTART -> buffering = false
-                        MPVLib.mpvEventId.MPV_EVENT_START_FILE -> buffering = true
+                        MPVLib.mpvEventId.MPV_EVENT_PLAYBACK_RESTART -> {
+                            buffering = false
+                            started = true
+                        }
+
+                        MPVLib.mpvEventId.MPV_EVENT_START_FILE -> {
+                            buffering = true
+                            startSeen = true
+                        }
+
+                        // 精简版 mpv 不含 VP8/VP9/AV1 软解和 DASH/FLV/AVI 等解复用器：
+                        // 文件在开始播放前就结束，说明该格式内置兜底播放器无法解码
+                        MPVLib.mpvEventId.MPV_EVENT_END_FILE -> if (startSeen && !started) {
+                            failed = true
+                            buffering = false
+                        }
                     }
                 }
             }
@@ -205,6 +227,17 @@ fun MpvInlinePlayer(
 
         if (buffering) {
             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(36.dp))
+        }
+
+        if (failed) {
+            Text(
+                text = androidx.compose.ui.res.stringResource(com.yenaly.han1meviewer.R.string.mpv_fallback_unsupported),
+                color = Color.White,
+                modifier = Modifier
+                    .padding(24.dp)
+                    .background(Color.Black.copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(8.dp))
+                    .padding(12.dp),
+            )
         }
 
         if (controlsVisible) {

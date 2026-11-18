@@ -10,6 +10,7 @@ import com.yenaly.han1meviewer.logic.network.service.HanimeCommentService
 import com.yenaly.han1meviewer.logic.network.service.HanimeMyListService
 import com.yenaly.han1meviewer.logic.network.service.HanimeSubscriptionService
 import android.util.Log
+import com.yenaly.han1meviewer.util.HAnalytics
 
 object HanimeNetwork {
     var hanimeService = _hanimeService
@@ -53,5 +54,7 @@ object HanimeNetwork {
         myListService = _myListService
         subscriptionService = _subscriptionService
         Log.d("HanimeNetwork", "Network rebuilt successfully")
+        // 网络设置变化后同步 Crashlytics 上下文键
+        HAnalytics.updateNetworkContextKeys()
     }
 }

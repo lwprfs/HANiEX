@@ -216,6 +216,9 @@ object Preferences {
     val onAirBaseUrl: String
         get() = SiteNetworkPrefs.baseUrl(SiteType.ONAIR)
 
+    val allowPipMode: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, true)
+
     val switchPlayerKernel: String
         get() = preferenceSp.getString(
             SettingsPreferenceKeys.SWITCH_PLAYER_KERNEL,

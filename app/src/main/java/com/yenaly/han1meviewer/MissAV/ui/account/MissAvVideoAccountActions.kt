@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.MissAV.ui.account
 
 import android.content.ClipData

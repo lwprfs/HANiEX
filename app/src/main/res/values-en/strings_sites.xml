@@ -1159,4 +1159,5 @@
     <string name="fullvideos_err_no_link">No playable link found for this video</string>
     <string name="fullvideos_home_sections">Home sections</string>
     <string name="fullvideos_home_sections_hint">Reorder the home sections or hide the ones you do not want.</string>
+    <string name="mpv_fallback_unsupported">This video format (e.g. VP9 / AV1 / WebM) is not supported by the built-in fallback player. Try opening it in another player.</string>
 </resources>

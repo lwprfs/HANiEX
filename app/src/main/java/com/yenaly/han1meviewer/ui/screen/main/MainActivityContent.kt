@@ -49,6 +49,7 @@ import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute
 import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaHomeRoute
 import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvHomeRoute
 import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirHomeRoute
+import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
@@ -73,6 +74,7 @@ import com.yenaly.han1meviewer.ui.navigation.settings.buildDomainOptions
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
+import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.getUpdateIfExists
 import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
@@ -230,6 +232,8 @@ fun MainActivityContent(
                 val throwable = (homeState as PageState.Error).throwable
                 if (throwable is CloudFlareBlockedException) {
                     Log.e("error", "被屏蔽时的处理")
+                    // 首页内容被 Cloudflare 屏蔽埋点
+                    HAnalytics.logEvent(FirebaseConstants.EVENT_CLOUDFLARE_BLOCKED)
                 }
             }
         }
@@ -279,6 +283,11 @@ fun MainActivityContent(
                         onDismiss = { pendingUpdate = null },
                         onConfirm = {
                             pendingUpdate = null
+                            // 用户确认更新埋点（记录目标版本）
+                            HAnalytics.logEvent(
+                                FirebaseConstants.EVENT_UPDATE_CONFIRM,
+                                FirebaseConstants.PARAM_METHOD to latest.version,
+                            )
                             scope.launch {
 
                                 val file = activity.getUpdateIfExists(latest)

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.yenaly.han1meviewer.HentaiMama.settings
 
 import androidx.compose.ui.res.stringResource

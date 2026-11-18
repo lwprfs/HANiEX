@@ -1159,4 +1159,5 @@
     <string name="fullvideos_err_no_link">此影片沒有可播放的連結</string>
     <string name="fullvideos_home_sections">首頁分頁</string>
     <string name="fullvideos_home_sections_hint">調整首頁分頁順序，或隱藏不需要的分頁。</string>
+    <string name="mpv_fallback_unsupported">此影片格式（如 VP9 / AV1 / WebM）不受內建備用播放器支援，請改用其他播放器開啟。</string>
 </resources>

@@ -717,8 +717,8 @@ inspect(deltas)：计算已安装 APK 的 SHA-256，选出 baseSha256 前缀匹�
 - `ui/screen/home/homepage/HomePageScreen.kt`
 - `ui/screen/home/homepage/component/AnnouncementDialog.kt`（以及同目录的 `AnnouncementListDialog.kt`、`AnnouncementCard.kt`、`AnnouncementPanel.kt`）
 - `logic/model/Announcement.kt`
-- `HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
-- `HanimeAnnouncementManagerWebUI/PermitAdmin.py`
+- `docs/HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
+- `docs/HanimeAnnouncementManagerWebUI/PermitAdmin.py`
 
 应用侧链路：
 
