@@ -240,7 +240,7 @@ class HanimeDownloadWorker(
                     )
                     DatabaseRepo.HanimeDownload.insert(entity)
                     Log.i(TAG, "📥 实体入库：videoCode=$videoCode, quality=$quality, length=$len")
-                    // 预写入长度（只有 File 支持）
+
                     raf?.setLength(len)
                     return@withContext entity
                 }
@@ -282,8 +282,7 @@ class HanimeDownloadWorker(
                     response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
                         ?: response.contentLengthFromContentRange()
                 } else {
-                    // #683: 服务器忽略 Range 请求头时会返回 200，此时 Content-Length 即完整大小；
-                    // 206 时 Content-Length 只有分片大小（恒为 1），必须解析 Content-Range。
+
                     if (response.code == 200) {
                         response.header("Content-Length")?.toLongOrNull()?.takeIf { it > 0 }
                     } else {
@@ -556,7 +555,6 @@ class HanimeDownloadWorker(
                         "hasCover=${entity.coverUri != null}"
             )
 
-            // UI 层占位入库的实体 length=0，此处补全真实长度
             if (entity.length <= 0) {
                 val len = fetchContentLength()
                 if (len == null || len <= 0) {
@@ -569,7 +567,7 @@ class HanimeDownloadWorker(
                 }
                 entity = entity.copy(
                     length = len,
-                    // 占位实体的 videoUri 为空，本地播放需要它，一并补上
+
                     videoUri = safUri?.toString() ?: file.toUri().toString()
                 )
                 DatabaseRepo.HanimeDownload.update(entity)
@@ -643,7 +641,7 @@ class HanimeDownloadWorker(
                     }
                     try {
                         response = call.await()
-                        // #683: server ignored the Range header (200) -> restart from the beginning
+
                         if (requestNeedRange && response.code == 200) {
                             Log.i(TAG, "download: server ignored Range header (200), restart from beginning")
                             logDownloadResult("restart", "range_ignored")
@@ -651,7 +649,7 @@ class HanimeDownloadWorker(
                             raf?.seek(0L)
                             safChannel?.position(0L)
                         }
-                        // #683: resume point no longer satisfiable -> retry from the beginning
+
                         else if (requestNeedRange && response.code == 416) {
                             Log.i(TAG, "download: 416 Range Not Satisfiable, restart from beginning")
                             logDownloadResult("restart", "range_not_satisfiable")
@@ -795,12 +793,6 @@ class HanimeDownloadWorker(
         return message?.contains("stream was reset: CANCEL", ignoreCase = true) == true
     }
 
-    /**
-     * 下载任务结果埋点。
-     *
-     * @param state finished / failure / retry / paused / queued / deleted / restart
-     * @param reason 失败/重试原因摘要（异常类名或 http_状态码），便于聚合
-     */
     private fun logDownloadResult(state: String, reason: String? = null) {
         HAnalytics.logEvent(
             FirebaseConstants.EVENT_DOWNLOAD_RESULT,
@@ -851,7 +843,7 @@ class HanimeDownloadWorker(
     private fun Response.toDownloadErrorMessage(): String {
         return when {
             code in 500..599 -> context.getString(R.string.download_error_network)
-            // 401/403/404 通常是下载链接已失效（如签名过期），不再误报为「不支持断点续传」
+
             code == 401 || code == 403 || code == 404 ->
                 context.getString(R.string.download_error_link_invalid)
             else -> message.takeIf { it.isNotBlank() } ?: context.getString(R.string.unknown_download_error)

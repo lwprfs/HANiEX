@@ -295,13 +295,8 @@ fun VideoRouteHostScreen(
         }
     }
 
-    // ---------------- PiP ----------------
-
-    /** PiP 是否允许（与 MainActivity.onUserLeaveHint 读取同一偏好）。
-     *  每次重组直接读取（SharedPreferences 首次加载后在内存），设置页改动后不会残留旧值。 */
     val pipAllowed = Preferences.allowPipMode
 
-    /** PiP 是否满足进入条件（仅播放中；暂停/停止/播完等非播放状态一律不进 PiP，issue #684）。 */
     val pipEligible = playerUiState.state == PlayerState.PLAYING
 
     fun pipAspectRatio(): android.util.Rational {
@@ -365,10 +360,6 @@ fun VideoRouteHostScreen(
         }
     }
 
-    // 离开播放页时必须显式关闭 autoEnter（issue #684）：
-    // setPictureInPictureParams 登记在 Activity 级、留驻系统，不会随本页销毁而失效。
-    // 若不清除，只要本页播放/暂停过一次，之后从 App 任意页面回桌面，
-    // 系统都会把已 release 的播放器塞进 PiP 小窗（黑屏死窗口）。
     DisposableEffect(activity) {
         onDispose {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -655,11 +646,10 @@ fun VideoRouteHostScreen(
                 else activity.onBackPressedDispatcher.onBackPressed()
             },
             onGoHome = {
-                // 清空返回栈、让主页回到栈顶。MainActivity 是 singleTask，
-                // 直接 startActivity 只会触发 onNewIntent 而不会清栈，按钮会显得无响应。
+
                 val navController = activity.navController
                 if (!navController.popBackStack(HomeRoute, false)) {
-                    // 返回栈中没有主页（例如外部深链直接进入视频页）时，导航回主页并清栈
+
                     navController.navigate(HomeRoute) {
                         popUpTo(navController.graph.id) { inclusive = true }
                         launchSingleTop = true

@@ -54,7 +54,7 @@ object HanimeNetwork {
         myListService = _myListService
         subscriptionService = _subscriptionService
         Log.d("HanimeNetwork", "Network rebuilt successfully")
-        // 网络设置变化后同步 Crashlytics 上下文键
+
         HAnalytics.updateNetworkContextKeys()
     }
 }

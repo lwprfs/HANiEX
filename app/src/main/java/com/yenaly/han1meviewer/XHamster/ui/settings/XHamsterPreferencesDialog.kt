@@ -43,7 +43,6 @@ import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterPrefsRepo.Option
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import kotlinx.coroutines.launch
 
-/** Top-bar button: tune icon with a badge showing the active country / orientation. */
 @Composable
 fun XHamsterPreferencesButton() {
     var show by remember { mutableStateOf(false) }

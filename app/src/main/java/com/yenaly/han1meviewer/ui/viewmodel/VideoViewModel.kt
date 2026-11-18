@@ -177,7 +177,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
 
     fun setPipMode(isInPipMode: Boolean) {
         _videoHostUiStateFlow.update { it.copy(isInPipMode = isInPipMode) }
-        // 画中画使用埋点（只在进入时记录，避免退出时重复）
+
         if (isInPipMode) {
             HAnalytics.logEvent(
                 FirebaseConstants.EVENT_VIDEO_PIP,
@@ -248,7 +248,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             return
         }
         if (videoIntroUiStateMap[videoCode]?.introRestored == true) return
-        // 观看影片埋点：使用 GA4 标准 view_item 事件
+
         HAnalytics.logEvent(
             FirebaseAnalytics.Event.VIEW_ITEM,
             FirebaseAnalytics.Param.ITEM_ID to videoCode,
@@ -332,11 +332,11 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
                 videoCode, likeStatus, currentUserId, csrfToken
             ).collect { state ->
                 _addToFavVideoFlow.emit(state)
-                // 收藏/取消收藏埋点：GA4 标准 add_to_wishlist / remove_from_wishlist 事件
+
                 when (state) {
                     is WebsiteState.Success -> HAnalytics.logEvent(
                         if (likeStatus) {
-                            // SDK 无 REMOVE_FROM_WISHLIST 常量，使用 GA4 标准事件名
+
                             "remove_from_wishlist"
                         } else {
                             FirebaseAnalytics.Event.ADD_TO_WISHLIST
@@ -379,7 +379,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             ).collect { state ->
                 _addToFavVideoFlow.emit(state)
                 if (state is WebsiteState.Success) {
-                    // 点赞/点踩埋点
+
                     HAnalytics.logEvent(
                         "rate_video",
                         FirebaseConstants.PARAM_VIDEO_CODE to videoCode,

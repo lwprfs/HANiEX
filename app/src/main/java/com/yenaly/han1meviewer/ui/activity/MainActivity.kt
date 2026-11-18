@@ -349,7 +349,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     fun confirmLogout() {
         showLogoutConfirm = false
-        // 登出埋点
+
         HAnalytics.logEvent(FirebaseConstants.EVENT_LOGOUT)
         if (logoutCloseCurrentPage) {
             navController.popBackStack()
@@ -639,7 +639,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 duration = SnackbarDuration.Long,
             )
             if (result == SnackbarResult.ActionPerformed) {
-                // 剪贴板链接跳转埋点
+
                 HAnalytics.logEvent(
                     FirebaseConstants.EVENT_CLIPBOARD_LINK_OPEN,
                     FirebaseConstants.PARAM_VIDEO_CODE to videoCode,

@@ -200,7 +200,7 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
                     BuildConfig.VERSION_SOURCE,
                 )
             }
-            // 网络环境上下文键（站点/镜像/代理/DoH 等），崩溃时用于还原用户网络配置
+
             HAnalytics.updateNetworkContextKeys()
         }
         Firebase.remoteConfig.apply {

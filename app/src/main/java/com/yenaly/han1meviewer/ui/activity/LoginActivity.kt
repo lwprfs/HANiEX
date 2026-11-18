@@ -59,7 +59,7 @@ class LoginActivity : BaseActivity() {
             if (result.resultCode == RESULT_OK) {
                 val cookie = result.data?.getStringExtra("cookie")
                 Log.i("LoginActivity", "扫描结果: $cookie")
-                // 二维码 Cookie 登录埋点（GA4 标准 login 事件）
+
                 HAnalytics.logEvent(
                     FirebaseAnalytics.Event.LOGIN,
                     FirebaseConstants.PARAM_METHOD to "qrcode_cookie",
@@ -118,7 +118,7 @@ class LoginActivity : BaseActivity() {
                         val url = request.url
                         val cookieManager = CookieManager.getInstance().getCookie(url.host)
                         Log.d("login_cookie", cookieManager.toString())
-                        // WebView Cookie 登录埋点（GA4 标准 login 事件）
+
                         HAnalytics.logEvent(
                             FirebaseAnalytics.Event.LOGIN,
                             FirebaseConstants.PARAM_METHOD to "webview_cookie",
@@ -138,7 +138,7 @@ class LoginActivity : BaseActivity() {
                     error: WebResourceError?,
                 ) {
                     if (request?.isForMainFrame == true && !isDestroyed && !isFinishing) {
-                        // 登录页加载失败，回退到密码登录弹窗
+
                         HAnalytics.logEvent(
                             FirebaseAnalytics.Event.LOGIN,
                             FirebaseConstants.PARAM_METHOD to "webview_cookie",
@@ -182,7 +182,7 @@ class LoginActivity : BaseActivity() {
                     is WebsiteState.Error -> {
                         isLoggingIn = false
                         state.throwable.printStackTrace()
-                        // 密码登录失败埋点
+
                         HAnalytics.logEvent(
                             FirebaseAnalytics.Event.LOGIN,
                             FirebaseConstants.PARAM_METHOD to "password",
@@ -197,7 +197,7 @@ class LoginActivity : BaseActivity() {
                     }
 
                     is WebsiteState.Success -> {
-                        // 密码登录成功埋点
+
                         HAnalytics.logEvent(
                             FirebaseAnalytics.Event.LOGIN,
                             FirebaseConstants.PARAM_METHOD to "password",

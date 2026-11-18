@@ -43,7 +43,7 @@ import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
 
 @Composable
 fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
-    // Reading the epoch makes the hub recompose after login / logout / settings changes.
+
     @Suppress("UNUSED_VARIABLE")
     val sessionEpoch by XHamsterSession.epoch.collectAsState()
     val loggedIn = XHamsterAuth.isLoggedIn

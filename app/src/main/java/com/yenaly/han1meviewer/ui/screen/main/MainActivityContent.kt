@@ -232,7 +232,7 @@ fun MainActivityContent(
                 val throwable = (homeState as PageState.Error).throwable
                 if (throwable is CloudFlareBlockedException) {
                     Log.e("error", "被屏蔽时的处理")
-                    // 首页内容被 Cloudflare 屏蔽埋点
+
                     HAnalytics.logEvent(FirebaseConstants.EVENT_CLOUDFLARE_BLOCKED)
                 }
             }
@@ -283,7 +283,7 @@ fun MainActivityContent(
                         onDismiss = { pendingUpdate = null },
                         onConfirm = {
                             pendingUpdate = null
-                            // 用户确认更新埋点（记录目标版本）
+
                             HAnalytics.logEvent(
                                 FirebaseConstants.EVENT_UPDATE_CONFIRM,
                                 FirebaseConstants.PARAM_METHOD to latest.version,

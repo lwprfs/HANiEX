@@ -4,11 +4,6 @@ import com.yenaly.han1meviewer.Preferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-/**
- * Process-wide "something that changes what the site returns" signal. Anything that
- * changes the feed (login, logout, orientation, country, language, history, title
- * translation) bumps [epoch]; screens that show remote content observe it and reload.
- */
 object XHamsterSession {
 
     private val _epoch = MutableStateFlow(0)

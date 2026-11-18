@@ -75,7 +75,7 @@ fun MainNavHost(
 
     LaunchedEffect(destinationSpec) {
         destinationSpec?.let(onDestinationChanged)
-        // 主导航页面的 screen_view 埋点（设置页在 SettingsNavHost 中另行记录）
+
         destinationSpec?.let {
             HAnalytics.logScreenView(
                 screenName = it.name,

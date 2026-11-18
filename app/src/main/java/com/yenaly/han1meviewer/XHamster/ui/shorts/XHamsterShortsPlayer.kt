@@ -358,7 +358,6 @@ fun XHamsterShortsPlayer(
                         }
                     }
 
-                    // Bottom gradient-ish scrim for legibility
                     Box(
                         Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(180.dp)
                             .background(
@@ -412,7 +411,6 @@ fun XHamsterShortsPlayer(
                             Spacer(Modifier.height(4.dp))
                         }
 
-                        // Like (thumbs up)
                         RailButton(
                             onClick = {
                                 withMeta(short, "like") { cur ->
@@ -437,7 +435,6 @@ fun XHamsterShortsPlayer(
                             )
                         }
 
-                        // Dislike (thumbs down)
                         RailButton(
                             onClick = {
                                 withMeta(short, "dislike") { cur ->
@@ -462,7 +459,6 @@ fun XHamsterShortsPlayer(
                             )
                         }
 
-                        // Love (favourite)
                         RailButton(
                             onClick = {
                                 withMeta(short, "love") { cur ->
@@ -480,7 +476,6 @@ fun XHamsterShortsPlayer(
                             )
                         }
 
-                        // Comments
                         RailButton(
                             onClick = {
                                 commentsFor = short
@@ -494,7 +489,6 @@ fun XHamsterShortsPlayer(
                 }
             }
 
-            // Top bar: back, subtitles, report, mute
             Row(
                 Modifier.align(Alignment.TopStart).fillMaxWidth().statusBarsPadding().padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -540,7 +534,6 @@ fun XHamsterShortsPlayer(
                 trackColor = Color.White.copy(alpha = 0.25f),
             )
 
-            // Comments panel
             commentsFor?.let { short ->
                 val state = commentStates[short.id] ?: CommentsState()
                 val listState = rememberLazyListState()

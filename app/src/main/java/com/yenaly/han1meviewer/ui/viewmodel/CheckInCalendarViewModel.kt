@@ -105,7 +105,7 @@ class CheckInCalendarViewModel : ViewModel() {
                 feeling = feeling
             )
             dao.insert(record)
-            // 签到打卡埋点：只记录打卡类型，不记录自由文本备注
+
             HAnalytics.logEvent(
                 FirebaseConstants.EVENT_DAILY_CHECKIN,
                 FirebaseConstants.PARAM_METHOD to type,

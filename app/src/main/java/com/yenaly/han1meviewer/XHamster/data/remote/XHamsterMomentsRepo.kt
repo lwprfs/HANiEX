@@ -19,7 +19,6 @@ import java.io.IOException
 import java.net.URLEncoder
 import java.util.UUID
 
-/** Site-wide short-video / GIF feeds plus the per-short actions (comments, love, dislike). */
 object XHamsterMomentsRepo {
 
     enum class Feed { SHORTS, GIFS }
@@ -92,7 +91,6 @@ object XHamsterMomentsRepo {
         if (!XHamsterNetwork.hasAuthCookies()) throw IOException("LOGIN_REQUIRED")
     }
 
-    /** like = true → thumbs up, false → thumbs down. */
     suspend fun rate(videoId: Long, like: Boolean, pageUrl: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
@@ -130,7 +128,6 @@ object XHamsterMomentsRepo {
         }
     }
 
-    /** "Love": add the short to / remove it from the user's default favourites playlist. */
     suspend fun setFavorite(videoId: Long, favorite: Boolean, pageUrl: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {

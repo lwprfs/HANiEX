@@ -64,7 +64,6 @@ private val GIF_RANGES = listOf(
     TimeRange("monthly", "This month"),
 )
 
-/** Grid of site-wide short videos or GIFs; tapping a tile opens the shorts player. */
 @Composable
 fun XHamsterMomentsScreen(
     kind: XHamsterMomentsRepo.Feed,

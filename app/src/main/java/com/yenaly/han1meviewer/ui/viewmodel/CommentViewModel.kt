@@ -187,9 +187,6 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
-    /**
-     * 评论发送结果埋点。
-     */
     private fun logCommentPostEvent(
         type: String?,
         isReply: Boolean,

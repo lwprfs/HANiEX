@@ -75,9 +75,6 @@ class SearchViewModel(
         get() = state["broad"] ?: false
         set(value) { state["broad"] = value }
 
-    /**
-     * 搜索结果中是否隐藏已观看的视频（由搜索结果页右侧按钮切换）。
-     */
     var hideWatched: Boolean
         get() = state["hideWatched"] ?: false
         set(value) { state["hideWatched"] = value }
@@ -167,7 +164,7 @@ class SearchViewModel(
         duration: String?, tags: Set<String>, brands: Set<String>,
     ) {
         viewModelScope.launch {
-            // 搜索行为埋点：使用 GA4 标准 search 事件，便于后台漏斗/搜索词报告
+
             val hasAdvancedFilters = genre != null || sort != null || date != null ||
                     duration != null || tags.isNotEmpty() || brands.isNotEmpty() || broad
             HAnalytics.logEvent(
@@ -198,8 +195,7 @@ class SearchViewModel(
                     )
                     _totalPagesFlow.value = state.info.totalPages
                     val list = state.info.list
-                    // 无论是否显示“已观看”角标，都查询已观看状态，
-                    // 这样搜索结果页的“隐藏已观看”过滤始终可用。
+
                     val codes = list.map { it.videoCode }
                     val watchedCodes = withContext(Dispatchers.IO) {
                         DatabaseRepo.WatchHistory.getWatched(codes).toSet()

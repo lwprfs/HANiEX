@@ -91,7 +91,6 @@ fun MpvInlinePlayer(
 
             override fun eventProperty(property: String, value: String) = Unit
 
-            // lite AAR (tag 版 MPVLib) 新增的重载：本应用不观察 MPVNode 属性
             override fun eventProperty(property: String, value: `is`.xyz.mpv.MPVNode) = Unit
 
             override fun eventProperty(property: String, value: Double) {
@@ -116,8 +115,6 @@ fun MpvInlinePlayer(
                             startSeen = true
                         }
 
-                        // 精简版 mpv 不含 VP8/VP9/AV1 软解和 DASH/FLV/AVI 等解复用器：
-                        // 文件在开始播放前就结束，说明该格式内置兜底播放器无法解码
                         MPVLib.mpvEventId.MPV_EVENT_END_FILE -> if (startSeen && !started) {
                             failed = true
                             buffering = false

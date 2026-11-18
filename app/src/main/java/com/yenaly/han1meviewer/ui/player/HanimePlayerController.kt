@@ -169,7 +169,7 @@ class HanimePlayerController(
     private fun startPlayback() {
         val quality = qualityLinks.getOrNull(_uiState.value.currentQualityIndex) ?: return
         Log.i(TAG, "startPlayback: ${quality.first} -> ${quality.second}")
-        // 起播埋点：记录清晰度与内核类型，用于分析用户清晰度偏好与播放环境
+
         HAnalytics.logEvent(
             FirebaseConstants.EVENT_PLAYBACK_START,
             FirebaseConstants.PARAM_QUALITY to quality.first,
@@ -182,7 +182,7 @@ class HanimePlayerController(
 
     fun retry() {
         if (!_uiState.value.hasMedia) return
-        // 重试埋点：重试次数可反映播放失败的真实规模
+
         HAnalytics.logEvent(
             FirebaseConstants.EVENT_PLAYBACK_START,
             FirebaseConstants.PARAM_QUALITY to (qualityLinks.getOrNull(_uiState.value.currentQualityIndex)?.first),
@@ -197,7 +197,7 @@ class HanimePlayerController(
         if (!_uiState.value.hasMedia) return
         if (index == _uiState.value.currentQualityIndex) return
         val position = kernel.currentPositionMs
-        // 切清晰度埋点
+
         HAnalytics.logEvent(
             FirebaseConstants.EVENT_VIDEO_QUALITY_SWITCH,
             FirebaseConstants.PARAM_FROM_QUALITY to (qualityLinks.getOrNull(_uiState.value.currentQualityIndex)?.first),
@@ -354,7 +354,7 @@ class HanimePlayerController(
         stopTicker()
         abandonAudioFocus()
         Log.e(TAG, "onError: $error")
-        // 播放器错误埋点：事件 + Crashlytics non-fatal（含内核与清晰度上下文）
+
         HAnalytics.logError(
             eventName = FirebaseConstants.EVENT_PLAYER_ERROR,
             source = "player",
@@ -413,7 +413,6 @@ class HanimePlayerController(
     val isPlaying: Boolean
         get() = kernel.isPlaying
 
-    /** 是否处于可进 PiP 的状态（仅播放中；暂停/停止等非播放状态不进 PiP，issue #684）。 */
     val isActiveForPip: Boolean
         get() = _uiState.value.state == PlayerState.PLAYING
 

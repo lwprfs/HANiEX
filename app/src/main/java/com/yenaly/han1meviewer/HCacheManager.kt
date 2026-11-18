@@ -31,17 +31,8 @@ object HCacheManager {
     private const val CACHE_INFO_FILE = "info.json"
     private const val TAG = "HanimeDownload"
 
-    /** 应用级作用域：后台写入不随页面销毁而取消 */
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /**
-     * 后台保存 HanimeVideo 信息（不阻塞调用方，也不随页面退出而取消）。
-     * 用于下载入队后补写 info.json——SAF 目录可能很慢（如 DownloadsProvider），
-     * 不能让它挡在"加入下载队列"前面。
-     *
-     * 注意：此协程生命周期长于调用方（可能是已销毁的 Activity），
-     * 因此内部只持有 applicationContext，避免写入期间钉住整个 Activity。
-     */
     fun saveHanimeVideoInfoDetached(context: Context, videoCode: String, info: HanimeVideo) {
         val appContext = context.applicationContext
         appScope.launch {

@@ -80,7 +80,6 @@ object SettingsPreferenceKeys {
     const val MPV_NETWORK_TIMEOUT = "mpv_network_timeout"
     const val CUSTOM_PARAMS = "mpv_custom_parameters"
     const val LAST_UPDATE_POPUP_TIME = "last_update_popup_time"
-    const val ALLOW_PIP_MODE = "allow_pip_mode"
     const val DISABLE_COMMENTS = "disable_comments"
     const val USE_LOCK_SCREEN = "use_lock_screen"
     const val APP_LANGUAGE = "app_language"

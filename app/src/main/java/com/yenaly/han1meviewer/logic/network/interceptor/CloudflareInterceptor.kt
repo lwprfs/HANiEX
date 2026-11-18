@@ -24,13 +24,11 @@ class CloudflareInterceptor(
             response.close()
             val url = request.url.toString()
 
-            // Cloudflare 质询埋点：记录被质询的域名，用于评估 CDN 拦截规模
             HAnalytics.logEvent(
                 FirebaseConstants.EVENT_CLOUDFLARE_CHALLENGE,
                 FirebaseConstants.PARAM_SOURCE to request.url.host,
             )
 
-            // 用 CountDownLatch 代替同步锁
             val latch = CountDownLatch(1)
 
             CloudflareActivity.onFinished = {

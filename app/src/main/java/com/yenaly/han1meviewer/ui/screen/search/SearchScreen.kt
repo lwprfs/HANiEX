@@ -395,11 +395,11 @@ fun SearchScreen(
             },
         ) {
             if (hasSearched) {
-                // 已触发搜索，显示结果
+
                 val rawResults = searchResults.ifEmpty {
                     (searchState as? PageLoadingState.Success)?.info?.list ?: emptyList()
                 }
-                // 隐藏已观看的视频
+
                 val showResults =
                     if (hideWatched) rawResults.filterNot { it.watched == true } else rawResults
                 val allResultsWatched =
@@ -528,7 +528,7 @@ fun SearchAppBar(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            // 右侧按钮：隐藏/显示已观看的搜索结果
+
             if (showWatchedFilter) {
                 IconButton(onClick = onToggleHideWatched) {
                     Icon(

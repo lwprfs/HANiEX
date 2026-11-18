@@ -18,10 +18,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import java.io.IOException
 
-/**
- * Site-level preferences: orientation, country, language, watch-history pause and
- * video-title translation. Endpoints mirror what the website itself calls.
- */
 object XHamsterPrefsRepo {
 
     data class Option(val value: String, val label: String)
