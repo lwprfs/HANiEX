@@ -693,29 +693,8 @@ object XHamsterEntityParser {
         )
     }
 
-    fun parseMomentsMeta(json: String): Map<Long, XHamsterShortMeta> {
-        val root = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(json) }
-            .getOrNull() as? JsonObject ?: return emptyMap()
-        val out = LinkedHashMap<Long, XHamsterShortMeta>()
-        root.arr("items").orEmpty().forEach { el ->
-            val o = el as? JsonObject ?: return@forEach
-            val id = o.lng("id") ?: return@forEach
-            val sources = o.obj("sources")
-            val hls = sources?.obj("hls")?.obj("h264")?.str("url")
-            val progressive = sources?.obj("standard")?.arr("h264").orEmpty()
-                .mapNotNull { it as? JsonObject }
-                .filter { it.str("quality") != "auto" }
-                .maxByOrNull { it.str("quality")?.filter(Char::isDigit)?.toIntOrNull() ?: 0 }
-                ?.str("url")
-            val rating = o.obj("ratingModel")
-            out[id] = XHamsterShortMeta(
-                streamUrl = hls ?: progressive,
-                likes = rating?.lng("likes") ?: 0L,
-                liked = (rating?.lng("state") ?: 0L) > 0L,
-            )
-        }
-        return out
-    }
+    fun parseMomentsMeta(json: String): Map<Long, XHamsterShortMeta> =
+        XHamsterMomentsParser.parse(json).items.associate { it.first.id to it.second }
 
     fun parseEntityProfile(html: String, path: String): XHamsterEntityProfile? {
         parseCreatorProfile(html, path)?.let { return it }

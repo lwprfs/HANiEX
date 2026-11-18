@@ -5,7 +5,11 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Gif
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.PlaylistAdd
@@ -15,11 +19,15 @@ import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.filled.Subscriptions
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.XHamster.common.XHamsterSession
 import com.yenaly.han1meviewer.XHamster.common.XHamsterSettings
+import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo
 import com.yenaly.han1meviewer.XHamster.common.rememberXHamsterFlag
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
@@ -35,6 +43,9 @@ import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
 
 @Composable
 fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+    // Reading the epoch makes the hub recompose after login / logout / settings changes.
+    @Suppress("UNUSED_VARIABLE")
+    val sessionEpoch by XHamsterSession.epoch.collectAsState()
     val loggedIn = XHamsterAuth.isLoggedIn
     val onLogin = { navController.navigateSafely(XHamsterAccountRoute) }
     fun library(tab: String) = { navController.navigateSafely(XHamsterLibraryRoute(tab)) }
@@ -65,6 +76,39 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
                 title = stringResource(R.string.xhamster_categories),
                 icon = Icons.Filled.Category,
                 onClick = { navController.navigateSafely(XHamsterCategoriesRoute) },
+            ),
+        ),
+    )
+    val more = SiteHubSection(
+        title = "More to explore",
+        entries = listOf(
+            SiteHubEntry(
+                key = "photos",
+                title = "Photos",
+                icon = Icons.Filled.PhotoLibrary,
+                onClick = { navController.navigateSafely(XHamsterPhotosRoute) },
+            ),
+            SiteHubEntry(
+                key = "gifs",
+                title = "GIFs",
+                icon = Icons.Filled.Gif,
+                onClick = {
+                    navController.navigateSafely(XHamsterMomentsRoute(XHamsterMomentsRepo.Feed.GIFS.name, "GIFs"))
+                },
+            ),
+            SiteHubEntry(
+                key = "shorts",
+                title = "Short videos",
+                icon = Icons.Filled.SmartDisplay,
+                onClick = {
+                    navController.navigateSafely(XHamsterMomentsRoute(XHamsterMomentsRepo.Feed.SHORTS.name, "Short videos"))
+                },
+            ),
+            SiteHubEntry(
+                key = "top_creator_videos",
+                title = "Top creator videos",
+                icon = Icons.Filled.EmojiEvents,
+                onClick = { navController.navigateSafely(XHamsterTopCreatorVideosRoute) },
             ),
         ),
     )
@@ -106,7 +150,7 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         extraLibrarySections = listOf(
             SiteHubSection(stringResource(R.string.xhamster_my_library), libraryEntries),
         ),
-        subscriptionSections = listOf(subscription),
+        subscriptionSections = listOf(subscription, more),
         profileExtraQuickActions = listOf(accountSettings),
         customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navController, SiteType.XHAMSTER)),
         customizeExtras = {

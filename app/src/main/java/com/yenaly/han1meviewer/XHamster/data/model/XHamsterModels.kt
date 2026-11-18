@@ -204,10 +204,40 @@ data class XHamsterShort(
     val views: Long?,
 )
 
+data class XHamsterSubtitleTrack(
+    val label: String,
+    val lang: String,
+    val url: String,
+)
+
 data class XHamsterShortMeta(
     val streamUrl: String?,
     val likes: Long,
     val liked: Boolean,
+    val dislikes: Long = 0L,
+    val disliked: Boolean = false,
+    val favorite: Boolean = false,
+    val commentsCount: Long = 0L,
+    val commentsDisabled: Boolean = false,
+    val subtitles: List<XHamsterSubtitleTrack> = emptyList(),
+    val ownerName: String? = null,
+    val ownerAvatar: String? = null,
+    val ownerPath: String? = null,
+)
+
+data class XHamsterShortComment(
+    val id: Long,
+    val author: String,
+    val avatarUrl: String?,
+    val text: String,
+    val likes: Long,
+    val createdSeconds: Long?,
+    val isReply: Boolean,
+)
+
+data class XHamsterShortComments(
+    val items: List<XHamsterShortComment>,
+    val nextCursor: String?,
 )
 
 data class XHamsterShortsPage(

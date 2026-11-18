@@ -1157,4 +1157,6 @@
     <string name="fullvideos_subtitle_load_srt">Load .srt file</string>
     <string name="fullvideos_nothing_here">Nothing here</string>
     <string name="fullvideos_err_no_link">No playable link found for this video</string>
+    <string name="fullvideos_home_sections">Home sections</string>
+    <string name="fullvideos_home_sections_hint">Reorder the home sections or hide the ones you do not want.</string>
 </resources>

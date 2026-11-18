@@ -4,6 +4,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.ui.component.SettingActionItem
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -32,6 +39,9 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 fun FullVideosSettingsScreen(onBack: () -> Unit) {
     var quality by remember { mutableStateOf(FullVideosSettings.preferredQuality) }
     var cookiesCleared by remember { mutableStateOf(false) }
+    var order by remember { mutableStateOf(FullVideosSettings.sectionOrder) }
+    var hidden by remember { mutableStateOf(FullVideosSettings.hiddenSections) }
+    val sectionsByKey = remember { FullVideosConstants.SECTIONS.associateBy { it.key } }
 
     Scaffold(
         topBar = {
@@ -46,6 +56,38 @@ fun FullVideosSettingsScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding),
         ) {
+            item { SettingSectionHeader(stringResource(R.string.fullvideos_home_sections)) }
+            item { SettingHintText(stringResource(R.string.fullvideos_home_sections_hint)) }
+            order.forEachIndexed { index, key ->
+                val section = sectionsByKey[key] ?: return@forEachIndexed
+                item(key = "section_$key") {
+                    SettingActionItem(title = section.title) {
+                        IconButton(
+                            onClick = {
+                                order = order.toMutableList().apply { add(index - 1, removeAt(index)) }
+                                FullVideosSettings.sectionOrder = order
+                            },
+                            enabled = index > 0,
+                        ) { Icon(Icons.Filled.ArrowUpward, contentDescription = null) }
+                        IconButton(
+                            onClick = {
+                                order = order.toMutableList().apply { add(index + 1, removeAt(index)) }
+                                FullVideosSettings.sectionOrder = order
+                            },
+                            enabled = index < order.lastIndex,
+                        ) { Icon(Icons.Filled.ArrowDownward, contentDescription = null) }
+                        Switch(
+                            checked = key !in hidden,
+                            onCheckedChange = { on ->
+                                hidden = if (on) hidden - key else hidden + key
+                                FullVideosSettings.hiddenSections = hidden
+                            },
+                            modifier = Modifier.padding(start = 4.dp, end = 8.dp),
+                        )
+                    }
+                }
+            }
+
             item { SettingSectionHeader(stringResource(R.string.fullvideos_pref_quality)) }
             item { SettingHintText(stringResource(R.string.fullvideos_pref_quality_hint)) }
             FullVideosConstants.QUALITIES.forEach { option ->
@@ -80,6 +122,8 @@ fun FullVideosSettingsScreen(onBack: () -> Unit) {
                     onClick = {
                         FullVideosSettings.resetToDefaults()
                         quality = FullVideosSettings.preferredQuality
+                        order = FullVideosSettings.sectionOrder
+                        hidden = FullVideosSettings.hiddenSections
                     },
                 )
             }

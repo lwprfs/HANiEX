@@ -97,6 +97,7 @@ object XHamsterAuth {
                 val user = fetchCurrentUser().getOrNull()
                     ?: throw IOException(message(R.string.xhamster_login_session_failed))
                 cache(user)
+                com.yenaly.han1meviewer.XHamster.common.XHamsterSession.bump()
                 user
             }
         }
@@ -120,6 +121,7 @@ object XHamsterAuth {
         if (result.isSuccess && user == null) {
             XHamsterNetwork.clearLoginCookies()
             cache(null)
+            com.yenaly.han1meviewer.XHamster.common.XHamsterSession.bump()
             return null
         }
         if (user != null) cache(user)
@@ -135,5 +137,6 @@ object XHamsterAuth {
         }
         XHamsterNetwork.clearLoginCookies()
         cache(null)
+        com.yenaly.han1meviewer.XHamster.common.XHamsterSession.bump()
     }
 }

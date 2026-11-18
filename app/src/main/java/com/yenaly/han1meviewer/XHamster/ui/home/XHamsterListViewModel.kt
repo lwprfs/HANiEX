@@ -40,8 +40,13 @@ class XHamsterListViewModel : ViewModel() {
     private var nextUrl: String? = null
     private var job: Job? = null
 
+    private var loadedEpoch = -1
+
     fun setSource(newSource: XHamsterSource, force: Boolean = false) {
-        if (!force && newSource == source && _state.value.items.isNotEmpty()) return
+        val epoch = com.yenaly.han1meviewer.XHamster.common.XHamsterSession.epoch.value
+        val stale = loadedEpoch != epoch
+        if (!force && !stale && newSource == source && _state.value.items.isNotEmpty()) return
+        loadedEpoch = epoch
         source = newSource
         nextUrl = null
         job?.cancel()

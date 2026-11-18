@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import android.content.Intent
@@ -94,6 +95,12 @@ object XHamsterCreatorsRoute
 
 @Serializable
 object XHamsterPhotosRoute
+
+@Serializable
+object XHamsterPrivacyRoute
+
+@Serializable
+data class XHamsterMomentsRoute(val kind: String, val title: String)
 
 @Serializable
 object XHamsterTopCreatorVideosRoute
@@ -187,6 +194,13 @@ fun XHamsterNavHost(
                         onClick = { navController.navigateSafely(XHamsterAccountSettingsRoute) },
                     ),
                     SiteSettingsEntry(
+                        key = "privacy",
+                        title = "Privacy",
+                        subtitle = "Pause watch history, translate titles",
+                        icon = Icons.Default.Lock,
+                        onClick = { navController.navigateSafely(XHamsterPrivacyRoute) },
+                    ),
+                    SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.xhamster_history_title),
                         subtitle = stringResource(R.string.xhamster_history_summary),
@@ -199,6 +213,23 @@ fun XHamsterNavHost(
                 onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.XHAMSTER.name)) },
                 onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
                 onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+            )
+        }
+
+        composable<XHamsterPrivacyRoute> {
+            com.yenaly.han1meviewer.XHamster.ui.settings.XHamsterPrivacyScreen(
+                onBack = { navController.popBackStackSafely() },
+            )
+        }
+
+        composable<XHamsterMomentsRoute> {
+            val route = it.toRoute<XHamsterMomentsRoute>()
+            com.yenaly.han1meviewer.XHamster.ui.shorts.XHamsterMomentsScreen(
+                kind = runCatching {
+                    com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo.Feed.valueOf(route.kind)
+                }.getOrDefault(com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo.Feed.SHORTS),
+                title = route.title,
+                onBack = { navController.popBackStackSafely() },
             )
         }
 

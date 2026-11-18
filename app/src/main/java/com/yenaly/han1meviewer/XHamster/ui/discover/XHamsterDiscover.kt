@@ -34,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.XHamster.common.XHamsterConstants
 import com.yenaly.han1meviewer.XHamster.common.XHamsterImageLoader
+import com.yenaly.han1meviewer.XHamster.common.XHamsterSession
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterChannel
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterCreator
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterFeedItem
@@ -63,32 +64,57 @@ data class XHamsterDiscoverState(
 )
 
 class XHamsterDiscoverViewModel : ViewModel() {
-    private val _state = MutableStateFlow(cache ?: XHamsterDiscoverState())
+    private val _state = MutableStateFlow(
+        if (cacheEpoch == XHamsterSession.epoch.value) cache ?: XHamsterDiscoverState()
+        else XHamsterDiscoverState()
+    )
     val state: StateFlow<XHamsterDiscoverState> = _state.asStateFlow()
 
+    private var seenEpoch = XHamsterSession.epoch.value
+
     init {
-        if (cache == null) {
-            viewModelScope.launch {
-                val creators = XHamsterRepo.creators(XHamsterConstants.listUrl("/creators"))
-                    .getOrNull()?.items.orEmpty().take(24)
-                _state.value = _state.value.copy(creators = creators)
+        if (cache == null || cacheEpoch != seenEpoch) {
+            cache = null
+            load()
+        }
+        viewModelScope.launch {
+            XHamsterSession.epoch.collect { epoch ->
+                if (epoch != seenEpoch) {
+                    seenEpoch = epoch
+                    cache = null
+                    _state.value = XHamsterDiscoverState()
+                    load()
+                }
             }
-            viewModelScope.launch {
-                val channels = XHamsterRepo.channels(XHamsterConstants.listUrl("/channels"))
-                    .getOrNull()?.items.orEmpty().take(24)
-                _state.value = _state.value.copy(channels = channels)
-            }
-            if (XHamsterAuth.isLoggedIn) viewModelScope.launch {
-                val feed = XHamsterUserRepo.newsFeed().getOrNull().orEmpty().take(12)
-                _state.value = _state.value.copy(feed = feed)
-                cache = _state.value
-            }
+        }
+    }
+
+    private fun load() {
+        val epoch = seenEpoch
+        viewModelScope.launch {
+            val creators = XHamsterRepo.creators(XHamsterConstants.listUrl("/creators"))
+                .getOrNull()?.items.orEmpty().take(24)
+            _state.value = _state.value.copy(creators = creators)
+        }
+        viewModelScope.launch {
+            val channels = XHamsterRepo.channels(XHamsterConstants.listUrl("/channels"))
+                .getOrNull()?.items.orEmpty().take(24)
+            _state.value = _state.value.copy(channels = channels)
+        }
+        if (XHamsterAuth.isLoggedIn) viewModelScope.launch {
+            val feed = XHamsterUserRepo.newsFeed().getOrNull().orEmpty().take(12)
+            _state.value = _state.value.copy(feed = feed)
+            cache = _state.value
+            cacheEpoch = epoch
         }
     }
 
     private companion object {
         @Volatile
         var cache: XHamsterDiscoverState? = null
+
+        @Volatile
+        var cacheEpoch: Int = 0
     }
 }
 

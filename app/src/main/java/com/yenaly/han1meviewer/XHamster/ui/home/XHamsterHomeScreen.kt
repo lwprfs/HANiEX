@@ -46,7 +46,8 @@ fun XHamsterHomeScreen(
     var selectedKey by rememberSaveable { mutableStateOf(XHamsterConstants.TABS.first().key) }
     val selected = XHamsterConstants.TABS.first { it.key == selectedKey }
 
-    LaunchedEffect(selectedKey) {
+    val epoch by com.yenaly.han1meviewer.XHamster.common.XHamsterSession.epoch.collectAsStateWithLifecycle()
+    LaunchedEffect(selectedKey, epoch) {
         viewModel.setSource(XHamsterSource.Path(selected.path))
     }
 
@@ -58,11 +59,7 @@ fun XHamsterHomeScreen(
                 hint = stringResource(R.string.xhamster_search_hint),
                 onSearchClick = { onNavigateToSearch(null) },
                 action = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.Category,
-                        contentDescription = stringResource(R.string.xhamster_categories),
-                        onClick = onNavigateToCategories,
-                    )
+                    com.yenaly.han1meviewer.XHamster.ui.settings.XHamsterPreferencesButton()
                 },
             )
         },

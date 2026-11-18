@@ -77,6 +77,18 @@ class XHamsterCookieJar : CookieJar {
         }
 
         @Synchronized
+        fun putCookie(host: String, name: String, value: String) {
+            val cookie = Cookie.Builder()
+                .name(name)
+                .value(value)
+                .domain(host)
+                .path("/")
+                .expiresAt(System.currentTimeMillis() + 365L * 24 * 3600 * 1000)
+                .build()
+            store(host, listOf(cookie), emptyList())
+        }
+
+        @Synchronized
         private fun clearAll() {
             cookieStore.clear()
             persist()

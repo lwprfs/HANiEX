@@ -1157,4 +1157,6 @@
     <string name="fullvideos_subtitle_load_srt">載入 .srt 檔</string>
     <string name="fullvideos_nothing_here">這裡沒有內容</string>
     <string name="fullvideos_err_no_link">此影片沒有可播放的連結</string>
+    <string name="fullvideos_home_sections">首頁分頁</string>
+    <string name="fullvideos_home_sections_hint">調整首頁分頁順序，或隱藏不需要的分頁。</string>
 </resources>
