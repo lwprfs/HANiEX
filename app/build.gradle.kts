@@ -5,6 +5,7 @@ import Config.Version.source
 import Config.isRelease
 import Config.lastCommitSha
 import com.android.build.api.variant.impl.VariantOutputImpl
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -36,7 +37,7 @@ android {
         applicationId = "com.yenaly.hani.extended"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
-        val (code, name) = createVersion(major = 2, minor = 3, patch = 8)
+        val (code, name) = createVersion(major = 2, minor = 3, patch = 7)
         versionCode = code
         versionName = name
 
@@ -149,7 +150,14 @@ androidComponents {
     }
 }
 
+// PredictiveBackSanitizer overrides NavigationEventInput hooks that only exist in newer
+// navigationevent releases than the one navigation-compose pulls in transitively.
+// Added only when the version catalog defines it, so the build never breaks on a missing alias.
+val navigationEventCompose = extensions.getByType<VersionCatalogsExtension>()
+    .named("libs").findLibrary("androidx-navigationevent-compose")
+
 dependencies {
+    navigationEventCompose.ifPresent { implementation(it) }
     implementation(libs.appcompat)
     // 仅使用 WindowSizeClass 的断点常量（androidx.window.core.layout），
     // 无需完整的 window / window-java 库

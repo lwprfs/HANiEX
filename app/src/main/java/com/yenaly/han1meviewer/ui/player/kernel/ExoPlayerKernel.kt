@@ -214,7 +214,7 @@ class ExoPlayerKernel(
         pendingSurface = surfaceToKeep
         listener = listenerToKeep
         released = false
-        Log.i(TAG, "prepare: ${request.url.host}")
+        Log.i(TAG, "prepare: ${request.url.logHost()}")
         val thread = HandlerThread("ExoPlayerKernel").also { it.start() }
         val handler = Handler(thread.looper)
         mediaHandlerThread = thread

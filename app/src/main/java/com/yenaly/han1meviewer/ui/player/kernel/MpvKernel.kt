@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.ui.player.kernel
 
+import com.yenaly.han1meviewer.util.logHost
+
 import android.content.Context
 import android.net.Uri
 import android.os.Handler
@@ -334,7 +336,7 @@ class MpvKernel(
             Log.e(TAG, "视频链接为空")
             return
         }
-        Log.i(TAG, "URL Link = ${request.url.host}")
+        Log.i(TAG, "URL Link = ${request.url.logHost()}")
         MPVLib.setOptionString("force-window", "yes")
 
         val path = prepareUri(request.url.toUri()) ?: return
