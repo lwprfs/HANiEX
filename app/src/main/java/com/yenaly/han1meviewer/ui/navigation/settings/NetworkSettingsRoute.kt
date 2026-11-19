@@ -89,6 +89,7 @@ private fun rebuildAllNetworks() {
     runCatching { BuonduaNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork.rebuildNetwork() }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")

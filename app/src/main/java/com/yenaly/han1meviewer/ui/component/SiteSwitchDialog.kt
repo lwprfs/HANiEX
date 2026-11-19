@@ -166,6 +166,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         logoRes = R.drawable.s_switch_fullvideos,
         accentColor = Color(0xFF8AB4F8),
     ),
+    SiteSwitchOption(
+        name = "FuckingSession",
+        description = applicationContext.getString(R.string.site_fuckingsession_description),
+        siteType = SiteType.FUCKINGSESSION,
+        logoRes = R.drawable.s_switch_fuckingsession,
+        accentColor = Color(0xFFFF5A36),
+    ),
 )
 
 private const val SitesPerPage = 6

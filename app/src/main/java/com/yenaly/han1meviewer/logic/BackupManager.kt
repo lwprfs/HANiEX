@@ -30,6 +30,8 @@ import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleDatabase
 import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleHistoryEntity
 import com.yenaly.han1meviewer.FullVideos.data.local.FullVideosDatabase
 import com.yenaly.han1meviewer.FullVideos.data.local.FullVideosHistoryEntity
+import com.yenaly.han1meviewer.FuckingSession.data.local.FuckingSessionDatabase
+import com.yenaly.han1meviewer.FuckingSession.data.local.FuckingSessionHistoryEntity
 import com.yenaly.han1meviewer.logic.local.LocalPlaylist
 import com.yenaly.han1meviewer.logic.local.LocalPlaylistStore
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
@@ -73,6 +75,7 @@ object BackupManager {
         BUONDUA_HISTORY(R.string.backup_section_buondua_history, Group.DATA),
         COSPLAYTELE_HISTORY(R.string.backup_section_cosplaytele_history, Group.DATA),
         FULLVIDEOS_HISTORY(R.string.backup_section_fullvideos_history, Group.DATA),
+        FUCKINGSESSION_HISTORY(R.string.backup_section_fuckingsession_history, Group.DATA),
         LOCAL_PLAYLISTS(R.string.backup_section_local_playlists, Group.DATA),
         COOKIES_HANIME(R.string.backup_section_cookies_hanime, Group.COOKIES),
         COOKIES_MISSAV(R.string.backup_section_cookies_missav, Group.COOKIES),
@@ -125,6 +128,7 @@ object BackupManager {
         val buonduaHistories: List<BuonduaHistoryEntity>? = null,
         val cosplayteleHistories: List<CosplayteleHistoryEntity>? = null,
         val fullVideosHistories: List<FullVideosHistoryEntity>? = null,
+        val fuckingSessionHistories: List<FuckingSessionHistoryEntity>? = null,
         val localPlaylists: List<LocalPlaylist>? = null,
     )
 
@@ -281,6 +285,11 @@ object BackupManager {
                 deleteAll(); insertAll(it)
             }
         }
+        backup.fuckingSessionHistories?.takeIf { Section.FUCKINGSESSION_HISTORY in sections }?.let {
+            FuckingSessionDatabase.getInstance(context).fuckingSessionHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
         backup.localPlaylists?.takeIf { Section.LOCAL_PLAYLISTS in sections }?.let {
             LocalPlaylistStore.replaceAll(it)
         }
@@ -380,6 +389,8 @@ object BackupManager {
                 CosplayteleDatabase.getInstance(context).cosplayteleHistoryDao().getAllHistorySync() else null,
             fullVideosHistories = if (Section.FULLVIDEOS_HISTORY in sections)
                 FullVideosDatabase.getInstance(context).fullVideosHistoryDao().getAllHistorySync() else null,
+            fuckingSessionHistories = if (Section.FUCKINGSESSION_HISTORY in sections)
+                FuckingSessionDatabase.getInstance(context).fuckingSessionHistoryDao().getAllHistorySync() else null,
             localPlaylists = if (Section.LOCAL_PLAYLISTS in sections)
                 LocalPlaylistStore.playlists.value else null,
         )

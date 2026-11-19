@@ -7,6 +7,7 @@ import com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleImageLoader
 import com.yenaly.han1meviewer.HentaiMama.common.HentaiMamaImageLoader
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoImageLoader
 import com.yenaly.han1meviewer.FullVideos.common.FullVideosImageLoader
+import com.yenaly.han1meviewer.FuckingSession.common.FuckingSessionImageLoader
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SupJav.common.SupJavImageLoader
 import com.yenaly.han1meviewer.XHamster.common.XHamsterImageLoader
@@ -21,6 +22,7 @@ object SiteImageLoaders {
         SiteType.ROUVIDEO -> RouVideoImageLoader.get(context)
         SiteType.SUPJAV -> SupJavImageLoader.get(context)
         SiteType.FULLVIDEOS -> FullVideosImageLoader.get(context)
+        SiteType.FUCKINGSESSION -> FuckingSessionImageLoader.get(context)
         else -> null
     }
 

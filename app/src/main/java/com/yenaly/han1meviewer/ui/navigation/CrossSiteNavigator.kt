@@ -73,6 +73,7 @@ object CrossSiteNavigator {
         SiteType.BUONDUA -> "Buondua"
         SiteType.COSPLAYTELE -> "Cosplaytele"
         SiteType.FULLVIDEOS -> "FullVideos"
+        SiteType.FUCKINGSESSION -> "FuckingSession"
     }
 
     suspend fun validate(site: SiteType): Validation = when (site) {

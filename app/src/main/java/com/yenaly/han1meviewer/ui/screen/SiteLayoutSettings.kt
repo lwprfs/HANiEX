@@ -26,6 +26,7 @@ object SiteLayoutSettings {
         SiteType.XHAMSTER,
         SiteType.BUONDUA,
         SiteType.FULLVIDEOS,
+        SiteType.FUCKINGSESSION,
     )
 
     fun gridColumnsKey(site: SiteType): String = "site_${site.name.lowercase()}_grid_columns"
@@ -85,6 +86,7 @@ object SiteCardSettings {
         SiteType.ROUVIDEO,
         SiteType.XHAMSTER,
         SiteType.FULLVIDEOS,
+        SiteType.FUCKINGSESSION,
     )
 
     private var version by mutableIntStateOf(0)
@@ -262,7 +264,7 @@ object SiteImageSettings {
     val sites: Set<SiteType> = setOf(
         SiteType.MISSAV, SiteType.HENTAIMAMA, SiteType.ONAIR, SiteType.FAPFOLDER, SiteType.SUPJAV,
         SiteType.ROUVIDEO, SiteType.XHAMSTER, SiteType.BUONDUA, SiteType.COSPLAYTELE,
-        SiteType.FULLVIDEOS,
+        SiteType.FULLVIDEOS, SiteType.FUCKINGSESSION,
     )
 
     private var version by mutableIntStateOf(0)

@@ -32,6 +32,7 @@ object SiteCheckIn {
         SiteType.BUONDUA -> "buondua"
         SiteType.COSPLAYTELE -> "cosplaytele"
         SiteType.FULLVIDEOS -> "fullvideos"
+        SiteType.FUCKINGSESSION -> "fuckingsession"
     }
 
     fun dishCode(site: SiteType, code: String): String {
@@ -53,6 +54,7 @@ object SiteCheckIn {
             "buondua" -> SiteType.BUONDUA
             "cosplaytele" -> SiteType.COSPLAYTELE
             "fullvideos" -> SiteType.FULLVIDEOS
+            "fuckingsession" -> SiteType.FUCKINGSESSION
             else -> null
         }
     }
@@ -211,6 +213,18 @@ object SiteCheckIn {
                         releaseDate = 0L,
                         watchDate = it.watchDate,
                         videoCode = dishCode(SiteType.FULLVIDEOS, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
+            com.yenaly.han1meviewer.FuckingSession.data.local.FuckingSessionDatabase.getInstance(context)
+                .fuckingSessionHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.FUCKINGSESSION, it.videoCode),
                     )
                 }
         }

@@ -53,6 +53,7 @@ object DownloadLayout {
         SiteType.BUONDUA -> "Buondua"
         SiteType.COSPLAYTELE -> "Cosplaytele"
         SiteType.FULLVIDEOS -> "FullVideos"
+        SiteType.FUCKINGSESSION -> "FuckingSession"
     }
 
     fun segmentsFor(videoCode: String): List<String> {
@@ -186,6 +187,8 @@ object SiteDownloadClients {
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.FUCKINGSESSION -> runCatching { com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
             else -> ServiceCreator.downloadClient
         }
 
@@ -226,6 +229,11 @@ object SiteDownloadClients {
                 val referer = com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
+            }
+            SiteType.FUCKINGSESSION -> {
+                val referer = com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf("Referer" to referer)
             }
             SiteType.SUPJAV -> {
                 val referer = com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork

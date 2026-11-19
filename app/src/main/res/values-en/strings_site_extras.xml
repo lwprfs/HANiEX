@@ -23,4 +23,5 @@
     <string name="image_dl_delete_items_message">The selected photos and folders, including everything inside the folders, will be removed from your device.</string>
     <string name="image_dl_deleted_items">Deleted %1$s item(s)</string>
     <string name="backup_section_fullvideos_history">FullVideos watch history</string>
+    <string name="backup_section_fuckingsession_history">FuckingSession watch history</string>
 </resources>

@@ -150,6 +150,7 @@ fun MainActivityContent(
                 SiteType.BUONDUA -> d.isRoute("com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute")
                 SiteType.COSPLAYTELE -> d.isRoute("com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHomeRoute")
                 SiteType.FULLVIDEOS -> d.isRoute("com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosHomeRoute")
+                SiteType.FUCKINGSESSION -> d.isRoute("com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionHomeRoute")
                 else -> false
             }
         }

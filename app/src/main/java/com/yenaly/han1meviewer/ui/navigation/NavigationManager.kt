@@ -21,6 +21,9 @@ import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHomeRoute
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosHomeRoute
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosSearchRoute
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosVideoRoute
+import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionHomeRoute
+import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionSearchRoute
+import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionVideoRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplaytelePostRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute
@@ -128,6 +131,11 @@ object NavigationManager {
                             FullVideosVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
                         )
                     }
+                    SiteType.FUCKINGSESSION -> {
+                        navController.navigate(
+                            FuckingSessionVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "navigateToVideo failed: ${e.message}")
@@ -171,6 +179,9 @@ object NavigationManager {
                     }
                     SiteType.FULLVIDEOS -> {
                         navController.navigate(FullVideosSearchRoute(query = query))
+                    }
+                    SiteType.FUCKINGSESSION -> {
+                        navController.navigate(FuckingSessionSearchRoute(query = query))
                     }
                 }
             } catch (e: Exception) {
@@ -230,6 +241,10 @@ object NavigationManager {
                     SiteType.FULLVIDEOS -> {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(FullVideosHomeRoute) { launchSingleTop = true }
+                    }
+                    SiteType.FUCKINGSESSION -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(FuckingSessionHomeRoute) { launchSingleTop = true }
                     }
                 }
             } catch (e: Exception) {
@@ -309,6 +324,7 @@ object NavigationManager {
                 SiteType.BUONDUA -> destination.hasRoute(BuonduaHomeRoute::class)
                 SiteType.COSPLAYTELE -> destination.hasRoute(CosplayteleHomeRoute::class)
                 SiteType.FULLVIDEOS -> destination.hasRoute(FullVideosHomeRoute::class)
+                SiteType.FUCKINGSESSION -> destination.hasRoute(FuckingSessionHomeRoute::class)
             }
         } catch (e: Exception) {
             false

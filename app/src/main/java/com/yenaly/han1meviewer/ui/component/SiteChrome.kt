@@ -890,6 +890,7 @@ fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifi
         com.yenaly.han1meviewer.SiteType.BUONDUA -> R.drawable.s_switch_buondua
         com.yenaly.han1meviewer.SiteType.COSPLAYTELE -> R.drawable.s_switch_cosplaytele
         com.yenaly.han1meviewer.SiteType.FULLVIDEOS -> R.drawable.s_switch_fullvideos
+        com.yenaly.han1meviewer.SiteType.FUCKINGSESSION -> R.drawable.s_switch_fuckingsession
         else -> R.drawable.ic_baseline_h_chan_single_color
     }
     Image(

@@ -179,6 +179,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = true,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.FUCKINGSESSION,
+            displayName = "FuckingSession",
+            catalogKey = null,
+            defaultUrls = { listOf("https://fuckingsession.com") },
+            trailingSlash = false,
+            cloudflareFronted = true,
+        ),
     )
 
     val hubSites: List<HubSite>
