@@ -57,7 +57,7 @@ object FuckingSessionStreamResolver {
                 Log.w(TAG, "HTTP ${resp.code} for $embedUrl")
                 return emptyList()
             }
-            resp.body?.string().orEmpty()
+            resp.body.string()
         }
         if (html.isBlank()) return emptyList()
 

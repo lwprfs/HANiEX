@@ -686,6 +686,7 @@ private fun FuckingSessionVideoContent(
             }
             item(key = "related_grid") {
                 val relatedColumns = rememberVideoGridColumns()
+                val watched = com.yenaly.han1meviewer.FuckingSession.ui.home.rememberFuckingSessionWatched()
                 FlowRow(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -701,6 +702,8 @@ private fun FuckingSessionVideoContent(
                             aspectRatio = 16f / 9f,
                             duration = item.duration,
                             views = item.views,
+                            uploadTime = item.uploadTime,
+                            isWatched = item.videoCode in watched,
                             imageLoader = com.yenaly.han1meviewer.FuckingSession.common.FuckingSessionImageLoader
                                 .get(LocalContext.current),
                         )

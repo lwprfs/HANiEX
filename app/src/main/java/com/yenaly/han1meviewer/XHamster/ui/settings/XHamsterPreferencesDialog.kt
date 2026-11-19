@@ -160,8 +160,9 @@ fun XHamsterPreferencesDialog(onDismiss: () -> Unit) {
                                 .onSuccess { changed = true }.onFailure { failure = it }
                         }
                         applying = false
-                        if (failure != null) {
-                            error = failure?.message ?: "Could not apply settings"
+                        val failed = failure
+                        if (failed != null) {
+                            error = failed.message ?: "Could not apply settings"
                         } else {
                             if (changed) XHamsterSession.bump()
                             onDismiss()

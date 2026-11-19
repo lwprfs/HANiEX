@@ -119,23 +119,29 @@ object XHamsterRepo {
         withContext(Dispatchers.IO) {
             if (ids.isEmpty()) return@withContext emptyMap()
             val joined = ids.joinToString("%2C")
+            val chain = System.currentTimeMillis() / 1000
+            // Same query shapes the website uses for /api/v1/moments-by-id-list (always typed).
             val attempts = listOf(
-                "",
-                "&type=person-index&pageType=amateurPage",
-                "&type=channel-index&pageType=channelPage",
+                "&type=index&pageType=momentPage&isWithSettings=1",
+                "&type=gifs-best-ranking&pageType=gifsBestPage&order=rated&time-range=alltime&isWithSettings=1",
+                "&type=related&pageType=momentPage&momentId=${ids.first()}&isWithSettings=1",
             )
+            val browserLike = mapOf("Accept" to "*/*", "Referer" to referer)
             var last: Throwable? = null
             for (extra in attempts) {
                 val url = "${XHamsterConstants.BASE_URL}/api/v1/moments-by-id-list" +
-                        "?env=mobile&isWithSettings=0&checkPrivileges=1$extra&ids=$joined"
-                try {
-                    val response = XHamsterNetwork.service.getJson(url, ajaxHeaders(referer))
-                    if (!response.isSuccessful) throw IOException("HTTP ${response.code()}")
-                    val body = response.body()?.string() ?: throw IOException("Empty response")
-                    val parsed = XHamsterEntityParser.parseMomentsMeta(body)
-                    if (parsed.isNotEmpty()) return@withContext parsed
-                } catch (e: IOException) {
-                    last = e
+                        "?env=mobile&currentChain=&chainId=$chain$extra&checkPrivileges=1" +
+                        "&ids=$joined&xplayerVideoId=${ids.first()}"
+                for (headers in listOf(browserLike, ajaxHeaders(referer))) {
+                    try {
+                        val response = XHamsterNetwork.service.getJson(url, headers)
+                        if (!response.isSuccessful) throw IOException("HTTP ${response.code()}")
+                        val body = response.body()?.string() ?: throw IOException("Empty response")
+                        val parsed = XHamsterEntityParser.parseMomentsMeta(body)
+                        if (parsed.isNotEmpty()) return@withContext parsed
+                    } catch (e: IOException) {
+                        last = e
+                    }
                 }
             }
             throw last ?: IOException("No short video data")

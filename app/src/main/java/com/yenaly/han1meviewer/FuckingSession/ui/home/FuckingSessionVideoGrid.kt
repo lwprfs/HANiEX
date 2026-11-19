@@ -47,6 +47,7 @@ fun FuckingSessionVideoGrid(
     gridState: LazyGridState = rememberLazyGridState(),
 ) {
     val imageLoader = FuckingSessionImageLoader.get(LocalContext.current)
+    val watched = rememberFuckingSessionWatched()
     when {
         state.items.isEmpty() -> {
 
@@ -104,6 +105,8 @@ fun FuckingSessionVideoGrid(
                         views = video.views,
                         duration = video.duration,
                         reviews = video.reviews,
+                        uploadTime = video.uploadTime,
+                        isWatched = video.videoCode in watched,
                         imageLoader = imageLoader,
                     )
                 }

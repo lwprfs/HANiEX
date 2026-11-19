@@ -49,6 +49,25 @@ object XHamsterMomentsRepo {
             .header("X-Requested-With", "XMLHttpRequest")
             .header("x-csrf-token", "1")
 
+    /**
+     * The site's own player calls /api/v1/* with a bare same-origin fetch: only `Accept` and a
+     * `Referer`. Sending XHR-style headers (X-Requested-With / Origin / x-csrf-token) there gets a
+     * 404, so try the browser-like request first and only fall back to the XHR style.
+     */
+    private fun plainBuilder(url: String, referer: String): Request.Builder =
+        Request.Builder().url(url)
+            .header("Accept", "*/*")
+            .header("Referer", referer)
+
+    private fun runApi(url: String, referer: String): String =
+        try {
+            run(plainBuilder(url, referer).get().build())
+        } catch (e: IOException) {
+            if (e.message?.startsWith("HTTP 4") == true) {
+                run(builder(url, referer).get().build())
+            } else throw e
+        }
+
     private fun run(request: Request): String =
         XHamsterNetwork.sharedOkHttpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
@@ -70,8 +89,8 @@ object XHamsterMomentsRepo {
                 when (kind) {
                     Feed.SHORTS -> {
                         val url = "${base()}/api/v1/moments/?type=index&env=mobile&currentChain=" +
-                                "&page=$page&chainId=$chain&pageType=mainPage&checkPrivileges=1"
-                        val body = run(builder(url, "${base()}/shorts").get().build())
+                                "&page=$page&chainId=$chain&isWithSettings=1&pageType=mainPage&checkPrivileges=1"
+                        val body = runApi(url, "${base()}/shorts")
                         val parsed = XHamsterMomentsParser.parse(body)
                         FeedPage(parsed.items, parsed.hasNext && parsed.items.isNotEmpty())
                     }
@@ -93,7 +112,7 @@ object XHamsterMomentsRepo {
                         val url = "${base()}/api/v1/moments-by-id-list?type=gifs-best-ranking&env=mobile" +
                                 "&currentChain=&chainId=$chain&isWithSettings=1&pageType=gifsBestPage" +
                                 "&order=$order$range&checkPrivileges=1&ids=$ids&xplayerVideoId=${list.ids.first()}"
-                        val body = run(builder(url, pageUrl).get().build())
+                        val body = runApi(url, pageUrl)
                         val parsed = XHamsterMomentsParser.parse(body)
                         // Keep the site's own order.
                         val byId = parsed.items.associateBy { it.first.id }

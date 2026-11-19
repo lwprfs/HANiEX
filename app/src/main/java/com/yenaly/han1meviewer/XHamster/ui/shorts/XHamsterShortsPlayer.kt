@@ -108,11 +108,8 @@ import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.hls.HlsMediaSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.MergingMediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.SingleSampleMediaSource
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.XHamster.common.XHamsterFormat
 import com.yenaly.han1meviewer.XHamster.common.XHamsterImageLoader
@@ -309,24 +306,27 @@ fun XHamsterShortsPlayer(
 
         val meta = metas[short.id]
         val stream = meta?.streamUrl
-        val mediaItem = MediaItem.fromUri(stream ?: short.videoUrl)
-        val video: MediaSource = if (stream != null && stream.contains(".m3u8")) {
-            HlsMediaSource.Factory(dsFactory).createMediaSource(mediaItem)
-        } else {
-            ProgressiveMediaSource.Factory(dsFactory).createMediaSource(mediaItem)
-        }
         val track = subtitleLang?.let { lang -> meta?.subtitles?.firstOrNull { it.lang == lang } }
-        val source: MediaSource = if (track != null) {
-            val subtitle = SingleSampleMediaSource.Factory(dsFactory).createMediaSource(
-                MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
-                    .setMimeType(MimeTypes.TEXT_VTT)
-                    .setLanguage(track.lang)
-                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
-                    .build(),
-                C.TIME_UNSET,
-            )
-            MergingMediaSource(video, subtitle)
-        } else video
+        // DefaultMediaSourceFactory picks HLS / progressive from the item and merges a side-loaded
+        // subtitle track itself (SingleSampleMediaSource is deprecated for direct use).
+        val mediaItem = MediaItem.Builder()
+            .setUri(stream ?: short.videoUrl)
+            .apply {
+                if (stream != null && stream.contains(".m3u8")) setMimeType(MimeTypes.APPLICATION_M3U8)
+                if (track != null) {
+                    setSubtitleConfigurations(
+                        listOf(
+                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
+                                .setMimeType(MimeTypes.TEXT_VTT)
+                                .setLanguage(track.lang)
+                                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                .build()
+                        )
+                    )
+                }
+            }
+            .build()
+        val source: MediaSource = DefaultMediaSourceFactory(dsFactory).createMediaSource(mediaItem)
         player.volume = if (muted) 0f else 1f
         player.setMediaSource(source)
         player.prepare()
