@@ -31,6 +31,8 @@ data class HanimeVideo(
     @Transient val csrfToken: String? = null,
     @Transient val currentUserId: String? = null,
     @Transient val originalComic: String? = null,
+
+    @Transient val commentCount: Int? = null,
 ) {
 
     val ratingCount: Int?

@@ -169,7 +169,7 @@ class SearchViewModel(
                     duration != null || tags.isNotEmpty() || brands.isNotEmpty() || broad
             HAnalytics.logEvent(
                 FirebaseAnalytics.Event.SEARCH,
-                "has_query" to !query.isNullOrBlank(),  // never send the raw search text
+                "has_query" to !query.isNullOrBlank(),
                 FirebaseConstants.PARAM_SEARCH_TYPE to if (hasAdvancedFilters) "advanced" else "simple",
                 FirebaseConstants.PARAM_PAGE to page,
                 FirebaseConstants.PARAM_BROAD to broad,
@@ -188,7 +188,7 @@ class SearchViewModel(
                 if (state is PageLoadingState.Success) {
                     HAnalytics.logEvent(
                         FirebaseAnalytics.Event.VIEW_SEARCH_RESULTS,
-                        "has_query" to !query.isNullOrBlank(),  // never send the raw search text
+                        "has_query" to !query.isNullOrBlank(),
                         FirebaseConstants.PARAM_PAGE to page,
                         FirebaseConstants.PARAM_RESULT_COUNT to state.info.list.size,
                         FirebaseConstants.PARAM_TOTAL_PAGES to state.info.totalPages,

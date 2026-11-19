@@ -76,11 +76,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
-<<<<<<< HEAD
 import androidx.navigation.NavHostController
-=======
-import androidx.lifecycle.lifecycleScope
->>>>>>> upstream
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
@@ -134,7 +130,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     val viewModel: HomePageViewModel by viewModels()
 
-    lateinit var navigator: com.yenaly.han1meviewer.ui.navigation.Navigator
+    lateinit var navController: NavHostController
     val snackbarHostState = SnackbarHostState()
     private var showAuthGuard by mutableStateOf(true)
 
@@ -220,16 +216,12 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 onLogoutClick = { requestLogout(false) },
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { requestSiteSwitch() },
-<<<<<<< HEAD
                 onNavigateControllerReady = { controller ->
                     navController = controller
                     NavigationManager.initialize(controller, Preferences.siteType)
                     Log.d(TAG, "NavController initialized with site: ${Preferences.siteType}")
                 },
                 siteChangeKey = _siteChanged.value,
-=======
-                onNavigateControllerReady = { navigator = it },
->>>>>>> upstream
             )
 
             if (showSiteSelectDialog) {
@@ -638,7 +630,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        // Navigation 3 无 NavController.navigateUp；返回交给系统返回处理（NavDisplay）。
+
         return super.onSupportNavigateUp()
     }
 
@@ -662,83 +654,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         }
     }
 
-<<<<<<< HEAD
     @Composable
     private fun SiteSelectionDialog(
         onDismiss: () -> Unit,
         onSiteSelected: (SiteType) -> Unit,
-=======
-    fun requestSiteSwitch() {
-        showSiteSwitchConfirm = true
-    }
-
-    fun dismissSiteSwitch() {
-        showSiteSwitchConfirm = false
-    }
-
-    fun switchSite(targetUrl: String) {
-        showSiteSwitchConfirm = false
-        if (targetUrl == Preferences.baseUrl) return
-        // 站点切换埋点
-        HAnalytics.logEvent(
-            FirebaseConstants.EVENT_SITE_SWITCH,
-            FirebaseConstants.PARAM_FROM_URL to Preferences.baseUrl,
-            FirebaseConstants.PARAM_TO_URL to targetUrl,
-        )
-        Preferences.preferenceSp.edit(true) {
-            putString(SettingsPreferenceKeys.SELECTED_BASE_URL, targetUrl)
-            putString(SettingsPreferenceKeys.DOMAIN_NAME, targetUrl)
-        }
-        Handler(Looper.getMainLooper()).postDelayed({
-            ActivityManager.restart(killProcess = true)
-        }, 500)
-    }
-
-    fun gotoLoginActivity() {
-        val intent = Intent(this, LoginActivity::class.java)
-        loginDataLauncher.launch(intent)
-    }
-
-    fun requestLogout(closeCurrentPageOnConfirm: Boolean) {
-        logoutCloseCurrentPage = closeCurrentPageOnConfirm
-        showLogoutConfirm = true
-    }
-
-    fun dismissLogoutConfirm() {
-        showLogoutConfirm = false
-    }
-
-    fun confirmLogout() {
-        showLogoutConfirm = false
-        // 登出埋点
-        HAnalytics.logEvent(FirebaseConstants.EVENT_LOGOUT)
-        if (logoutCloseCurrentPage) {
-            navigator.goBack()
-        }
-        logoutWithRefresh()
-    }
-
-    fun logoutWithRefresh() {
-        logout()
-        viewModel.getHomePage()
-    }
-
-    fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
-        navigator.navigate(VideoRoute(videoCode, fileUri))
-    }
-
-    fun registerCurrentVideoHost(host: VideoPageHost?) {
-        currentVideoHost = host
-    }
-
-    private var onGranted: (() -> Unit)? = null
-    private var onDenied: (() -> Unit)? = null
-    private var onPermanentlyDenied: (() -> Unit)? = null
-    override fun requestStoragePermission(
-        onGranted: () -> Unit,
-        onDenied: () -> Unit,
-        onPermanentlyDenied: () -> Unit
->>>>>>> upstream
     ) {
         com.yenaly.han1meviewer.ui.theme.HanimeTheme {
             SiteSwitchDialog(

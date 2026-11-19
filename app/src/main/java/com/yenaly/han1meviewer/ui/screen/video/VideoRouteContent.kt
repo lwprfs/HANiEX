@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.application
+import kotlinx.coroutines.launch
 
 @Composable
 fun VideoRouteContent(
@@ -69,10 +70,32 @@ fun VideoRouteContent(
 
     LaunchedEffect(commentViewModel.code) {
         commentViewModel.getCommentIfNeeded(VIDEO_COMMENT_PREFIX, commentViewModel.code)
+
+        launch {
+            videoViewModel.hanimeVideoFlow.collect { video ->
+                val total = video?.commentCount
+                if (total != null && total > 0) {
+                    videoViewModel.setCommentBadgeCount(total)
+                }
+            }
+        }
         commentViewModel.videoCommentStateFlow.collect { state ->
             if (state is WebsiteState.Success) {
                 commentViewModel.currentUserId = state.info.currentUserId
-                videoViewModel.setCommentBadgeCount(state.info.videoComment.size)
+
+                val pageTotal = videoViewModel.hanimeVideoFlow.value?.commentCount
+                if (pageTotal == null || pageTotal <= 0) {
+                    videoViewModel.setCommentBadgeCount(state.info.videoComment.size)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(commentViewModel.code) {
+        commentViewModel.postCommentFlow.collect { state ->
+            val count = (state as? WebsiteState.Success)?.info?.commentCount
+            if (count != null && count > 0) {
+                videoViewModel.setCommentBadgeCount(count)
             }
         }
     }

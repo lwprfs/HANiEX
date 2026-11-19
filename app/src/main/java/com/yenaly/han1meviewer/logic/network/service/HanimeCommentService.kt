@@ -15,6 +15,8 @@ interface HanimeCommentService {
     suspend fun getComments(
         @Query("type") type: String,
         @Query("id") code: String,
+
+        @Query("offset") offset: Int? = null,
     ): Response<ResponseBody>
 
     @GET("loadReplies")
@@ -31,7 +33,7 @@ interface HanimeCommentService {
         @Field("comment-foreign-id") targetUserId: String,
         @Field("comment-text") text: String,
         @Field("comment-count") count: Int = 1,
-        @Field("comment-is-political") isPolitical: Int = 0,
+
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 
@@ -51,11 +53,11 @@ interface HanimeCommentService {
         @Field("foreign_type") foreignType: String,
         @Field("foreign_id") foreignId: String?,
         @Field("is_positive") isPositive: Int,
-        @Field("comment-like-user-id") likeUserId: String?,
         @Field("comment-likes-count") commentLikesCount: Int,
         @Field("comment-likes-sum") commentLikesSum: Int,
         @Field("like-comment-status") likeCommentStatus: Int,
         @Field("unlike-comment-status") unlikeCommentStatus: Int,
+
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 

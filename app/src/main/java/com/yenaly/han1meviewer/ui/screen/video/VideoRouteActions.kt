@@ -74,13 +74,13 @@ class VideoRouteActions(
             map.forEach { (key, value) -> put(key.name, value) }
         }
         val routeMap = bundleMap.mapValues { it.value.toString() }
-        (context as? MainActivity)?.navigator?.navigateSafely(
+        (context as? MainActivity)?.navController?.navigateSafely(
             SearchRoute(query = artist.name, advancedSearchJson = Json.encodeToString(routeMap))
         )
     }
 
     fun openTagSearch(tag: String) {
-        (context as? MainActivity)?.navigator?.navigateSafely(SearchRoute(query = tag))
+        (context as? MainActivity)?.navController?.navigateSafely(SearchRoute(query = tag))
     }
 
     fun toggleArtistSubscription(artist: HanimeVideo.Artist) {

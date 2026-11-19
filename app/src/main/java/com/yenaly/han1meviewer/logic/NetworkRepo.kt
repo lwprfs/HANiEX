@@ -414,10 +414,10 @@ object NetworkRepo {
         )
     }
 
-    fun getComments(type: String, code: String) = websiteIOFlow(
-        source = "comments",
-        request = { HanimeNetwork.commentService.getComments(type, code) },
-        action = Parser::comments
+    fun getComments(type: String, code: String, offset: Int? = null) = websiteIOFlow(
+        source = if (offset == null) "comments" else "comments_page",
+        request = { HanimeNetwork.commentService.getComments(type, code, offset) },
+        action = if (offset == null) Parser::comments else Parser::commentsPage
     )
 
     fun getCommentReply(commentId: String) = websiteIOFlow(
@@ -442,7 +442,8 @@ object NetworkRepo {
         }
     ) {
         Log.d("post_comment_body", "length=${it.length}")
-        return@websiteIOFlow WebsiteState.Success(Unit)
+
+        Parser.postCommentResponse(it)
     }
 
     fun postCommentReply(
@@ -458,7 +459,7 @@ object NetworkRepo {
         }
     ) {
         Log.d("post_comment_reply_body", "length=${it.length}")
-        return@websiteIOFlow WebsiteState.Success(Unit)
+        Parser.postReplyResponse(it)
     }
 
     fun likeComment(
@@ -466,7 +467,6 @@ object NetworkRepo {
         commentPlace: CommentPlace,
         foreignId: String?,
         isPositive: Boolean,
-        likeUserId: String?,
         commentLikesCount: Int,
         commentLikesSum: Int,
         likeCommentStatus: Boolean,
@@ -478,7 +478,7 @@ object NetworkRepo {
             HanimeNetwork.commentService.likeComment(
                 csrfToken, commentPlace.value, foreignId,
                 if (isPositive) 1 else 0,
-                likeUserId, commentLikesCount, commentLikesSum,
+                commentLikesCount, commentLikesSum,
                 if (likeCommentStatus) 1 else 0,
                 if (unlikeCommentStatus) 1 else 0
             )

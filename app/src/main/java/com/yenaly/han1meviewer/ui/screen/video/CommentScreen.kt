@@ -72,6 +72,7 @@ import com.yenaly.han1meviewer.util.safeSortedBy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
@@ -94,6 +95,9 @@ fun CommentScreen(
     onViewMoreReplies: (VideoComments.VideoComment) -> Unit,
     onSortChange: (CommentSortType) -> Unit,
     onComposeComment: (String) -> Unit,
+
+    canLoadMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     onCommentScrollChange: (Int, Int) -> Unit = { _, _ -> },
@@ -134,6 +138,20 @@ fun CommentScreen(
         sortComments(comments, sortType)
     }
     val showCommentFab by rememberCommentFabVisibility(listState)
+
+    LaunchedEffect(canLoadMore, listState) {
+        if (!canLoadMore) return@LaunchedEffect
+        snapshotFlow {
+            val info = listState.layoutInfo
+            NearEndState(
+                nearEnd = info.totalItemsCount > 0 &&
+                        (info.visibleItemsInfo.lastOrNull()?.index ?: -1) >= info.totalItemsCount - 4,
+                totalItemsCount = info.totalItemsCount,
+            )
+        }.distinctUntilChanged().collect { state ->
+            if (state.nearEnd) onLoadMore()
+        }
+    }
 
     LaunchedEffect(listState) {
         snapshotFlow {
@@ -508,3 +526,8 @@ private fun CommentScreenEmptyPreview() {
         onComposeComment = {},
     )
 }
+
+private data class NearEndState(
+    val nearEnd: Boolean,
+    val totalItemsCount: Int,
+)

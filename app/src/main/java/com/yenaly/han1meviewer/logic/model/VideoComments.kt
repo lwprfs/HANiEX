@@ -4,6 +4,9 @@ data class VideoComments(
     val videoComment: MutableList<VideoComment>,
     val currentUserId: String? = null,
     val csrfToken: String? = null,
+
+    val hasMoreComments: Boolean = false,
+    val nextCommentOffset: Int? = null,
 ) {
     data class VideoComment(
 
@@ -72,8 +75,6 @@ data class VideoComments(
             val foreignId: String? = null,
 
             var isPositive: Boolean = false,
-
-            val likeUserId: String? = null,
             var commentLikesCount: Int? = null,
             var commentLikesSum: Int? = null,
 
@@ -90,4 +91,13 @@ data class VideoCommentArgs(
 
     val isPositive: Boolean,
     val comment: VideoComments.VideoComment,
+)
+
+data class PostCommentResult(
+
+    val comment: VideoComments.VideoComment? = null,
+
+    val commentCount: Int? = null,
+
+    val parentCommentId: String? = null,
 )
