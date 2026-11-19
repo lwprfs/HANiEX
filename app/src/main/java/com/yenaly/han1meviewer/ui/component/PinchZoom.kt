@@ -10,6 +10,13 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
 
+/**
+ * Pinch-to-zoom + pan for fullscreen image viewers.
+ *
+ * The handler is always attached, so a pinch works from normal size (previously it only
+ * attached once the image was already zoomed, which made pinching impossible). With one finger at
+ * 1x nothing is consumed, so a surrounding pager can still swipe between images.
+ */
 fun Modifier.pinchZoomGestures(
     key: Any?,
     scale: () -> Float,

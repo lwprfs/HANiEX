@@ -11,6 +11,10 @@ object FuckingSessionConstants {
             listOf("fuckingsession.com"),
         )
 
+    /**
+     * A list entry point. [path] may carry a query string (e.g. `/category/anal?order=oldest`),
+     * which is re-attached after the `/page/N/` segment when the URL is built.
+     */
     data class Section(val key: String, val title: String, val path: String)
 
     val SECTIONS: List<Section> = listOf(
@@ -21,12 +25,14 @@ object FuckingSessionConstants {
         Section("asian-uncensored", "Asian Uncensored", "/category/asian-uncensored"),
     )
 
+    /** Sort orders offered by the WordPress archive pages (`?order=`). */
     val ORDERS: List<Section> = listOf(
         Section("newest", "Latest", ""),
         Section("oldest", "Oldest", "?order=oldest"),
         Section("most_commented", "Most Discussed", "?order=most_commented"),
     )
 
+    /** First path segments that are never a video page. */
     private val RESERVED_SEGMENTS = setOf(
         "category", "tag", "page", "author", "search", "feed", "comments", "wp-content",
         "wp-admin", "wp-includes", "wp-json", "wp-login.php", "xmlrpc.php", "sitemap.xml",
@@ -40,6 +46,7 @@ object FuckingSessionConstants {
         return base to query
     }
 
+    /** `/`, `/category/anal`, `/tag/hot?order=oldest` + page -> absolute URL. */
     fun pagedUrl(path: String, page: Int): String {
         val (base, query) = splitPath(path)
         val clean = base.trim('/').trim()
@@ -53,6 +60,7 @@ object FuckingSessionConstants {
         return if (page <= 1) "$BASE_URL/?s=$q" else "$BASE_URL/page/$page/?s=$q"
     }
 
+    /** A video "code" is the post slug: `https://host/<slug>/`. */
     fun codeFromUrl(url: String): String? {
         val path = runCatching { java.net.URI(url).path }.getOrNull().orEmpty()
         val segments = path.split('/').filter { it.isNotBlank() }

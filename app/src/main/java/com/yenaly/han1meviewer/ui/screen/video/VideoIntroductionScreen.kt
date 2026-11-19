@@ -970,7 +970,9 @@ private fun PlaylistBottomSheet(
     onDismiss: () -> Unit,
     onOpenVideo: (HanimeInfo) -> Unit,
 ) {
-
+    // 服务器合集数据偶发包含重复 videoCode 条目（首页 CategoryRow 已遭遇过同类问题），
+    // 本列表以 videoCode 为 LazyColumn key，重复条目会抛
+    // IllegalArgumentException: Key "xxx" was already used，先按 videoCode 去重。
     val uniquePlaylistVideos = remember(playlist) {
         playlist.video.distinctBy { it.videoCode }
     }

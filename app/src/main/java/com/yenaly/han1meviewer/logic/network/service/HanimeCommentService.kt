@@ -57,7 +57,6 @@ interface HanimeCommentService {
         @Field("comment-likes-sum") commentLikesSum: Int,
         @Field("like-comment-status") likeCommentStatus: Int,
         @Field("unlike-comment-status") unlikeCommentStatus: Int,
-
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 

@@ -107,7 +107,6 @@ fun ChildCommentScreen(
             when (replyState) {
                 is WebsiteState.Error -> snackbarHostState.showSnackbar(sendFailedText)
                 WebsiteState.Loading -> snackbarHostState.showSnackbar(sendingReplyText)
-
                 is WebsiteState.Success -> {
                     onRefresh()
                 }

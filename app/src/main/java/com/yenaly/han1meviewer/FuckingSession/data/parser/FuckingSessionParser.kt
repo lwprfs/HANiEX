@@ -9,6 +9,10 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
+/**
+ * fuckingsession.com is a WordPress site (Bimber/G1 theme). Lists are `<article class="entry-tpl-*">`
+ * cards, the pager is a `rel="next"` link and a video page embeds its player as an `<iframe>`.
+ */
 object FuckingSessionParser {
 
     private val DURATION_REGEX = Regex("""Duration:\s*(?:(\d{1,2}):)?(\d{1,3}):(\d{2})""", RegexOption.IGNORE_CASE)

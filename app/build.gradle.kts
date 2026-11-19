@@ -5,7 +5,6 @@ import Config.Version.source
 import Config.isRelease
 import Config.lastCommitSha
 import com.android.build.api.variant.impl.VariantOutputImpl
-import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -150,14 +149,7 @@ androidComponents {
     }
 }
 
-// PredictiveBackSanitizer overrides NavigationEventInput hooks that only exist in newer
-// navigationevent releases than the one navigation-compose pulls in transitively.
-// Added only when the version catalog defines it, so the build never breaks on a missing alias.
-val navigationEventCompose = extensions.getByType<VersionCatalogsExtension>()
-    .named("libs").findLibrary("androidx-navigationevent-compose")
-
 dependencies {
-    navigationEventCompose.ifPresent { implementation(it) }
     implementation(libs.appcompat)
     // 仅使用 WindowSizeClass 的断点常量（androidx.window.core.layout），
     // 无需完整的 window / window-java 库
@@ -188,6 +180,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.compose.ui.ui.tooling)
     implementation(libs.androidx.navigation.compose)
+    // PredictiveBackSanitizer overrides NavigationEventInput.onHasEnabledBackHandlersChanged and
+    // uses LocalNavigationEventDispatcherOwner; both need navigationevent >= 1.2.0-alpha04, newer
+    // than the version navigation-compose pulls in transitively.
+    implementation("androidx.navigationevent:navigationevent-compose:1.2.0")
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)

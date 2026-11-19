@@ -22,10 +22,15 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.util.UUID
 
+/**
+ * Reads and writes the account pages of the website (/my/edit/profile, /my/edit/privacy,
+ * /my/edit/password) with the same `x-api` model sync calls the site itself sends.
+ */
 object XHamsterAccountRepo {
 
     data class Choice(val value: String, val label: String)
 
+    /** One editable privacy row: a key of `userPrivacySettings` that has a `<key>List` of options. */
     data class PrivacyField(
         val key: String,
         val title: String,
@@ -113,6 +118,7 @@ object XHamsterAccountRepo {
     private fun humanize(key: String): String =
         key.replace(Regex("([a-z])([A-Z])"), "$1 $2").replaceFirstChar { it.uppercase() }
 
+    /** Id of the logged-in user, needed when posting comments. Cached for the session. */
     suspend fun currentUserId(): Long? {
         cachedUserId?.let { return it }
         if (!XHamsterNetwork.hasAuthCookies()) return null
@@ -127,6 +133,8 @@ object XHamsterAccountRepo {
     fun clearCache() {
         cachedUserId = null
     }
+
+    // ------------------------------------------------------------------ privacy
 
     private val PRIVACY_TITLES = mapOf(
         "pm" to "Who can message me",
@@ -189,6 +197,8 @@ object XHamsterAccountRepo {
             }
         }
 
+    // ----------------------------------------------------------------- password
+
     suspend fun changePassword(current: String, new: String): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
@@ -211,6 +221,8 @@ object XHamsterAccountRepo {
                 checkSync(sync(payload, base() + "/my/edit/password"), "Could not change password")
             }
         }
+
+    // ------------------------------------------------------------------ profile
 
     private fun choicesOf(el: JsonElement?): List<Choice> =
         (el as? JsonObject)?.mapNotNull { (k, v) ->

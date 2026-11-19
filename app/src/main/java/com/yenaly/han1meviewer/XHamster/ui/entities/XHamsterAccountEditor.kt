@@ -93,7 +93,7 @@ private fun ChoiceField(
                 disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),
         )
-
+        // Transparent click layer, because a disabled text field swallows clicks.
         Box(
             Modifier
                 .matchParentSize()
