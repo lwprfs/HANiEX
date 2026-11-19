@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="xh_acc_profile_edit">編輯個人資料</string>
+    <string name="xh_acc_username">使用者名稱</string>
+    <string name="xh_acc_username_locked">目前無法修改使用者名稱</string>
+    <string name="xh_acc_full_name">全名</string>
+    <string name="xh_acc_city">城市</string>
+    <string name="xh_acc_occupation">職業</string>
+    <string name="xh_acc_orientation">性取向</string>
+    <string name="xh_acc_relationship">感情狀態</string>
+    <string name="xh_acc_gender">性別</string>
+    <string name="xh_acc_save">儲存變更</string>
+    <string name="xh_acc_saved">已儲存</string>
+    <string name="xh_acc_save_failed">無法儲存：%1$s</string>
+    <string name="xh_acc_privacy_title">隱私</string>
+    <string name="xh_acc_password_title">變更密碼</string>
+    <string name="xh_acc_current_password">目前密碼</string>
+    <string name="xh_acc_new_password">新密碼</string>
+    <string name="xh_acc_confirm_password">確認新密碼</string>
+    <string name="xh_acc_password_mismatch">兩次密碼不一致</string>
+    <string name="xh_acc_password_short">請至少輸入 6 個字元</string>
+    <string name="xh_acc_password_done">密碼已變更</string>
+    <string name="xh_acc_open_web">在網站開啟</string>
+    <string name="xh_comments">留言</string>
+    <string name="xh_comment_hint">新增留言…</string>
+    <string name="xh_reply">回覆</string>
+    <string name="xh_replying_to">回覆 %1$s</string>
+    <string name="xh_comment_posted">已送出留言</string>
+    <string name="xh_comment_captcha">網站要求驗證碼，請至網站留言。</string>
+    <string name="xh_login_to_comment">登入後才能留言</string>
+    <string name="xh_no_comments">還沒有留言</string>
+    <string name="xh_comments_disabled">已關閉留言</string>
+    <string name="xh_comment_delete">刪除</string>
+    <string name="xh_comment_like">讚</string>
+    <string name="xh_comment_send">送出</string>
+    <string name="xh_comment_report">檢舉</string>
+    <string name="xh_gif_daily">今日</string>
+    <string name="xh_gif_weekly">本週</string>
+    <string name="xh_gif_monthly">本月</string>
+    <string name="xh_gif_alltime">全部時間</string>
+    <string name="xh_gif_newest">最新</string>
+    <string name="xh_zoom_hint">雙指縮放，雙擊還原</string>
+</resources>

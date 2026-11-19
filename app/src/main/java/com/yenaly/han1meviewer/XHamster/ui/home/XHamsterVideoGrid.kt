@@ -104,6 +104,7 @@ fun XHamsterVideoGrid(
                         views = video.views,
                         duration = video.duration,
                         subtitle = video.currentArtist?.takeIf { it.isNotBlank() },
+                        isWatched = video.watched == true,
                         imageLoader = imageLoader,
                     )
                 }

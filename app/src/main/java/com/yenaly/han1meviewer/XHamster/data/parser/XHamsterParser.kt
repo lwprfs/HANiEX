@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.longOrNull
@@ -92,6 +93,11 @@ object XHamsterParser {
             duration = XHamsterFormat.duration(o.lng("duration")),
             views = XHamsterFormat.count(o.lng("views")),
             itemType = HanimeInfo.NORMAL,
+            currentArtist = (o["landing"] as? JsonObject)?.str("name")
+                ?: (o["author"] as? JsonObject)?.str("name")
+                ?: (o["channel"] as? JsonObject)?.str("name")
+                ?: (o["creator"] as? JsonObject)?.str("name") ?: "",
+            watched = (o["isWatched"] as? kotlinx.serialization.json.JsonPrimitive)?.booleanOrNull ?: false,
         )
     }
 

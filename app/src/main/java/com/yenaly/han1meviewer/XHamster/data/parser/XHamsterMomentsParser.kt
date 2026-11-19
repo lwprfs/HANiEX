@@ -27,6 +27,32 @@ object XHamsterMomentsParser {
     private fun JsonObject.l(key: String) = (this[key] as? JsonPrimitive)?.longOrNull
     private fun JsonObject.b(key: String) = (this[key] as? JsonPrimitive)?.booleanOrNull
 
+    data class GifList(val ids: List<Long>, val hasNext: Boolean)
+
+    private fun findArray(el: JsonElement?, key: String): JsonArray? = when (el) {
+        is JsonObject -> (el[key] as? JsonArray) ?: el.values.firstNotNullOfOrNull { findArray(it, key) }
+        is JsonArray -> el.firstNotNullOfOrNull { findArray(it, key) }
+        else -> null
+    }
+
+    private fun findObject(el: JsonElement?, key: String): JsonObject? = when (el) {
+        is JsonObject -> (el[key] as? JsonObject) ?: el.values.firstNotNullOfOrNull { findObject(it, key) }
+        is JsonArray -> el.firstNotNullOfOrNull { findObject(it, key) }
+        else -> null
+    }
+
+    /** Ids (in site order) of the GIFs on a /gifs/... HTML page, plus whether another page exists. */
+    fun parseGifList(html: String): GifList {
+        val root = XHamsterParser.extractInitials(html) ?: return GifList(emptyList(), false)
+        val ids = findArray(root, "videoThumbProps").orEmpty()
+            .mapNotNull { (it as? JsonObject)?.l("id") }
+            .distinct()
+        val pg = findObject(root, "paginationProps")
+        val cur = pg?.l("currentPageNumber") ?: 1L
+        val last = pg?.l("lastPageNumber") ?: 1L
+        return GifList(ids, cur < last)
+    }
+
     fun parse(json: String): Page {
         val root = runCatching { Json.parseToJsonElement(json) }.getOrNull() as? JsonObject
             ?: return Page(emptyList(), false)
@@ -36,11 +62,12 @@ object XHamsterMomentsParser {
             val id = o.l("id") ?: return@forEach
             val sources = o.o("sources")
             val hls = sources?.o("hls")?.o("h264")?.s("url")
-            val progressive = sources?.o("standard")?.a("h264").orEmpty()
-                .mapNotNull { it as? JsonObject }
+            val stdList = sources?.o("standard")?.a("h264").orEmpty().mapNotNull { it as? JsonObject }
+            val autoUrl = stdList.firstOrNull { it.s("quality") == "auto" }?.s("url")
+            val progressive = stdList
                 .filter { it.s("quality") != "auto" }
                 .maxByOrNull { it.s("quality")?.filter(Char::isDigit)?.toIntOrNull() ?: 0 }
-                ?.s("url")
+                ?.s("url") ?: autoUrl
             val rating = o.o("ratingModel")
             val state = rating?.l("state") ?: 0L
             val landing = o.o("landing")
@@ -84,19 +111,18 @@ object XHamsterMomentsParser {
         androidx.core.text.HtmlCompat.fromHtml(html, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY)
             .toString().replace('\u00A0', ' ').trim()
 
+    /** Site comment JSON from /api/front/comment/list-by-cursor. Ids are hex strings. */
     fun parseComments(json: String): XHamsterShortComments {
-        val root = runCatching { Json.parseToJsonElement(json) }.getOrNull()
-        val first: JsonElement = (root as? JsonArray)?.firstOrNull()
-            ?: (root as? JsonObject)?.a("data")?.firstOrNull()
+        val root = runCatching { Json.parseToJsonElement(json) }.getOrNull() as? JsonObject
             ?: return XHamsterShortComments(emptyList(), null)
-        val obj = first as? JsonObject ?: return XHamsterShortComments(emptyList(), null)
-        val data = obj.a("responseData") ?: obj.a("data") ?: JsonArray(emptyList())
-        val items = data.mapNotNull { el ->
+        val items = root.a("items").orEmpty().mapNotNull { el ->
             val c = el as? JsonObject ?: return@mapNotNull null
-            val id = c.l("id") ?: return@mapNotNull null
+            val id = c.s("id") ?: return@mapNotNull null
             val text = plain(c.s("text") ?: c.s("textHtml") ?: return@mapNotNull null)
             if (text.isBlank()) return@mapNotNull null
+            if (c.b("isSpam") == true) return@mapNotNull null
             val author = c.o("author")
+            val replyTo = c.s("replyToId")
             XHamsterShortComment(
                 id = id,
                 author = author?.s("name") ?: c.s("name") ?: "User",
@@ -104,11 +130,20 @@ object XHamsterMomentsParser {
                 text = text,
                 likes = c.l("likes") ?: c.o("rating")?.l("likes") ?: 0L,
                 createdSeconds = c.l("created"),
-                isReply = (c.l("replyToId") ?: 0L) > 0L,
+                isReply = replyTo != null,
+                replyToId = replyTo,
+                replyToName = c.s("replyToUserName"),
+                authorPath = author?.s("pageUrl")?.substringAfter("xhamster.com", "")?.ifBlank { null },
+                editable = c.b("isEditable") == true,
             )
         }
-        val next = obj.o("extras")?.s("nextCursor")
-            ?: obj.o("extras")?.o("pagination")?.s("nextCursor")
-        return XHamsterShortComments(items, next)
+        val next = root.s("nextCursor")
+        val denied = root["denyWriteComment"]?.let { it !is kotlinx.serialization.json.JsonNull } == true
+        return XHamsterShortComments(
+            items = items,
+            nextCursor = next,
+            total = root.l("total") ?: items.size.toLong(),
+            writeDenied = denied,
+        )
     }
 }

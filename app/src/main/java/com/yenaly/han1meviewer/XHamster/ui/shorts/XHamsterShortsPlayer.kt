@@ -24,7 +24,26 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.media3.common.AudioAttributes
+import com.yenaly.han1meviewer.XHamster.data.model.XHamsterCommentResult
+import com.yenaly.han1meviewer.XHamster.ui.common.XHamsterCommentCard
+import com.yenaly.han1meviewer.XHamster.ui.common.XHamsterCommentComposer
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -114,7 +133,11 @@ private data class CommentsState(
     val loading: Boolean = false,
     val error: String? = null,
     val loaded: Boolean = false,
+    val total: Long? = null,
 )
+
+/** Mute choice survives closing and re-opening the player. */
+private var rememberedMuted = false
 
 @Composable
 private fun RailButton(
@@ -162,7 +185,11 @@ fun XHamsterShortsPlayer(
     val loginRequired = stringResource(R.string.xhamster_login_required)
     val scope = rememberCoroutineScope()
 
-    var muted by remember { mutableStateOf(false) }
+    var showHeart by remember { mutableStateOf(false) }
+    var muted by remember { mutableStateOf(rememberedMuted) }
+    var heartTick by remember { mutableIntStateOf(0) }
+    var replyTo by remember { mutableStateOf<XHamsterShortComment?>(null) }
+    var sendingComment by remember { mutableStateOf(false) }
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
     val metas = remember { mutableStateMapOf<Long, XHamsterShortMeta>().also { it.putAll(initialMetas) } }
@@ -176,10 +203,20 @@ fun XHamsterShortsPlayer(
     val commentStates = remember { mutableStateMapOf<Long, CommentsState>() }
 
     val player = remember {
-        ExoPlayer.Builder(context).build().apply {
-            repeatMode = Player.REPEAT_MODE_ONE
-            playWhenReady = true
-        }
+        ExoPlayer.Builder(context)
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .build(),
+                /* handleAudioFocus = */ true,
+            )
+            .setHandleAudioBecomingNoisy(true)
+            .build().apply {
+                repeatMode = Player.REPEAT_MODE_ONE
+                playWhenReady = true
+                volume = if (rememberedMuted) 0f else 1f
+            }
     }
     val dsFactory = remember {
         DefaultDataSource.Factory(context, OkHttpDataSource.Factory(XHamsterNetwork.streamClient))
@@ -206,7 +243,37 @@ fun XHamsterShortsPlayer(
         }
     }
 
-    LaunchedEffect(muted) { player.volume = if (muted) 0f else 1f }
+    // Never keep playing (and making sound) while the app is in the background.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, player) {
+        var resume = false
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_PAUSE -> {
+                    resume = player.playWhenReady
+                    player.pause()
+                }
+
+                Lifecycle.Event.ON_RESUME -> if (resume) player.play()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    LaunchedEffect(heartTick) {
+        if (heartTick > 0) {
+            showHeart = true
+            delay(650)
+            showHeart = false
+        }
+    }
+
+    LaunchedEffect(muted) {
+        rememberedMuted = muted
+        player.volume = if (muted) 0f else 1f
+    }
 
     LaunchedEffect(player) {
         while (true) {
@@ -216,20 +283,27 @@ fun XHamsterShortsPlayer(
         }
     }
 
+    val currentItems by rememberUpdatedState(items)
     var loadedShortId by remember { mutableStateOf<Long?>(null) }
-    LaunchedEffect(pagerState.currentPage, items.size, subtitleLang) {
+    // Keyed on the page and subtitle only: growing the list (load more) must not restart playback.
+    LaunchedEffect(pagerState.currentPage, subtitleLang) {
         val page = pagerState.currentPage
-        val short = items.getOrNull(page) ?: return@LaunchedEffect
+        val short = currentItems.getOrNull(page) ?: return@LaunchedEffect
         val sameShort = loadedShortId == short.id
         val resumeAt = if (sameShort) player.currentPosition else 0L
         if (!sameShort) {
+            // Silence the previous short right away; fetching metadata can take a while and
+            // the old audio used to keep playing over the new page.
+            player.pause()
+            player.stop()
+            player.clearMediaItems()
             failed = false
             progress = 0f
             cueText = ""
         }
 
         if (metas[short.id] == null) {
-            val batch = items.drop(page).take(6).map { it.id }.filter { it !in metas }
+            val batch = currentItems.drop(page).take(6).map { it.id }.filter { it !in metas }
             XHamsterRepo.shortMetas(batch, referer).onSuccess { metas.putAll(it) }
         }
 
@@ -253,12 +327,15 @@ fun XHamsterShortsPlayer(
             )
             MergingMediaSource(video, subtitle)
         } else video
+        player.volume = if (muted) 0f else 1f
         player.setMediaSource(source)
         player.prepare()
         if (resumeAt > 0) player.seekTo(resumeAt)
         player.play()
         loadedShortId = short.id
-        if (hasMore && page >= items.size - 3) onLoadMore()
+    }
+    LaunchedEffect(pagerState.currentPage, items.size) {
+        if (hasMore && pagerState.currentPage >= items.size - 3) onLoadMore()
     }
     LaunchedEffect(failed) { if (failed) GlobalToasts.show(failedMsg, level = GlobalToasts.ToastLevel.ERROR) }
 
@@ -282,6 +359,7 @@ fun XHamsterShortsPlayer(
                         items = (known + page.items).distinctBy { it.id },
                         cursor = page.nextCursor,
                         loaded = true,
+                        total = page.total,
                     )
                 }
                 .onFailure {
@@ -301,6 +379,62 @@ fun XHamsterShortsPlayer(
         }
     }
 
+    fun likeShort(short: XHamsterShort, onlyLike: Boolean) {
+        withMeta(short, "like") { cur ->
+            if (onlyLike && cur.liked) return@withMeta
+            val ref = short.pageUrl.ifBlank { referer }
+            val result = if (cur.liked) XHamsterMomentsRepo.undoRate(short.id, ref)
+            else XHamsterMomentsRepo.rate(short.id, true, ref)
+            result.onSuccess {
+                metas[short.id] = if (cur.liked) cur.copy(
+                    liked = false, likes = (cur.likes - 1).coerceAtLeast(0),
+                ) else cur.copy(
+                    liked = true, likes = cur.likes + 1,
+                    disliked = false,
+                    dislikes = if (cur.disliked) (cur.dislikes - 1).coerceAtLeast(0) else cur.dislikes,
+                )
+            }.onFailure(::toastError)
+        }
+    }
+
+    val captchaMsg = stringResource(R.string.xh_comment_captcha)
+    val postedMsg = stringResource(R.string.xh_comment_posted)
+
+    fun sendComment(short: XHamsterShort, text: String) {
+        if (sendingComment) return
+        sendingComment = true
+        val target = replyTo
+        scope.launch {
+            val result = XHamsterMomentsRepo.postComment(
+                videoId = short.id,
+                text = text,
+                replyToId = target?.id,
+                replyToName = target?.author,
+                watchId = java.util.UUID.randomUUID().toString(),
+                referer = short.pageUrl.ifBlank { referer },
+            )
+            when (result) {
+                XHamsterCommentResult.Posted -> {
+                    GlobalToasts.show(postedMsg, level = GlobalToasts.ToastLevel.SUCCESS)
+                    replyTo = null
+                    metas[short.id]?.let { metas[short.id] = it.copy(commentsCount = it.commentsCount + 1) }
+                    commentStates.remove(short.id)
+                    loadComments(short, false)
+                }
+
+                XHamsterCommentResult.LoginRequired ->
+                    GlobalToasts.show(loginRequired, level = GlobalToasts.ToastLevel.ERROR)
+
+                XHamsterCommentResult.CaptchaRequired ->
+                    GlobalToasts.show(captchaMsg, level = GlobalToasts.ToastLevel.WARNING)
+
+                is XHamsterCommentResult.Rejected ->
+                    GlobalToasts.show(result.message ?: "Failed", level = GlobalToasts.ToastLevel.ERROR)
+            }
+            sendingComment = false
+        }
+    }
+
     BackHandler {
         if (commentsFor != null) commentsFor = null else onDismiss()
     }
@@ -314,6 +448,10 @@ fun XHamsterShortsPlayer(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
                 beyondViewportPageCount = 0,
+                flingBehavior = PagerDefaults.flingBehavior(
+                    state = pagerState,
+                    pagerSnapDistance = PagerSnapDistance.atMost(1),
+                ),
                 userScrollEnabled = commentsFor == null,
             ) { page ->
                 val short = items[page]
@@ -331,8 +469,14 @@ fun XHamsterShortsPlayer(
                     )
                     if (pagerState.currentPage == page) {
                         AndroidView(
-                            modifier = Modifier.fillMaxSize().clickable {
-                                if (player.isPlaying) player.pause() else player.play()
+                            modifier = Modifier.fillMaxSize().pointerInput(short.id) {
+                                detectTapGestures(
+                                    onTap = { if (player.isPlaying) player.pause() else player.play() },
+                                    onDoubleTap = {
+                                        heartTick++
+                                        likeShort(short, onlyLike = true)
+                                    },
+                                )
                             },
                             factory = { ctx -> TextureView(ctx).also { player.setVideoTextureView(it) } },
                             onRelease = { player.clearVideoTextureView(it) },
@@ -341,6 +485,18 @@ fun XHamsterShortsPlayer(
                             Icon(
                                 Icons.Filled.PlayArrow, null, tint = Color.White.copy(alpha = 0.85f),
                                 modifier = Modifier.size(72.dp),
+                            )
+                        }
+                        AnimatedVisibility(
+                            visible = heartTick > 0 && showHeart,
+                            enter = scaleIn(initialScale = 0.4f) + fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_baseline_favorite_24),
+                                contentDescription = null,
+                                tint = Color(0xFFFF4D6D),
+                                modifier = Modifier.size(110.dp),
                             )
                         }
                         if (cueText.isNotBlank()) {
@@ -412,25 +568,15 @@ fun XHamsterShortsPlayer(
                         }
 
                         RailButton(
-                            onClick = {
-                                withMeta(short, "like") { cur ->
-                                    val result = if (cur.liked) XHamsterMomentsRepo.undoRate(short.id, short.pageUrl.ifBlank { referer })
-                                    else XHamsterMomentsRepo.rate(short.id, true, short.pageUrl.ifBlank { referer })
-                                    result.onSuccess {
-                                        metas[short.id] = if (cur.liked) cur.copy(
-                                            liked = false, likes = (cur.likes - 1).coerceAtLeast(0),
-                                        ) else cur.copy(
-                                            liked = true, likes = cur.likes + 1,
-                                            disliked = false,
-                                            dislikes = if (cur.disliked) (cur.dislikes - 1).coerceAtLeast(0) else cur.dislikes,
-                                        )
-                                    }.onFailure(::toastError)
-                                }
-                            },
+                            onClick = { likeShort(short, onlyLike = false) },
                             label = meta?.likes?.let { XHamsterFormat.count(it) } ?: "",
                         ) {
                             Icon(
-                                Icons.Filled.ThumbUp, stringResource(R.string.xhamster_short_like),
+                                painter = painterResource(
+                                    if (meta?.liked == true) R.drawable.ic_baseline_thumb_up_alt_24
+                                    else R.drawable.ic_baseline_thumb_up_off_alt_24,
+                                ),
+                                contentDescription = stringResource(R.string.xhamster_short_like),
                                 tint = if (meta?.liked == true) Color(0xFF4DA3FF) else Color.White,
                             )
                         }
@@ -454,7 +600,11 @@ fun XHamsterShortsPlayer(
                             label = null,
                         ) {
                             Icon(
-                                Icons.Filled.ThumbDown, "Dislike",
+                                painter = painterResource(
+                                    if (meta?.disliked == true) R.drawable.ic_baseline_thumb_down_alt_24
+                                    else R.drawable.ic_baseline_thumb_down_off_alt_24,
+                                ),
+                                contentDescription = "Dislike",
                                 tint = if (meta?.disliked == true) Color(0xFFFFB84D) else Color.White,
                             )
                         }
@@ -470,8 +620,11 @@ fun XHamsterShortsPlayer(
                             label = null,
                         ) {
                             Icon(
-                                if (meta?.favorite == true) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                "Love",
+                                painter = painterResource(
+                                    if (meta?.favorite == true) R.drawable.ic_baseline_favorite_24
+                                    else R.drawable.ic_baseline_favorite_border_24,
+                                ),
+                                contentDescription = "Love",
                                 tint = if (meta?.favorite == true) Color(0xFFFF4D6D) else Color.White,
                             )
                         }
@@ -483,7 +636,7 @@ fun XHamsterShortsPlayer(
                             },
                             label = meta?.commentsCount?.takeIf { it > 0 }?.let { XHamsterFormat.count(it) } ?: "",
                         ) {
-                            Icon(Icons.Filled.ChatBubble, "Comments", tint = Color.White)
+                            Icon(painterResource(R.drawable.ic_baseline_comment_24), stringResource(R.string.xh_comments), tint = Color.White)
                         }
                     }
                 }
@@ -514,8 +667,9 @@ fun XHamsterShortsPlayer(
                 IconButton(
                     onClick = { showReport = true },
                     modifier = Modifier.background(Color.Black.copy(alpha = 0.55f), CircleShape),
-                ) { Icon(Icons.Filled.Flag, "Report", tint = Color.White) }
-                IconButton(
+                ) { Icon(painterResource(R.drawable.ic_baseline_report_24), "Report", tint = Color.White) }
+                val isGif = items.getOrNull(pagerState.currentPage)?.pageUrl?.contains("/gifs/") == true
+                if (!isGif) IconButton(
                     onClick = { muted = !muted },
                     modifier = Modifier.background(Color.Black.copy(alpha = 0.55f), CircleShape),
                 ) {
@@ -552,85 +706,113 @@ fun XHamsterShortsPlayer(
                         .clickable(indication = null, interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }) { commentsFor = null },
                 )
                 Surface(
-                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(0.62f),
+                    modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth().fillMaxHeight(0.74f),
                     shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
                     color = MaterialTheme.colorScheme.surface,
                 ) {
-                    Column(Modifier.navigationBarsPadding()) {
+                    Column(Modifier.navigationBarsPadding().imePadding()) {
                         Row(
                             Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            val count = metas[short.id]?.commentsCount ?: state.items.size.toLong()
-                            Text("Comments  $count", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-                            IconButton(onClick = { commentsFor = null }) { Icon(Icons.Filled.Close, "Close") }
+                            val count = state.total ?: metas[short.id]?.commentsCount ?: state.items.size.toLong()
+                            Text(
+                                stringResource(R.string.xh_comments) + "  " + count,
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            IconButton(onClick = { commentsFor = null }) {
+                                Icon(painterResource(R.drawable.ic_baseline_close_24), "Close")
+                            }
                         }
-                        when {
-                            state.loading && state.items.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
-                            }
+                        Box(Modifier.weight(1f).fillMaxWidth()) {
+                            when {
+                                state.loading && state.items.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
 
-                            state.error != null && state.items.isEmpty() -> Column(
-                                Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center,
-                            ) {
-                                Text(state.error, color = MaterialTheme.colorScheme.error)
-                                TextButton(onClick = { commentStates.remove(short.id); loadComments(short, false) }) { Text("Retry") }
-                            }
+                                state.error != null && state.items.isEmpty() -> Column(
+                                    Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center,
+                                ) {
+                                    Text(state.error, color = MaterialTheme.colorScheme.error)
+                                    TextButton(onClick = { commentStates.remove(short.id); loadComments(short, false) }) { Text("Retry") }
+                                }
 
-                            state.items.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(
-                                    if (metas[short.id]?.commentsDisabled == true) "Comments are disabled for this video"
-                                    else "No comments yet",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                )
-                            }
-
-                            else -> LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
-                                items(state.items, key = { it.id }) { c ->
-                                    Row(
-                                        Modifier.fillMaxWidth().padding(
-                                            start = if (c.isReply) 48.dp else 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp,
+                                state.items.isEmpty() -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(
+                                        stringResource(
+                                            if (metas[short.id]?.commentsDisabled == true) R.string.xh_comments_disabled
+                                            else R.string.xh_no_comments,
                                         ),
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    ) {
-                                        RetryableImage(
-                                            model = c.avatarUrl.orEmpty(),
-                                            modifier = Modifier.size(32.dp).clip(CircleShape),
-                                            placeholder = painterResource(R.drawable.h_chan_loading),
-                                            error = painterResource(R.drawable.h_chan_load_failed),
-                                            contentScale = ContentScale.Crop,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                    )
+                                }
+
+                                else -> LazyColumn(
+                                    state = listState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    items(state.items, key = { it.id }) { c ->
+                                        XHamsterCommentCard(
+                                            author = c.author,
+                                            avatarUrl = c.avatarUrl,
+                                            text = c.text,
+                                            createdSeconds = c.createdSeconds,
+                                            likes = c.likes,
+                                            liked = c.likedByMe,
+                                            isReply = c.isReply,
+                                            replyToName = c.replyToName,
                                             imageLoader = imageLoader,
-                                        )
-                                        Column(Modifier.weight(1f)) {
-                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                                Text(c.author, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
-                                                c.createdSeconds?.let {
-                                                    Text(
-                                                        DateUtils.getRelativeTimeSpanString(
-                                                            it * 1000, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS,
-                                                        ).toString(),
-                                                        style = MaterialTheme.typography.labelSmall,
-                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    )
+                                            onReply = { replyTo = c },
+                                            onLike = {
+                                                if (!XHamsterNetwork.hasAuthCookies()) {
+                                                    GlobalToasts.show(loginRequired, level = GlobalToasts.ToastLevel.ERROR)
+                                                } else if (!c.likedByMe) scope.launch {
+                                                    XHamsterMomentsRepo.likeComment(short.id, c.id, short.pageUrl.ifBlank { referer })
+                                                        .onSuccess {
+                                                            val cur = commentStates[short.id] ?: return@onSuccess
+                                                            commentStates[short.id] = cur.copy(
+                                                                items = cur.items.map {
+                                                                    if (it.id == c.id) it.copy(likedByMe = true, likes = it.likes + 1) else it
+                                                                },
+                                                            )
+                                                        }.onFailure(::toastError)
                                                 }
-                                            }
-                                            Text(c.text, style = MaterialTheme.typography.bodyMedium)
-                                            if (c.likes > 0) {
-                                                Text(
-                                                    "👍 ${c.likes}", style = MaterialTheme.typography.labelSmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                )
-                                            }
+                                            },
+                                            onDelete = if (c.editable) ({
+                                                scope.launch {
+                                                    XHamsterMomentsRepo.deleteComment(short.id, c.id, short.pageUrl.ifBlank { referer })
+                                                        .onSuccess {
+                                                            val cur = commentStates[short.id] ?: return@onSuccess
+                                                            commentStates[short.id] = cur.copy(items = cur.items.filter { it.id != c.id })
+                                                        }.onFailure(::toastError)
+                                                }
+                                            }) else null,
+                                            onReport = if (c.editable) null else ({ showReport = true }),
+                                        )
+                                    }
+                                    if (state.loading) item {
+                                        Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
+                                            CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
                                         }
                                     }
                                 }
-                                if (state.loading) item {
-                                    Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                                        CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                                    }
-                                }
                             }
+                        }
+                        if (metas[short.id]?.commentsDisabled != true) {
+                            XHamsterCommentComposer(
+                                replyingTo = replyTo?.author,
+                                sending = sendingComment,
+                                enabled = XHamsterNetwork.hasAuthCookies(),
+                                onCancelReply = { replyTo = null },
+                                onSend = { sendComment(short, it) },
+                                onNeedLogin = {
+                                    GlobalToasts.show(loginRequired, level = GlobalToasts.ToastLevel.ERROR)
+                                },
+                            )
                         }
                     }
                 }

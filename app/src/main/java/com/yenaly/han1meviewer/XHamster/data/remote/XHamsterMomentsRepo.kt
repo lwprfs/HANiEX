@@ -2,10 +2,18 @@ package com.yenaly.han1meviewer.XHamster.data.remote
 
 import com.yenaly.han1meviewer.XHamster.common.XHamsterConstants
 import com.yenaly.han1meviewer.XHamster.common.XHamsterSession
+import com.yenaly.han1meviewer.XHamster.data.model.XHamsterCommentResult
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShort
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortComments
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortMeta
 import com.yenaly.han1meviewer.XHamster.data.parser.XHamsterMomentsParser
+import com.yenaly.han1meviewer.XHamster.data.model.XHamsterEngagement
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.buildJsonArray
@@ -47,45 +55,143 @@ object XHamsterMomentsRepo {
             response.body.string()
         }
 
-    suspend fun feed(kind: Feed, page: Int, timeRange: String = "weekly"): Result<FeedPage> =
+    /** Time ranges the site offers for "best GIFs". */
+    val gifRanges = listOf("daily", "weekly", "monthly", "alltime")
+
+    private fun gifListUrl(range: String, page: Int): String {
+        val path = if (range == "newest") "/gifs/newest" else "/gifs/best/${range.ifBlank { "alltime" }}"
+        return base() + path + if (page > 1) "/$page" else ""
+    }
+
+    suspend fun feed(kind: Feed, page: Int, timeRange: String = "alltime"): Result<FeedPage> =
         withContext(Dispatchers.IO) {
             runCatching {
                 val chain = System.currentTimeMillis() / 1000
-                val url = when (kind) {
-                    Feed.SHORTS -> "${base()}/api/v1/moments/?type=index&env=mobile&currentChain=" +
-                            "&page=$page&chainId=$chain&pageType=mainPage&checkPrivileges=1"
+                when (kind) {
+                    Feed.SHORTS -> {
+                        val url = "${base()}/api/v1/moments/?type=index&env=mobile&currentChain=" +
+                                "&page=$page&chainId=$chain&pageType=mainPage&checkPrivileges=1"
+                        val body = run(builder(url, "${base()}/shorts").get().build())
+                        val parsed = XHamsterMomentsParser.parse(body)
+                        FeedPage(parsed.items, parsed.hasNext && parsed.items.isNotEmpty())
+                    }
 
-                    Feed.GIFS -> "${base()}/api/v1/moments-by-id-list?type=gifs-best-ranking&env=mobile" +
-                            "&currentChain=&chainId=$chain&isWithSettings=1&pageType=gifsBestPage" +
-                            "&order=rated&time-range=$timeRange&page=$page&checkPrivileges=1"
+                    // The site lists GIFs in the HTML page and only then asks the API for the
+                    // stream details of exactly those ids (the API has no paging of its own).
+                    Feed.GIFS -> {
+                        val pageUrl = gifListUrl(timeRange, page)
+                        val html = run(
+                            Request.Builder().url(pageUrl)
+                                .header("Accept", "text/html,application/xhtml+xml,*/*")
+                                .header("Referer", "${base()}/gifs").build()
+                        )
+                        val list = XHamsterMomentsParser.parseGifList(html)
+                        if (list.ids.isEmpty()) return@runCatching FeedPage(emptyList(), false)
+                        val order = if (timeRange == "newest") "added" else "rated"
+                        val range = if (timeRange == "newest") "" else "&time-range=${timeRange.ifBlank { "alltime" }}"
+                        val ids = URLEncoder.encode(list.ids.joinToString(","), "UTF-8")
+                        val url = "${base()}/api/v1/moments-by-id-list?type=gifs-best-ranking&env=mobile" +
+                                "&currentChain=&chainId=$chain&isWithSettings=1&pageType=gifsBestPage" +
+                                "&order=$order$range&checkPrivileges=1&ids=$ids&xplayerVideoId=${list.ids.first()}"
+                        val body = run(builder(url, pageUrl).get().build())
+                        val parsed = XHamsterMomentsParser.parse(body)
+                        // Keep the site's own order.
+                        val byId = parsed.items.associateBy { it.first.id }
+                        val ordered = list.ids.mapNotNull { byId[it] }.ifEmpty { parsed.items }
+                        FeedPage(ordered, list.hasNext && ordered.isNotEmpty())
+                    }
                 }
-                val referer = if (kind == Feed.GIFS) "${base()}/gifs" else "${base()}/shorts"
-                val body = run(builder(url, referer).get().build())
-                val parsed = XHamsterMomentsParser.parse(body)
-                FeedPage(parsed.items, parsed.hasNext && parsed.items.isNotEmpty())
             }
         }
 
+    /** Loads comments exactly like the website: /api/front/comment/list-by-cursor. */
     suspend fun comments(videoId: Long, cursor: String?, referer: String): Result<XHamsterShortComments> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val request = buildJsonArray {
-                    add(buildJsonObject {
-                        put("name", "entityCommentCollectionByCursorFetch")
-                        put("requestData", buildJsonObject {
-                            if (cursor == null) put("cursor", JsonNull) else put("cursor", cursor)
-                            put("count", 10)
-                            put("entity", buildJsonObject {
-                                put("entityModel", "videoModel")
-                                put("entityID", videoId)
-                            })
-                        })
-                    })
-                }.toString()
-                val url = "${base()}/x-api?r=${URLEncoder.encode(request, "UTF-8")}&_=${System.currentTimeMillis()}"
+                val url = "${base()}/api/front/comment/list-by-cursor?entityModel=videoModel" +
+                        "&entityId=$videoId&spamFolder=0&cursor=${URLEncoder.encode(cursor ?: "0", "UTF-8")}" +
+                        "&count=10&checkPrivileges=1"
                 XHamsterMomentsParser.parseComments(run(builder(url, referer).get().build()))
             }
         }
+
+    private val xapiJson = Json { ignoreUnknownKeys = true; isLenient = true }
+
+    private fun postXApi(payload: String, referer: String): String =
+        XHamsterNetwork.sharedOkHttpClient.newCall(
+            builder("${base()}/x-api", referer).post(payload.toRequestBody(TEXT_TYPE)).build()
+        ).execute().use { it.body.string() }
+
+    private fun syncOk(body: String): Boolean {
+        val extras = ((runCatching { xapiJson.parseToJsonElement(body) }.getOrNull() as? JsonArray)
+            ?.firstOrNull() as? JsonObject)?.get("extras") as? JsonObject
+        val result = (extras?.get("result") as? JsonPrimitive)?.booleanOrNull
+        return result != false
+    }
+
+    /** Posts a comment (or reply) on a short / GIF through the shared video comment endpoint. */
+    suspend fun postComment(
+        videoId: Long,
+        text: String,
+        replyToId: String?,
+        replyToName: String?,
+        watchId: String?,
+        referer: String,
+    ): XHamsterCommentResult {
+        val userId = XHamsterAccountRepo.currentUserId()
+        return XHamsterUserRepo.postComment(
+            entityModel = "videoModel",
+            entityId = videoId,
+            text = text,
+            replyToId = replyToId,
+            replyToName = replyToName,
+            engagement = XHamsterEngagement(
+                entityId = videoId, userId = userId, watchId = watchId,
+                likes = null, dislikes = null,
+                ratingState = XHamsterEngagement.RATING_NONE,
+                isFavorite = false, collectionIds = emptyList(),
+            ),
+            referer = referer,
+        )
+    }
+
+    suspend fun likeComment(videoId: Long, commentId: String, referer: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                requireLogin()
+                if (!syncOk(postXApi(commentSync(videoId, commentId, "changed", true), referer)))
+                    throw IOException("Like rejected")
+            }
+        }
+
+    suspend fun deleteComment(videoId: Long, commentId: String, referer: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                requireLogin()
+                if (!syncOk(postXApi(commentSync(videoId, commentId, "removed", false), referer)))
+                    throw IOException("Delete rejected")
+            }
+        }
+
+    private fun commentSync(videoId: Long, commentId: String, state: String, like: Boolean): String =
+        buildJsonArray {
+            add(buildJsonObject {
+                put("name", "commentModelSync")
+                put("requestData", buildJsonObject {
+                    put("model", buildJsonObject {
+                        put("id", commentId)
+                        put("${'$'}id", commentId)
+                        put("modelName", "commentModel")
+                        put("itemState", state)
+                        if (like) put("likes", true)
+                    })
+                    put("entity", buildJsonObject {
+                        put("entityModel", "videoModel")
+                        put("entityID", videoId)
+                    })
+                })
+            })
+        }.toString()
 
     private fun requireLogin() {
         if (!XHamsterNetwork.hasAuthCookies()) throw IOException("LOGIN_REQUIRED")
@@ -142,13 +248,11 @@ object XHamsterMomentsRepo {
                     put("videoId", videoId)
                     put("collections", buildJsonArray { if (favorite) add(kotlinx.serialization.json.JsonPrimitive(collection)) })
                     put("stats", buildJsonObject {
-                        put("moment", buildJsonObject {
-                            put("watched_time", 1)
-                            put("referrer_block", "mono")
-                        })
+                        put("isLinkingClicked", false)
+                        put("favoriteSource", "video")
                     })
                 }.toString()
-                run(builder(pageUrl, pageUrl).post(payload.toRequestBody(TEXT_TYPE)).build())
+                run(builder("${base()}/api/front/favorite/videos", pageUrl).post(payload.toRequestBody(TEXT_TYPE)).build())
                 Unit
             }
         }

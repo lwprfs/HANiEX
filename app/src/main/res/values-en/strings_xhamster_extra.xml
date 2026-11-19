@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="xh_acc_profile_edit">Edit profile</string>
+    <string name="xh_acc_username">Username</string>
+    <string name="xh_acc_username_locked">Username can\'t be changed right now</string>
+    <string name="xh_acc_full_name">Full name</string>
+    <string name="xh_acc_city">City</string>
+    <string name="xh_acc_occupation">Occupation</string>
+    <string name="xh_acc_orientation">Orientation</string>
+    <string name="xh_acc_relationship">Relationship</string>
+    <string name="xh_acc_gender">Gender</string>
+    <string name="xh_acc_save">Save changes</string>
+    <string name="xh_acc_saved">Saved</string>
+    <string name="xh_acc_save_failed">Couldn\'t save: %1$s</string>
+    <string name="xh_acc_privacy_title">Privacy</string>
+    <string name="xh_acc_password_title">Change password</string>
+    <string name="xh_acc_current_password">Current password</string>
+    <string name="xh_acc_new_password">New password</string>
+    <string name="xh_acc_confirm_password">Confirm new password</string>
+    <string name="xh_acc_password_mismatch">Passwords don\'t match</string>
+    <string name="xh_acc_password_short">Use at least 6 characters</string>
+    <string name="xh_acc_password_done">Password changed</string>
+    <string name="xh_acc_open_web">Open on website</string>
+    <string name="xh_comments">Comments</string>
+    <string name="xh_comment_hint">Add a comment…</string>
+    <string name="xh_reply">Reply</string>
+    <string name="xh_replying_to">Replying to %1$s</string>
+    <string name="xh_comment_posted">Comment posted</string>
+    <string name="xh_comment_captcha">The site asks for a captcha. Post this one on the website.</string>
+    <string name="xh_login_to_comment">Sign in to comment</string>
+    <string name="xh_no_comments">No comments yet</string>
+    <string name="xh_comments_disabled">Comments are disabled</string>
+    <string name="xh_comment_delete">Delete</string>
+    <string name="xh_comment_like">Like</string>
+    <string name="xh_comment_send">Send</string>
+    <string name="xh_comment_report">Report</string>
+    <string name="xh_gif_daily">Today</string>
+    <string name="xh_gif_weekly">This week</string>
+    <string name="xh_gif_monthly">This month</string>
+    <string name="xh_gif_alltime">All time</string>
+    <string name="xh_gif_newest">Newest</string>
+    <string name="xh_zoom_hint">Pinch to zoom, double tap to reset</string>
+</resources>

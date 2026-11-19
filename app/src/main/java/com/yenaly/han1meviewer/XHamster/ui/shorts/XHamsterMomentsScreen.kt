@@ -56,12 +56,14 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import kotlinx.coroutines.launch
 
-private data class TimeRange(val key: String, val title: String)
+private data class TimeRange(val key: String, @androidx.annotation.StringRes val title: Int)
 
 private val GIF_RANGES = listOf(
-    TimeRange("daily", "Today"),
-    TimeRange("weekly", "This week"),
-    TimeRange("monthly", "This month"),
+    TimeRange("daily", R.string.xh_gif_daily),
+    TimeRange("weekly", R.string.xh_gif_weekly),
+    TimeRange("monthly", R.string.xh_gif_monthly),
+    TimeRange("alltime", R.string.xh_gif_alltime),
+    TimeRange("newest", R.string.xh_gif_newest),
 )
 
 @Composable
@@ -70,11 +72,12 @@ fun XHamsterMomentsScreen(
     title: String,
     onBack: () -> Unit,
 ) {
-    val imageLoader = XHamsterImageLoader.get(LocalContext.current)
+    val context = LocalContext.current
+    val imageLoader = XHamsterImageLoader.get(context)
     val scope = rememberCoroutineScope()
     val epoch by XHamsterSession.epoch.collectAsStateWithLifecycle()
 
-    var rangeKey by rememberSaveable { mutableStateOf("weekly") }
+    var rangeKey by rememberSaveable { mutableStateOf("alltime") }
     var items by remember { mutableStateOf<List<XHamsterShort>>(emptyList()) }
     val metas = remember { mutableMapOf<Long, XHamsterShortMeta>() }
     var page by remember { mutableIntStateOf(1) }
@@ -147,7 +150,7 @@ fun XHamsterMomentsScreen(
                     SiteChipRow(
                         options = GIF_RANGES,
                         selected = GIF_RANGES.first { it.key == rangeKey },
-                        label = { it.title },
+                        label = { context.getString(it.title) },
                         onSelect = { rangeKey = it.key },
                         key = { it.key },
                         horizontalPadding = 0.dp,

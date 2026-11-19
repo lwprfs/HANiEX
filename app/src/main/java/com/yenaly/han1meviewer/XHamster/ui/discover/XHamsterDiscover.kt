@@ -212,6 +212,7 @@ fun XHamsterDiscoverStrips(
                         views = item.video.views,
                         duration = item.video.duration,
                         subtitle = item.authorName,
+                        isWatched = item.video.watched == true,
                         imageLoader = loader,
                     )
                 }

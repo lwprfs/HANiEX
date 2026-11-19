@@ -226,18 +226,25 @@ data class XHamsterShortMeta(
 )
 
 data class XHamsterShortComment(
-    val id: Long,
+    val id: String,
     val author: String,
     val avatarUrl: String?,
     val text: String,
     val likes: Long,
     val createdSeconds: Long?,
     val isReply: Boolean,
+    val replyToId: String? = null,
+    val replyToName: String? = null,
+    val authorPath: String? = null,
+    val editable: Boolean = false,
+    val likedByMe: Boolean = false,
 )
 
 data class XHamsterShortComments(
     val items: List<XHamsterShortComment>,
     val nextCursor: String?,
+    val total: Long = items.size.toLong(),
+    val writeDenied: Boolean = false,
 )
 
 data class XHamsterShortsPage(

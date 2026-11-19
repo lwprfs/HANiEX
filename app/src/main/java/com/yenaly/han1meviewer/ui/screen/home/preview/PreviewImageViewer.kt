@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.home.preview
 
+import com.yenaly.han1meviewer.ui.component.pinchZoomGestures
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -228,23 +229,15 @@ fun ZoomablePreviewImage(
                     },
                 )
             }
-            .then(
-                if (scale > 1.01f) {
-                    Modifier.pointerInput(imageUrl) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            val newScale = (scale * zoom).coerceIn(1f, 4f)
-                            scale = newScale
-                            offset = if (newScale <= 1f) {
-                                Offset.Zero
-                            } else {
-                                offset + pan
-                            }
-                        }
-                    }
-                } else {
-                    Modifier
+            .pinchZoomGestures(
+                    key = imageUrl,
+                    scale = { scale },
+                    offset = { offset },
+                    maxScale = 4f,
+                ) { newScale, newOffset ->
+                    scale = newScale
+                    offset = newOffset
                 }
-            )
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale

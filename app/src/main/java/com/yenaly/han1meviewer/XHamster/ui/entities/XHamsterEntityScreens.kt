@@ -534,6 +534,8 @@ fun XHamsterProfileScreen(
                         aspectRatio = 16f / 9f,
                         views = video.views,
                         duration = video.duration,
+                        subtitle = video.currentArtist?.takeIf { it.isNotBlank() },
+                        isWatched = video.watched == true,
                         imageLoader = imageLoader,
                     )
                 }
@@ -654,92 +656,7 @@ fun XHamsterAccountSettingsScreen(
     onBack: () -> Unit,
     onOpenInBrowser: (path: String) -> Unit,
 ) {
-    var settings by remember { mutableStateOf<XHamsterAccountSettings?>(null) }
-    var error by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(true) }
-    var reload by remember { mutableStateOf(0) }
-    val loginRequired = stringResource(R.string.xhamster_login_required)
-
-    LaunchedEffect(reload) {
-        loading = true
-        error = null
-        if (!XHamsterAuth.isLoggedIn) {
-            error = loginRequired
-        } else {
-            XHamsterRepo.accountSettings()
-                .onSuccess { settings = it }
-                .onFailure { error = it.message ?: it.javaClass.simpleName }
-        }
-        loading = false
-    }
-
-    EntityScaffold(stringResource(R.string.xhamster_account_settings), onBack) {
-        val s = settings
-        when {
-            loading && s == null -> SiteLoadingContent()
-            s == null -> SiteErrorContent(message = error, onRetry = { reload++ })
-            else -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Text(stringResource(R.string.xhamster_settings_profile), style = MaterialTheme.typography.titleMedium)
-                s.displayName?.let { StatCard(stringResource(R.string.xhamster_username), it) }
-                s.email?.let {
-                    StatCard(
-                        stringResource(R.string.xhamster_email),
-                        if (s.emailVerified) "$it ✓" else it,
-                    )
-                }
-                s.gender?.let { StatCard(stringResource(R.string.xhamster_gender), it) }
-                s.country?.let { StatCard(stringResource(R.string.xhamster_country), it) }
-                s.relation?.let { StatCard(stringResource(R.string.xhamster_relationship), it) }
-
-                if (s.privacy.isNotEmpty()) {
-                    Text(
-                        stringResource(R.string.xhamster_settings_privacy),
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
-                    s.privacy.forEach { StatCard(it.title, it.url) }
-                }
-
-                Text(
-                    stringResource(R.string.xhamster_settings_edit_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onOpenInBrowser("/my/edit/profile") },
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer,
-                ) {
-                    Text(
-                        stringResource(R.string.xhamster_edit_profile_web),
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                }
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onOpenInBrowser("/my/edit/password") },
-                    shape = RoundedCornerShape(12.dp),
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                ) {
-                    Text(
-                        stringResource(R.string.xhamster_change_password_web),
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                }
-            }
-        }
-    }
+    XHamsterAccountEditor(onBack = onBack, onOpenInBrowser = onOpenInBrowser)
 }
 
 class XHamsterPhotoSearchViewModel : XHamsterPagedViewModel<XHamsterGallery>() {

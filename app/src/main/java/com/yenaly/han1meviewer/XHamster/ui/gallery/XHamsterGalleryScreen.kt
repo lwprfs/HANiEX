@@ -2,6 +2,7 @@
 
 package com.yenaly.han1meviewer.XHamster.ui.gallery
 
+import com.yenaly.han1meviewer.ui.component.pinchZoomGestures
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -472,14 +473,15 @@ private fun ZoomablePhoto(
                         },
                     )
                 }
-                .then(
-                    if (scale > 1.01f) Modifier.pointerInput(photo.id) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            scale = (scale * zoom).coerceIn(1f, 4f)
-                            offset = if (scale <= 1f) Offset.Zero else offset + pan
-                        }
-                    } else Modifier
-                )
+                .pinchZoomGestures(
+                    key = photo.id,
+                    scale = { scale },
+                    offset = { offset },
+                    maxScale = 4f,
+                ) { newScale, newOffset ->
+                    scale = newScale
+                    offset = newOffset
+                }
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale

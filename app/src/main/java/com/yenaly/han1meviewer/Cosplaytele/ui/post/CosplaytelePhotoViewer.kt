@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.Cosplaytele.ui.post
 
+import com.yenaly.han1meviewer.ui.component.pinchZoomGestures
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -212,15 +213,15 @@ private fun ZoomablePhoto(
                         },
                     )
                 }
-                .then(
-
-                    if (scale > 1.01f) Modifier.pointerInput(url) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            scale = (scale * zoom).coerceIn(1f, 4f)
-                            offset = if (scale <= 1f) Offset.Zero else offset + pan
-                        }
-                    } else Modifier
-                )
+                .pinchZoomGestures(
+                    key = url,
+                    scale = { scale },
+                    offset = { offset },
+                    maxScale = 4f,
+                ) { newScale, newOffset ->
+                    scale = newScale
+                    offset = newOffset
+                }
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
