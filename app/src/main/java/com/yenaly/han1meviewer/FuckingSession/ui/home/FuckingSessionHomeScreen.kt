@@ -42,7 +42,7 @@ fun FuckingSessionHomeScreen(
     var sectionKey by rememberSaveable { mutableStateOf(sections.first().key) }
     var filterKey by rememberSaveable { mutableStateOf("") }
     val section = sections.firstOrNull { it.key == sectionKey } ?: sections.first()
-    // the WordPress front page has no sort selector, only archives (categories / tags) do
+
     val filters = if (section.path == "/") emptyList() else FuckingSessionConstants.ORDERS
     val filter = filters.firstOrNull { it.key == filterKey } ?: filters.firstOrNull()
 

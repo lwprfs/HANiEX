@@ -120,7 +120,7 @@ object XHamsterRepo {
             if (ids.isEmpty()) return@withContext emptyMap()
             val joined = ids.joinToString("%2C")
             val chain = System.currentTimeMillis() / 1000
-            // Same query shapes the website uses for /api/v1/moments-by-id-list (always typed).
+
             val attempts = listOf(
                 "&type=index&pageType=momentPage&isWithSettings=1",
                 "&type=gifs-best-ranking&pageType=gifsBestPage&order=rated&time-range=alltime&isWithSettings=1",

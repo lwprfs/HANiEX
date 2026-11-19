@@ -41,7 +41,6 @@ object XHamsterMomentsParser {
         else -> null
     }
 
-    /** Ids (in site order) of the GIFs on a /gifs/... HTML page, plus whether another page exists. */
     fun parseGifList(html: String): GifList {
         val root = XHamsterParser.extractInitials(html) ?: return GifList(emptyList(), false)
         val ids = findArray(root, "videoThumbProps").orEmpty()
@@ -111,7 +110,6 @@ object XHamsterMomentsParser {
         androidx.core.text.HtmlCompat.fromHtml(html, androidx.core.text.HtmlCompat.FROM_HTML_MODE_LEGACY)
             .toString().replace('\u00A0', ' ').trim()
 
-    /** Site comment JSON from /api/front/comment/list-by-cursor. Ids are hex strings. */
     fun parseComments(json: String): XHamsterShortComments {
         val root = runCatching { Json.parseToJsonElement(json) }.getOrNull() as? JsonObject
             ?: return XHamsterShortComments(emptyList(), null)

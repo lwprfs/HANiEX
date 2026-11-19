@@ -28,7 +28,6 @@ object FuckingSessionRepo {
         }
     }
 
-    /** Loads the post, then resolves its embed(s) into direct stream URLs. */
     suspend fun detail(code: String): Result<FuckingSessionDetail> = runCatching {
         val parsed = withContext(Dispatchers.Default) {
             val html = fetchHtml(FuckingSessionConstants.videoUrl(code))

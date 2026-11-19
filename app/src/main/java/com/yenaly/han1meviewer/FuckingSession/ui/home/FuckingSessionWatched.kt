@@ -10,17 +10,13 @@ import com.yenaly.han1meviewer.Preferences
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
-/**
- * Video codes the user has already opened and played. The site itself has no "watched" flag, so
- * this comes from the module's local watch history. Honors the app-wide "played indicator" switch.
- */
 @Composable
 fun rememberFuckingSessionWatched(): Set<String> {
     val context = LocalContext.current
     val flow = remember {
         FuckingSessionHistoryRepo.init(context)
         FuckingSessionHistoryRepo.loadAll()
-            .map { list -> list.mapTo(HashSet()) { it.videoCode } as Set<String> }
+            .map { list -> list.map { it.videoCode }.toSet() }
             .catch { emit(emptySet()) }
     }
     val watched by flow.collectAsStateWithLifecycle(initialValue = emptySet())

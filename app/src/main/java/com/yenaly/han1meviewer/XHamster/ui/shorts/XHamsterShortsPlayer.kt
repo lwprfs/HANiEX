@@ -133,7 +133,6 @@ private data class CommentsState(
     val total: Long? = null,
 )
 
-/** Mute choice survives closing and re-opening the player. */
 private var rememberedMuted = false
 
 @Composable
@@ -206,7 +205,7 @@ fun XHamsterShortsPlayer(
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
                     .build(),
-                /* handleAudioFocus = */ true,
+                 true,
             )
             .setHandleAudioBecomingNoisy(true)
             .build().apply {
@@ -240,7 +239,6 @@ fun XHamsterShortsPlayer(
         }
     }
 
-    // Never keep playing (and making sound) while the app is in the background.
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, player) {
         var resume = false
@@ -282,15 +280,14 @@ fun XHamsterShortsPlayer(
 
     val currentItems by rememberUpdatedState(items)
     var loadedShortId by remember { mutableStateOf<Long?>(null) }
-    // Keyed on the page and subtitle only: growing the list (load more) must not restart playback.
+
     LaunchedEffect(pagerState.currentPage, subtitleLang) {
         val page = pagerState.currentPage
         val short = currentItems.getOrNull(page) ?: return@LaunchedEffect
         val sameShort = loadedShortId == short.id
         val resumeAt = if (sameShort) player.currentPosition else 0L
         if (!sameShort) {
-            // Silence the previous short right away; fetching metadata can take a while and
-            // the old audio used to keep playing over the new page.
+
             player.pause()
             player.stop()
             player.clearMediaItems()
@@ -307,8 +304,7 @@ fun XHamsterShortsPlayer(
         val meta = metas[short.id]
         val stream = meta?.streamUrl
         val track = subtitleLang?.let { lang -> meta?.subtitles?.firstOrNull { it.lang == lang } }
-        // DefaultMediaSourceFactory picks HLS / progressive from the item and merges a side-loaded
-        // subtitle track itself (SingleSampleMediaSource is deprecated for direct use).
+
         val mediaItem = MediaItem.Builder()
             .setUri(stream ?: short.videoUrl)
             .apply {

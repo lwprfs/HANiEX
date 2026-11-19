@@ -39,10 +39,6 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 
-/**
- * Comment card styled like the Hanime comment card (elevated card, 40dp avatar, bold name,
- * relative time, thumb / reply actions) so every XHamster comment list looks the same.
- */
 @Composable
 fun XHamsterCommentCard(
     author: String,
@@ -221,7 +217,6 @@ fun XHamsterCommentCard(
     }
 }
 
-/** Bottom composer shared by the shorts / GIF comment sheet. */
 @Composable
 fun XHamsterCommentComposer(
     replyingTo: String?,
