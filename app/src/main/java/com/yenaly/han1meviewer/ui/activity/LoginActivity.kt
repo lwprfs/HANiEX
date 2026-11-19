@@ -58,7 +58,7 @@ class LoginActivity : BaseActivity() {
         ) { result ->
             if (result.resultCode == RESULT_OK) {
                 val cookie = result.data?.getStringExtra("cookie")
-                Log.i("LoginActivity", "扫描结果: $cookie")
+                Log.i("LoginActivity", "扫描结果: ${if (cookie.isNullOrBlank()) "empty" else "received"}")
 
                 HAnalytics.logEvent(
                     FirebaseAnalytics.Event.LOGIN,
@@ -117,7 +117,7 @@ class LoginActivity : BaseActivity() {
                     if (request.isRedirect && isSameUrl) {
                         val url = request.url
                         val cookieManager = CookieManager.getInstance().getCookie(url.host)
-                        Log.d("login_cookie", cookieManager.toString())
+                        Log.d("login_cookie", "cookie received: ${!cookieManager.isNullOrBlank()}")
 
                         HAnalytics.logEvent(
                             FirebaseAnalytics.Event.LOGIN,

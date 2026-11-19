@@ -43,7 +43,7 @@ object FapFolderLightboxChain {
             when (result) {
                 is WebsiteState.Loading -> continue
                 is WebsiteState.Error -> {
-                    Log.w(TAG, "walkForward failed at $currentId: ${result.throwable.message}")
+                    Log.w(TAG, "walkForward failed: ${result.throwable.message}")
                     if (step == 0) emit(result)
                     break
                 }

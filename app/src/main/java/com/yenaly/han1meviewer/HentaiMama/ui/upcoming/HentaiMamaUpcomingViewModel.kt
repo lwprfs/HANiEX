@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.HentaiMama.ui.upcoming
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
@@ -166,7 +168,7 @@ class HentaiMamaUpcomingViewModel(application: Application) : AndroidViewModel(a
                     )
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to load upcoming $slug", e)
+                Log.e(TAG, "Failed to load upcoming ${slug.logId()}", e)
                 _uiState.update { it.copy(isLoading = false, error = e) }
             }
         }

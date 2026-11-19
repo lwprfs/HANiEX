@@ -311,7 +311,7 @@ class CommentViewModel(application: Application) : BaseViewModel(application) {
         reportableId: String?
     ){
         viewModelScope.launch {
-            Log.i("ReportComment", "csrfToken:${csrfToken}")
+            Log.i("ReportComment", "reporting comment")
             NetworkRepo.reportComment(
                 csrfToken = csrfToken,
                 reason = reason,

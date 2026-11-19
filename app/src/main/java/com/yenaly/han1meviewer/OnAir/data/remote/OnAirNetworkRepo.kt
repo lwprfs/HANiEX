@@ -347,8 +347,7 @@ object OnAirNetworkRepo {
                     if (retryDetail == null) {
                         Log.w(
                             TAG,
-                            "watch parse failed twice; first 500 chars: " +
-                                    retryHtml.take(500).replace('\n', ' '),
+                            "watch parse failed twice; html length=${retryHtml.length}",
                         )
                         return@retryWithBackoff VideoLoadingState.Error(
                             IllegalStateException(
@@ -462,9 +461,7 @@ object OnAirNetworkRepo {
 
         Log.d(
             TAG,
-            "parseUserProfile: user=$displayName requested=$requestedUsername " +
-                    "isCurrentUser=$isCurrentUser videos=${videos.size} " +
-                    "followers=$followerCount following=$followingCount",
+            "parseUserProfile: isCurrentUser=$isCurrentUser videos=${videos.size}",
         )
 
         return OnAirUserProfile(

@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.HentaiMama.ui.video
 
+import com.yenaly.han1meviewer.util.logHost
+
 import com.yenaly.han1meviewer.ui.component.player.SitePlayerState
 import android.app.Application
 import android.util.Log
@@ -75,11 +77,11 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
         if (!force && _currentPageUrl.value == url &&
             _pageState.value is VideoLoadingState.Success
         ) {
-            Log.d(TAG, "loadEpisodePage skipped, already loaded: $url")
+            Log.d(TAG, "loadEpisodePage skipped, already loaded: ${url.logHost()}")
             return
         }
 
-        Log.d(TAG, "loadEpisodePage start: $url (force=$force)")
+        Log.d(TAG, "loadEpisodePage start: ${url.logHost()} (force=$force)")
         _currentPageUrl.value = url
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
@@ -108,7 +110,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
                 if (resolved != null) {
                     Log.d(
                         TAG,
-                        "loadEpisodePage: resolved series to episode slug=${resolved.first}, url=${resolved.second}"
+                        "loadEpisodePage: resolved series to episode"
                     )
                     _currentPageUrl.value = resolved.second
                     loadEpisodeDetail(resolved.second)
@@ -139,7 +141,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
                         Log.d(
                             TAG,
                             "detail loaded: page=${page != null}, " +
-                                    "infoTitle=${state.info.title.take(40)}, " +
+                                    "hasTitle=${state.info.title.isNotBlank()}, " +
                                     "videoUrls=${state.info.videoUrls.size}"
                         )
                         if (page != null) {
@@ -173,7 +175,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
             Log.w(TAG, "loadEpisodeDetail: attempt $attempt produced no terminal state, retrying")
             kotlinx.coroutines.delay(750L)
         }
-        Log.e(TAG, "loadEpisodeDetail: exhausted $MAX_PAGE_LOAD_ATTEMPTS attempts for $url")
+        Log.e(TAG, "loadEpisodeDetail: exhausted $MAX_PAGE_LOAD_ATTEMPTS attempts for ${url.logHost()}")
         _pageState.value = VideoLoadingState.Error(
             IllegalStateException(applicationContext.getString(R.string.hm_could_not_load_episode_page_after, MAX_PAGE_LOAD_ATTEMPTS))
         )
@@ -186,7 +188,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
                 url.contains("/tvshows/") -> HentaiMamaNetwork.normalizeUrl(url)
                 else -> "${HentaiMamaNetwork.baseUrl.trimEnd('/')}/tvshows/${url.trim('/')}/"
             }
-            Log.d(TAG, "resolveSeriesFirstEpisode: fetching $seriesUrl")
+            Log.d(TAG, "resolveSeriesFirstEpisode: fetching ${seriesUrl.logHost()}")
 
             val body: String = withContext(Dispatchers.IO) {
                 val resp = HentaiMamaNetwork.service.getVideoDetail(seriesUrl)
@@ -227,7 +229,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
         Log.d(
             TAG,
             "applyHtmlLinks: qualityMapKeys=${qualityMap.keys}, " +
-                    "mp4Url=${single?.take(80)}, " +
+                    "hasMp4=${single != null}, " +
                     "mirrors=${page.player.mirrors.size}"
         )
 
@@ -266,7 +268,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
             )
         }
         _extractionState.value = HentaiMamaExtractionState.Success
-        Log.d(TAG, "applyHtmlLinks: chosen=$chosen, url=${qualityMap[chosen]?.take(80)}")
+        Log.d(TAG, "applyHtmlLinks: chosen=$chosen")
         return true
     }
 
@@ -332,7 +334,7 @@ class HentaiMamaVideoViewModel(application: Application) : AndroidViewModel(appl
                 } else {
                     "${HentaiMamaNetwork.baseUrl.trimEnd('/')}/episodes/${resolvedPage.info.slug}/"
                 }
-                Log.d(TAG, "fetchMirrorLinks: fetching detail from $fullUrl")
+                Log.d(TAG, "fetchMirrorLinks: fetching detail from ${fullUrl.logHost()}")
 
                 val body: String = withContext(Dispatchers.IO) {
                     val resp = HentaiMamaNetwork.service.getVideoDetail(fullUrl)

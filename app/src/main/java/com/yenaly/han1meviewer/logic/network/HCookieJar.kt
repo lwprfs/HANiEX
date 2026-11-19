@@ -22,7 +22,7 @@ class HCookieJar : CookieJar {
         cookies.addAll(Preferences.loginCookieStateFlow.value.toLoginCookieList(host))
         cookies.addAll(Preferences.cloudFlareCookieStateFlow.value.toLoginCookieList(host))
 
-        Log.d("HCookieJar", "loadForRequest for $host: $cookies")
+        Log.d("HCookieJar", "loadForRequest for $host: ${cookies.size} cookies")
 
         return cookies
     }

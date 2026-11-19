@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.worker
 
+import com.yenaly.han1meviewer.util.logId
+import com.yenaly.han1meviewer.util.logHost
+
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.Context
@@ -190,7 +193,7 @@ class HanimeDownloadWorker(
     override suspend fun doWork(): Result {
         Log.i(
             TAG,
-            "▶ Worker 开始：videoCode=$videoCode, quality=$quality, redownload=$shouldRedownload, " +
+            "▶ Worker 开始：videoCode=${videoCode.logId()}, quality=$quality, redownload=$shouldRedownload, " +
                     "waiting=$isInWaitingQueue, delete=$shouldDelete, attempt=$runAttemptCount"
         )
         if (fastPathCancel) return Result.success()
@@ -207,7 +210,7 @@ class HanimeDownloadWorker(
             try {
 
                 val safUri = SafFileManager.getDownloadVideoFileUri(context, videoCode, createVideoName(hanimeName, quality, videoType))
-                Log.i(TAG,safUri.toString())
+                Log.i(TAG, "SAF uri resolved: ${safUri != null}")
                 if (safUri != null) {
                     context.contentResolver.openFileDescriptor(safUri, "rw")?.closeQuietly()
                 } else {
@@ -217,10 +220,10 @@ class HanimeDownloadWorker(
 
                 val len = fetchContentLength()
                 if (len == null) {
-                    Log.e(TAG, "❌ 文件长度获取失败：videoCode=$videoCode, url=${downloadUrl.take(80)}...")
+                    Log.e(TAG, "❌ 文件长度获取失败：videoCode=${videoCode.logId()}, url host=${downloadUrl.logHost()}")
                     return@withContext null
                 }
-                Log.i(TAG, "文件长度获取成功：videoCode=$videoCode, length=$len")
+                Log.i(TAG, "文件长度获取成功：videoCode=${videoCode.logId()}, length=$len")
                 if (len > 0) {
 
                     val entity = HanimeDownloadEntity(
@@ -239,7 +242,7 @@ class HanimeDownloadWorker(
                         state = if (isInWaitingQueue) DownloadState.Queued else DownloadState.Downloading
                     )
                     DatabaseRepo.HanimeDownload.insert(entity)
-                    Log.i(TAG, "📥 实体入库：videoCode=$videoCode, quality=$quality, length=$len")
+                    Log.i(TAG, "📥 实体入库：videoCode=${videoCode.logId()}, quality=$quality, length=$len")
 
                     raf?.setLength(len)
                     return@withContext entity
@@ -550,7 +553,7 @@ class HanimeDownloadWorker(
 
             Log.i(
                 TAG,
-                "实体就绪：videoCode=$videoCode, state=${entity.state}, " +
+                "实体就绪：videoCode=${videoCode.logId()}, state=${entity.state}, " +
                         "downloaded=${entity.downloadedLength}/${entity.length}, " +
                         "hasCover=${entity.coverUri != null}"
             )
@@ -558,7 +561,7 @@ class HanimeDownloadWorker(
             if (entity.length <= 0) {
                 val len = fetchContentLength()
                 if (len == null || len <= 0) {
-                    Log.e(TAG, "❌ 占位实体长度补全失败：videoCode=$videoCode")
+                    Log.e(TAG, "❌ 占位实体长度补全失败：videoCode=${videoCode.logId()}")
                     DatabaseRepo.HanimeDownload.delete(videoCode, quality)
                     logDownloadResult("failure", "placeholder_len")
                     return@withContext Result.failure(
@@ -571,11 +574,11 @@ class HanimeDownloadWorker(
                     videoUri = safUri?.toString() ?: file.toUri().toString()
                 )
                 DatabaseRepo.HanimeDownload.update(entity)
-                Log.i(TAG, "占位实体长度已补全：videoCode=$videoCode, length=$len")
+                Log.i(TAG, "占位实体长度已补全：videoCode=${videoCode.logId()}, length=$len")
             }
 
             if (entity.downloadedLength < 0 || entity.downloadedLength > entity.length) {
-                Log.w(TAG, "断点异常，重置为 0：videoCode=$videoCode, ${entity.downloadedLength}/${entity.length}")
+                Log.w(TAG, "断点异常，重置为 0：videoCode=${videoCode.logId()}, ${entity.downloadedLength}/${entity.length}")
                 entity = entity.copy(downloadedLength = 0, state = DownloadState.Queued)
                 DatabaseRepo.HanimeDownload.updateKeepingGroup(entity)
             }
@@ -723,7 +726,7 @@ class HanimeDownloadWorker(
                     throw IOException("Download incomplete: $downloadedLength/${entity.length}")
                 }
 
-                Log.i(TAG, "✅ 下载写入完成：videoCode=$videoCode, $downloadedLength/${entity.length}")
+                Log.i(TAG, "✅ 下载写入完成：videoCode=${videoCode.logId()}, $downloadedLength/${entity.length}")
                 showSuccessNotification()
                 logDownloadResult("finished")
                 result = Result.success(

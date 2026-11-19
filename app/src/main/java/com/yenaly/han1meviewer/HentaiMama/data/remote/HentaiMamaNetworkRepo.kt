@@ -1,5 +1,9 @@
 package com.yenaly.han1meviewer.HentaiMama.data.remote
 
+import com.yenaly.han1meviewer.util.logId
+
+import com.yenaly.han1meviewer.util.logHost
+
 import android.util.Log
 import com.yenaly.han1meviewer.EMPTY_STRING
 import com.yenaly.han1meviewer.HentaiMama.data.local.HentaiMamaSeriesRepo
@@ -464,7 +468,7 @@ object HentaiMamaNetworkRepo {
                     if (isChallengeResponse(response.code(), errBody)) {
                         throw IllegalStateException("Cloudflare challenge on genre page $slug")
                     }
-                    Log.w(TAG, "fetchGenrePage HTTP ${response.code()} for $url")
+                    Log.w(TAG, "fetchGenrePage HTTP ${response.code()} for ${url.logHost()}")
                     return@withRetry null
                 }
                 val body = response.body()?.string().orEmpty()
@@ -478,7 +482,7 @@ object HentaiMamaNetworkRepo {
                 )
             }
         } catch (e: Exception) {
-            Log.e(TAG, "fetchGenrePage failed for $slug", e)
+            Log.e(TAG, "fetchGenrePage failed for ${slug.logId()}", e)
             null
         }
     }
@@ -557,7 +561,7 @@ object HentaiMamaNetworkRepo {
                 val response = HentaiMamaNetwork.service.getVideoDetail(full)
                 if (response.isSuccessful) {
                     val body = response.body()?.string() ?: EMPTY_STRING
-                    Log.d(TAG, "getVideoDetail: len=${body.length} url=$full")
+                    Log.d(TAG, "getVideoDetail: len=${body.length} url=${full.logHost()}")
                     HentaiMamaParser.parseVideoDetail(body, full)
                 } else {
                     val errBody = runCatching { response.errorBody()?.string() }.getOrNull()
@@ -587,7 +591,7 @@ object HentaiMamaNetworkRepo {
                 val response = HentaiMamaNetwork.service.getVideoDetail(full)
                 if (response.isSuccessful) {
                     val body = response.body()?.string() ?: EMPTY_STRING
-                    Log.d(TAG, "getSeriesDetail: len=${body.length} url=$full")
+                    Log.d(TAG, "getSeriesDetail: len=${body.length} url=${full.logHost()}")
                     HentaiMamaParser.parseSeriesDetail(body, full)
                 } else {
                     val errBody = runCatching { response.errorBody()?.string() }.getOrNull()

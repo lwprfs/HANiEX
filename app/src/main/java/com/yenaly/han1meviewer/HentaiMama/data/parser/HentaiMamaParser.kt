@@ -128,7 +128,7 @@ object HentaiMamaParser {
                 }.getOrNull()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "parseCardList failed for $baseUrl", e)
+            Log.e(TAG, "parseCardList failed", e)
             emptyList()
         }
     }
@@ -420,10 +420,10 @@ object HentaiMamaParser {
             "PlayerParse",
             "iframe=${iframe != null} " +
                     "srcLen=${src.length} " +
-                    "srcHead=${src.take(80)} " +
+                    "hasSrc=${src.isNotEmpty()} " +
                     "base64=${base64 != null} " +
                     "srcdocLen=${srcdoc.length} " +
-                    "mp4=${mp4?.take(80)} " +
+                    "hasMp4=${mp4 != null} " +
                     "mirrors=${mirrors.size} " +
                     "qualityMapKeys=${mp4ByQuality.keys} " +
                     "iframeCount=${doc.select("iframe").size} " +

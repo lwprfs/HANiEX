@@ -189,7 +189,7 @@ class FapFolderHashtagViewModel(application: Application) : AndroidViewModel(app
             )
         }
 
-        if (posts.isEmpty()) Log.w(TAG, "First page produced 0 posts for #${result.query}")
+        if (posts.isEmpty()) Log.w(TAG, "First page produced 0 posts")
     }
 
     override fun onCleared() {

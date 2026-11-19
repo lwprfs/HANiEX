@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen.video
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.content.Context
 import android.content.Intent
 import android.provider.Settings
@@ -21,7 +23,6 @@ import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.SearchRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.HAnalytics
 import com.yenaly.han1meviewer.util.browse
@@ -73,13 +74,13 @@ class VideoRouteActions(
             map.forEach { (key, value) -> put(key.name, value) }
         }
         val routeMap = bundleMap.mapValues { it.value.toString() }
-        (context as? MainActivity)?.navController?.navigateSafely(
+        (context as? MainActivity)?.navigator?.navigateSafely(
             SearchRoute(query = artist.name, advancedSearchJson = Json.encodeToString(routeMap))
         )
     }
 
     fun openTagSearch(tag: String) {
-        (context as? MainActivity)?.navController?.navigateSafely(SearchRoute(query = tag))
+        (context as? MainActivity)?.navigator?.navigateSafely(SearchRoute(query = tag))
     }
 
     fun toggleArtistSubscription(artist: HanimeVideo.Artist) {
@@ -206,7 +207,7 @@ class VideoRouteActions(
     ) {
         Log.d(
             TAG,
-            "▶ 确认下载：videoCode=${viewModel.videoCode}, quality=${getCheckedQuality()}, " +
+            "▶ 确认下载：videoCode=${viewModel.videoCode.logId()}, quality=${getCheckedQuality()}, " +
                     "redownload=$redownload, autoGroup=${autoGroupName ?: "无"}"
         )
         context.requestPostNotificationPermission()
@@ -215,7 +216,7 @@ class VideoRouteActions(
         val autoGroup = autoGroupName?.let { resolveAutoGroup(videoData, it) }
         Log.d(
             TAG,
-            "分组解析完成：videoCode=${viewModel.videoCode}, groupId=${autoGroup?.id ?: "不分组"}"
+            "分组解析完成：videoCode=${viewModel.videoCode.logId()}, groupId=${autoGroup?.id ?: "不分组"}"
         )
         autoGroup?.createdName?.let { name ->
             GlobalToasts.show(
@@ -235,7 +236,7 @@ class VideoRouteActions(
             ),
             redownload = redownload,
         )
-        Log.d(TAG, "已提交下载队列（addTask）：videoCode=${viewModel.videoCode}, quality=$quality")
+        Log.d(TAG, "已提交下载队列（addTask）：videoCode=${viewModel.videoCode.logId()}, quality=$quality")
 
         if (DatabaseRepo.HanimeDownload.find(viewModel.videoCode, quality.orEmpty()) == null) {
             DatabaseRepo.HanimeDownload.insert(
@@ -254,7 +255,7 @@ class VideoRouteActions(
                     state = DownloadState.Unknown,
                 )
             )
-            Log.d(TAG, "占位实体已入库（length 待 Worker 补全）：videoCode=${viewModel.videoCode}")
+            Log.d(TAG, "占位实体已入库（length 待 Worker 补全）：videoCode=${viewModel.videoCode.logId()}")
         }
 
         HAnalytics.logEvent(

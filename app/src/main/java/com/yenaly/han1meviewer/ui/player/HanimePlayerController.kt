@@ -168,7 +168,7 @@ class HanimePlayerController(
 
     private fun startPlayback() {
         val quality = qualityLinks.getOrNull(_uiState.value.currentQualityIndex) ?: return
-        Log.i(TAG, "startPlayback: ${quality.first} -> ${quality.second}")
+        Log.i(TAG, "startPlayback: ${quality.first}")
 
         HAnalytics.logEvent(
             FirebaseConstants.EVENT_PLAYBACK_START,
@@ -205,7 +205,7 @@ class HanimePlayerController(
             FirebaseConstants.PARAM_KERNEL to kernelType.name,
         )
         _uiState.update { it.copy(currentQualityIndex = index, state = PlayerState.PREPARING) }
-        Log.i(TAG, "switchQuality: ${_uiState.value.qualities.getOrNull(index)} @$position")
+        Log.i(TAG, "switchQuality: index=$index @$position")
         reprepareKernel(positionMs = position)
     }
 

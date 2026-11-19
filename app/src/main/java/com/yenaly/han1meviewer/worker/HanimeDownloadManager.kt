@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.worker
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.util.Log
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -67,7 +69,7 @@ object HanimeDownloadManager {
     }
 
     fun addTask(args: HanimeDownloadWorker.Args, redownload: Boolean = false) {
-        Log.d(TAG, "addTask: $args")
+        Log.d(TAG, "addTask: ${args.videoCode.logId()}")
         if (args in downloadingQueue) {
             return
         }
@@ -86,7 +88,7 @@ object HanimeDownloadManager {
     )
 
     fun resumeTask(args: HanimeDownloadWorker.Args) {
-        Log.d(TAG, "resumeTask: $args")
+        Log.d(TAG, "resumeTask: ${args.videoCode.logId()}")
         when (args) {
             in downloadingQueue -> return
             else -> {
@@ -103,7 +105,7 @@ object HanimeDownloadManager {
     }
 
     fun stopTask(args: HanimeDownloadWorker.Args): Operation {
-        Log.d(TAG, "stopTask: $args")
+        Log.d(TAG, "stopTask: ${args.videoCode.logId()}")
         notify(args)
         return stopWork(args)
     }
@@ -113,7 +115,7 @@ object HanimeDownloadManager {
     )
 
     suspend fun deleteTaskCrazily(entity: HanimeDownloadEntity) {
-        Log.d(TAG, "deleteTask: ${entity.videoCode}")
+        Log.d(TAG, "deleteTask: ${entity.videoCode.logId()}")
 
         val downloadRequest = OneTimeWorkRequestBuilder<HanimeDownloadWorker>()
             .addTag(HanimeDownloadWorker.TAG)
@@ -184,7 +186,7 @@ object HanimeDownloadManager {
         fun offer(e: HanimeDownloadWorker.Args) {
             codeSet += e.videoCode
             queue.offer(e)
-            Log.d(tag, codeSet.toString())
+            Log.d(tag, "codeSet size=${codeSet.size}")
         }
 
         fun poll(): HanimeDownloadWorker.Args? {
@@ -192,14 +194,14 @@ object HanimeDownloadManager {
             if (poll != null) {
                 codeSet -= poll.videoCode
             }
-            Log.d(tag, codeSet.toString())
+            Log.d(tag, "codeSet size=${codeSet.size}")
             return poll
         }
 
         fun remove(o: HanimeDownloadWorker.Args?): Boolean {
             if (o != null && codeSet.remove(o.videoCode)) {
                 val r = queue.remove(o)
-                Log.d(tag, codeSet.toString())
+                Log.d(tag, "codeSet size=${codeSet.size}")
                 return r
             }
             return false

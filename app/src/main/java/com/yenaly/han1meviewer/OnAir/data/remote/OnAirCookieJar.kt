@@ -82,8 +82,7 @@ class OnAirCookieJar : CookieJar {
                 bucket[k] = c
                 Log.d(
                     TAG,
-                    "saveFromResponse: $host <- ${c.name}@${c.path} " +
-                            "value=${c.value.take(12)}…",
+                    "saveFromResponse: $host <- ${c.name}@${c.path}",
                 )
             }
         Log.d(TAG, "saveFromResponse: $host total=${bucket.size} keys=${bucket.keys}")

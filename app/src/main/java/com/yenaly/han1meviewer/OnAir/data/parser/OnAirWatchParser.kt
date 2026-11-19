@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.OnAir.data.parser
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.util.Log
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirQualityLink
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
@@ -65,7 +67,7 @@ object OnAirWatchParser {
 
         Log.d(
             TAG,
-            "parseWatchPage: id=$videoId quality=$currentQuality " +
+            "parseWatchPage: id=${videoId.logId()} quality=$currentQuality " +
                     "streams=${streamUrlByQuality.keys} type=$currentMediaType " +
                     "qualityLinks=${qualityLinksByQuality.keys}",
         )

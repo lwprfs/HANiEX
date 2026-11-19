@@ -27,16 +27,16 @@ fun CookieString.toLoginCookieList(domain: String): List<Cookie> {
                 } catch (e: IllegalArgumentException) {
                     Log.w(
                         "CookieString",
-                        "无效Cookie: $cleanedName=$cleanValue, error=${e.message}"
+                        "无效Cookie: name=$cleanedName, error=${e.message}"
                     )
                 }
             } else {
-                Log.w("CookieString", "无效键值: $cookie")
+                Log.w("CookieString", "无效键值 (内容已隐藏)")
             }
         }
     }
     return cookieList.also {
-        Log.d("CookieString", "toCookieList: $it")
+        Log.d("CookieString", "toCookieList: ${it.size} cookies")
     }
 }
 

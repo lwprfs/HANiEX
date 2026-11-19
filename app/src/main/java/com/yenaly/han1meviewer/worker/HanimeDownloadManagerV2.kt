@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.worker
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.util.Log
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkInfo
@@ -93,7 +95,7 @@ object HanimeDownloadManagerV2 {
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    Log.e(TAG, "failed to handle $msg", e)
+                    Log.e(TAG, "failed to handle message", e)
                 }
 
                 if (waitingQueue.isNotEmpty()) pump()
@@ -133,14 +135,14 @@ object HanimeDownloadManagerV2 {
             return
         }
         if (waitingQueue.any { it.videoCode == code }) {
-            Log.d(TAG, "already waiting: $code")
+            Log.d(TAG, "already waiting: ${code.logId()}")
             return
         }
 
         if (hasFreeSlot()) {
             start(args, msg.redownload)
         } else {
-            Log.d(TAG, "slots full, queue: $code")
+            Log.d(TAG, "slots full, queue: ${code.logId()}")
             if (msg.redownload) redownloadPending += code
             waitingQueue.addLast(args)
             markQueued(args, msg.redownload)
@@ -168,7 +170,7 @@ object HanimeDownloadManagerV2 {
             msg.preempt -> {
                 val victim = slots.values.firstOrNull { it.exit == Exit.NONE }
                 if (victim != null) {
-                    Log.d(TAG, "preempt ${victim.args.videoCode} for $code")
+                    Log.d(TAG, "preempt ${victim.args.videoCode.logId()} for ${code.logId()}")
                     victim.exit = Exit.REQUEUE
                     markQueued(victim.args, redownload = false)
                     cancelWork(victim.args)
@@ -213,7 +215,7 @@ object HanimeDownloadManagerV2 {
         val slot = slots[msg.videoCode]
         if (slot == null || slot.token != msg.token) return
         slots.remove(msg.videoCode)
-        Log.d(TAG, "finished ${msg.videoCode}, exit=${slot.exit}")
+        Log.d(TAG, "finished ${msg.videoCode.logId()}, exit=${slot.exit}")
 
         when (slot.exit) {
             Exit.PAUSE -> DatabaseRepo.HanimeDownload.markPaused(msg.videoCode)
@@ -250,7 +252,7 @@ object HanimeDownloadManagerV2 {
     private fun start(args: HanimeDownloadWorker.Args, redownload: Boolean) {
         val slot = Slot(args, ++tokenCounter)
         slots[args.videoCode] = slot
-        Log.d(TAG, "start ${args.videoCode}")
+        Log.d(TAG, "start ${args.videoCode.logId()}")
         slot.job = scope.launch {
             try {
 
@@ -260,7 +262,7 @@ object HanimeDownloadManagerV2 {
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Log.e(TAG, "download ${args.videoCode} failed to run", e)
+                Log.e(TAG, "download ${args.videoCode.logId()} failed to run", e)
             } finally {
                 downloadChannel.trySend(DownloadMsg.Finished(args.videoCode, slot.token))
             }
@@ -371,18 +373,18 @@ object HanimeDownloadManagerV2 {
     private suspend fun cancelWork(args: HanimeDownloadWorker.Args) {
         try {
             workManager.cancelUniqueWork(args.videoCode).await()
-            Log.d(TAG, "cancelWork: ${args.videoCode}")
+            Log.d(TAG, "cancelWork: ${args.videoCode.logId()}")
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            Log.e(TAG, "cancelWork failed: ${args.videoCode}", e)
+            Log.e(TAG, "cancelWork failed: ${args.videoCode.logId()}", e)
         }
     }
 
     private suspend fun markQueued(args: HanimeDownloadWorker.Args, redownload: Boolean) {
         val entity = DatabaseRepo.HanimeDownload.find(args.videoCode, args.quality.orEmpty())
         if (entity == null) {
-            Log.d(TAG, "入库占位 work 已入队（waiting=true）：videoCode=${args.videoCode}")
+            Log.d(TAG, "入库占位 work 已入队（waiting=true）：videoCode=${args.videoCode.logId()}")
             startWork(args, redownload = redownload, waiting = true)
         } else {
             DatabaseRepo.HanimeDownload.markQueued(args.videoCode)

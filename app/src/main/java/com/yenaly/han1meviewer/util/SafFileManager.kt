@@ -231,14 +231,14 @@ object SafFileManager {
         Log.d("Migrate", "开始迁移，总文件夹数: $total")
 
         for (folder in folders) {
-            Log.d("Migrate", "正在迁移文件夹: ${folder.name}")
+            Log.d("Migrate", "正在迁移文件夹: ${folder.name.logId()}")
 
             var folderDoc = hanimeDownloadDoc.findFile(folder.name)
 
             if (folderDoc == null) {
                 folderDoc = hanimeDownloadDoc.createDirectory(folder.name)
                 if (folderDoc == null) {
-                    Log.e("Migrate", "创建视频文件夹失败: ${folder.name}")
+                    Log.e("Migrate", "创建视频文件夹失败: ${folder.name.logId()}")
                     continue
                 }
             } else {
@@ -247,7 +247,7 @@ object SafFileManager {
                         val existingFile = folderDoc.findFile(file.name)
                         if (existingFile != null) {
                             existingFile.delete()
-                            Log.d("Migrate", "删除冲突文件: ${file.name}")
+                            Log.d("Migrate", "删除冲突文件: ${file.name.logId()}")
                         }
                     }
                 }
@@ -259,7 +259,7 @@ object SafFileManager {
                         val mimeType = mimeForExt(file.extension.lowercase())
                         val newFile = folderDoc.createFile(mimeType, file.name)
                         if (newFile == null) {
-                            Log.e("Migrate", "创建文件失败: ${file.name}")
+                            Log.e("Migrate", "创建文件失败: ${file.name.logId()}")
                             return@forEach
                         }
 
@@ -270,12 +270,12 @@ object SafFileManager {
                                         input.copyTo(output)
                                     }
                             }
-                            Log.d("Migrate", "已迁移文件: ${file.name}")
+                            Log.d("Migrate", "已迁移文件: ${file.name.logId()}")
                         } catch (e: Exception) {
-                            Log.e("Migrate", "复制文件出错: ${file.name}", e)
+                            Log.e("Migrate", "复制文件出错: ${file.name.logId()}", e)
                         }
                     } else {
-                        Log.d("Migrate", "文件已存在，跳过: ${file.name}")
+                        Log.d("Migrate", "文件已存在，跳过: ${file.name.logId()}")
                     }
                 }
             }
@@ -283,7 +283,7 @@ object SafFileManager {
             folder.deleteRecursively()
 
             migrated++
-            Log.d("Migrate", "已完成文件夹: ${folder.name} ($migrated/$total)")
+            Log.d("Migrate", "已完成文件夹: ${folder.name.logId()} ($migrated/$total)")
 
             withContext(Dispatchers.Main) {
                 onProgress?.invoke(migrated, total)
@@ -397,7 +397,7 @@ object SafFileManager {
 
                                         )
                                         dao.update(updated)
-                                        Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: $videoCode, length:$videoLength")
+                                        Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: ${videoCode.logId()}, length:$videoLength")
                                     } else {
                                         val entity = HanimeDownloadEntity(
                                             coverUrl = coverUrl,
@@ -413,7 +413,7 @@ object SafFileManager {
                                             state = DownloadState.Finished
                                         )
                                         dao.insert(entity)
-                                        Log.d("ImportHanime", "导入完成: $videoCode, length:$videoLength")
+                                        Log.d("ImportHanime", "导入完成: ${videoCode.logId()}, length:$videoLength")
                                     }
                                     successCount++
                                 }
@@ -421,7 +421,7 @@ object SafFileManager {
                         }
                     } catch (e: Exception) {
                         failure = ImportFailure(videoCode, ImportFailureReason.IMPORT_EXCEPTION)
-                        Log.e("ImportHanime", "导入失败: $videoCode", e)
+                        Log.e("ImportHanime", "导入失败: ${videoCode.logId()}", e)
                     }
                 }
             } finally {

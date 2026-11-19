@@ -67,7 +67,7 @@ object Parser {
 
         val userIdRegex = Regex("""/user/(\d+)""")
         val userId: String = userIdRegex.find(userHomePageLink)?.groupValues?.get(1) ?: ""
-        Log.i("userInfo","name:$username;id:$userId")
+        Log.i("userInfo","user info parsed")
 
         val bannerCSS = parseBody.selectFirst("div[id=home-banner-wrapper]")
         val bannerImg = bannerCSS?.previousElementSibling()
@@ -306,7 +306,7 @@ object Parser {
                 hanimeNormalItemVer2(hanimeSearchItem)?.let(hanimeSearchList::add)
             }
         }
-        Log.d("search_result", "$hanimeSearchList")
+        Log.d("search_result", "items=${hanimeSearchList.size}")
         return PageLoadingState.Success(HanimeSearchResult(hanimeSearchList, maxPage))
     }
 
@@ -538,7 +538,7 @@ object Parser {
 
             }
         }
-        Log.d("related_anime_list", relatedAnimeList.toString())
+        Log.d("related_anime_list", "items=${relatedAnimeList.size}")
 
         val hanimeResolution = HanimeResolution()
         val videoClass = parseBody.selectFirst("video[id=player]")
@@ -1017,7 +1017,7 @@ object Parser {
                 )
             )
         }
-        Log.d("commentList", commentList.toString())
+        Log.d("commentList", "items=${commentList.size}")
         return WebsiteState.Success(
             VideoComments(
                 commentList,

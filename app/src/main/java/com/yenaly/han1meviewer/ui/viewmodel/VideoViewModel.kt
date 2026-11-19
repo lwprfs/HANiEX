@@ -424,7 +424,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
     fun insertWatchHistory(history: WatchHistoryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.WatchHistory.insert(history)
-            Log.d("insert_watch_hty", "$history DONE!")
+            Log.d("insert_watch_hty", "DONE!")
         }
     }
 
@@ -520,7 +520,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
             run {
                 this@VideoViewModel.hKeyframes?.keyframes?.forEach { keyframeInDb ->
                     if (abs(keyframeInDb.position - hKeyframe.position) < MIN_H_KEYFRAME_SAVE_INTERVAL) {
-                        Log.d("HKeyframe", "append_hkeyframe:time conflict: $keyframeInDb")
+                        Log.d("HKeyframe", "append_hkeyframe:time conflict")
                         _modifyHKeyframeFlow.emit(
                             false to application.getString(
                                 R.string.interval_must_greater_than_d,
@@ -531,7 +531,7 @@ class VideoViewModel(application: Application) : BaseViewModel(application) {
                     }
                 }
                 DatabaseRepo.HKeyframe.appendKeyframe(videoCode, title, hKeyframe)
-                Log.d("HKeyframe", "append_hkeyframe:$hKeyframe DONE!")
+                Log.d("HKeyframe", "append_hkeyframe DONE!")
                 _modifyHKeyframeFlow.emit(true to application.getString(R.string.add_success))
                 _forceRefresh.emit(Unit)
             }

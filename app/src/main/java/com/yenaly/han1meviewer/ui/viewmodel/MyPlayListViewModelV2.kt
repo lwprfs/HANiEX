@@ -167,7 +167,7 @@ class MyPlayListViewModelV2 : ViewModel() {
     }
 
     fun getPlaylistItems(page: Int = 1, listCode: String, refresh: Boolean = false) {
-        Log.i("getPlaylistItems","isLoadingMore:$isLoadingMore,listCode:$listCode,")
+        Log.i("getPlaylistItems","isLoadingMore:$isLoadingMore")
         if (isLoadingMore) return
         isLoadingMore = true
         viewModelScope.launch {
@@ -182,7 +182,7 @@ class MyPlayListViewModelV2 : ViewModel() {
                 _playlistStateFlow.value = PageLoadingState.Loading
             }
             NetworkRepo.getMyPlayListItems(page, listCode).collect { state ->
-                Log.i("getPlaylistItems","state:$state")
+                Log.i("getPlaylistItems","state updated")
                 when (state) {
                     is PageLoadingState.Success -> {
                         Log.i("getPlaylistItems","list size:${state.info.hanimeInfo.size}")
@@ -251,7 +251,7 @@ class MyPlayListViewModelV2 : ViewModel() {
     val modifyPlaylistFlow = _modifyPlaylistFlow.asSharedFlow()
 
     fun modifyPlaylist(listCode: String, title: String, desc: String, delete: Boolean) {
-        Log.i("modify_playlist","${listCode},${title},${desc}")
+        Log.i("modify_playlist","modify playlist")
         viewModelScope.launch {
             NetworkRepo.modifyPlaylist(listCode, title, desc, delete, csrfToken).collect {
                 _modifyPlaylistFlow.emit(it)

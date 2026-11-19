@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.ui.navigation
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -263,7 +265,7 @@ object NavigationManager {
     }
 
     fun switchSite(newSiteType: SiteType, thenOpen: PendingVideoOpen? = null) {
-        Log.d(TAG, "switchSite called: $newSiteType (pending open: ${thenOpen?.videoCode})")
+        Log.d(TAG, "switchSite called: $newSiteType (pending open: ${thenOpen?.videoCode.logId()})")
         currentSiteType = newSiteType
         Preferences.siteType = newSiteType
         pendingToken++
@@ -295,7 +297,7 @@ object NavigationManager {
                     return
                 }
                 if (++attempts >= PENDING_OPEN_MAX_ATTEMPTS) {
-                    Log.w(TAG, "Pending open timed out for ${request.videoCode}")
+                    Log.w(TAG, "Pending open timed out for ${request.videoCode.logId()}")
                     return
                 }
                 mainHandler.postDelayed(this, PENDING_OPEN_POLL_MS)

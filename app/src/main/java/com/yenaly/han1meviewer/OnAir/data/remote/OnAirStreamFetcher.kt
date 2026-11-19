@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.OnAir.data.remote
 
+import com.yenaly.han1meviewer.util.logId
+import com.yenaly.han1meviewer.util.logHost
+
 import android.util.Log
 import com.yenaly.han1meviewer.OnAir.data.model.StreamResult
 import com.yenaly.han1meviewer.OnAir.data.parser.OnAirWatchParser
@@ -21,7 +24,7 @@ object OnAirStreamFetcher {
         if (videoId.isBlank() || quality.isBlank()) return null
         val first = fetchOnce(videoId, quality)
         if (first != null) return first
-        Log.w(TAG, "all sources dead for $videoId/$quality, retrying with fresh token")
+        Log.w(TAG, "all sources dead for ${videoId.logId()}/$quality, retrying with fresh token")
         return fetchOnce(videoId, quality)
     }
 
@@ -63,13 +66,13 @@ object OnAirStreamFetcher {
                             abs.contains("/hls/", ignoreCase = true)
 
                     if (!probeMediaUrl(abs)) {
-                        Log.w(TAG, "source failed validation — skipping: $abs")
+                        Log.w(TAG, "source failed validation — skipping: ${abs.logHost()}")
                         continue
                     }
 
                     val mime = source.attr("type").takeIf { it.isNotBlank() }
                         ?: guessMime(abs)
-                    Log.d(TAG, "quality=$quality source: $abs (hls=$isHls)")
+                    Log.d(TAG, "quality=$quality source: ${abs.logHost()} (hls=$isHls)")
                     return StreamResult(
                         quality = quality,
                         url = abs,
@@ -84,7 +87,7 @@ object OnAirStreamFetcher {
                 if (hlsAttr != null) {
                     val abs = resolve(hlsAttr, base)
                     if (abs != null && probeMediaUrl(abs)) {
-                        Log.d(TAG, "original HLS fallback: $abs")
+                        Log.d(TAG, "original HLS fallback: ${abs.logHost()}")
                         return StreamResult(
                             quality = "original",
                             url = abs,
@@ -92,7 +95,7 @@ object OnAirStreamFetcher {
                             isHls = true,
                         )
                     } else {
-                        Log.w(TAG, "original HLS fallback rejected: ${abs ?: hlsAttr}")
+                        Log.w(TAG, "original HLS fallback rejected: ${(abs ?: hlsAttr).logHost()}")
                     }
                 }
             }
@@ -103,7 +106,7 @@ object OnAirStreamFetcher {
             }
             null
         } catch (e: Exception) {
-            Log.e(TAG, "fetchOnce($videoId, $quality) failed", e)
+            Log.e(TAG, "fetchOnce(${videoId.logId()}, $quality) failed", e)
             null
         }
     }
@@ -140,7 +143,7 @@ object OnAirStreamFetcher {
                         ctype.isBlank()
 
                 if (!ctypeLooksLikeMedia) {
-                    Log.w(TAG, "probe reject: unexpected Content-Type '$ctype' for $url")
+                    Log.w(TAG, "probe reject: unexpected Content-Type '$ctype' for ${url.logHost()}")
                     return@use false
                 }
 
@@ -155,7 +158,7 @@ object OnAirStreamFetcher {
                 if (bytes == null || bytes.isEmpty()) return@use false
 
                 if (bytes[0] == '<'.code.toByte()) {
-                    Log.w(TAG, "probe reject: HTML body at $url")
+                    Log.w(TAG, "probe reject: HTML body at ${url.logHost()}")
                     return@use false
                 }
 

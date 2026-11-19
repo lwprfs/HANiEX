@@ -212,12 +212,12 @@ object FapFolderNetwork {
                 response = chain.proceed(request)
             } catch (e: IOException) {
                 if (chain.call().isCanceled() || attempt >= maxAttempts) throw e
-                Log.w(TAG, "retry $attempt/$maxAttempts after ${e::class.java.simpleName}: ${request.url.encodedPath}")
+                Log.w(TAG, "retry $attempt/$maxAttempts after ${e::class.java.simpleName}: <path hidden>")
             }
             if (response != null) {
                 if (attempt >= maxAttempts || !isTransientStatus(response.code)) return response
                 val wait = retryDelayMs(attempt, response)
-                Log.w(TAG, "retry $attempt/$maxAttempts after HTTP ${response.code}: ${request.url.encodedPath}")
+                Log.w(TAG, "retry $attempt/$maxAttempts after HTTP ${response.code}: <path hidden>")
                 response.close()
                 pauseBeforeRetry(wait, chain)
             } else {

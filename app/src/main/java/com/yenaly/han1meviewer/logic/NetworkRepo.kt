@@ -322,7 +322,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("add_to_fav_body", it)
+        Log.d("add_to_fav_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(likeStatus)
     }
 
@@ -350,7 +350,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("rate_video_body", it)
+        Log.d("rate_video_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(isPositive)
     }
 
@@ -368,7 +368,7 @@ object NetworkRepo {
         },
         permittedSuccessCode = intArrayOf(500)
     ) {
-        Log.d("create_playlist_body", it)
+        Log.d("create_playlist_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(Unit)
     }
 
@@ -385,7 +385,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("add_to_playlist_body", it)
+        Log.d("add_to_playlist_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(Unit)
     }
 
@@ -406,7 +406,7 @@ object NetworkRepo {
         },
         permittedSuccessCode = intArrayOf(302)
     ) {
-        Log.d("modify_playlist_body", it)
+        Log.d("modify_playlist_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(
             ModifiedPlaylistArgs(
                 title = title, desc = description, isDeleted = delete,
@@ -441,7 +441,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("post_comment_body", it)
+        Log.d("post_comment_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(Unit)
     }
 
@@ -457,7 +457,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("post_comment_reply_body", it)
+        Log.d("post_comment_reply_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(Unit)
     }
 
@@ -484,7 +484,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("like_comment_body", it)
+        Log.d("like_comment_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(
             VideoCommentArgs(
                 commentPosition, isPositive, comment
@@ -529,7 +529,7 @@ object NetworkRepo {
             )
         }
     ) {
-        Log.d("subscribe_artist_body", it)
+        Log.d("subscribe_artist_body", "length=${it.length}")
         return@websiteIOFlow WebsiteState.Success(status)
     }
 
@@ -559,7 +559,7 @@ object NetworkRepo {
             val loginPageAgain = HanimeNetwork.hanimeService.getLoginPage()
             if (loginPageAgain.code() == 404) {
 
-                Log.d("login_headers", req.headers().toMultimap().toString())
+                Log.d("login_headers", "Set-Cookie headers: ${req.headers().values("Set-Cookie").size}")
                 emit(WebsiteState.Success(req.headers().values("Set-Cookie")))
             } else {
                 emit(WebsiteState.Error(IllegalStateException(getString(R.string.account_or_password_wrong))))

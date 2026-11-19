@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.logic.network
 
+import com.yenaly.han1meviewer.util.logHost
+
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.remoteconfig.remoteConfig
@@ -227,7 +229,7 @@ object HUpdater {
             UpdateManager.onDeltaUnavailable(DeltaUnavailableReason.NO_DELTA_PUBLISHED)
         }
         val isZip = url.endsWith("zip")
-        Log.d(TAG, "开始下载更新包（${if (isZip) "CI zip" else "release"}）：$url")
+        Log.d(TAG, "开始下载更新包（${if (isZip) "CI zip" else "release"}）：${url.logHost()}")
         UpdateManager.onFullDownloadStarted()
         downloadTo(url, isZip, progress)
     }
@@ -249,7 +251,7 @@ object HUpdater {
 
         val body = res.orThrowDownload(url)
         if (isZip) {
-            Log.d(TAG, "Injecting update from zip ($url)")
+            Log.d(TAG, "Injecting update from zip (${url.logHost()})")
             body.use {
                 it.byteStream().use { stream ->
                     ZipInputStream(stream).use { zip ->
@@ -267,7 +269,7 @@ object HUpdater {
                 }
             }
         } else {
-            Log.d(TAG, "Injecting update from release ($url)")
+            Log.d(TAG, "Injecting update from release (${url.logHost()})")
             outputStream().use { out ->
                 body.use {
                     Log.i(TAG, "content length: ${it.contentLength()}")

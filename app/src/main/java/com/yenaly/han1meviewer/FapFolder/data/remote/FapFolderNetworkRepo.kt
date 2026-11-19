@@ -260,7 +260,7 @@ object FapFolderNetworkRepo {
             )
             emit(WebsiteState.Success(HomePageBundle(page = page, extras = extras)))
         } catch (e: Exception) {
-            Log.e(TAG, "getPageWithExtras($path) failed", e)
+            Log.e(TAG, "getPageWithExtras failed", e)
             emit(WebsiteState.Error(e))
         }
     }.flowOn(Dispatchers.IO)

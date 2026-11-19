@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.HentaiMama.ui.video
 
+import com.yenaly.han1meviewer.util.logHost
+
 import com.yenaly.han1meviewer.ui.component.SiteBackWithHomeButton
 import com.yenaly.han1meviewer.util.PlayerOrientation
 import androidx.compose.ui.res.stringResource
@@ -225,7 +227,7 @@ fun HentaiMamaVideoScreen(
         }
 
         if (existing == null) {
-            Log.d(PLAYER_TAG, "Creating ExoPlayer for url=$url")
+            Log.d(PLAYER_TAG, "Creating ExoPlayer for url=${url.logHost()}")
             val player = createSitePlayer(context)
             player.setMediaSource(buildHentaiMamaMediaSource(context, url))
             player.prepare()
@@ -233,7 +235,7 @@ fun HentaiMamaVideoScreen(
             exoPlayer.value = player
             currentMediaUrl.value = url
         } else {
-            Log.d(PLAYER_TAG, "Swapping media source to url=$url")
+            Log.d(PLAYER_TAG, "Swapping media source to url=${url.logHost()}")
             val wasPlaying = existing.playWhenReady
             val pos = existing.currentPosition
             existing.setMediaSource(buildHentaiMamaMediaSource(context, url))

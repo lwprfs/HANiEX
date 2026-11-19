@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.logic
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.util.Log
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
@@ -81,7 +83,7 @@ object DatabaseRepo {
                         }.onFailure { e ->
 
                             if (e is FileNotFoundException) {
-                                Log.w("HKeyframe", "未找到关键帧文件: $videoCode.json")
+                                Log.w("HKeyframe", "未找到关键帧文件: ${videoCode.logId()}.json")
                             } else {
                                 Log.e("HKeyframe", "读取关键帧失败: ${e.message}", e)
                             }

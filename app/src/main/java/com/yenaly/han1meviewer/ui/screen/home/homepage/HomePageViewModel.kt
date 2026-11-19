@@ -158,7 +158,7 @@ class HomePageViewModel: ViewModel() {
     fun deleteWatchHistory(history: WatchHistoryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.WatchHistory.delete(history)
-            Log.d("delete_watch_hty", "$history DONE!")
+            Log.d("delete_watch_hty", "DONE!")
         }
     }
 
@@ -177,7 +177,7 @@ class HomePageViewModel: ViewModel() {
     fun removeHKeyframe(videoCode: String, hKeyframe: HKeyframeEntity.Keyframe) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.HKeyframe.removeKeyframe(videoCode, hKeyframe)
-            Log.d("HKeyframe", "removeHKeyframe:$hKeyframe DONE!")
+            Log.d("HKeyframe", "removeHKeyframe DONE!")
             _modifyHKeyframeFlow.emit(true)
         }
     }
@@ -187,7 +187,7 @@ class HomePageViewModel: ViewModel() {
     ) {
         viewModelScope.launch {
             DatabaseRepo.HKeyframe.modifyKeyframe(videoCode, oldKeyframe, keyframe)
-            Log.d("HKeyframe", "modifyHKeyframe:$keyframe DONE!")
+            Log.d("HKeyframe", "modifyHKeyframe DONE!")
             _modifyHKeyframeFlow.emit(true)
         }
     }

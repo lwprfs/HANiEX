@@ -217,7 +217,7 @@ class MissAvViewModel(application: Application) : AndroidViewModel(application) 
             runCatching {
                 onResult(MissAvNetworkRepo.getGenreVideosSync(genrePath, page, sort, filter))
             }.onFailure { e ->
-                Log.e(TAG, "Genre videos error for $genrePath", e)
+                Log.e(TAG, "Genre videos error", e)
                 onResult(emptyList())
             }
         }

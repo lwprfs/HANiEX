@@ -1,10 +1,19 @@
 package com.yenaly.han1meviewer.FuckingSession.data.remote
 
+import com.yenaly.han1meviewer.util.logHost
+
 import android.util.Log
 import com.yenaly.han1meviewer.FuckingSession.data.model.FuckingSessionSource
 import okhttp3.Request
 import org.jsoup.Jsoup
 
+/**
+ * Turns an embed page (almost always `iceyfile.com/video/embed/...`) into direct media URLs.
+ *
+ * The embed page is a plain video.js page, so the stream is read from `<video>/<source>` tags and,
+ * failing that, from any `.mp4` / `.m3u8` URL present in the page's markup or inline scripts.
+ * The stream host checks the Referer, so the embed page's origin is returned with every source.
+ */
 object FuckingSessionStreamResolver {
 
     private const val TAG = "FuckingSessionResolver"
@@ -15,6 +24,7 @@ object FuckingSessionStreamResolver {
     )
     private val HEIGHT_REGEX = Regex("""(\d{3,4})\s*p""", RegexOption.IGNORE_CASE)
 
+    /** Ad / preview hosts that show up on the pages next to the real player. */
     private val IGNORED_HOSTS = listOf(
         "bkcdn.net", "magsrv.com", "realsrv.com", "pemsrv.com", "exoclick", "juicyads",
         "trafficjunky", "doubleclick",
@@ -25,7 +35,7 @@ object FuckingSessionStreamResolver {
     fun resolve(embeds: List<String>, pageUrl: String): List<FuckingSessionSource> {
         for (embed in embeds.take(MAX_EMBEDS)) {
             val sources = runCatching { resolveOne(embed, pageUrl) }
-                .onFailure { Log.w(TAG, "resolve failed for $embed", it) }
+                .onFailure { Log.w(TAG, "resolve failed for ${embed.logHost()}", it) }
                 .getOrDefault(emptyList())
             if (sources.isNotEmpty()) return sources
         }
@@ -46,10 +56,10 @@ object FuckingSessionStreamResolver {
             .build()
         val html = FuckingSessionNetwork.sharedOkHttpClient.newCall(request).execute().use { resp ->
             if (!resp.isSuccessful) {
-                Log.w(TAG, "HTTP ${resp.code} for $embedUrl")
+                Log.w(TAG, "HTTP ${resp.code} for ${embedUrl.logHost()}")
                 return emptyList()
             }
-            resp.body.string()
+            resp.body?.string().orEmpty()
         }
         if (html.isBlank()) return emptyList()
 

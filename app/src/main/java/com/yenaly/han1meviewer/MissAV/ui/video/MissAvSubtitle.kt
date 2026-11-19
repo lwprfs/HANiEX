@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.MissAV.ui.video
 
+import com.yenaly.han1meviewer.util.logHost
+
 import androidx.compose.ui.res.stringResource
 import android.content.Context
 import android.net.Uri
@@ -155,7 +157,7 @@ object MissAvSubtitleHelper {
                     val document = Jsoup.parse(html)
 
                     val rows = document.select("table.sub-table tbody tr")
-                    Log.d(TAG, "Search '$searchTerm': found ${rows.size} rows")
+                    Log.d(TAG, "Search: found ${rows.size} rows")
 
                     for (row in rows) {
                         runCatching {
@@ -201,7 +203,7 @@ object MissAvSubtitleHelper {
                         }
                     }
                 } catch (e: Exception) {
-                    Log.w(TAG, "Search term '$searchTerm' failed: ${e.message}")
+                    Log.w(TAG, "Search term failed: ${e.message}")
                 }
             }
 
@@ -263,10 +265,10 @@ object MissAvSubtitleHelper {
                 }
                 SubtitleLangStatus.Missing
             } catch (e: SocketTimeoutException) {
-                Log.e(TAG, "Timeout checking subtitle: $pageUrl")
+                Log.e(TAG, "Timeout checking subtitle: ${pageUrl.logHost()}")
                 null
             } catch (e: Exception) {
-                Log.e(TAG, "Check error for $pageUrl: ${e.message}")
+                Log.e(TAG, "Check error for ${pageUrl.logHost()}: ${e.message}")
                 null
             }
         }
@@ -654,7 +656,7 @@ private fun MissAvSubtitleCatSection(
             try {
                 statuses = statuses + (key to MissAvSubtitleHelper.checkLanguage(key, langCode))
             } catch (e: Exception) {
-                Log.e("MissAvSubtitle", "Check failed for $key: ${e.message}")
+                Log.e("MissAvSubtitle", "Check failed: ${e.message}")
                 statuses = statuses + (key to null)
             } finally {
                 checkingStates = checkingStates + (key to false)

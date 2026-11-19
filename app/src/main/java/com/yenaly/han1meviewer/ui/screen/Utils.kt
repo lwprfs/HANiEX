@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen
 
+import com.yenaly.han1meviewer.util.logHost
+
 import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
@@ -70,7 +72,7 @@ fun RetryableImage(
             .diskCacheKey("$model#r$retryCount")
             .listener(
                 onError = { _, result ->
-                    Log.e("CoilError", "Image load failed for $model", result.throwable)
+                    Log.e("CoilError", "Image load failed for ${model.logHost()}", result.throwable)
                 }
             )
             .build()

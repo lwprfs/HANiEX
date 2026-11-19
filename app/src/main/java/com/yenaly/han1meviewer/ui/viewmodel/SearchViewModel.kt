@@ -169,7 +169,7 @@ class SearchViewModel(
                     duration != null || tags.isNotEmpty() || brands.isNotEmpty() || broad
             HAnalytics.logEvent(
                 FirebaseAnalytics.Event.SEARCH,
-                FirebaseAnalytics.Param.SEARCH_TERM to (query ?: ""),
+                "has_query" to !query.isNullOrBlank(),  // never send the raw search text
                 FirebaseConstants.PARAM_SEARCH_TYPE to if (hasAdvancedFilters) "advanced" else "simple",
                 FirebaseConstants.PARAM_PAGE to page,
                 FirebaseConstants.PARAM_BROAD to broad,
@@ -188,7 +188,7 @@ class SearchViewModel(
                 if (state is PageLoadingState.Success) {
                     HAnalytics.logEvent(
                         FirebaseAnalytics.Event.VIEW_SEARCH_RESULTS,
-                        FirebaseAnalytics.Param.SEARCH_TERM to (query ?: ""),
+                        "has_query" to !query.isNullOrBlank(),  // never send the raw search text
                         FirebaseConstants.PARAM_PAGE to page,
                         FirebaseConstants.PARAM_RESULT_COUNT to state.info.list.size,
                         FirebaseConstants.PARAM_TOTAL_PAGES to state.info.totalPages,
@@ -218,7 +218,7 @@ class SearchViewModel(
     fun insertSearchHistory(history: SearchHistoryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.SearchHistory.insert(history)
-            Log.d("insert_search_hty", "$history DONE!")
+            Log.d("insert_search_hty", "DONE!")
         }
     }
 
@@ -274,7 +274,7 @@ class SearchViewModel(
     fun deleteSearchHistory(history: SearchHistoryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.SearchHistory.delete(history)
-            Log.d("delete_search_hty", "$history DONE!")
+            Log.d("delete_search_hty", "DONE!")
         }
     }
 
@@ -285,7 +285,7 @@ class SearchViewModel(
     fun deleteSearchHistoryByKeyword(query: String) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.SearchHistory.deleteByKeyword(query)
-            Log.d("delete_search_hty", "$query DONE!")
+            Log.d("delete_search_hty", "DONE!")
         }
     }
     val refreshTriggerFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)

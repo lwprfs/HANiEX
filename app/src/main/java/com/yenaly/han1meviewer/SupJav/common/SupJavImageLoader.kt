@@ -40,7 +40,7 @@ object SupJavImageLoader {
         val request = builder.build()
         val response = chain.proceed(request)
         if (!response.isSuccessful) {
-            Log.w(TAG, "HTTP ${response.code} for ${request.url} (clearance cookie sent: ${clearance != null})")
+            Log.w(TAG, "HTTP ${response.code} for ${request.url.host} (clearance cookie sent: ${clearance != null})")
         }
         response
     }

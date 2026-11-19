@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer
 
+import com.yenaly.han1meviewer.util.logId
+
 import android.content.Context
 import android.os.Looper
 import android.util.Log
@@ -37,10 +39,10 @@ object HCacheManager {
         val appContext = context.applicationContext
         appScope.launch {
             val startAt = System.currentTimeMillis()
-            Log.d(TAG, "元数据落盘开始（后台）：videoCode=$videoCode")
+            Log.d(TAG, "元数据落盘开始（后台）：videoCode=${videoCode.logId()}")
             runCatching { saveHanimeVideoInfo(appContext, videoCode, info) }
-                .onFailure { Log.e(TAG, "❌ 后台保存视频信息失败: $videoCode", it) }
-            Log.d(TAG, "元数据落盘结束：videoCode=$videoCode, 耗时=${System.currentTimeMillis() - startAt}ms")
+                .onFailure { Log.e(TAG, "❌ 后台保存视频信息失败: ${videoCode.logId()}", it) }
+            Log.d(TAG, "元数据落盘结束：videoCode=${videoCode.logId()}, 耗时=${System.currentTimeMillis() - startAt}ms")
         }
     }
 
@@ -67,7 +69,7 @@ object HCacheManager {
                 }
             }
 
-            Log.i("FileSave", "✅ Save video info OK: ${cacheFile.absolutePath}\n${info}")
+            Log.i("FileSave", "✅ Save video info OK: ${cacheFile.name.logId()}")
 
         } catch (e: IOException) {
             val errorMsg = e.message.orEmpty()
@@ -86,10 +88,10 @@ object HCacheManager {
                 return saveHanimeVideoInfo(context, videoCode, info)
             }
 
-            Log.e("FileSave", "❌ Save video info failed: ${cacheFile.absolutePath}", e)
+            Log.e("FileSave", "❌ Save video info failed: ${cacheFile.name.logId()}", e)
             throw e
         } catch (e: Exception) {
-            Log.e("FileSave", "❌ Unexpected error: ${cacheFile.absolutePath}", e)
+            Log.e("FileSave", "❌ Unexpected error: ${cacheFile.name.logId()}", e)
             throw e
         }
     }

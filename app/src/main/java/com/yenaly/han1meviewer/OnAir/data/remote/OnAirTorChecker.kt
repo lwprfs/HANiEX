@@ -58,7 +58,7 @@ object OnAirTorChecker {
                     )
                 }
                 val body = response.body.string()
-                Log.d(TAG, "check.torproject.org response: $body")
+                Log.d(TAG, "check.torproject.org response length=${body.length}")
                 val ip = Regex(""""IP"\s*:\s*"([^"]+)"""").find(body)?.groupValues?.getOrNull(1)
                 val isTor = Regex(""""IsTor"\s*:\s*(true|false)""", RegexOption.IGNORE_CASE)
                     .find(body)?.groupValues?.getOrNull(1)?.equals("true", ignoreCase = true) == true

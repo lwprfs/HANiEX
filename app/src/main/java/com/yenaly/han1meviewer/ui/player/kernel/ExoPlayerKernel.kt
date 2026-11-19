@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.ui.player.kernel
 
+import com.yenaly.han1meviewer.util.logHost
+
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Handler
@@ -212,7 +214,7 @@ class ExoPlayerKernel(
         pendingSurface = surfaceToKeep
         listener = listenerToKeep
         released = false
-        Log.i(TAG, "prepare: ${request.url}")
+        Log.i(TAG, "prepare: ${request.url.host}")
         val thread = HandlerThread("ExoPlayerKernel").also { it.start() }
         val handler = Handler(thread.looper)
         mediaHandlerThread = thread
@@ -248,7 +250,7 @@ class ExoPlayerKernel(
                 .setDefaultRequestProperties(request.headers),
         )
         val url = request.url
-        Log.i(TAG, "URL Link = $url")
+        Log.i(TAG, "URL Link = ${url.logHost()}")
         val mediaSource = if (url.contains(".m3u8")) {
             HlsMediaSource.Factory(dataSourceFactory)
                 .createMediaSource(MediaItem.fromUri(url))

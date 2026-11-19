@@ -26,13 +26,13 @@ open class CloudflareChallengeInterceptor(
         if (!isTargetHost(host)) return response
         if (!isChallenge(response)) return response
 
-        Log.w(tag, "Cloudflare challenge detected for ${request.url}")
+        Log.w(tag, "Cloudflare challenge detected for ${request.url.host}")
         response.close()
 
         if (cookieStore.hasValidCookieForHost(host)) {
             val retryResponse = chain.proceed(request)
             if (!isChallenge(retryResponse)) {
-                Log.i(tag, "Retry with existing cookie succeeded for ${request.url}")
+                Log.i(tag, "Retry with existing cookie succeeded for ${request.url.host}")
                 return retryResponse
             }
             retryResponse.close()
@@ -45,16 +45,16 @@ open class CloudflareChallengeInterceptor(
         }
 
         if (solved) {
-            Log.i(tag, "Verification successful. Retrying original request for ${request.url}")
+            Log.i(tag, "Verification successful. Retrying original request for ${request.url.host}")
             val finalResponse = chain.proceed(request)
             if (isChallenge(finalResponse)) {
-                Log.e(tag, "Final retry still got a challenge for ${request.url}")
+                Log.e(tag, "Final retry still got a challenge for ${request.url.host}")
                 finalResponse.close()
                 return buildErrorResponse(request, 403, "Cloudflare challenge persists after verification")
             }
             return finalResponse
         } else {
-            Log.e(tag, "Cloudflare verification failed or timed out for ${request.url}")
+            Log.e(tag, "Cloudflare verification failed or timed out for ${request.url.host}")
             return buildErrorResponse(request, 403, "Cloudflare challenge not solved")
         }
     }

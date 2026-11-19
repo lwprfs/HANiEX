@@ -264,12 +264,12 @@ class MpvKernel(
 
     private fun init() {
         mpvOptions.forEach { (key, value) ->
-            Log.i("MPV_config", "$key,$value")
+            Log.i("MPV_config", "$key")
             MPVLib.setOptionString(key, value)
         }
         try {
             parseCustomMpvParams().forEach { (key, value) ->
-                Log.i("MPV_config", "custom: $key,$value")
+                Log.i("MPV_config", "custom: $key")
                 MPVLib.setOptionString(key, value)
             }
         } catch (e: Exception) {
@@ -334,7 +334,7 @@ class MpvKernel(
             Log.e(TAG, "视频链接为空")
             return
         }
-        Log.i(TAG, "URL Link = ${request.url}")
+        Log.i(TAG, "URL Link = ${request.url.host}")
         MPVLib.setOptionString("force-window", "yes")
 
         val path = prepareUri(request.url.toUri()) ?: return
