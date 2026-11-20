@@ -1,6 +1,9 @@
 package com.yenaly.han1meviewer.ui.component.shorts
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +14,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -20,6 +25,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ThumbDown
+import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -36,9 +46,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
@@ -72,6 +84,7 @@ internal fun ShortsCircleButton(
     ) { content() }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ShortsRailButton(
     onClick: () -> Unit,
@@ -79,10 +92,85 @@ private fun ShortsRailButton(
     scrim: Color,
     content: @Composable () -> Unit,
 ) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        ShortsCircleButton(onClick = onClick, scrim = scrim, content = content)
+    Column(
+        modifier = Modifier
+            .widthIn(min = 52.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(scrim)
+            .combinedClickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) { content() }
         if (!label.isNullOrEmpty()) {
-            Text(label, color = Color.White, style = MaterialTheme.typography.labelSmall)
+            Text(
+                label,
+                color = Color.White,
+                style = MaterialTheme.typography.labelMedium,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ShortsRatingPill(
+    likes: String?,
+    liked: Boolean,
+    disliked: Boolean,
+    scrim: Color,
+    onLike: () -> Unit,
+    onDislike: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val likeTint by animateColorAsState(if (liked) scheme.primary else Color.White, label = "ShortsLikeTint")
+    val dislikeTint by animateColorAsState(if (disliked) scheme.error else Color.White, label = "ShortsDislikeTint")
+    val likeBg by animateColorAsState(
+        if (liked) scheme.primaryContainer.copy(alpha = 0.55f) else scrim, label = "ShortsLikeBg",
+    )
+    val dislikeBg by animateColorAsState(
+        if (disliked) scheme.errorContainer.copy(alpha = 0.55f) else scrim, label = "ShortsDislikeBg",
+    )
+    Column(
+        modifier = Modifier.widthIn(min = 52.dp).clip(RoundedCornerShape(20.dp)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(likeBg)
+                .combinedClickable(onClick = onLike)
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Icon(
+                imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                contentDescription = stringResource(R.string.site_shorts_like),
+                modifier = Modifier.size(24.dp),
+                tint = likeTint,
+            )
+            if (!likes.isNullOrEmpty()) {
+                Text(likes, color = likeTint, style = MaterialTheme.typography.labelMedium)
+            }
+        }
+        Box(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.22f)))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .background(dislikeBg)
+                .combinedClickable(onClick = onDislike),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = if (disliked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                contentDescription = stringResource(R.string.site_shorts_dislike),
+                modifier = Modifier.size(24.dp),
+                tint = dislikeTint,
+            )
         }
     }
 }
@@ -157,32 +245,20 @@ internal fun ShortsActionRail(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         if (canRate) {
-            ShortsRailButton(onClick = onLike, label = meta?.likes.compactCount(), scrim = scrim) {
-                Icon(
-                    painter = painterResource(
-                        if (meta?.liked == true) R.drawable.ic_baseline_thumb_up_alt_24
-                        else R.drawable.ic_baseline_thumb_up_off_alt_24
-                    ),
-                    contentDescription = stringResource(R.string.site_shorts_like),
-                    tint = if (meta?.liked == true) active else Color.White,
-                )
-            }
-            ShortsRailButton(onClick = onDislike, label = null, scrim = scrim) {
-                Icon(
-                    painter = painterResource(
-                        if (meta?.disliked == true) R.drawable.ic_baseline_thumb_down_alt_24
-                        else R.drawable.ic_baseline_thumb_down_off_alt_24
-                    ),
-                    contentDescription = stringResource(R.string.site_shorts_dislike),
-                    tint = if (meta?.disliked == true) active else Color.White,
-                )
-            }
+            ShortsRatingPill(
+                likes = meta?.likes.compactCount(),
+                liked = meta?.liked == true,
+                disliked = meta?.disliked == true,
+                scrim = scrim,
+                onLike = onLike,
+                onDislike = onDislike,
+            )
         }
         if (canFavorite) {
-            ShortsRailButton(onClick = onFavorite, label = null, scrim = scrim) {
+            ShortsRailButton(onClick = onFavorite, label = stringResource(R.string.site_shorts_favorite), scrim = scrim) {
                 Icon(
                     painter = painterResource(
                         if (meta?.favorite == true) R.drawable.ic_baseline_favorite_24
@@ -196,18 +272,19 @@ internal fun ShortsActionRail(
         if (canComment) {
             ShortsRailButton(
                 onClick = onComments,
-                label = meta?.commentsCount?.takeIf { it > 0 }.compactCount(),
+                label = meta?.commentsCount?.takeIf { it > 0 }.compactCount()
+                    ?: stringResource(R.string.xh_comments),
                 scrim = scrim,
             ) {
                 Icon(
-                    painterResource(R.drawable.ic_baseline_comment_24),
+                    painterResource(R.drawable.ic_shorts_comment_outline_24),
                     stringResource(R.string.xh_comments),
                     tint = Color.White,
                 )
             }
         }
         if (canShare) {
-            ShortsRailButton(onClick = onShare, label = null, scrim = scrim) {
+            ShortsRailButton(onClick = onShare, label = stringResource(R.string.share), scrim = scrim) {
                 Icon(
                     painterResource(R.drawable.ic_baseline_share_24),
                     stringResource(R.string.share),
