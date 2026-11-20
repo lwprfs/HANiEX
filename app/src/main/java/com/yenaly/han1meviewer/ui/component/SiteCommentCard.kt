@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.XHamster.ui.common
+package com.yenaly.han1meviewer.ui.component
 
 import android.text.format.DateUtils
 import androidx.compose.foundation.clickable
@@ -39,12 +39,8 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 
-/**
- * Comment card styled like the Hanime comment card (elevated card, 40dp avatar, bold name,
- * relative time, thumb / reply actions) so every XHamster comment list looks the same.
- */
 @Composable
-fun XHamsterCommentCard(
+fun SiteCommentCard(
     author: String,
     avatarUrl: String?,
     text: String,
@@ -77,29 +73,7 @@ fun XHamsterCommentCard(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                val avatarModifier = Modifier
-                    .size(if (isReply) 34.dp else 40.dp)
-                    .clip(CircleShape)
-                if (!avatarUrl.isNullOrBlank() && imageLoader != null) {
-                    RetryableImage(
-                        model = avatarUrl,
-                        modifier = avatarModifier,
-                        placeholder = painterResource(R.drawable.h_chan_loading),
-                        error = painterResource(R.drawable.h_chan_load_failed),
-                        contentScale = ContentScale.Crop,
-                        imageLoader = imageLoader,
-                    )
-                } else {
-                    Surface(modifier = avatarModifier, color = MaterialTheme.colorScheme.secondaryContainer) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                author.take(1).uppercase(),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            )
-                        }
-                    }
-                }
+                SiteAvatar(avatarUrl, author, size = if (isReply) 34.dp else 40.dp, imageLoader = imageLoader)
 
                 Column(
                     modifier = Modifier.weight(1f),
@@ -221,9 +195,8 @@ fun XHamsterCommentCard(
     }
 }
 
-/** Bottom composer shared by the shorts / GIF comment sheet. */
 @Composable
-fun XHamsterCommentComposer(
+fun SiteCommentComposer(
     replyingTo: String?,
     sending: Boolean,
     enabled: Boolean,

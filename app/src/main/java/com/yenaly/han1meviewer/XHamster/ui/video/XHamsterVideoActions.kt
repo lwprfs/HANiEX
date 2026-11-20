@@ -271,68 +271,6 @@ internal fun XHamsterReportDialog(
 }
 
 @Composable
-internal fun XHamsterCommentComposer(
-    replyTo: XHamsterComment?,
-    sending: Boolean,
-    postedTick: Int,
-    enabled: Boolean,
-    onCancelReply: () -> Unit,
-    onSend: (String) -> Unit,
-) {
-    var text by rememberSaveable { mutableStateOf("") }
-    LaunchedEffect(postedTick) { if (postedTick > 0) text = "" }
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        if (replyTo != null) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_video_reply_24),
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(Modifier.width(6.dp))
-                Text(
-                    text = stringResource(R.string.xhamster_comment_replying_to, replyTo.author),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                TextButton(onClick = onCancelReply) { Text(stringResource(R.string.cancel)) }
-            }
-        }
-        OutlinedTextField(
-            value = text,
-            onValueChange = { text = it },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = enabled && !sending,
-            placeholder = { Text(stringResource(R.string.xhamster_comment_hint)) },
-            maxLines = 4,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Default),
-            trailingIcon = {
-                if (sending) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                } else {
-                    IconButton(
-                        onClick = { onSend(text) },
-                        enabled = enabled && text.isNotBlank(),
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_video_send_24),
-                            contentDescription = stringResource(R.string.xhamster_comment_send),
-                        )
-                    }
-                }
-            },
-        )
-    }
-}
-
-@Composable
 internal fun XHamsterMessageEffect(viewModel: XHamsterVideoViewModel) {
     val context = LocalContext.current
     val message by viewModel.message.collectAsStateWithLifecycle()

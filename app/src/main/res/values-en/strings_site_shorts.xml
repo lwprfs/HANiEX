@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_shorts_play_failed">Couldn\'t play this video</string>
+    <string name="site_shorts_login_required">Please log in to continue</string>
+    <string name="site_shorts_action_failed">Action failed</string>
+    <string name="site_subscribe">Subscribe</string>
+    <string name="site_subscribed">Subscribed</string>
+    <string name="site_n_subscribers">%1$s subscribers</string>
+    <string name="site_shorts_n_views">%1$s views</string>
+    <string name="site_uploader">Uploader</string>
+    <string name="site_channel">Channel</string>
+    <string name="site_shorts_gif_badge">GIF</string>
+    <string name="site_shorts_like">Like</string>
+    <string name="site_shorts_dislike">Dislike</string>
+    <string name="site_shorts_favorite">Favorite</string>
+    <string name="site_shorts_mute">Mute</string>
+    <string name="site_shorts_unmute">Unmute</string>
+    <string name="site_shorts_subtitles">Subtitles</string>
+    <string name="site_shorts_subtitles_off">Off</string>
+    <string name="site_shorts_report_title">Report this video</string>
+    <string name="site_shorts_report_message">The site\'s report form will open in your browser, pre-filled with this video.</string>
+    <string name="site_shorts_report_open">Open report form</string>
+</resources>

@@ -56,6 +56,8 @@ import com.yenaly.han1meviewer.RouVideo.ui.home.RouVideoSource
 import com.yenaly.han1meviewer.RouVideo.ui.home.RouVideoVideoGrid
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
+import com.yenaly.han1meviewer.ui.component.SiteSearchAppBar
+import com.yenaly.han1meviewer.ui.component.SiteSearchPrompt
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.SiteVideoSectionHeader
 
@@ -113,33 +115,13 @@ fun RouVideoSearchScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
-                title = {
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focus),
-                        singleLine = true,
-                        placeholder = { Text(stringResource(R.string.rouvideo_search_hint)) },
-                        trailingIcon = {
-                            if (query.isNotEmpty()) {
-                                IconButton(onClick = { query = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = null)
-                                }
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = { submit() }),
-                    )
-                },
-                navigationIcon = { SiteBackButton(onClick = onBack) },
-                actions = {
-                    IconButton(onClick = { submit() }) {
-                        Icon(Icons.Default.Search, contentDescription = null)
-                    }
-                },
+            SiteSearchAppBar(
+                query = query,
+                onQueryChange = { query = it },
+                onSubmit = { submit() },
+                onBack = onBack,
+                hint = stringResource(R.string.rouvideo_search_hint),
+                focusRequester = focus,
             )
         },
     ) { padding ->

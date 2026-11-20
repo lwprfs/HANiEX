@@ -34,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import com.yenaly.han1meviewer.ui.component.SiteSearchAppBar
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -317,21 +318,21 @@ fun HentaiMamaSearchScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
-        SearchTopBar(
+        SiteSearchAppBar(
             query = query,
-            onQueryChange = { query = it },
-            onBack = onBack,
-            onClear = {
-                query = ""
-                hasSearched = false
-                viewModel.clearSearch()
+            onQueryChange = {
+                query = it
+                if (it.isEmpty()) {
+                    hasSearched = false
+                    viewModel.clearSearch()
+                }
             },
-            onSearch = { runSearch() },
-            onOpenAdvanced = { showAdvanced = true },
+            onSubmit = { runSearch() },
+            onBack = onBack,
+            hint = stringResource(R.string.search_video_hint),
             focusRequester = focusRequester,
+            onOpenAdvanced = { showAdvanced = true },
         )
-
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
         AnimatedVisibility(
             visible = !isGenreMode && activeFilters.isNotEmpty(),
@@ -468,95 +469,6 @@ fun HentaiMamaSearchScreen(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SearchTopBar(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    onBack: () -> Unit,
-    onClear: () -> Unit,
-    onSearch: () -> Unit,
-    onOpenAdvanced: () -> Unit,
-    focusRequester: FocusRequester,
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = 4.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = stringResource(R.string.back),
-                    tint = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .clip(RoundedCornerShape(28.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .focusRequester(focusRequester),
-            ) {
-                BasicTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
-                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(onSearch = { onSearch() }),
-                    decorationBox = { inner ->
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.CenterStart,
-                        ) {
-                            if (query.isEmpty()) {
-                                Text(
-                                    text = stringResource(R.string.search_video_hint),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                            inner()
-                        }
-                    },
-                )
-            }
-            if (query.isNotEmpty()) {
-                IconButton(onClick = onClear) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = stringResource(R.string.site_clear),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            Text(
-                text = stringResource(R.string.advanced),
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .clickable { onOpenAdvanced() }
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
-            )
         }
     }
 }

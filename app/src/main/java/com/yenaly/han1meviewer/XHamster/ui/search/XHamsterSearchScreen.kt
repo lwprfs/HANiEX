@@ -36,6 +36,8 @@ import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterListViewModel
 import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterSource
 import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterVideoGrid
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.SiteSearchAppBar
+import com.yenaly.han1meviewer.ui.component.SiteSearchPrompt
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.XHamster.ui.discover.XHamsterDiscoverActions
@@ -78,39 +80,13 @@ fun XHamsterSearchScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
-                title = {
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focus),
-                        singleLine = true,
-                        placeholder = { Text(stringResource(R.string.xhamster_search_hint)) },
-                        trailingIcon = {
-                            if (query.isNotEmpty()) {
-                                IconButton(onClick = { query = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = null)
-                                }
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = {
-                            submitted = query.trim()
-                            keyboard?.hide()
-                        }),
-                    )
-                },
-                navigationIcon = { SiteBackButton(onClick = onBack) },
-                actions = {
-                    IconButton(onClick = {
-                        submitted = query.trim()
-                        keyboard?.hide()
-                    }) {
-                        Icon(Icons.Default.Search, contentDescription = null)
-                    }
-                },
+            SiteSearchAppBar(
+                query = query,
+                onQueryChange = { query = it },
+                onSubmit = { submitted = query.trim() },
+                onBack = onBack,
+                hint = stringResource(R.string.xhamster_search_hint),
+                focusRequester = focus,
             )
         },
     ) { padding ->
@@ -134,10 +110,7 @@ fun XHamsterSearchScreen(
             )
             val encoded = java.net.URLEncoder.encode(submitted, "UTF-8")
             if (submitted.isBlank()) {
-                Text(
-                    text = stringResource(R.string.xhamster_search_prompt),
-                    modifier = Modifier.padding(16.dp),
-                )
+                SiteSearchPrompt(stringResource(R.string.xhamster_search_prompt))
                 Column(Modifier.padding(horizontal = 12.dp)) { XHamsterDiscoverStrips(discover) }
             } else when (scope) {
                 "photos" -> XHamsterPhotoSearchResults(
@@ -149,12 +122,6 @@ fun XHamsterSearchScreen(
                 "shorts" -> ProfileShorts(
                     path = "/shorts/search/$encoded",
                     preview = emptyList(),
-                    ownerName = "",
-                    ownerAvatar = null,
-                    pageUrl = "",
-                    canSubscribe = false,
-                    subscribed = false,
-                    onToggleSubscribe = {},
                 )
 
                 else -> XHamsterVideoGrid(

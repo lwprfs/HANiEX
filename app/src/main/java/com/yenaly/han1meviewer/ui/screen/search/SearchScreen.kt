@@ -464,12 +464,13 @@ fun SearchScreen(
 @Composable
 fun SearchAppBar(
     query: String, onQueryChange: (String) -> Unit, onSearch: () -> Unit,
-    onBack: () -> Unit, onOpenAdvancedSearch: () -> Unit,
+    onBack: () -> Unit, onOpenAdvancedSearch: (() -> Unit)?,
     onFocusChanged: (Boolean) -> Unit, focusRequester: FocusRequester,
     modifier: Modifier = Modifier,
     showWatchedFilter: Boolean = false,
     hideWatched: Boolean = false,
     onToggleHideWatched: () -> Unit = {},
+    hint: String? = null,
 ) {
     val kb = LocalSoftwareKeyboardController.current
     Surface(
@@ -512,7 +513,7 @@ fun SearchAppBar(
                     decorationBox = { inner ->
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.CenterStart) {
                             if (query.isEmpty()) Text(
-                                stringResource(R.string.search_video_hint),
+                                hint ?: stringResource(R.string.search_video_hint),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -541,7 +542,7 @@ fun SearchAppBar(
                     )
                 }
             }
-            Text(
+            if (onOpenAdvancedSearch != null) Text(
                 stringResource(R.string.advanced),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.primary,
@@ -549,7 +550,7 @@ fun SearchAppBar(
                     .clip(RoundedCornerShape(16.dp))
                     .clickable { onOpenAdvancedSearch() }
                     .padding(horizontal = 12.dp, vertical = 8.dp)
-            )
+            ) else if (query.isEmpty()) Spacer(Modifier.width(8.dp))
         }
     }
 }

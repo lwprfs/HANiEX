@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_shorts_play_failed">无法播放此视频</string>
+    <string name="site_shorts_login_required">请先登录才能继续</string>
+    <string name="site_shorts_action_failed">操作失败</string>
+    <string name="site_subscribe">订阅</string>
+    <string name="site_subscribed">已订阅</string>
+    <string name="site_n_subscribers">%1$s 位订阅者</string>
+    <string name="site_shorts_n_views">%1$s 次观看</string>
+    <string name="site_uploader">上传者</string>
+    <string name="site_channel">频道</string>
+    <string name="site_shorts_gif_badge">GIF</string>
+    <string name="site_shorts_like">喜欢</string>
+    <string name="site_shorts_dislike">不喜欢</string>
+    <string name="site_shorts_favorite">收藏</string>
+    <string name="site_shorts_mute">静音</string>
+    <string name="site_shorts_unmute">取消静音</string>
+    <string name="site_shorts_subtitles">字幕</string>
+    <string name="site_shorts_subtitles_off">关闭</string>
+    <string name="site_shorts_report_title">举报此视频</string>
+    <string name="site_shorts_report_message">网站的举报表单将在浏览器中打开，并已预先填入此视频。</string>
+    <string name="site_shorts_report_open">打开举报表单</string>
+</resources>

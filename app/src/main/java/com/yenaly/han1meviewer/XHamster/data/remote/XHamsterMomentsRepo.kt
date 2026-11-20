@@ -69,7 +69,6 @@ object XHamsterMomentsRepo {
             response.body.string()
         }
 
-    /** Time ranges the site offers for "best GIFs". */
     val gifRanges = listOf("daily", "weekly", "monthly", "alltime")
 
     private fun gifListUrl(range: String, page: Int): String {
@@ -90,8 +89,6 @@ object XHamsterMomentsRepo {
                         FeedPage(parsed.items, parsed.hasNext && parsed.items.isNotEmpty())
                     }
 
-                    // The site lists GIFs in the HTML page and only then asks the API for the
-                    // stream details of exactly those ids (the API has no paging of its own).
                     Feed.GIFS -> {
                         val pageUrl = gifListUrl(timeRange, page)
                         val html = run(
@@ -109,7 +106,7 @@ object XHamsterMomentsRepo {
                                 "&order=$order$range&checkPrivileges=1&ids=$ids&xplayerVideoId=${list.ids.first()}"
                         val body = runApi(url, pageUrl)
                         val parsed = XHamsterMomentsParser.parse(body)
-                        // Keep the site's own order.
+
                         val byId = parsed.items.associateBy { it.first.id }
                         val ordered = list.ids.mapNotNull { byId[it] }.ifEmpty { parsed.items }
                         FeedPage(ordered, list.hasNext && ordered.isNotEmpty())
@@ -118,7 +115,6 @@ object XHamsterMomentsRepo {
             }
         }
 
-    /** Loads comments exactly like the website: /api/front/comment/list-by-cursor. */
     suspend fun comments(videoId: Long, cursor: String?, referer: String): Result<XHamsterShortComments> =
         withContext(Dispatchers.IO) {
             runCatching {
@@ -143,7 +139,6 @@ object XHamsterMomentsRepo {
         return result != false
     }
 
-    /** Posts a comment (or reply) on a short / GIF through the shared video comment endpoint. */
     suspend fun postComment(
         videoId: Long,
         text: String,

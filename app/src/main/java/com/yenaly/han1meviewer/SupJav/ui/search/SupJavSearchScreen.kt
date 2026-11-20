@@ -45,6 +45,8 @@ import com.yenaly.han1meviewer.SupJav.ui.home.SupJavListViewModel
 import com.yenaly.han1meviewer.SupJav.ui.home.SupJavSource
 import com.yenaly.han1meviewer.SupJav.ui.home.SupJavVideoGrid
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.SiteSearchAppBar
+import com.yenaly.han1meviewer.ui.component.SiteSearchPrompt
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
 @Composable
@@ -96,39 +98,13 @@ fun SupJavSearchScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
-                title = {
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = { query = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focus),
-                        singleLine = true,
-                        placeholder = { Text(stringResource(R.string.supjav_search_hint)) },
-                        trailingIcon = {
-                            if (query.isNotEmpty()) {
-                                IconButton(onClick = { query = "" }) {
-                                    Icon(Icons.Default.Clear, contentDescription = null)
-                                }
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(onSearch = {
-                            submitted = query.trim()
-                            keyboard?.hide()
-                        }),
-                    )
-                },
-                navigationIcon = { SiteBackButton(onClick = onBack) },
-                actions = {
-                    IconButton(onClick = {
-                        submitted = query.trim()
-                        keyboard?.hide()
-                    }) {
-                        Icon(Icons.Default.Search, contentDescription = null)
-                    }
-                },
+            SiteSearchAppBar(
+                query = query,
+                onQueryChange = { query = it },
+                onSubmit = { submitted = query.trim() },
+                onBack = onBack,
+                hint = stringResource(R.string.supjav_search_hint),
+                focusRequester = focus,
             )
         },
     ) { padding ->
@@ -144,10 +120,7 @@ fun SupJavSearchScreen(
                 )
             }
             if (submitted.isBlank()) {
-                Text(
-                    text = stringResource(R.string.supjav_search_prompt),
-                    modifier = Modifier.padding(16.dp),
-                )
+                SiteSearchPrompt(stringResource(R.string.supjav_search_prompt))
             } else if (crossActive && !(state.items.isEmpty() && state.isLoading)) {
                 CrossSiteResultsGrid(
                     ownSite = SiteType.SUPJAV,

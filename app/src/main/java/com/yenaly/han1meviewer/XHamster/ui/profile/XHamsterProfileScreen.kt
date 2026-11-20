@@ -103,11 +103,18 @@ import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterSource
 import com.yenaly.han1meviewer.XHamster.ui.home.XHamsterVideoGrid
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.SiteAvatar
+import com.yenaly.han1meviewer.ui.component.SiteSubscribeButton
+import com.yenaly.han1meviewer.ui.component.SiteVerifiedBadge
 import com.yenaly.han1meviewer.ui.component.SiteEmptyContent
 import com.yenaly.han1meviewer.ui.component.SiteErrorContent
 import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
+import com.yenaly.han1meviewer.XHamster.ui.shorts.XHamsterShortsPlayer
+import com.yenaly.han1meviewer.XHamster.ui.shorts.toSiteShort
+import com.yenaly.han1meviewer.ui.component.shorts.SiteShortOwner
+import com.yenaly.han1meviewer.ui.component.shorts.SiteShortsGrid
 import kotlinx.coroutines.launch
 
 private enum class ProfileTab { VIDEOS, SHORTS }
@@ -228,11 +235,17 @@ private fun ProfileContent(
                 ProfileTab.SHORTS -> ProfileShorts(
                     path = shortsPath,
                     preview = profile.shorts,
-                    ownerName = profile.name,
-                    ownerAvatar = profile.avatarUrl,
+                    owner = SiteShortOwner(
+                        name = profile.name,
+                        avatarUrl = profile.avatarUrl,
+                        verified = profile.verified,
+                        subscribers = profile.subscribers,
+                        isChannel = profile.kind == XHamsterEntityProfile.Kind.CHANNEL,
+                        canSubscribe = canSubscribe,
+                        subscribed = subscribed,
+                        subscribeBusy = busy,
+                    ),
                     pageUrl = XHamsterConstants.BASE_URL + XHamsterConstants.relativePath(profile.path) + "/shorts",
-                    canSubscribe = canSubscribe,
-                    subscribed = subscribed,
                     onToggleSubscribe = toggleSubscribe,
                 )
             }
@@ -253,18 +266,18 @@ private fun ProfileHeader(
 
     Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (!profile.avatarUrl.isNullOrBlank()) {
-                RetryableImage(
-                    model = profile.avatarUrl,
-                    modifier = Modifier.size(64.dp).clip(CircleShape),
-                    placeholder = painterResource(R.drawable.h_chan_loading),
-                    error = painterResource(R.drawable.h_chan_load_failed),
-                    contentScale = ContentScale.Crop,
-                    imageLoader = imageLoader,
-                )
-            }
+            SiteAvatar(profile.avatarUrl, profile.name, size = 64.dp, imageLoader = imageLoader)
             Column(Modifier.weight(1f)) {
-                Text(profile.name, style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        profile.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (profile.verified) SiteVerifiedBadge(size = 20.dp)
+                }
                 val stats = listOfNotNull(
                     profile.country,
                     XHamsterFormat.count(profile.subscribers)?.let { stringResource(R.string.xhamster_n_subscribers, it) },
@@ -274,10 +287,7 @@ private fun ProfileHeader(
                 ).joinToString(" · ")
                 if (stats.isNotEmpty()) Text(stats, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (canSubscribe) {
-                if (subscribed) OutlinedButton(onClick = onToggleSubscribe, enabled = !busy) { Text(stringResource(R.string.xhamster_subscribed)) }
-                else Button(onClick = onToggleSubscribe, enabled = !busy) { Text(stringResource(R.string.xhamster_subscribe)) }
-            }
+            if (canSubscribe) SiteSubscribeButton(subscribed, busy, onToggleSubscribe)
         }
         if (!profile.aliases.isNullOrBlank()) {
             Text(profile.aliases, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -360,16 +370,13 @@ private fun ProfileVideos(
 internal fun ProfileShorts(
     path: String,
     preview: List<XHamsterShort>,
-    ownerName: String,
-    ownerAvatar: String?,
-    pageUrl: String,
-    canSubscribe: Boolean,
-    subscribed: Boolean,
-    onToggleSubscribe: () -> Unit,
+    owner: SiteShortOwner? = null,
+    pageUrl: String = "",
+    onToggleSubscribe: () -> Unit = {},
 ) {
     val imageLoader = XHamsterImageLoader.get(LocalContext.current)
     val scope = rememberCoroutineScope()
-    var items by remember(path) { mutableStateOf(preview) }
+    var items by remember(path) { mutableStateOf(preview.map { it.toSiteShort() }) }
     var nextUrl by remember(path) { mutableStateOf<String?>(null) }
     var loading by remember(path) { mutableStateOf(true) }
     var loadingMore by remember(path) { mutableStateOf(false) }
@@ -382,7 +389,7 @@ internal fun ProfileShorts(
         error = null
         XHamsterRepo.shorts(path)
             .onSuccess { page ->
-                if (page.items.isNotEmpty()) items = page.items
+                if (page.items.isNotEmpty()) items = page.items.map { it.toSiteShort() }
                 nextUrl = page.nextUrl
             }
             .onFailure { error = it.message ?: it.javaClass.simpleName }
@@ -397,7 +404,7 @@ internal fun ProfileShorts(
             XHamsterRepo.shorts(next)
                 .onSuccess { page ->
                     val known = items.map { it.id }.toHashSet()
-                    items = items + page.items.filter { it.id !in known }
+                    items = items + page.items.map { it.toSiteShort() }.filter { it.id !in known }
                     nextUrl = page.nextUrl?.takeIf { it != next }
                 }
                 .onFailure { nextUrl = null }
@@ -405,73 +412,29 @@ internal fun ProfileShorts(
         }
     }
 
-    val gridState = rememberLazyGridState()
-    val nearEnd by remember(gridState) {
-        derivedStateOf {
-            val li = gridState.layoutInfo
-            val last = li.visibleItemsInfo.lastOrNull()?.index ?: 0
-            li.totalItemsCount > 0 && last >= li.totalItemsCount - 6
-        }
-    }
-    LaunchedEffect(nearEnd, items.size, nextUrl) { if (nearEnd && nextUrl != null) loadMore() }
-
     when {
         loading && items.isEmpty() -> SiteLoadingContent()
         items.isEmpty() && error != null -> SiteErrorContent(message = error, onRetry = { reload++ })
         items.isEmpty() -> SiteEmptyContent(hint = stringResource(R.string.xhamster_shorts_empty))
-        else -> LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Fixed(3),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-        ) {
-            itemsIndexed(items, key = { _, s -> s.id }) { index, short ->
-                Box(
-                    Modifier.aspectRatio(9f / 16f).clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                        .clickable { playing = index },
-                ) {
-                    RetryableImage(
-                        model = short.coverUrl,
-                        contentDescription = short.title,
-                        modifier = Modifier.fillMaxSize(),
-                        placeholder = painterResource(R.drawable.h_chan_loading),
-                        error = painterResource(R.drawable.h_chan_load_failed),
-                        contentScale = ContentScale.Crop,
-                        imageLoader = imageLoader,
-                    )
-                    XHamsterFormat.count(short.views)?.let {
-                        Text(
-                            "▶ $it", color = Color.White, style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.align(Alignment.BottomStart).padding(6.dp)
-                                .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(4.dp))
-                                .padding(horizontal = 4.dp, vertical = 1.dp),
-                        )
-                    }
-                }
-            }
-            if (loadingMore) item(span = { GridItemSpan(maxLineSpan) }) {
-                Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(Modifier.size(24.dp), strokeWidth = 2.dp)
-                }
-            }
-        }
+        else -> SiteShortsGrid(
+            items = items,
+            onOpen = { playing = it },
+            imageLoader = imageLoader,
+            hasMore = nextUrl != null,
+            loadingMore = loadingMore,
+            onLoadMore = { loadMore() },
+        )
     }
 
     playing?.let { start ->
-        com.yenaly.han1meviewer.XHamster.ui.shorts.XHamsterShortsPlayer(
+        XHamsterShortsPlayer(
             items = items,
             initialIndex = start,
             hasMore = nextUrl != null,
             onLoadMore = { loadMore() },
             onDismiss = { playing = null },
             referer = pageUrl,
-            ownerName = ownerName,
-            ownerAvatar = ownerAvatar,
-            canSubscribe = canSubscribe,
-            subscribed = subscribed,
+            owner = owner,
             onToggleSubscribe = onToggleSubscribe,
         )
     }
