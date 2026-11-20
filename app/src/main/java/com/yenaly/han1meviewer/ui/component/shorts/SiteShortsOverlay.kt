@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -74,6 +75,7 @@ internal data class ShortsCommentsState(
     val total: Long? = null,
 )
 
+/** Round floating control for the top bar (back / mute / captions / report). */
 @Composable
 internal fun ShortsCircleButton(
     onClick: () -> Unit,
@@ -87,6 +89,10 @@ internal fun ShortsCircleButton(
     ) { content() }
 }
 
+/**
+ * One action in the right-hand rail: a floating icon on a soft glass disc with its count right
+ * underneath. No rectangular containers, so the video stays the focus.
+ */
 @Composable
 private fun ShortsRailAction(
     onClick: () -> Unit,
@@ -106,10 +112,14 @@ private fun ShortsRailAction(
         label = "ShortsRailTint",
     )
     Column(
+        // No clip here: a rounded clip would shave the corners off the label underneath the disc.
         modifier = Modifier
-            .width(56.dp)
-            .clip(RoundedCornerShape(28.dp))
-            .clickable(onClick = onClick),
+            .widthIn(min = 56.dp, max = 80.dp)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
@@ -125,6 +135,7 @@ private fun ShortsRailAction(
                 label,
                 color = Color.White,
                 maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.SemiBold,
@@ -143,7 +154,7 @@ internal fun ShortsOwnerRow(
     onSubscribe: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
+    // Flat, borderless row floating on the video gradient — no card/box behind it.
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
