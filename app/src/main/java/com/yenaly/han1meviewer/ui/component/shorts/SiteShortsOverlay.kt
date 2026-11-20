@@ -1,9 +1,10 @@
 package com.yenaly.han1meviewer.ui.component.shorts
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -15,7 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -47,9 +48,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -80,96 +83,53 @@ internal fun ShortsCircleButton(
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier.size(44.dp).background(scrim, CircleShape),
+        modifier = modifier.size(40.dp).background(scrim.copy(alpha = scrim.alpha * 0.7f), CircleShape),
     ) { content() }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ShortsRailButton(
+private fun ShortsRailAction(
     onClick: () -> Unit,
     label: String?,
     scrim: Color,
-    content: @Composable () -> Unit,
+    active: Boolean = false,
+    activeColor: Color = Color.Unspecified,
+    content: @Composable (tint: Color) -> Unit,
 ) {
+    val scale by animateFloatAsState(
+        targetValue = if (active) 1.12f else 1f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
+        label = "ShortsRailScale",
+    )
+    val tint by animateColorAsState(
+        if (active && activeColor != Color.Unspecified) activeColor else Color.White,
+        label = "ShortsRailTint",
+    )
     Column(
         modifier = Modifier
-            .widthIn(min = 52.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(scrim)
-            .combinedClickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .width(56.dp)
+            .clip(RoundedCornerShape(28.dp))
+            .clickable(onClick = onClick),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
     ) {
-        Box(Modifier.size(24.dp), contentAlignment = Alignment.Center) { content() }
+        Box(
+            Modifier
+                .size(46.dp)
+                .scale(scale)
+                .background(scrim.copy(alpha = scrim.alpha * 0.65f), CircleShape),
+            contentAlignment = Alignment.Center,
+        ) { content(tint) }
         if (!label.isNullOrEmpty()) {
             Text(
                 label,
                 color = Color.White,
-                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
                 textAlign = TextAlign.Center,
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun ShortsRatingPill(
-    likes: String?,
-    liked: Boolean,
-    disliked: Boolean,
-    scrim: Color,
-    onLike: () -> Unit,
-    onDislike: () -> Unit,
-) {
-    val scheme = MaterialTheme.colorScheme
-    val likeTint by animateColorAsState(if (liked) scheme.primary else Color.White, label = "ShortsLikeTint")
-    val dislikeTint by animateColorAsState(if (disliked) scheme.error else Color.White, label = "ShortsDislikeTint")
-    val likeBg by animateColorAsState(
-        if (liked) scheme.primaryContainer.copy(alpha = 0.55f) else scrim, label = "ShortsLikeBg",
-    )
-    val dislikeBg by animateColorAsState(
-        if (disliked) scheme.errorContainer.copy(alpha = 0.55f) else scrim, label = "ShortsDislikeBg",
-    )
-    Column(
-        modifier = Modifier.widthIn(min = 52.dp).clip(RoundedCornerShape(20.dp)),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(likeBg)
-                .combinedClickable(onClick = onLike)
-                .padding(horizontal = 8.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Icon(
-                imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
-                contentDescription = stringResource(R.string.site_shorts_like),
-                modifier = Modifier.size(24.dp),
-                tint = likeTint,
-            )
-            if (!likes.isNullOrEmpty()) {
-                Text(likes, color = likeTint, style = MaterialTheme.typography.labelMedium)
-            }
-        }
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = 0.22f)))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(40.dp)
-                .background(dislikeBg)
-                .combinedClickable(onClick = onDislike),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = if (disliked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
-                contentDescription = stringResource(R.string.site_shorts_dislike),
-                modifier = Modifier.size(24.dp),
-                tint = dislikeTint,
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    shadow = ShortsBadgeDefaults.TextShadow,
+                ),
             )
         }
     }
@@ -183,45 +143,47 @@ internal fun ShortsOwnerRow(
     onSubscribe: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(modifier = modifier, shape = RoundedCornerShape(12.dp), color = scrim) {
-        Row(
-            modifier = Modifier.padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            SiteAvatar(owner.avatarUrl, owner.name, size = 40.dp, imageLoader = imageLoader)
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        text = owner.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        color = Color.White,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
-                    if (owner.verified) SiteVerifiedBadge()
-                }
-                val subs = owner.subscribers.compactCount()
-                val kind = stringResource(
-                    if (owner.isChannel) R.string.site_channel else R.string.site_uploader
-                )
+
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        SiteAvatar(owner.avatarUrl, owner.name, size = 38.dp, imageLoader = imageLoader)
+        Column(modifier = Modifier.weight(1f, fill = false)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
                 Text(
-                    text = if (subs != null) {
-                        "$kind  ·  " + stringResource(R.string.site_n_subscribers, subs)
-                    } else kind,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.White.copy(alpha = 0.75f),
+                    text = owner.name,
+                    style = MaterialTheme.typography.titleSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        shadow = ShortsBadgeDefaults.TextShadow,
+                    ),
+                    color = Color.White,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
                 )
+                if (owner.verified) SiteVerifiedBadge()
             }
-            if (owner.canSubscribe) {
-                SiteSubscribeButton(owner.subscribed, owner.subscribeBusy, onSubscribe)
-            }
+            val subs = owner.subscribers.compactCount()
+            val kind = stringResource(
+                if (owner.isChannel) R.string.site_channel else R.string.site_uploader
+            )
+            Text(
+                text = if (subs != null) {
+                    "$kind  ·  " + stringResource(R.string.site_n_subscribers, subs)
+                } else kind,
+                style = MaterialTheme.typography.bodySmall.copy(shadow = ShortsBadgeDefaults.TextShadow),
+                color = Color.White.copy(alpha = 0.78f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        if (owner.canSubscribe) {
+            SiteSubscribeButton(owner.subscribed, owner.subscribeBusy, onSubscribe)
         }
     }
 }
@@ -241,54 +203,86 @@ internal fun ShortsActionRail(
     onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val active = MaterialTheme.colorScheme.primary
+    val scheme = MaterialTheme.colorScheme
+    val liked = meta?.liked == true
+    val disliked = meta?.disliked == true
+    val favorite = meta?.favorite == true
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         if (canRate) {
-            ShortsRatingPill(
-                likes = meta?.likes.compactCount(),
-                liked = meta?.liked == true,
-                disliked = meta?.disliked == true,
+            ShortsRailAction(
+                onClick = onLike,
+                label = meta?.likes.compactCount(),
                 scrim = scrim,
-                onLike = onLike,
-                onDislike = onDislike,
-            )
-        }
-        if (canFavorite) {
-            ShortsRailButton(onClick = onFavorite, label = stringResource(R.string.site_shorts_favorite), scrim = scrim) {
+                active = liked,
+                activeColor = scheme.primary,
+            ) { tint ->
                 Icon(
-                    painter = painterResource(
-                        if (meta?.favorite == true) R.drawable.ic_baseline_favorite_24
-                        else R.drawable.ic_baseline_favorite_border_24
-                    ),
-                    contentDescription = stringResource(R.string.site_shorts_favorite),
-                    tint = if (meta?.favorite == true) active else Color.White,
+                    imageVector = if (liked) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                    contentDescription = stringResource(R.string.site_shorts_like),
+                    modifier = Modifier.size(24.dp),
+                    tint = tint,
+                )
+            }
+            ShortsRailAction(
+                onClick = onDislike,
+                label = null,
+                scrim = scrim,
+                active = disliked,
+                activeColor = scheme.error,
+            ) { tint ->
+                Icon(
+                    imageVector = if (disliked) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                    contentDescription = stringResource(R.string.site_shorts_dislike),
+                    modifier = Modifier.size(24.dp),
+                    tint = tint,
                 )
             }
         }
         if (canComment) {
-            ShortsRailButton(
+            ShortsRailAction(
                 onClick = onComments,
                 label = meta?.commentsCount?.takeIf { it > 0 }.compactCount()
                     ?: stringResource(R.string.xh_comments),
                 scrim = scrim,
-            ) {
+            ) { tint ->
                 Icon(
                     painterResource(R.drawable.ic_shorts_comment_outline_24),
                     stringResource(R.string.xh_comments),
-                    tint = Color.White,
+                    modifier = Modifier.size(24.dp),
+                    tint = tint,
+                )
+            }
+        }
+        if (canFavorite) {
+            ShortsRailAction(
+                onClick = onFavorite,
+                label = stringResource(R.string.site_shorts_favorite),
+                scrim = scrim,
+                active = favorite,
+                activeColor = scheme.primary,
+            ) { tint ->
+                Icon(
+                    painter = painterResource(
+                        if (favorite) R.drawable.ic_baseline_favorite_24
+                        else R.drawable.ic_baseline_favorite_border_24
+                    ),
+                    contentDescription = stringResource(R.string.site_shorts_favorite),
+                    modifier = Modifier.size(24.dp),
+                    tint = tint,
                 )
             }
         }
         if (canShare) {
-            ShortsRailButton(onClick = onShare, label = stringResource(R.string.share), scrim = scrim) {
+            ShortsRailAction(onClick = onShare, label = stringResource(R.string.share), scrim = scrim) { tint ->
                 Icon(
                     painterResource(R.drawable.ic_baseline_share_24),
                     stringResource(R.string.share),
-                    tint = Color.White,
+                    modifier = Modifier.size(22.dp),
+                    tint = tint,
                 )
             }
         }

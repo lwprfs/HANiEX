@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -19,10 +20,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -31,10 +29,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import com.yenaly.han1meviewer.R
@@ -66,9 +64,9 @@ fun SiteShortsGrid(
         state = state,
         columns = GridCells.Fixed(columns),
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         itemsIndexed(items, key = { _, s -> s.id }) { index, short ->
             SiteShortThumb(short, imageLoader, onClick = { onOpen(index) })
@@ -83,11 +81,12 @@ fun SiteShortsGrid(
 
 @Composable
 private fun SiteShortThumb(short: SiteShort, imageLoader: ImageLoader?, onClick: () -> Unit) {
+    val views = short.views.compactCount()
     Box(
         Modifier
             .aspectRatio(9f / 16f)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clip(RoundedCornerShape(14.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .clickable(onClick = onClick),
     ) {
         RetryableImage(
@@ -99,41 +98,37 @@ private fun SiteShortThumb(short: SiteShort, imageLoader: ImageLoader?, onClick:
             contentScale = ContentScale.Crop,
             imageLoader = imageLoader,
         )
-        if (short.isGif) {
-            ShortsGifBadge(Modifier.align(Alignment.TopStart).padding(6.dp))
+
+        if (views != null || short.durationSeconds != null) {
+            Box(
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
+                        )
+                    ),
+            )
         }
-        short.views.compactCount()?.let { views ->
+
+        if (short.isGif) {
+            ShortsGifBadge(Modifier.align(Alignment.TopStart).padding(8.dp))
+        }
+
+        if (views != null || short.durationSeconds != null) {
             Row(
-                Modifier.align(Alignment.BottomStart).padding(6.dp)
-                    .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 5.dp, vertical = 1.dp),
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Icon(
-                    painterResource(R.drawable.ic_baseline_play_arrow_24), null,
-                    tint = Color.White, modifier = Modifier.size(12.dp),
-                )
-                Text(
-                    views, color = Color.White, style = MaterialTheme.typography.labelSmall,
-                    modifier = Modifier.padding(start = 2.dp),
-                )
+                ShortsViewsBadge(views)
+                ShortsDurationBadge(short.durationSeconds)
             }
         }
-    }
-}
-
-@Composable
-internal fun ShortsGifBadge(modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(6.dp),
-        color = MaterialTheme.colorScheme.primaryContainer,
-    ) {
-        Text(
-            stringResource(R.string.site_shorts_gif_badge),
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp),
-        )
     }
 }

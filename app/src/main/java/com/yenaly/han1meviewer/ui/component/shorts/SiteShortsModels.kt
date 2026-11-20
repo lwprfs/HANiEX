@@ -14,6 +14,8 @@ data class SiteShort(
     val views: Long? = null,
 
     val isGif: Boolean = false,
+
+    val durationSeconds: Int? = null,
 )
 
 data class SiteShortSubtitle(

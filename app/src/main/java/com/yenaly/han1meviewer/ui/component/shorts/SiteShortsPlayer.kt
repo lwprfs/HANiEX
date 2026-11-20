@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,6 +25,7 @@ import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerSnapDistance
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
@@ -31,7 +33,6 @@ import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ClosedCaptionDisabled
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -458,12 +459,21 @@ fun SiteShortsPlayer(
                             },
                             onRelease = { player.clearVideoTextureView(it) },
                         )
-                        if (!isPlaying) {
-                            Icon(
-                                painterResource(R.drawable.ic_baseline_play_arrow_24), null,
-                                tint = Color.White.copy(alpha = 0.85f),
-                                modifier = Modifier.size(72.dp),
-                            )
+                        AnimatedVisibility(
+                            visible = !isPlaying,
+                            enter = fadeIn() + scaleIn(initialScale = 0.8f),
+                            exit = fadeOut(),
+                        ) {
+                            Box(
+                                Modifier.size(68.dp).background(Color.Black.copy(alpha = 0.38f), CircleShape),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.ic_baseline_play_arrow_24), null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(40.dp),
+                                )
+                            }
                         }
                         AnimatedVisibility(
                             visible = heartTick > 0 && showHeart,
@@ -485,24 +495,33 @@ fun SiteShortsPlayer(
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
-                                    .padding(start = 24.dp, end = 80.dp, bottom = 190.dp)
-                                    .background(Color.Black.copy(alpha = 0.6f), RoundedCornerShape(6.dp))
-                                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    .padding(start = 24.dp, end = 84.dp, bottom = 200.dp)
+                                    .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp),
                             )
                         }
                     }
 
                     Box(
-                        Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(220.dp).background(
-                            Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)))
+                        Modifier.align(Alignment.TopCenter).fillMaxWidth().height(120.dp).background(
+                            Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent))
+                        ),
+                    )
+                    Box(
+                        Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(280.dp).background(
+                            Brush.verticalGradient(
+                                0f to Color.Transparent,
+                                0.55f to Color.Black.copy(alpha = 0.35f),
+                                1f to Color.Black.copy(alpha = 0.78f),
+                            )
                         ),
                     )
 
                     Column(
                         Modifier.align(Alignment.BottomStart)
-                            .padding(start = 12.dp, end = 76.dp, bottom = 24.dp)
+                            .padding(start = 14.dp, end = 84.dp, bottom = 22.dp)
                             .navigationBarsPadding(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         if (pageOwner != null) {
                             ShortsOwnerRow(pageOwner, imageLoader, scrim, onSubscribe = onToggleSubscribe)
@@ -510,24 +529,22 @@ fun SiteShortsPlayer(
                         if (short.title.isNotBlank()) {
                             Text(
                                 short.title, color = Color.White,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    shadow = ShortsBadgeDefaults.TextShadow,
+                                ),
                                 maxLines = 2, overflow = TextOverflow.Ellipsis,
                             )
                         }
                         val views = short.views.compactCount()
-                        if (short.isGif || views != null) {
+                        if (short.isGif || views != null || short.durationSeconds != null) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
                             ) {
+
                                 if (short.isGif) ShortsGifBadge()
-                                if (views != null) {
-                                    Text(
-                                        stringResource(R.string.site_shorts_n_views, views),
-                                        color = Color.White.copy(alpha = 0.8f),
-                                        style = MaterialTheme.typography.labelSmall,
-                                    )
-                                }
+                                ShortsViewsBadge(views)
+                                ShortsDurationBadge(short.durationSeconds)
                             }
                         }
                     }
@@ -548,7 +565,7 @@ fun SiteShortsPlayer(
                         },
                         onShare = { shareSiteText(context, "${short.title}\n${short.pageUrl}", short.title) },
                         modifier = Modifier.align(Alignment.BottomEnd)
-                            .padding(end = 12.dp, bottom = 24.dp)
+                            .padding(end = 8.dp, bottom = 22.dp)
                             .navigationBarsPadding(),
                     )
                 }
@@ -556,7 +573,7 @@ fun SiteShortsPlayer(
 
             val currentShort = items.getOrNull(pagerState.currentPage)
             Row(
-                Modifier.align(Alignment.TopStart).fillMaxWidth().statusBarsPadding().padding(12.dp),
+                Modifier.align(Alignment.TopStart).fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
@@ -597,13 +614,16 @@ fun SiteShortsPlayer(
                 }
             }
 
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth()
-                    .navigationBarsPadding().height(3.dp),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = Color.White.copy(alpha = 0.2f),
-            )
+            Box(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .navigationBarsPadding().height(2.dp)
+                    .background(Color.White.copy(alpha = 0.18f)),
+            ) {
+                Box(
+                    Modifier.fillMaxHeight().fillMaxWidth(progress.coerceIn(0f, 1f))
+                        .background(Color.White),
+                )
+            }
 
             commentsFor?.let { short ->
                 val state = commentStates[short.id] ?: ShortsCommentsState()

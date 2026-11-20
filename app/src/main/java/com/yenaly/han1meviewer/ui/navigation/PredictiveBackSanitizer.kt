@@ -4,7 +4,6 @@ import androidx.activity.BackEventCompat
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -12,7 +11,8 @@ import androidx.navigationevent.NavigationEvent
 import androidx.navigationevent.NavigationEventDispatcher
 import androidx.navigationevent.NavigationEventDispatcherOwner
 import androidx.navigationevent.NavigationEventInput
-import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
+import androidx.navigationevent.findViewTreeNavigationEventDispatcherOwner
+import androidx.navigationevent.setViewTreeNavigationEventDispatcherOwner
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.util.findActivityOrNull
 
@@ -24,11 +24,25 @@ fun SanitizedPredictiveBackOwner(content: @Composable () -> Unit) {
         content()
         return
     }
-    val bridge = remember(activity) { SanitizingBackBridge(activity) }
-    DisposableEffect(activity, bridge) {
-        onDispose { bridge.dispose() }
+
+    val bridge = remember(activity) {
+        val decorView = activity.window?.decorView
+        val previousOwner = decorView?.findViewTreeNavigationEventDispatcherOwner()
+        val bridge = SanitizingBackBridge(activity)
+        decorView?.setViewTreeNavigationEventDispatcherOwner(bridge)
+        bridge.restoreViewTreeOwner = {
+            decorView?.setViewTreeNavigationEventDispatcherOwner(previousOwner)
+        }
+        bridge
     }
-    CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides bridge, content = content)
+    DisposableEffect(activity, bridge) {
+        onDispose {
+            bridge.restoreViewTreeOwner?.invoke()
+            bridge.restoreViewTreeOwner = null
+            bridge.dispose()
+        }
+    }
+    content()
 }
 
 private class SanitizingBackBridge(
@@ -36,6 +50,8 @@ private class SanitizingBackBridge(
 ) : NavigationEventDispatcherOwner {
 
     val dispatcher = NavigationEventDispatcher()
+
+    var restoreViewTreeOwner: (() -> Unit)? = null
 
     private var lastGoodProgress = 0f
 
