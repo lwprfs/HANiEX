@@ -11,6 +11,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -108,6 +110,10 @@ fun SiteShortsPlayer(
     owner: SiteShortOwner? = null,
     onToggleSubscribe: () -> Unit = {},
     initialMetas: Map<String, SiteShortMeta> = emptyMap(),
+    /** When set, the short's tags are shown as tappable chips and this is called on tap. */
+    onOpenTag: ((SiteShortTag) -> Unit)? = null,
+    /** When set, tapping the uploader/channel (that has a [SiteShortOwner.path]) calls this. */
+    onOpenOwner: ((SiteShortOwner) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
     val context = LocalContext.current
@@ -134,7 +140,7 @@ fun SiteShortsPlayer(
     var muted by remember { mutableStateOf(rememberedMuted) }
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
-
+    // Real width/height of the playing video (0 = not known yet); used to letterbox instead of stretch.
     var videoRatio by remember { mutableFloatStateOf(0f) }
     var subtitleLang by remember { mutableStateOf<String?>(null) }
     var cueText by remember { mutableStateOf("") }
@@ -292,7 +298,7 @@ fun SiteShortsPlayer(
         started = true
         loadedShortId = short.id
     }
-    LaunchedEffect(pagerState.currentPage, items.size) {
+    LaunchedEffect(pagerState.currentPage, items.size, hasMore) {
         if (hasMore && pagerState.currentPage >= items.size - 3) onLoadMore()
     }
     LaunchedEffect(failed) {
@@ -483,7 +489,8 @@ fun SiteShortsPlayer(
                         imageLoader = imageLoader,
                     )
                     if (pagerState.currentPage == page) {
-
+                        // Gestures live on the full-screen wrapper so the letterbox bars are tappable too,
+                        // while the video surface itself keeps its real aspect ratio (never stretched).
                         Box(
                             Modifier.fillMaxSize().pointerInput(short.id) {
                                 detectTapGestures(
@@ -581,7 +588,15 @@ fun SiteShortsPlayer(
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             if (pageOwner != null) {
-                                ShortsOwnerRow(pageOwner, imageLoader, scrim, onSubscribe = onToggleSubscribe)
+                                ShortsOwnerRow(
+                                    owner = pageOwner,
+                                    imageLoader = imageLoader,
+                                    scrim = scrim,
+                                    onSubscribe = onToggleSubscribe,
+                                    onClick = if (onOpenOwner != null && pageOwner.path != null) {
+                                        { onOpenOwner(pageOwner) }
+                                    } else null,
+                                )
                             }
                             if (short.title.isNotBlank()) {
                                 Text(
@@ -598,10 +613,23 @@ fun SiteShortsPlayer(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
-
+                                    // Same badges as the grid thumbnails, so the two always match.
                                     if (short.isGif) ShortsGifBadge()
                                     ShortsViewsBadge(views)
                                     ShortsDurationBadge(short.durationSeconds)
+                                }
+                            }
+                            val tags = meta?.tags.orEmpty()
+                            if (onOpenTag != null && tags.isNotEmpty()) {
+                                LazyRow(
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    contentPadding = PaddingValues(end = 12.dp),
+                                ) {
+                                    tags.forEach { tag ->
+                                        item(key = tag.path) {
+                                            ShortsTagChip(tag, onClick = { onOpenTag(tag) })
+                                        }
+                                    }
                                 }
                             }
                         }

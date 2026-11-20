@@ -76,14 +76,34 @@ object XHamsterMomentsRepo {
         return base() + path + if (page > 1) "/$page" else ""
     }
 
-    suspend fun feed(kind: Feed, page: Int, timeRange: String = "alltime"): Result<FeedPage> =
+    /** A new id for one browsing session of a feed; keep it constant for every page of that session. */
+    fun newChainId(): Long = System.currentTimeMillis() / 1000
+
+    /**
+     * @param chainId must stay the same for every page of one feed session (the site ties pagination
+     * to it); generate it once with [newChainId] when the feed is (re)loaded.
+     * @param currentChain ids of the shorts already loaded in this session. The shorts feed is a
+     * "chain": the server uses this list to decide what comes next, so page 2+ only works when it
+     * is sent back (a fresh chainId + empty list just returns the same items again).
+     */
+    suspend fun feed(
+        kind: Feed,
+        page: Int,
+        timeRange: String = "alltime",
+        chainId: Long = newChainId(),
+        currentChain: List<Long> = emptyList(),
+    ): Result<FeedPage> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val chain = System.currentTimeMillis() / 1000
+                val chain = chainId
                 when (kind) {
                     Feed.SHORTS -> {
-                        val url = "${base()}/api/v1/moments/?type=index&env=mobile&currentChain=" +
-                                "&page=$page&chainId=$chain&isWithSettings=1&pageType=mainPage&checkPrivileges=1"
+                        val seen = URLEncoder.encode(currentChain.joinToString(","), "UTF-8")
+                        // Same shape the website uses: page 1 asks for settings/privileges, later pages
+                        // only send the chain.
+                        val url = "${base()}/api/v1/moments/?type=index&env=mobile&currentChain=$seen" +
+                                "&page=$page&chainId=$chain&pageType=mainPage" +
+                                if (page <= 1) "&isWithSettings=1&checkPrivileges=1" else ""
                         val body = runApi(url, "${base()}/shorts")
                         val parsed = XHamsterMomentsParser.parse(body)
                         FeedPage(parsed.items, parsed.hasNext && parsed.items.isNotEmpty())

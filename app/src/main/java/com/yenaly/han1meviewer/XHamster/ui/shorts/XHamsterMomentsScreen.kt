@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -63,6 +64,8 @@ fun XHamsterMomentsScreen(
     var items by remember { mutableStateOf<List<SiteShort>>(emptyList()) }
     val metas = remember { mutableMapOf<String, SiteShortMeta>() }
     var page by remember { mutableIntStateOf(1) }
+    // One chain id per feed session; every page request must reuse it.
+    var chainId by remember { mutableLongStateOf(0L) }
     var hasNext by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     var loadingMore by remember { mutableStateOf(false) }
@@ -73,7 +76,8 @@ fun XHamsterMomentsScreen(
     LaunchedEffect(kind, rangeKey, reload, epoch) {
         loading = true
         error = null
-        XHamsterMomentsRepo.feed(kind, 1, rangeKey)
+        chainId = XHamsterMomentsRepo.newChainId()
+        XHamsterMomentsRepo.feed(kind, 1, rangeKey, chainId)
             .onSuccess { result ->
                 items = result.items.map { it.first.toSiteShort(isGifs) }.distinctBy { it.id }
                 metas.clear()
@@ -93,16 +97,29 @@ fun XHamsterMomentsScreen(
         if (!hasNext || loadingMore || loading) return
         loadingMore = true
         scope.launch {
-            XHamsterMomentsRepo.feed(kind, page + 1, rangeKey)
-                .onSuccess { result ->
-                    val known = items.map { it.id }.toHashSet()
-                    val fresh = result.items.filter { it.first.id.toString() !in known }
+            var nextPage = page + 1
+            var tries = 0
+            // A page can come back with only items we already have; keep going a few pages instead
+            // of giving up, otherwise scrolling just stops loading.
+            while (tries < 3) {
+                tries++
+                val result = XHamsterMomentsRepo.feed(
+                    kind, nextPage, rangeKey, chainId,
+                    currentChain = items.mapNotNull { it.id.toLongOrNull() },
+                ).getOrNull()
+                    // Network error: leave hasNext alone so scrolling again retries this page.
+                    ?: break
+                val known = items.map { it.id }.toHashSet()
+                val fresh = result.items.filter { it.first.id.toString() !in known }
+                if (fresh.isNotEmpty()) {
                     fresh.forEach { metas[it.first.id.toString()] = it.second.toSiteMeta() }
                     items = items + fresh.map { it.first.toSiteShort(isGifs) }
-                    page += 1
-                    hasNext = result.hasNext && fresh.isNotEmpty()
                 }
-                .onFailure { hasNext = false }
+                page = nextPage
+                hasNext = result.hasNext
+                if (fresh.isNotEmpty() || !result.hasNext) break
+                nextPage++
+            }
             loadingMore = false
         }
     }

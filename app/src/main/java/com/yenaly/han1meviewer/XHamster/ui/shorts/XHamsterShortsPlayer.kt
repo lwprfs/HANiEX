@@ -10,6 +10,12 @@ import com.yenaly.han1meviewer.XHamster.data.model.XHamsterCommentResult
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShort
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortComment
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortMeta
+import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortTag
+import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterCategoryRoute
+import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterProfileRoute
+import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterTagShortsRoute
+import com.yenaly.han1meviewer.ui.navigation.NavigationManager
+import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterRepo
@@ -20,6 +26,7 @@ import com.yenaly.han1meviewer.ui.component.shorts.SiteShortMeta
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortOwner
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortPostResult
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortSubtitle
+import com.yenaly.han1meviewer.ui.component.shorts.SiteShortTag
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortsPlayer
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortsSource
 import okhttp3.OkHttpClient
@@ -45,7 +52,20 @@ internal fun XHamsterShortMeta.toSiteMeta() = SiteShortMeta(
     commentsCount = commentsCount,
     commentsDisabled = commentsDisabled,
     subtitles = subtitles.map { SiteShortSubtitle(it.label, it.lang, it.url) },
-    owner = ownerName?.takeIf { it.isNotBlank() }?.let { SiteShortOwner(name = it, avatarUrl = ownerAvatar) },
+    owner = ownerName?.takeIf { it.isNotBlank() }
+        ?.let { SiteShortOwner(name = it, avatarUrl = ownerAvatar, path = ownerPath) },
+    tags = tags.map {
+        SiteShortTag(
+            name = it.name,
+            path = it.path,
+            kind = when (it.kind) {
+                XHamsterShortTag.Kind.CATEGORY -> SiteShortTag.Kind.CATEGORY
+                XHamsterShortTag.Kind.TAG -> SiteShortTag.Kind.TAG
+                XHamsterShortTag.Kind.PERSON -> SiteShortTag.Kind.PERSON
+                XHamsterShortTag.Kind.CHANNEL -> SiteShortTag.Kind.CHANNEL
+            },
+        )
+    },
 )
 
 private fun XHamsterShortComment.toSiteComment() = SiteShortComment(
@@ -138,6 +158,32 @@ fun XHamsterShortsPlayer(
     initialMetas: Map<String, SiteShortMeta> = emptyMap(),
 ) {
     val source = remember(referer) { XHamsterShortsSource(referer) }
+    // Tags open their own shorts feed; people/channels open their profile. The player closes first
+    // so it doesn't stay on top of the destination.
+    val openTag: (SiteShortTag) -> Unit = { tag ->
+        onDismiss()
+        NavigationManager.getNavController()?.let { nav ->
+            when (tag.kind) {
+                SiteShortTag.Kind.PERSON, SiteShortTag.Kind.CHANNEL ->
+                    nav.navigateSafely(XHamsterProfileRoute(tag.path, tag.name))
+                else -> nav.navigateSafely(XHamsterTagShortsRoute(tag.path, tag.name))
+            }
+        }
+    }
+    // Same routing the video page uses for its uploader: profiles for users/creators/channels,
+    // the generic category page for anything else.
+    val openOwner: (SiteShortOwner) -> Unit = { owner ->
+        val path = owner.path
+        if (path != null) {
+            onDismiss()
+            NavigationManager.getNavController()?.let { nav ->
+                val isProfile = path.startsWith("/users/") || path.startsWith("/creators/") ||
+                        path.startsWith("/pornstars/") || path.startsWith("/channels/")
+                if (isProfile) nav.navigateSafely(XHamsterProfileRoute(path, owner.name))
+                else nav.navigateSafely(XHamsterCategoryRoute(path, owner.name))
+            }
+        }
+    }
     SiteShortsPlayer(
         source = source,
         items = items,
@@ -148,5 +194,7 @@ fun XHamsterShortsPlayer(
         owner = owner,
         onToggleSubscribe = onToggleSubscribe,
         initialMetas = initialMetas,
+        onOpenTag = openTag,
+        onOpenOwner = openOwner,
     )
 }

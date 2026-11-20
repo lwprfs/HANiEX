@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.component.shorts
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -29,8 +30,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.yenaly.han1meviewer.R
 
+/**
+ * Shared floating-badge system for the Shorts / GIF experience.
+ *
+ * Every badge is the same compact translucent pill: no border, no shadow, white content, so it
+ * stays readable on both bright and dark thumbnails and looks identical in light and dark themes
+ * (the content underneath is video, not a themed surface).
+ */
 internal object ShortsBadgeDefaults {
-
+    /** Glass fill used on top of thumbnails / video. */
     val Glass = Color.Black.copy(alpha = 0.42f)
     val Shape = RoundedCornerShape(50)
     val IconSize = 11.dp
@@ -38,6 +46,7 @@ internal object ShortsBadgeDefaults {
     val VerticalPadding = 2.5.dp
     val IconTextGap = 3.dp
 
+    /** Soft text shadow for text that floats without a pill (e.g. counts in the action rail). */
     val TextShadow = Shadow(
         color = Color.Black.copy(alpha = 0.55f),
         offset = Offset(0f, 1f),
@@ -45,6 +54,7 @@ internal object ShortsBadgeDefaults {
     )
 }
 
+/** Base pill. All other badges are built on this so size, padding and radius stay consistent. */
 @Composable
 internal fun ShortsBadge(
     modifier: Modifier = Modifier,
@@ -80,6 +90,7 @@ private fun ShortsBadgeText(text: String) {
     )
 }
 
+/** Icon + compact value pill, e.g. ▶ 1.2M. */
 @Composable
 internal fun ShortsStatBadge(
     icon: Painter,
@@ -102,6 +113,7 @@ internal fun ShortsStatBadge(
     }
 }
 
+/** ▶ 12K — view count. [views] must already be compacted; pass null to render nothing. */
 @Composable
 internal fun ShortsViewsBadge(views: String?, modifier: Modifier = Modifier) {
     if (views.isNullOrEmpty()) return
@@ -113,6 +125,7 @@ internal fun ShortsViewsBadge(views: String?, modifier: Modifier = Modifier) {
     )
 }
 
+/** ♥ 3.4K — like count. Renders nothing when the source gave no number. */
 @Composable
 internal fun ShortsLikesBadge(likes: String?, modifier: Modifier = Modifier) {
     if (likes.isNullOrEmpty()) return
@@ -124,6 +137,7 @@ internal fun ShortsLikesBadge(likes: String?, modifier: Modifier = Modifier) {
     )
 }
 
+/** 💬 214 — comment count. Renders nothing when the source gave no number. */
 @Composable
 internal fun ShortsCommentsBadge(comments: String?, modifier: Modifier = Modifier) {
     if (comments.isNullOrEmpty()) return
@@ -135,6 +149,7 @@ internal fun ShortsCommentsBadge(comments: String?, modifier: Modifier = Modifie
     )
 }
 
+/** 0:07 — duration. Only shown when the source actually provides it. */
 @Composable
 internal fun ShortsDurationBadge(seconds: Int?, modifier: Modifier = Modifier) {
     if (seconds == null || seconds <= 0) return
@@ -142,6 +157,10 @@ internal fun ShortsDurationBadge(seconds: Int?, modifier: Modifier = Modifier) {
     ShortsBadge(modifier) { ShortsBadgeText(text) }
 }
 
+/**
+ * GIF indicator, shared between grid thumbnails and the player so they always match.
+ * Uses the theme's primary colour so it is the one badge that reads instantly as a "type" tag.
+ */
 @Composable
 internal fun ShortsGifBadge(modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
@@ -166,4 +185,31 @@ internal fun ShortsGifBadge(modifier: Modifier = Modifier) {
             ),
         )
     }
+}
+
+/**
+ * Tappable tag chip for the player. Same glass look as the badges so it sits naturally on the
+ * video; slightly taller so it is easy to hit. Tags and categories get a "#" prefix.
+ */
+@Composable
+internal fun ShortsTagChip(tag: SiteShortTag, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val label = when (tag.kind) {
+        SiteShortTag.Kind.TAG, SiteShortTag.Kind.CATEGORY -> "#" + tag.name
+        else -> tag.name
+    }
+    Text(
+        text = label,
+        color = Color.White,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        style = MaterialTheme.typography.labelMedium.copy(
+            fontWeight = FontWeight.SemiBold,
+            shadow = ShortsBadgeDefaults.TextShadow,
+        ),
+        modifier = modifier
+            .clip(ShortsBadgeDefaults.Shape)
+            .background(ShortsBadgeDefaults.Glass)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 11.dp, vertical = 5.dp),
+    )
 }

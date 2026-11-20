@@ -102,6 +102,10 @@ object XHamsterPrivacyRoute
 @Serializable
 data class XHamsterMomentsRoute(val kind: String, val title: String)
 
+/** Shorts feed of one tag/category; [path] is e.g. `/tags/stepmom/shorts`. */
+@Serializable
+data class XHamsterTagShortsRoute(val path: String, val title: String)
+
 @Serializable
 object XHamsterTopCreatorVideosRoute
 
@@ -228,6 +232,15 @@ fun XHamsterNavHost(
                 kind = runCatching {
                     com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo.Feed.valueOf(route.kind)
                 }.getOrDefault(com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo.Feed.SHORTS),
+                title = route.title,
+                onBack = { navController.popBackStackSafely() },
+            )
+        }
+
+        composable<XHamsterTagShortsRoute> {
+            val route = it.toRoute<XHamsterTagShortsRoute>()
+            com.yenaly.han1meviewer.XHamster.ui.shorts.XHamsterTagShortsScreen(
+                path = route.path,
                 title = route.title,
                 onBack = { navController.popBackStackSafely() },
             )

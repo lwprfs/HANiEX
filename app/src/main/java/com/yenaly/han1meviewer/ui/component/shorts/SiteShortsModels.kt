@@ -14,7 +14,7 @@ data class SiteShort(
     val views: Long? = null,
 
     val isGif: Boolean = false,
-
+    /** Optional. Only set when the source really provides it; the UI hides the badge otherwise. */
     val durationSeconds: Int? = null,
 )
 
@@ -33,6 +33,8 @@ data class SiteShortOwner(
     val canSubscribe: Boolean = false,
     val subscribed: Boolean = false,
     val subscribeBusy: Boolean = false,
+    /** Source-specific profile path. When set, tapping the owner in the player can open their profile. */
+    val path: String? = null,
 )
 
 data class SiteShortMeta(
@@ -46,7 +48,17 @@ data class SiteShortMeta(
     val commentsDisabled: Boolean = false,
     val subtitles: List<SiteShortSubtitle> = emptyList(),
     val owner: SiteShortOwner? = null,
+    val tags: List<SiteShortTag> = emptyList(),
 )
+
+/** A tappable tag / category / performer / channel shown under a short. [path] is source-specific. */
+data class SiteShortTag(
+    val name: String,
+    val path: String,
+    val kind: Kind = Kind.TAG,
+) {
+    enum class Kind { CATEGORY, TAG, PERSON, CHANNEL }
+}
 
 data class SiteShortComment(
     val id: String,

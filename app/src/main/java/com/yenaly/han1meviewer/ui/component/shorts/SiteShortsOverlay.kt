@@ -153,6 +153,8 @@ internal fun ShortsOwnerRow(
     scrim: Color,
     onSubscribe: () -> Unit,
     modifier: Modifier = Modifier,
+    /** When set, tapping the avatar/name opens the owner's profile. */
+    onClick: (() -> Unit)? = null,
 ) {
     // Flat, borderless row floating on the video gradient — no card/box behind it.
     Row(
@@ -160,6 +162,17 @@ internal fun ShortsOwnerRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        Row(
+            modifier = Modifier.weight(1f, fill = false).then(
+                if (onClick != null) Modifier.clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    onClick = onClick,
+                ) else Modifier
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
         SiteAvatar(owner.avatarUrl, owner.name, size = 38.dp, imageLoader = imageLoader)
         Column(modifier = Modifier.weight(1f, fill = false)) {
             Row(
@@ -192,6 +205,7 @@ internal fun ShortsOwnerRow(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+        }
         }
         if (owner.canSubscribe) {
             SiteSubscribeButton(owner.subscribed, owner.subscribeBusy, onSubscribe)

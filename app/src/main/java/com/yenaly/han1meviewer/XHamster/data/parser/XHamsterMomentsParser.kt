@@ -4,6 +4,7 @@ import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShort
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortComment
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortComments
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortMeta
+import com.yenaly.han1meviewer.XHamster.data.model.XHamsterShortTag
 import com.yenaly.han1meviewer.XHamster.data.model.XHamsterSubtitleTrack
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -100,10 +101,46 @@ object XHamsterMomentsParser {
                 ownerAvatar = landing?.s("logo"),
                 ownerPath = landing?.s("link")?.substringAfter("xhamster.com", "")
                     ?.removeSuffix("/shorts")?.ifBlank { null },
+                tags = parseTags(o),
             )
             out += short to meta
         }
         return Page(out, root.b("hasNextPage") ?: false)
+    }
+
+    private val TAG_PATH = Regex("^/(tags|categories)/([^/?#]+)")
+    private val ENTITY_PATH = Regex("^/(pornstars|creators|channels)/([^/?#]+)")
+
+    /**
+     * Tags the site attaches to a moment. Only real data is used. The uploader is skipped because
+     * it is already shown as the owner. Tag/category links are normalised to their shorts feed
+     * (`/tags/<slug>/shorts`), people/channels to their profile page.
+     */
+    private fun parseTags(o: JsonObject): List<XHamsterShortTag> {
+        val seen = HashSet<String>()
+        val out = ArrayList<XHamsterShortTag>()
+        o.a("tags").orEmpty().forEach { el ->
+            val t = el as? JsonObject ?: return@forEach
+            if (t.b("isUploader") == true || t.b("isUser") == true) return@forEach
+            val name = t.s("name")?.trim()?.takeIf { it.isNotEmpty() } ?: return@forEach
+            val url = t.s("url") ?: return@forEach
+            val raw = url.substringAfter("xhamster.com", url).substringBefore('?').substringBefore('#')
+            val kind = when {
+                t.b("isTag") == true -> XHamsterShortTag.Kind.TAG
+                t.b("isCategory") == true -> XHamsterShortTag.Kind.CATEGORY
+                t.b("isPornstar") == true || t.b("isCeleb") == true || t.b("isCreator") == true ->
+                    XHamsterShortTag.Kind.PERSON
+                t.b("isChannel") == true || t.b("isBrand") == true -> XHamsterShortTag.Kind.CHANNEL
+                else -> return@forEach
+            }
+            val path = when (kind) {
+                XHamsterShortTag.Kind.TAG, XHamsterShortTag.Kind.CATEGORY ->
+                    TAG_PATH.find(raw)?.let { "/${it.groupValues[1]}/${it.groupValues[2]}/shorts" }
+                else -> ENTITY_PATH.find(raw)?.let { "/${it.groupValues[1]}/${it.groupValues[2]}" }
+            } ?: return@forEach
+            if (seen.add(path)) out += XHamsterShortTag(name, path, kind)
+        }
+        return out.take(24)
     }
 
     private fun plain(html: String): String =

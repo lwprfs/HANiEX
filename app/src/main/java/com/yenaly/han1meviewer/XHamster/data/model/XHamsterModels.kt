@@ -223,7 +223,17 @@ data class XHamsterShortMeta(
     val ownerName: String? = null,
     val ownerAvatar: String? = null,
     val ownerPath: String? = null,
+    val tags: List<XHamsterShortTag> = emptyList(),
 )
+
+/** A category / tag / performer / channel attached to a short or GIF. [path] is site-relative. */
+data class XHamsterShortTag(
+    val name: String,
+    val path: String,
+    val kind: Kind,
+) {
+    enum class Kind { CATEGORY, TAG, PERSON, CHANNEL }
+}
 
 data class XHamsterShortComment(
     val id: String,
