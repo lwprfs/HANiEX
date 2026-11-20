@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ClosedCaptionDisabled
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,6 +56,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -62,6 +65,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -71,6 +78,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.text.CueGroup
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
@@ -121,10 +129,13 @@ fun SiteShortsPlayer(
     var failed by remember { mutableStateOf(false) }
     var started by remember { mutableStateOf(false) }
     var showHeart by remember { mutableStateOf(false) }
+    var fullscreen by remember { mutableStateOf(false) }
     var heartTick by remember { mutableIntStateOf(0) }
     var muted by remember { mutableStateOf(rememberedMuted) }
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
+
+    var videoRatio by remember { mutableFloatStateOf(0f) }
     var subtitleLang by remember { mutableStateOf<String?>(null) }
     var cueText by remember { mutableStateOf("") }
     var showSubtitlePicker by remember { mutableStateOf(false) }
@@ -163,6 +174,12 @@ fun SiteShortsPlayer(
         val listener = object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
                 failed = true
+            }
+
+            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                videoRatio = if (videoSize.width > 0 && videoSize.height > 0) {
+                    videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
+                } else 0f
             }
 
             override fun onIsPlayingChanged(playing: Boolean) {
@@ -234,6 +251,7 @@ fun SiteShortsPlayer(
             failed = false
             progress = 0f
             cueText = ""
+            videoRatio = 0f
         }
 
         if (metas[short.id] == null) {
@@ -412,9 +430,35 @@ fun SiteShortsPlayer(
     }
 
     Dialog(
-        onDismissRequest = { if (commentsFor != null) commentsFor = null else onDismiss() },
+        onDismissRequest = {
+            when {
+                commentsFor != null -> commentsFor = null
+                fullscreen -> fullscreen = false
+                else -> onDismiss()
+            }
+        },
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
+        val dialogView = LocalView.current
+        val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
+        DisposableEffect(dialogWindow, fullscreen) {
+            if (dialogWindow != null) {
+                val controller = WindowCompat.getInsetsController(dialogWindow, dialogView)
+                if (fullscreen) {
+                    controller.systemBarsBehavior =
+                        WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    controller.hide(WindowInsetsCompat.Type.systemBars())
+                } else {
+                    controller.show(WindowInsetsCompat.Type.systemBars())
+                }
+            }
+            onDispose {
+                dialogWindow?.let {
+                    WindowCompat.getInsetsController(it, dialogView)
+                        .show(WindowInsetsCompat.Type.systemBars())
+                }
+            }
+        }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             VerticalPager(
                 state = pagerState,
@@ -439,8 +483,9 @@ fun SiteShortsPlayer(
                         imageLoader = imageLoader,
                     )
                     if (pagerState.currentPage == page) {
-                        AndroidView(
-                            modifier = Modifier.fillMaxSize().pointerInput(short.id) {
+
+                        Box(
+                            Modifier.fillMaxSize().pointerInput(short.id) {
                                 detectTapGestures(
                                     onTap = { if (player.isPlaying) player.pause() else player.play() },
                                     onDoubleTap = {
@@ -451,16 +496,23 @@ fun SiteShortsPlayer(
                                     },
                                 )
                             },
-                            factory = { ctx ->
-                                TextureView(ctx).also {
-                                    it.keepScreenOn = config.keepScreenOn
-                                    player.setVideoTextureView(it)
-                                }
-                            },
-                            onRelease = { player.clearVideoTextureView(it) },
-                        )
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            AndroidView(
+                                modifier = if (videoRatio > 0f) {
+                                    Modifier.aspectRatio(videoRatio, matchHeightConstraintsFirst = false)
+                                } else Modifier.fillMaxSize(),
+                                factory = { ctx ->
+                                    TextureView(ctx).also {
+                                        it.keepScreenOn = config.keepScreenOn
+                                        player.setVideoTextureView(it)
+                                    }
+                                },
+                                onRelease = { player.clearVideoTextureView(it) },
+                            )
+                        }
                         AnimatedVisibility(
-                            visible = !isPlaying,
+                            visible = !isPlaying && !fullscreen,
                             enter = fadeIn() + scaleIn(initialScale = 0.8f),
                             exit = fadeOut(),
                         ) {
@@ -495,84 +547,90 @@ fun SiteShortsPlayer(
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
-                                    .padding(start = 24.dp, end = 84.dp, bottom = 200.dp)
+                                    .padding(
+                                        start = 24.dp,
+                                        end = if (fullscreen) 24.dp else 84.dp,
+                                        bottom = if (fullscreen) 48.dp else 200.dp,
+                                    )
                                     .background(Color.Black.copy(alpha = 0.55f), RoundedCornerShape(10.dp))
                                     .padding(horizontal = 10.dp, vertical = 4.dp),
                             )
                         }
                     }
 
-                    Box(
-                        Modifier.align(Alignment.TopCenter).fillMaxWidth().height(120.dp).background(
-                            Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent))
-                        ),
-                    )
-                    Box(
-                        Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(280.dp).background(
-                            Brush.verticalGradient(
-                                0f to Color.Transparent,
-                                0.55f to Color.Black.copy(alpha = 0.35f),
-                                1f to Color.Black.copy(alpha = 0.78f),
-                            )
-                        ),
-                    )
+                    if (!fullscreen) {
+                        Box(
+                            Modifier.align(Alignment.TopCenter).fillMaxWidth().height(120.dp).background(
+                                Brush.verticalGradient(listOf(Color.Black.copy(alpha = 0.45f), Color.Transparent))
+                            ),
+                        )
+                        Box(
+                            Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(280.dp).background(
+                                Brush.verticalGradient(
+                                    0f to Color.Transparent,
+                                    0.55f to Color.Black.copy(alpha = 0.35f),
+                                    1f to Color.Black.copy(alpha = 0.78f),
+                                )
+                            ),
+                        )
 
-                    Column(
-                        Modifier.align(Alignment.BottomStart)
-                            .padding(start = 14.dp, end = 84.dp, bottom = 22.dp)
-                            .navigationBarsPadding(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        if (pageOwner != null) {
-                            ShortsOwnerRow(pageOwner, imageLoader, scrim, onSubscribe = onToggleSubscribe)
-                        }
-                        if (short.title.isNotBlank()) {
-                            Text(
-                                short.title, color = Color.White,
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    shadow = ShortsBadgeDefaults.TextShadow,
-                                ),
-                                maxLines = 2, overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                        val views = short.views.compactCount()
-                        if (short.isGif || views != null || short.durationSeconds != null) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            ) {
+                        Column(
+                            Modifier.align(Alignment.BottomStart)
+                                .padding(start = 14.dp, end = 84.dp, bottom = 22.dp)
+                                .navigationBarsPadding(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            if (pageOwner != null) {
+                                ShortsOwnerRow(pageOwner, imageLoader, scrim, onSubscribe = onToggleSubscribe)
+                            }
+                            if (short.title.isNotBlank()) {
+                                Text(
+                                    short.title, color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        shadow = ShortsBadgeDefaults.TextShadow,
+                                    ),
+                                    maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            val views = short.views.compactCount()
+                            if (short.isGif || views != null || short.durationSeconds != null) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                ) {
 
-                                if (short.isGif) ShortsGifBadge()
-                                ShortsViewsBadge(views)
-                                ShortsDurationBadge(short.durationSeconds)
+                                    if (short.isGif) ShortsGifBadge()
+                                    ShortsViewsBadge(views)
+                                    ShortsDurationBadge(short.durationSeconds)
+                                }
                             }
                         }
-                    }
 
-                    ShortsActionRail(
-                        meta = meta,
-                        canRate = source.supportsRating,
-                        canFavorite = source.supportsFavorite,
-                        canComment = source.supportsComments,
-                        canShare = short.pageUrl.isNotBlank(),
-                        scrim = scrim,
-                        onLike = { likeShort(short, onlyLike = false) },
-                        onDislike = { dislikeShort(short) },
-                        onFavorite = { favoriteShort(short) },
-                        onComments = {
-                            commentsFor = short
-                            if (commentStates[short.id]?.loaded != true) loadComments(short, false)
-                        },
-                        onShare = { shareSiteText(context, "${short.title}\n${short.pageUrl}", short.title) },
-                        modifier = Modifier.align(Alignment.BottomEnd)
-                            .padding(end = 8.dp, bottom = 22.dp)
-                            .navigationBarsPadding(),
-                    )
+                        ShortsActionRail(
+                            meta = meta,
+                            canRate = source.supportsRating,
+                            canFavorite = source.supportsFavorite,
+                            canComment = source.supportsComments,
+                            canShare = short.pageUrl.isNotBlank(),
+                            scrim = scrim,
+                            onLike = { likeShort(short, onlyLike = false) },
+                            onDislike = { dislikeShort(short) },
+                            onFavorite = { favoriteShort(short) },
+                            onComments = {
+                                commentsFor = short
+                                if (commentStates[short.id]?.loaded != true) loadComments(short, false)
+                            },
+                            onShare = { shareSiteText(context, "${short.title}\n${short.pageUrl}", short.title) },
+                            modifier = Modifier.align(Alignment.BottomEnd)
+                                .padding(end = 8.dp, bottom = 22.dp)
+                                .navigationBarsPadding(),
+                        )
+                    }
                 }
             }
 
             val currentShort = items.getOrNull(pagerState.currentPage)
-            Row(
+            if (!fullscreen) Row(
                 Modifier.align(Alignment.TopStart).fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -601,6 +659,12 @@ fun SiteShortsPlayer(
                         )
                     }
                 }
+                ShortsCircleButton(onClick = { fullscreen = true }, scrim = scrim) {
+                    Icon(
+                        Icons.Filled.Fullscreen,
+                        stringResource(R.string.site_fullscreen), tint = Color.White,
+                    )
+                }
                 if (currentShort?.isGif != true) {
                     ShortsCircleButton(onClick = { muted = !muted }, scrim = scrim) {
                         Icon(
@@ -614,7 +678,7 @@ fun SiteShortsPlayer(
                 }
             }
 
-            Box(
+            if (!fullscreen) Box(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth()
                     .navigationBarsPadding().height(2.dp)
                     .background(Color.White.copy(alpha = 0.18f)),
