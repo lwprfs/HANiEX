@@ -111,11 +111,6 @@ object XHamsterMomentsParser {
     private val TAG_PATH = Regex("^/(tags|categories)/([^/?#]+)")
     private val ENTITY_PATH = Regex("^/(pornstars|creators|channels)/([^/?#]+)")
 
-    /**
-     * Tags the site attaches to a moment. Only real data is used. The uploader is skipped because
-     * it is already shown as the owner. Tag/category links are normalised to their shorts feed
-     * (`/tags/<slug>/shorts`), people/channels to their profile page.
-     */
     private fun parseTags(o: JsonObject): List<XHamsterShortTag> {
         val seen = HashSet<String>()
         val out = ArrayList<XHamsterShortTag>()

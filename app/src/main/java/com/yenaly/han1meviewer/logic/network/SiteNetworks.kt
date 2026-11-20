@@ -187,6 +187,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = true,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.REDGIFS,
+            displayName = "RedGifs",
+            catalogKey = null,
+            defaultUrls = { listOf("https://www.redgifs.com") },
+            trailingSlash = false,
+            cloudflareFronted = false,
+        ),
     )
 
     val hubSites: List<HubSite>

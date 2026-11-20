@@ -110,9 +110,9 @@ fun SiteShortsPlayer(
     owner: SiteShortOwner? = null,
     onToggleSubscribe: () -> Unit = {},
     initialMetas: Map<String, SiteShortMeta> = emptyMap(),
-    /** When set, the short's tags are shown as tappable chips and this is called on tap. */
+
     onOpenTag: ((SiteShortTag) -> Unit)? = null,
-    /** When set, tapping the uploader/channel (that has a [SiteShortOwner.path]) calls this. */
+
     onOpenOwner: ((SiteShortOwner) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
@@ -140,7 +140,7 @@ fun SiteShortsPlayer(
     var muted by remember { mutableStateOf(rememberedMuted) }
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
-    // Real width/height of the playing video (0 = not known yet); used to letterbox instead of stretch.
+
     var videoRatio by remember { mutableFloatStateOf(0f) }
     var subtitleLang by remember { mutableStateOf<String?>(null) }
     var cueText by remember { mutableStateOf("") }
@@ -360,6 +360,41 @@ fun SiteShortsPlayer(
         }
     }
 
+    fun followOwner(short: SiteShort) {
+        val cur = metas[short.id]?.owner ?: return
+        if (cur.subscribeBusy) return
+        if (!source.isLoggedIn) {
+            GlobalToasts.show(loginRequired, level = GlobalToasts.ToastLevel.ERROR)
+            return
+        }
+        val want = !cur.subscribed
+        fun updateOwner(transform: (SiteShortOwner) -> SiteShortOwner) {
+            metas.keys.toList().forEach { k ->
+                val m = metas[k]
+                val o = m?.owner
+                if (m != null && o != null && o.name == cur.name) metas[k] = m.copy(owner = transform(o))
+            }
+        }
+        updateOwner { it.copy(subscribeBusy = true) }
+        scope.launch {
+            source.setOwnerFollowed(short, cur, want)
+                .onSuccess {
+                    val delta = if (want) 1L else -1L
+                    updateOwner { o ->
+                        o.copy(
+                            subscribed = want,
+                            subscribeBusy = false,
+                            subscribers = o.subscribers?.let { s -> (s + delta).coerceAtLeast(0L) },
+                        )
+                    }
+                }
+                .onFailure {
+                    updateOwner { o -> o.copy(subscribeBusy = false) }
+                    toastError(it)
+                }
+        }
+    }
+
     fun loadComments(short: SiteShort, more: Boolean) {
         val current = commentStates[short.id] ?: ShortsCommentsState()
         if (current.loading) return
@@ -489,8 +524,7 @@ fun SiteShortsPlayer(
                         imageLoader = imageLoader,
                     )
                     if (pagerState.currentPage == page) {
-                        // Gestures live on the full-screen wrapper so the letterbox bars are tappable too,
-                        // while the video surface itself keeps its real aspect ratio (never stretched).
+
                         Box(
                             Modifier.fillMaxSize().pointerInput(short.id) {
                                 detectTapGestures(
@@ -592,7 +626,7 @@ fun SiteShortsPlayer(
                                     owner = pageOwner,
                                     imageLoader = imageLoader,
                                     scrim = scrim,
-                                    onSubscribe = onToggleSubscribe,
+                                    onSubscribe = { if (owner != null) onToggleSubscribe() else followOwner(short) },
                                     onClick = if (onOpenOwner != null && pageOwner.path != null) {
                                         { onOpenOwner(pageOwner) }
                                     } else null,
@@ -613,7 +647,7 @@ fun SiteShortsPlayer(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
-                                    // Same badges as the grid thumbnails, so the two always match.
+
                                     if (short.isGif) ShortsGifBadge()
                                     ShortsViewsBadge(views)
                                     ShortsDurationBadge(short.durationSeconds)
@@ -639,6 +673,7 @@ fun SiteShortsPlayer(
                             canRate = source.supportsRating,
                             canFavorite = source.supportsFavorite,
                             canComment = source.supportsComments,
+                            canDislike = source.supportsDislike,
                             canShare = short.pageUrl.isNotBlank(),
                             scrim = scrim,
                             onLike = { likeShort(short, onlyLike = false) },

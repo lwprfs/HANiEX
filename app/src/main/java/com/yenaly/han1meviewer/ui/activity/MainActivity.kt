@@ -83,6 +83,7 @@ import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
 import com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
 import com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
+import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsNetwork
 import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
@@ -419,6 +420,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.FUCKINGSESSION -> {
                 FuckingSessionNetwork.rebuildNetwork()
+            }
+
+            SiteType.REDGIFS -> {
+                RedGifsNetwork.rebuildNetwork()
             }
         }
 

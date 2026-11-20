@@ -158,8 +158,7 @@ fun XHamsterShortsPlayer(
     initialMetas: Map<String, SiteShortMeta> = emptyMap(),
 ) {
     val source = remember(referer) { XHamsterShortsSource(referer) }
-    // Tags open their own shorts feed; people/channels open their profile. The player closes first
-    // so it doesn't stay on top of the destination.
+
     val openTag: (SiteShortTag) -> Unit = { tag ->
         onDismiss()
         NavigationManager.getNavController()?.let { nav ->
@@ -170,8 +169,7 @@ fun XHamsterShortsPlayer(
             }
         }
     }
-    // Same routing the video page uses for its uploader: profiles for users/creators/channels,
-    // the generic category page for anything else.
+
     val openOwner: (SiteShortOwner) -> Unit = { owner ->
         val path = owner.path
         if (path != null) {

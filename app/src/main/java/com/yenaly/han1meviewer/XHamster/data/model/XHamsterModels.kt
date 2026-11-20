@@ -226,7 +226,6 @@ data class XHamsterShortMeta(
     val tags: List<XHamsterShortTag> = emptyList(),
 )
 
-/** A category / tag / performer / channel attached to a short or GIF. [path] is site-relative. */
 data class XHamsterShortTag(
     val name: String,
     val path: String,

@@ -54,6 +54,7 @@ object DownloadLayout {
         SiteType.COSPLAYTELE -> "Cosplaytele"
         SiteType.FULLVIDEOS -> "FullVideos"
         SiteType.FUCKINGSESSION -> "FuckingSession"
+        SiteType.REDGIFS -> "RedGifs"
     }
 
     fun segmentsFor(videoCode: String): List<String> {

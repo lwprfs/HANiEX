@@ -13,11 +13,6 @@ import com.yenaly.han1meviewer.XHamster.ui.profile.ProfileShorts
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
-/**
- * Shorts feed for one tag or category (`/tags/<slug>/shorts`, `/categories/<slug>/shorts`).
- * Reuses the same grid + pagination + player as uploader/channel shorts, so tags work the same
- * everywhere (including opening another tag from inside the player).
- */
 @Composable
 fun XHamsterTagShortsScreen(
     path: String,

@@ -173,6 +173,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         logoRes = R.drawable.s_switch_fuckingsession,
         accentColor = Color(0xFFFF5A36),
     ),
+    SiteSwitchOption(
+        name = "RedGifs",
+        description = applicationContext.getString(R.string.site_redgifs_description),
+        siteType = SiteType.REDGIFS,
+        logoRes = R.drawable.s_switch_redgifs,
+        accentColor = Color(0xFFE5334B),
+    ),
 )
 
 private const val SitesPerPage = 6

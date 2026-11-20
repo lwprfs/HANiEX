@@ -249,6 +249,29 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         }
     }
 
+    SiteType.REDGIFS -> {
+        val name = if (com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.isLoggedIn) {
+            com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.username
+        } else null
+        if (com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.isLoggedIn) {
+            SiteLoginStatus(
+                title = name ?: context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.REDGIFS)),
+                subtitle = context.getString(R.string.login_status_tap_account),
+                avatarUrl = com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.avatarUrl,
+                loggedIn = true,
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsAccountRoute) },
+            )
+        } else {
+            SiteLoginStatus(
+                title = context.getString(R.string.not_logged_in),
+                subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.REDGIFS)),
+                avatarUrl = null,
+                loggedIn = false,
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsAccountRoute) },
+            )
+        }
+    }
+
     SiteType.HANIME, SiteType.JAVCHU -> SiteLoginStatus(
         title = context.getString(R.string.not_logged_in),
         subtitle = "",

@@ -38,6 +38,15 @@ import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionHistor
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionListRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionSearchRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionSettingsRoute
+import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth
+import com.yenaly.han1meviewer.RedGifs.ui.browse.RedGifsUsersMode
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsAccountRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsFeedRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsLoginRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsNichesRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsSearchRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsSettingsRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsUsersRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavHistoryRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSearchRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSettingsRoute
@@ -358,6 +367,46 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 ),
             ),
         )
+
+        SiteType.REDGIFS -> {
+            val rgLoggedIn = RedGifsAuth.isLoggedIn
+            listOf(
+                SiteDrawerSection(
+                    browse,
+                    listOf(
+                        home,
+                        checkIn,
+                        entry(str(R.string.search), R.drawable.ic_baseline_search_24, RedGifsSearchRoute()),
+                        entry(str(R.string.redgifs_niches), R.drawable.baseline_grid_24, RedGifsNichesRoute()),
+                        entry(
+                            str(R.string.redgifs_creators), R.drawable.ic_video_person_24,
+                            RedGifsUsersRoute(RedGifsUsersMode.CREATORS.name),
+                        ),
+                    ),
+                ),
+                SiteDrawerSection(
+                    library,
+                    listOf(
+                        gatedEntry(
+                            str(R.string.redgifs_liked), R.drawable.ic_baseline_favorite_24,
+                            RedGifsFeedRoute("liked", "", str(R.string.redgifs_liked)), rgLoggedIn, RedGifsLoginRoute,
+                        ),
+                        gatedEntry(
+                            str(R.string.redgifs_following), R.drawable.ic_video_person_24,
+                            RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name), rgLoggedIn, RedGifsLoginRoute,
+                        ),
+                    ),
+                ),
+                SiteDrawerSection(
+                    customize,
+                    listOf(
+                        entry(str(R.string.redgifs_account), R.drawable.ic_baseline_person_24, RedGifsAccountRoute),
+                        entry(str(R.string.redgifs_settings_title), R.drawable.ic_video_quilty, RedGifsSettingsRoute),
+                        playerSettings,
+                    ),
+                ),
+            )
+        }
 
         SiteType.BUONDUA -> listOf(
             SiteDrawerSection(

@@ -102,7 +102,6 @@ object XHamsterPrivacyRoute
 @Serializable
 data class XHamsterMomentsRoute(val kind: String, val title: String)
 
-/** Shorts feed of one tag/category; [path] is e.g. `/tags/stepmom/shorts`. */
 @Serializable
 data class XHamsterTagShortsRoute(val path: String, val title: String)
 

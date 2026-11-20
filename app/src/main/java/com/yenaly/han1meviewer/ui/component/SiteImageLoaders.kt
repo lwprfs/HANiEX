@@ -23,6 +23,7 @@ object SiteImageLoaders {
         SiteType.SUPJAV -> SupJavImageLoader.get(context)
         SiteType.FULLVIDEOS -> FullVideosImageLoader.get(context)
         SiteType.FUCKINGSESSION -> FuckingSessionImageLoader.get(context)
+        SiteType.REDGIFS -> com.yenaly.han1meviewer.RedGifs.common.RedGifsImageLoader.get(context)
         else -> null
     }
 

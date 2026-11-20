@@ -24,6 +24,9 @@ import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosHomeRoute
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosSearchRoute
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosVideoRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionHomeRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsGifRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsHomeRoute
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsSearchRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionSearchRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionVideoRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
@@ -138,6 +141,9 @@ object NavigationManager {
                             FuckingSessionVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
                         )
                     }
+                    SiteType.REDGIFS -> {
+                        navController.navigate(RedGifsGifRoute(id = videoCode))
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "navigateToVideo failed: ${e.message}")
@@ -184,6 +190,9 @@ object NavigationManager {
                     }
                     SiteType.FUCKINGSESSION -> {
                         navController.navigate(FuckingSessionSearchRoute(query = query))
+                    }
+                    SiteType.REDGIFS -> {
+                        navController.navigate(RedGifsSearchRoute(query = query))
                     }
                 }
             } catch (e: Exception) {
@@ -247,6 +256,10 @@ object NavigationManager {
                     SiteType.FUCKINGSESSION -> {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(FuckingSessionHomeRoute) { launchSingleTop = true }
+                    }
+                    SiteType.REDGIFS -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(RedGifsHomeRoute) { launchSingleTop = true }
                     }
                 }
             } catch (e: Exception) {
@@ -327,6 +340,7 @@ object NavigationManager {
                 SiteType.COSPLAYTELE -> destination.hasRoute(CosplayteleHomeRoute::class)
                 SiteType.FULLVIDEOS -> destination.hasRoute(FullVideosHomeRoute::class)
                 SiteType.FUCKINGSESSION -> destination.hasRoute(FuckingSessionHomeRoute::class)
+                SiteType.REDGIFS -> destination.hasRoute(RedGifsHomeRoute::class)
             }
         } catch (e: Exception) {
             false

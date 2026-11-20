@@ -64,7 +64,7 @@ fun XHamsterMomentsScreen(
     var items by remember { mutableStateOf<List<SiteShort>>(emptyList()) }
     val metas = remember { mutableMapOf<String, SiteShortMeta>() }
     var page by remember { mutableIntStateOf(1) }
-    // One chain id per feed session; every page request must reuse it.
+
     var chainId by remember { mutableLongStateOf(0L) }
     var hasNext by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
@@ -99,15 +99,14 @@ fun XHamsterMomentsScreen(
         scope.launch {
             var nextPage = page + 1
             var tries = 0
-            // A page can come back with only items we already have; keep going a few pages instead
-            // of giving up, otherwise scrolling just stops loading.
+
             while (tries < 3) {
                 tries++
                 val result = XHamsterMomentsRepo.feed(
                     kind, nextPage, rangeKey, chainId,
                     currentChain = items.mapNotNull { it.id.toLongOrNull() },
                 ).getOrNull()
-                    // Network error: leave hasNext alone so scrolling again retries this page.
+
                     ?: break
                 val known = items.map { it.id }.toHashSet()
                 val fresh = result.items.filter { it.first.id.toString() !in known }

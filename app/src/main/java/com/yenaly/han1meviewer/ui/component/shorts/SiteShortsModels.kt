@@ -14,7 +14,7 @@ data class SiteShort(
     val views: Long? = null,
 
     val isGif: Boolean = false,
-    /** Optional. Only set when the source really provides it; the UI hides the badge otherwise. */
+
     val durationSeconds: Int? = null,
 )
 
@@ -33,7 +33,7 @@ data class SiteShortOwner(
     val canSubscribe: Boolean = false,
     val subscribed: Boolean = false,
     val subscribeBusy: Boolean = false,
-    /** Source-specific profile path. When set, tapping the owner in the player can open their profile. */
+
     val path: String? = null,
 )
 
@@ -51,7 +51,6 @@ data class SiteShortMeta(
     val tags: List<SiteShortTag> = emptyList(),
 )
 
-/** A tappable tag / category / performer / channel shown under a short. [path] is source-specific. */
 data class SiteShortTag(
     val name: String,
     val path: String,
@@ -97,6 +96,7 @@ interface SiteShortsSource {
     val supportsRating: Boolean get() = false
     val supportsFavorite: Boolean get() = false
     val supportsComments: Boolean get() = false
+    val supportsDislike: Boolean get() = true
 
     suspend fun loadMetas(shorts: List<SiteShort>): Result<Map<String, SiteShortMeta>> =
         Result.success(emptyMap())
@@ -114,6 +114,12 @@ interface SiteShortsSource {
 
     suspend fun likeComment(short: SiteShort, comment: SiteShortComment): Result<Unit> = unsupported()
     suspend fun deleteComment(short: SiteShort, comment: SiteShortComment): Result<Unit> = unsupported()
+
+    suspend fun setOwnerFollowed(
+        short: SiteShort,
+        owner: SiteShortOwner,
+        follow: Boolean,
+    ): Result<Unit> = unsupported()
 
     fun reportUrl(short: SiteShort): String? = null
 

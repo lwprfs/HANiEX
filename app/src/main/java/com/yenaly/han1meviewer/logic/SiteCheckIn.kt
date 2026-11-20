@@ -33,6 +33,7 @@ object SiteCheckIn {
         SiteType.COSPLAYTELE -> "cosplaytele"
         SiteType.FULLVIDEOS -> "fullvideos"
         SiteType.FUCKINGSESSION -> "fuckingsession"
+        SiteType.REDGIFS -> "redgifs"
     }
 
     fun dishCode(site: SiteType, code: String): String {
@@ -55,6 +56,7 @@ object SiteCheckIn {
             "cosplaytele" -> SiteType.COSPLAYTELE
             "fullvideos" -> SiteType.FULLVIDEOS
             "fuckingsession" -> SiteType.FUCKINGSESSION
+            "redgifs" -> SiteType.REDGIFS
             else -> null
         }
     }

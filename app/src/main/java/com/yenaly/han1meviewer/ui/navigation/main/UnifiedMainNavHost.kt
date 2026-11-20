@@ -12,6 +12,7 @@ import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaNavHost
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleNavHost
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosNavHost
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionNavHost
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsNavHost
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterNavHost
 import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaNavHost
 import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvNavHost
@@ -135,6 +136,13 @@ fun UnifiedMainNavHost(
             }
             SiteType.FUCKINGSESSION -> {
                 FuckingSessionNavHost(
+                    activity = activity,
+                    navController = navController,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+            SiteType.REDGIFS -> {
+                RedGifsNavHost(
                     activity = activity,
                     navController = navController,
                     onDestinationChanged = onDestinationChanged,

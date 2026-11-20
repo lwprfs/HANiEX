@@ -365,6 +365,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     SiteType.COSPLAYTELE -> CosplayteleHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.FULLVIDEOS -> FullVideosHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.FUCKINGSESSION -> FuckingSessionHistoryRepo.deleteByVideoCode(item.code)
+                    SiteType.REDGIFS -> Unit
                 }
             }
         }
