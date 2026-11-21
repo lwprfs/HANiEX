@@ -25,7 +25,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
@@ -325,7 +324,7 @@ object OfflineDownloads {
         onProgress: ((Float) -> Unit)?,
     ) {
         val ctx = applicationContext
-        val request = Request.Builder().url(url).get().apply {
+        val request = okhttp3.Request.Builder().url(url).get().apply {
             rt.headers.forEach { (k, v) -> header(k, v) }
         }.build()
         val call = rt.client.newCall(request)
