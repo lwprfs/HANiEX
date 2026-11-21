@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_none_found">没有找到新的视频（已扫描 %1$d 个文件夹）</string>
+    <string name="import_root_missing">下载文件夹尚不存在</string>
+    <string name="import_fail_reason_unrecognized">无法识别的文件夹</string>
+    <string name="import_fail_reason_bad_info">info.json 无法读取</string>
+</resources>

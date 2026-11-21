@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_none_found">新しい動画は見つかりませんでした（%1$d フォルダをスキャン）</string>
+    <string name="import_root_missing">ダウンロードフォルダがまだありません</string>
+    <string name="import_fail_reason_unrecognized">認識できないフォルダ</string>
+    <string name="import_fail_reason_bad_info">info.json を読み取れません</string>
+</resources>

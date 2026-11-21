@@ -149,9 +149,12 @@ fun MainActivityContent(
                 SiteType.XHAMSTER -> d.isRoute("com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute")
                 SiteType.BUONDUA -> d.isRoute("com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute")
                 SiteType.COSPLAYTELE -> d.isRoute("com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHomeRoute")
+                SiteType.COSER -> d.isRoute("com.yenaly.han1meviewer.Coser.ui.navigation.CoserHomeRoute")
                 SiteType.FULLVIDEOS -> d.isRoute("com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosHomeRoute")
                 SiteType.FUCKINGSESSION -> d.isRoute("com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionHomeRoute")
                 SiteType.REDGIFS -> d.isRoute("com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsHomeRoute")
+                SiteType.XXXTUBE -> d.isRoute("com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeHomeRoute")
+                SiteType.WUMAOBI -> d.isRoute("com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiHomeRoute")
                 else -> false
             }
         }

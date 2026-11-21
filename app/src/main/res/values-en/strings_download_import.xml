@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="import_none_found">No new videos found (scanned %1$d folders)</string>
+    <string name="import_root_missing">The download folder doesn't exist yet</string>
+    <string name="import_fail_reason_unrecognized">Folder not recognised</string>
+    <string name="import_fail_reason_bad_info">info.json could not be read</string>
+</resources>

@@ -10,6 +10,7 @@ import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
+import kotlinx.serialization.json.put
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
@@ -433,6 +434,7 @@ class HanimeDownloadWorker(
                     }
                 }
                 entity = entity.copy(length = written, downloadedLength = written)
+                writeInfoJson(entity)
                 showSuccessNotification()
                 result = Result.success(workDataOf(DownloadState.STATE to DownloadState.Finished.mask))
             } catch (e: Exception) {
@@ -544,6 +546,7 @@ class HanimeDownloadWorker(
 
             if (entity.downloadedLength >= entity.length && entity.length > 0) {
                 DatabaseRepo.HanimeDownload.updateKeepingGroup(entity.copy(state = DownloadState.Finished))
+                writeInfoJson(entity)
                 showSuccessNotification()
                 logDownloadResult("finished")
                 return@withContext Result.success(
@@ -858,6 +861,29 @@ class HanimeDownloadWorker(
         while (byteBuffer.hasRemaining()) {
             write(byteBuffer)
         }
+    }
+
+    /** `info.json` (schema v2) next to the video, so a later "refresh downloads" restores exact metadata. */
+    private fun writeInfoJson(entity: HanimeDownloadEntity) {
+        runCatching {
+            val site = SiteCheckIn.siteOfDishCode(videoCode)?.name ?: "HANIME"
+            val text = kotlinx.serialization.json.buildJsonObject {
+                put("version", 2)
+                put("videoCode", videoCode)
+                put("site", site)
+                put("title", hanimeName)
+                put("coverUrl", entity.coverUrl)
+                put("quality", quality)
+                put("suffix", videoType)
+                put("videoFile", createVideoName(hanimeName, quality, videoType))
+                put("coverFile", com.yenaly.han1meviewer.HFileManager.createVideoCoverName(hanimeName, HFileManager.DEF_VIDEO_COVER_TYPE))
+                put("addDate", entity.addDate)
+                put("videoUrls", kotlinx.serialization.json.buildJsonObject {
+                    put(quality, kotlinx.serialization.json.buildJsonObject { put("link", entity.videoUrl) })
+                })
+            }.toString()
+            SafFileManager.writeInfoJson(context, videoCode, text)
+        }.onFailure { Log.w("DownloadWorker", "info.json failed", it) }
     }
 
     private fun CoroutineScope.updateCoverImage(entity: HanimeDownloadEntity) {

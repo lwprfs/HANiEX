@@ -195,8 +195,8 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         }
     }
 
-    SiteType.HENTAIMAMA, SiteType.SUPJAV, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.FULLVIDEOS,
-    SiteType.FUCKINGSESSION ->
+    SiteType.HENTAIMAMA, SiteType.SUPJAV, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER, SiteType.FULLVIDEOS,
+    SiteType.FUCKINGSESSION, SiteType.XXXTUBE ->
         SiteLoginStatus(
             title = context.getString(R.string.login_status_no_account),
             subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(site)),
@@ -204,6 +204,30 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
             loggedIn = false,
             onClick = null,
         )
+
+    SiteType.WUMAOBI -> {
+        com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth.reload()
+        val auth = com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth.state.value
+        if (auth.loggedIn) {
+            SiteLoginStatus(
+                title = auth.userName.ifBlank {
+                    context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.WUMAOBI))
+                },
+                subtitle = context.getString(R.string.login_status_tap_account),
+                avatarUrl = null,
+                loggedIn = true,
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiAccountRoute) },
+            )
+        } else {
+            SiteLoginStatus(
+                title = context.getString(R.string.not_logged_in),
+                subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.WUMAOBI)),
+                avatarUrl = null,
+                loggedIn = false,
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiAccountRoute) },
+            )
+        }
+    }
 
     SiteType.ROUVIDEO -> {
         RouVideoAuth.reload()

@@ -47,6 +47,11 @@ import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsNichesRoute
 import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsSearchRoute
 import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsSettingsRoute
 import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsUsersRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeEntityRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeHistoryRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeListRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeSearchRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeSettingsRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavHistoryRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSearchRoute
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSettingsRoute
@@ -90,6 +95,11 @@ import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHistoryRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleListRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSettingsRoute
+import com.yenaly.han1meviewer.Coser.common.CoserConstants
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserHistoryRoute
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserListRoute
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserSearchRoute
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
@@ -342,6 +352,46 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             ),
         )
 
+        SiteType.WUMAOBI -> {
+            val wmbLoggedIn = com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth.isLoggedIn
+            listOf(
+                SiteDrawerSection(
+                    browse,
+                    listOf(
+                        home,
+                        checkIn,
+                        entry(str(R.string.search), R.drawable.ic_baseline_search_24, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiSearchRoute()),
+                        entry(str(R.string.wumaobi_tags), R.drawable.baseline_grid_24, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiBrowseRoute("tags")),
+                        entry(str(R.string.wumaobi_models), R.drawable.baseline_grid_24, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiBrowseRoute("actress")),
+                        entry(str(R.string.wumaobi_series), R.drawable.baseline_grid_24, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiBrowseRoute("series")),
+                    ),
+                ),
+                SiteDrawerSection(
+                    library,
+                    listOf(
+                        gatedEntry(
+                            str(R.string.wumaobi_favorites), R.drawable.ic_baseline_favorite_24,
+                            com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiFavoritesRoute, wmbLoggedIn, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiAccountRoute,
+                        ),
+                        entry(str(R.string.watch_history), history, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiHistoryRoute),
+                    ),
+                ),
+                SiteDrawerSection(
+                    account,
+                    listOf(
+                        entry(str(R.string.wumaobi_account_title), R.drawable.ic_baseline_person_24, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiAccountRoute),
+                    ),
+                ),
+                SiteDrawerSection(
+                    customize,
+                    listOf(
+                        entry(str(R.string.wumaobi_settings_playback_title), R.drawable.ic_video_quilty, com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiSettingsRoute),
+                        playerSettings,
+                    ),
+                ),
+            )
+        }
+
         SiteType.FUCKINGSESSION -> listOf(
             SiteDrawerSection(
                 browse,
@@ -407,6 +457,32 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 ),
             )
         }
+
+        SiteType.XXXTUBE -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, XXXTubeSearchRoute()),
+                    entry(str(R.string.xxxtube_models), R.drawable.baseline_grid_24, XXXTubeEntityRoute("models")),
+                    entry(str(R.string.xxxtube_categories), R.drawable.baseline_grid_24, XXXTubeEntityRoute("categories")),
+                    entry("Top Rated", R.drawable.baseline_grid_24, XXXTubeListRoute("Top Rated", "/videos/?by=rating")),
+                    entry("Most Viewed", R.drawable.baseline_grid_24, XXXTubeListRoute("Most Viewed", "/videos/?by=video_viewed")),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(entry(str(R.string.watch_history), history, XXXTubeHistoryRoute)),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(
+                    entry(str(R.string.xxxtube_settings_playback_title), R.drawable.ic_video_quilty, XXXTubeSettingsRoute),
+                    playerSettings,
+                ),
+            ),
+        )
 
         SiteType.BUONDUA -> listOf(
             SiteDrawerSection(
@@ -539,6 +615,47 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 customize,
                 listOf(
                     entry(str(R.string.cosplaytele_settings_title), R.drawable.ic_video_quilty, CosplayteleSettingsRoute),
+                    playerSettings,
+                ),
+            ),
+        )
+
+        SiteType.COSER -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, CoserSearchRoute()),
+                    entry(
+                        str(R.string.coser_drawer_trending), history,
+                        CoserListRoute(CoserConstants.SECTION_TRENDING.path, CoserConstants.SECTION_TRENDING.title),
+                    ),
+                    entry(
+                        str(R.string.coser_drawer_latest), R.drawable.ic_drawer_photos,
+                        CoserListRoute(CoserConstants.SECTION_LATEST.path, CoserConstants.SECTION_LATEST.title),
+                    ),
+                    entry(
+                        str(R.string.coser_drawer_most_viewed), R.drawable.ic_drawer_creator,
+                        CoserListRoute(CoserConstants.SECTION_MOST_VIEWED.path, CoserConstants.SECTION_MOST_VIEWED.title),
+                    ),
+                    entry(
+                        str(R.string.coser_drawer_series), R.drawable.ic_drawer_category,
+                        CoserListRoute(CoserConstants.SECTION_SERIES.path, CoserConstants.SECTION_SERIES.title, true),
+                    ),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(
+                    entry(str(R.string.watch_history), history, CoserHistoryRoute),
+                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
+                ),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(
+                    entry(str(R.string.coser_settings_title), R.drawable.ic_video_quilty, CoserSettingsRoute),
                     playerSettings,
                 ),
             ),

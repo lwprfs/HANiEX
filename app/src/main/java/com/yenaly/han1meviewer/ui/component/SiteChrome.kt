@@ -60,6 +60,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import com.yenaly.han1meviewer.ui.screen.SiteCardSettings
+import com.yenaly.han1meviewer.ui.screen.SiteImageCardSettings
 import com.yenaly.han1meviewer.Preferences
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.runtime.getValue
@@ -311,8 +312,35 @@ fun SiteVideoCard(
     imageLoader: ImageLoader? = null,
     contentScale: ContentScale = ContentScale.FillWidth,
     placeholder: androidx.compose.ui.graphics.painter.Painter? = null,
+    /** Photo / album / gallery tile: follows the "image cards" customization instead of the video one. */
+    imageCard: Boolean = false,
 ) {
     val site = if (LocalInspectionMode.current) null else Preferences.siteType
+    val imageSite = if (imageCard) site?.takeIf { it in SiteImageCardSettings.sites } else null
+    if (imageSite != null) {
+        val show = { detail: SiteImageCardSettings.Detail -> SiteImageCardSettings.isShown(imageSite, detail) }
+        SiteVideoCardLayout(
+            title = if (show(SiteImageCardSettings.Detail.Title)) title else "",
+            coverUrl = coverUrl,
+            onClick = onClick,
+            modifier = modifier,
+            onLongClick = onLongClick,
+            aspectRatio = SiteImageCardSettings.aspect(imageSite).ratio ?: aspectRatio,
+            views = views,
+            duration = duration,
+            subtitle = subtitle.takeIf { show(SiteImageCardSettings.Detail.Subtitle) },
+            reviews = reviews,
+            uploadTime = uploadTime,
+            topEndBadge = topEndBadge.takeIf { show(SiteImageCardSettings.Detail.Badges) },
+            bottomStartBadge = bottomStartBadge.takeIf { show(SiteImageCardSettings.Detail.Badges) },
+            isWatched = isWatched,
+            imageLoader = imageLoader,
+            contentScale = contentScale,
+            placeholder = placeholder,
+            compactText = true,
+        )
+        return
+    }
     val shown = { detail: SiteCardSettings.Detail ->
         site == null || site !in SiteCardSettings.sites || SiteCardSettings.isShown(site, detail)
     }
@@ -358,6 +386,7 @@ private fun SiteVideoCardLayout(
     imageLoader: ImageLoader? = null,
     contentScale: ContentScale = ContentScale.FillWidth,
     placeholder: androidx.compose.ui.graphics.painter.Painter? = null,
+    compactText: Boolean = false,
 ) {
     val iconSize = dimensionResource(id = R.dimen.view_view_and_time_icon_size)
 
@@ -493,7 +522,7 @@ private fun SiteVideoCardLayout(
                 }
             }
 
-            Text(
+            if (!compactText || title.isNotBlank()) Text(
                 text = translatedTitle(title),
                 maxLines = 2,
                 minLines = 2,
@@ -506,7 +535,7 @@ private fun SiteVideoCardLayout(
                     .padding(start = 10.dp, end = 10.dp, top = 8.dp),
             )
 
-            Text(
+            if (!compactText || !subtitle.isNullOrBlank()) Text(
                 text = subtitle.orEmpty(),
                 maxLines = 1,
                 style = MaterialTheme.typography.labelSmall,
@@ -889,9 +918,12 @@ fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifi
         com.yenaly.han1meviewer.SiteType.SUPJAV -> R.drawable.s_switch_supjav
         com.yenaly.han1meviewer.SiteType.BUONDUA -> R.drawable.s_switch_buondua
         com.yenaly.han1meviewer.SiteType.COSPLAYTELE -> R.drawable.s_switch_cosplaytele
+        com.yenaly.han1meviewer.SiteType.COSER -> R.drawable.s_switch_coser
         com.yenaly.han1meviewer.SiteType.FULLVIDEOS -> R.drawable.s_switch_fullvideos
         com.yenaly.han1meviewer.SiteType.FUCKINGSESSION -> R.drawable.s_switch_fuckingsession
         com.yenaly.han1meviewer.SiteType.REDGIFS -> R.drawable.s_switch_redgifs
+        com.yenaly.han1meviewer.SiteType.XXXTUBE -> R.drawable.s_switch_x_x_x
+        com.yenaly.han1meviewer.SiteType.WUMAOBI -> R.drawable.s_switch_wumaobi
         else -> R.drawable.ic_baseline_h_chan_single_color
     }
     Image(

@@ -4,7 +4,6 @@ import com.yenaly.han1meviewer.RedGifs.common.RedGifsConstants
 import com.yenaly.han1meviewer.logic.network.HDns
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.interceptor.UrlLoggingInterceptor
-import com.yenaly.han1meviewer.logic.network.interceptor.UserAgentInterceptor
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -20,21 +19,32 @@ object RedGifsNetwork {
     val baseUrl: String
         get() = RedGifsConstants.BASE_URL
 
+    /** API client: adds the bearer token and retries once with a fresh token on 401. */
     val client: OkHttpClient
         get() {
             ensure()
             return _client!!
         }
 
+    /** Media / image client: no auth, but media.redgifs.com expects the site Referer. */
     val streamClient: OkHttpClient
         get() {
             ensure()
             return _streamClient!!
         }
 
+    private val browserHeaders = Interceptor { chain ->
+        chain.proceed(
+            chain.request().newBuilder()
+                .header("User-Agent", RedGifsConstants.USER_AGENT)
+                .build()
+        )
+    }
+
     private val authInterceptor = Interceptor { chain ->
         val original = chain.request()
         val builder = original.newBuilder()
+        if (original.header("x-session-id") == null) builder.header("x-session-id", RedGifsAuth.sessionId)
         if (original.header("Referer") == null) builder.header("Referer", RedGifsConstants.REFERER)
         if (original.header("Origin") == null) builder.header("Origin", RedGifsConstants.ORIGIN)
         if (original.header("Accept") == null) builder.header("Accept", "application/json")
@@ -66,7 +76,7 @@ object RedGifsNetwork {
             .writeTimeout(20, TimeUnit.SECONDS)
             .followRedirects(true)
             .followSslRedirects(true)
-            .addInterceptor(UserAgentInterceptor)
+            .addInterceptor(browserHeaders)
             .addInterceptor(authInterceptor)
             .addInterceptor(UrlLoggingInterceptor())
             .dns(HDns())
@@ -77,7 +87,7 @@ object RedGifsNetwork {
             .readTimeout(45, TimeUnit.SECONDS)
             .followRedirects(true)
             .followSslRedirects(true)
-            .addInterceptor(UserAgentInterceptor)
+            .addInterceptor(browserHeaders)
             .addInterceptor(mediaHeaders)
             .dns(HDns())
             .proxySelector(HProxySelector())

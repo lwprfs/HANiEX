@@ -6,6 +6,8 @@ import com.yenaly.han1meviewer.XHamster.ui.discover.XHamsterDiscoverActions
 import com.yenaly.han1meviewer.XHamster.ui.discover.XHamsterDiscoverStrips
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
+import com.yenaly.han1meviewer.ui.screen.SiteImageCardSettings
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -386,6 +388,11 @@ fun XHamsterPhotosScreen(
     val gridState = rememberLazyGridState()
     NearEndEffect(gridState, state.items.size) { viewModel.loadMore() }
 
+    val imgSite = com.yenaly.han1meviewer.SiteType.XHAMSTER
+    val imgAspect = SiteImageCardSettings.aspect(imgSite).ratio ?: 1f
+    val showImgTitle = SiteImageCardSettings.isShown(imgSite, SiteImageCardSettings.Detail.Title)
+    val showImgBadges = SiteImageCardSettings.isShown(imgSite, SiteImageCardSettings.Detail.Badges)
+    val showImgAuthor = SiteImageCardSettings.isShown(imgSite, SiteImageCardSettings.Detail.Subtitle)
     EntityScaffold(stringResource(R.string.xhamster_photos), onBack) {
         Column(Modifier.fillMaxSize()) {
             OptionChips(filters, path) { path = it.path }
@@ -415,16 +422,16 @@ fun XHamsterPhotosScreen(
                                 gallery.coverUrl,
                                 Modifier
                                     .fillMaxWidth()
-                                    .size(width = 150.dp, height = 150.dp),
+                                    .aspectRatio(imgAspect),
                             )
                             Column(Modifier.padding(8.dp)) {
-                                Text(
+                                if (showImgTitle) Text(
                                     gallery.title,
                                     style = MaterialTheme.typography.bodyMedium,
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
                                 )
-                                val meta = listOfNotNull(
+                                val meta = if (!showImgBadges) emptyList() else listOfNotNull(
                                     gallery.photosCount?.let {
                                         stringResource(R.string.xhamster_n_photos, it.toString())
                                     },
@@ -435,7 +442,7 @@ fun XHamsterPhotosScreen(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
-                                gallery.authorName?.let { name ->
+                                gallery.authorName?.takeIf { showImgAuthor }?.let { name ->
                                     Text(
                                         name,
                                         modifier = Modifier.clickable {
@@ -676,6 +683,11 @@ fun XHamsterPhotoSearchResults(
     val state by viewModel.state.collectAsStateWithLifecycle()
     LaunchedEffect(url) { viewModel.setUrl(url) }
     val gridState = rememberLazyGridState()
+    val imgSite2 = com.yenaly.han1meviewer.SiteType.XHAMSTER
+    val imgAspect2 = SiteImageCardSettings.aspect(imgSite2).ratio ?: 1f
+    val showImgTitle2 = SiteImageCardSettings.isShown(imgSite2, SiteImageCardSettings.Detail.Title)
+    val showImgBadges2 = SiteImageCardSettings.isShown(imgSite2, SiteImageCardSettings.Detail.Badges)
+    val showImgAuthor2 = SiteImageCardSettings.isShown(imgSite2, SiteImageCardSettings.Detail.Subtitle)
     NearEndEffect(gridState, state.items.size) { viewModel.loadMore() }
     when {
         state.isLoading && state.items.isEmpty() -> SiteLoadingContent()
@@ -693,17 +705,17 @@ fun XHamsterPhotoSearchResults(
         ) {
             items(state.items, key = { it.id }) { gallery ->
                 Card(Modifier.fillMaxWidth().clickable { onOpenGallery(gallery.url) }) {
-                    EntityImage(gallery.coverUrl, Modifier.fillMaxWidth().size(width = 150.dp, height = 150.dp))
+                    EntityImage(gallery.coverUrl, Modifier.fillMaxWidth().aspectRatio(imgAspect2))
                     Column(Modifier.padding(8.dp)) {
-                        Text(gallery.title, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        gallery.photosCount?.let {
+                        if (showImgTitle2) Text(gallery.title, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        gallery.photosCount?.takeIf { showImgBadges2 }?.let {
                             Text(
                                 stringResource(R.string.xhamster_n_photos, it.toString()),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        gallery.authorName?.let { name ->
+                        gallery.authorName?.takeIf { showImgAuthor2 }?.let { name ->
                             Text(
                                 name,
                                 modifier = Modifier.clickable { gallery.authorPath?.let { onOpenAuthor(it, name) } },

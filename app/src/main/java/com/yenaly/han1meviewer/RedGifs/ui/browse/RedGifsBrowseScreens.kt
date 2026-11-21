@@ -49,6 +49,7 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.SiteVerifiedBadge
 import kotlinx.coroutines.launch
 
+/** A simple paged vertical list used by niches / creators / following / followers / search results. */
 @Composable
 internal fun <T : Any> RedGifsPagedList(
     reloadKey: Any?,
@@ -184,6 +185,7 @@ internal fun RedGifsUserRow(user: RedGifsUser, onClick: () -> Unit) {
     }
 }
 
+/** `following == true` lists the niches the user subscribed to; otherwise browses all niches by category. */
 @Composable
 fun RedGifsNichesScreen(
     following: Boolean,

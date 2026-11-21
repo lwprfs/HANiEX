@@ -97,6 +97,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.util.FapFolderImageLocation
+import com.yenaly.han1meviewer.util.DownloadLayout
 import com.yenaly.han1meviewer.util.ImageDownloadTracker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -109,7 +110,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-val IMAGE_DOWNLOAD_SITES = setOf(SiteType.FAPFOLDER, SiteType.BUONDUA, SiteType.XHAMSTER, SiteType.COSPLAYTELE)
+val IMAGE_DOWNLOAD_SITES = setOf(SiteType.FAPFOLDER, SiteType.BUONDUA, SiteType.XHAMSTER, SiteType.COSPLAYTELE, SiteType.COSER)
 
 private data class PhotoEntry(
     val docId: String,
@@ -130,6 +131,7 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
         DocumentsContract.Document.COLUMN_MIME_TYPE,
         DocumentsContract.Document.COLUMN_LAST_MODIFIED,
     )
+    var hasVideo = false
     runCatching {
         context.contentResolver.query(childrenUri, projection, null, null, null)?.use { c ->
             while (c.moveToNext()) {
@@ -137,6 +139,11 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
                 val name = c.getString(1).orEmpty()
                 val mime = c.getString(2).orEmpty()
                 val isDir = mime == DocumentsContract.Document.MIME_TYPE_DIR
+                // SAF often reports `.ts` as application/octet-stream, so check the extension too.
+                if (!isDir && (mime.startsWith("video/") || DownloadLayout.isVideoFileName(name))) {
+                    hasVideo = true
+                    continue
+                }
                 if (!isDir && !mime.startsWith("image/")) continue
                 out += PhotoEntry(
                     docId = id,
@@ -148,6 +155,8 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
             }
         }
     }
+    // A folder that directly holds a video is a video folder: its images are covers, not photos.
+    if (hasVideo) return emptyList()
     return out
 }
 

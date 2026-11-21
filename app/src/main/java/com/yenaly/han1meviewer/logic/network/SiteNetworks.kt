@@ -172,6 +172,14 @@ object SiteNetworks {
             cloudflareFronted = true,
         ),
         SiteNetworkProfile(
+            siteType = SiteType.COSER,
+            displayName = "Coser",
+            catalogKey = null,
+            defaultUrls = { listOf("https://coser.tv") },
+            trailingSlash = false,
+            cloudflareFronted = true,
+        ),
+        SiteNetworkProfile(
             siteType = SiteType.FULLVIDEOS,
             displayName = "FullVideos",
             catalogKey = null,
@@ -188,12 +196,35 @@ object SiteNetworks {
             cloudflareFronted = true,
         ),
         SiteNetworkProfile(
+            siteType = SiteType.WUMAOBI,
+            displayName = "Wumaobi",
+            catalogKey = null,
+            defaultUrls = {
+                listOf(
+                    "https://wumaobi.com",
+                    "https://baihuse.com",
+                    "https://paipancon.com",
+                    "https://shavedjav.com",
+                )
+            },
+            trailingSlash = false,
+            cloudflareFronted = true,
+        ),
+        SiteNetworkProfile(
             siteType = SiteType.REDGIFS,
             displayName = "RedGifs",
             catalogKey = null,
             defaultUrls = { listOf("https://www.redgifs.com") },
             trailingSlash = false,
             cloudflareFronted = false,
+        ),
+        SiteNetworkProfile(
+            siteType = SiteType.XXXTUBE,
+            displayName = "X-X-X.tube",
+            catalogKey = null,
+            defaultUrls = { listOf("https://x-x-x.tube") },
+            trailingSlash = false,
+            cloudflareFronted = true,
         ),
     )
 

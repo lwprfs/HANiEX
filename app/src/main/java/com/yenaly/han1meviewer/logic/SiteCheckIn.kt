@@ -31,9 +31,12 @@ object SiteCheckIn {
         SiteType.XHAMSTER -> "xhamster"
         SiteType.BUONDUA -> "buondua"
         SiteType.COSPLAYTELE -> "cosplaytele"
+        SiteType.COSER -> "coser"
         SiteType.FULLVIDEOS -> "fullvideos"
         SiteType.FUCKINGSESSION -> "fuckingsession"
         SiteType.REDGIFS -> "redgifs"
+        SiteType.XXXTUBE -> "xxxtube"
+        SiteType.WUMAOBI -> "wumaobi"
     }
 
     fun dishCode(site: SiteType, code: String): String {
@@ -54,9 +57,12 @@ object SiteCheckIn {
             "xhamster" -> SiteType.XHAMSTER
             "buondua" -> SiteType.BUONDUA
             "cosplaytele" -> SiteType.COSPLAYTELE
+            "coser" -> SiteType.COSER
             "fullvideos" -> SiteType.FULLVIDEOS
             "fuckingsession" -> SiteType.FUCKINGSESSION
             "redgifs" -> SiteType.REDGIFS
+            "xxxtube" -> SiteType.XXXTUBE
+            "wumaobi" -> SiteType.WUMAOBI
             else -> null
         }
     }
@@ -207,6 +213,18 @@ object SiteCheckIn {
                 }
         }
         runCatching {
+            com.yenaly.han1meviewer.Coser.data.local.CoserDatabase.getInstance(context)
+                .coserHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.COSER, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
             com.yenaly.han1meviewer.FullVideos.data.local.FullVideosDatabase.getInstance(context)
                 .fullVideosHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
@@ -227,6 +245,30 @@ object SiteCheckIn {
                         releaseDate = 0L,
                         watchDate = it.watchDate,
                         videoCode = dishCode(SiteType.FUCKINGSESSION, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
+            com.yenaly.han1meviewer.Wumaobi.data.local.WumaobiDatabase.getInstance(context)
+                .wumaobiHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.WUMAOBI, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
+            com.yenaly.han1meviewer.XXXTube.data.local.XXXTubeDatabase.getInstance(context)
+                .xxxTubeHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.XXXTUBE, it.videoCode),
                     )
                 }
         }

@@ -417,6 +417,7 @@ internal fun ProfileShorts(
         items.isEmpty() && error != null -> SiteErrorContent(message = error, onRetry = { reload++ })
         items.isEmpty() -> SiteEmptyContent(hint = stringResource(R.string.xhamster_shorts_empty))
         else -> SiteShortsGrid(
+            site = com.yenaly.han1meviewer.SiteType.XHAMSTER,
             items = items,
             onOpen = { playing = it },
             imageLoader = imageLoader,

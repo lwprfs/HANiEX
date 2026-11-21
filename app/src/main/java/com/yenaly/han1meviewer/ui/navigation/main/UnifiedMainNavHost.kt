@@ -10,9 +10,11 @@ import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavNavHost
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoNavHost
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaNavHost
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleNavHost
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserNavHost
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosNavHost
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionNavHost
 import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsNavHost
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeNavHost
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterNavHost
 import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaNavHost
 import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvNavHost
@@ -127,6 +129,13 @@ fun UnifiedMainNavHost(
                     onDestinationChanged = onDestinationChanged,
                 )
             }
+            SiteType.COSER -> {
+                CoserNavHost(
+                    activity = activity,
+                    navController = navController,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
             SiteType.FULLVIDEOS -> {
                 FullVideosNavHost(
                     activity = activity,
@@ -143,6 +152,20 @@ fun UnifiedMainNavHost(
             }
             SiteType.REDGIFS -> {
                 RedGifsNavHost(
+                    activity = activity,
+                    navController = navController,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+            SiteType.XXXTUBE -> {
+                XXXTubeNavHost(
+                    activity = activity,
+                    navController = navController,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+            SiteType.WUMAOBI -> {
+                com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiNavHost(
                     activity = activity,
                     navController = navController,
                     onDestinationChanged = onDestinationChanged,

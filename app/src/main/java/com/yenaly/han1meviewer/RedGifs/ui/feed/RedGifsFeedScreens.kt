@@ -24,6 +24,7 @@ import com.yenaly.han1meviewer.ui.component.SiteErrorContent
 import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
+/** Generic titled feed page (niche, liked, my uploads, ...). */
 @Composable
 fun RedGifsFeedScreen(
     source: RedGifsFeedSource,
@@ -46,6 +47,7 @@ fun RedGifsFeedScreen(
     }
 }
 
+/** Opens a single clip (shared link / cross-site open) straight in the shorts player. */
 @Composable
 fun RedGifsGifScreen(id: String, onBack: () -> Unit) {
     var gif by remember(id) { mutableStateOf<RedGifsGif?>(null) }

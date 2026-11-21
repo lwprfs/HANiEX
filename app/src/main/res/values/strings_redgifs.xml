@@ -46,4 +46,22 @@
     <string name="redgifs_tab_popular">熱門</string>
     <string name="redgifs_tab_trending">趨勢</string>
     <string name="redgifs_user_stats">%1$s 位粉絲 · %2$s 個 GIF</string>
+    <string name="redgifs_register">註冊</string>
+    <string name="redgifs_cookie">Cookie</string>
+    <string name="redgifs_use_website">改用網頁登入</string>
+    <string name="redgifs_signin_hint">輸入信箱或使用者名稱，RedGifs 會寄登入驗證碼給你。</string>
+    <string name="redgifs_register_hint">設定使用者名稱並輸入信箱，RedGifs 會寄驗證碼來完成註冊。</string>
+    <string name="redgifs_username">使用者名稱</string>
+    <string name="redgifs_email">信箱</string>
+    <string name="redgifs_email_or_username">信箱或使用者名稱</string>
+    <string name="redgifs_send_code">寄送驗證碼</string>
+    <string name="redgifs_captcha_hint">正在確認你不是機器人…</string>
+    <string name="redgifs_captcha_failed">無法完成驗證，請再試一次。</string>
+    <string name="redgifs_code_hint">請輸入寄到 %1$s 的驗證碼</string>
+    <string name="redgifs_code">驗證碼</string>
+    <string name="redgifs_verify">驗證</string>
+    <string name="redgifs_start_over">重新開始</string>
+    <string name="redgifs_cookie_invalid">這看起來不是有效的 RedGifs 登入資料。</string>
+    <string name="redgifs_cookie_hint">貼上 redgifs.com 的 Cookie、refresh_token 值或 access token，資料只保存在本機。</string>
+    <string name="redgifs_cookie_field">Cookie / Token</string>
 </resources>

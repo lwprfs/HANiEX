@@ -18,6 +18,7 @@
     <string name="backup_section_cookies_rouvideo">RouVideo 登入資料</string>
     <string name="backup_section_cookies_xhamster">xHamster 登入資料</string>
     <string name="backup_section_cosplaytele_history">Cosplaytele 瀏覽歷史</string>
+    <string name="backup_section_coser_history">Coser 瀏覽歷史</string>
     <string name="image_dl_refresh">重新整理</string>
     <string name="image_dl_delete_items">要刪除 %1$s 個項目嗎？</string>
     <string name="image_dl_delete_items_message">所選相片與資料夾（含資料夾內所有內容）將從你的裝置移除。</string>

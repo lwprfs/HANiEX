@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_shorts_cards_section">Gif / short cards</string>
+    <string name="site_shorts_card_gif_badge">GIF badge</string>
+    <string name="site_card_show_title">Title</string>
+    <string name="site_image_cards_section">Photo cards</string>
+    <string name="site_image_card_show_badges">Photo count badge</string>
+    <string name="site_image_card_show_subtitle">Author / extra info</string>
+</resources>

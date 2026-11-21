@@ -46,4 +46,22 @@
     <string name="redgifs_tab_popular">Popular</string>
     <string name="redgifs_tab_trending">Trending</string>
     <string name="redgifs_user_stats">%1$s followers · %2$s gifs</string>
+    <string name="redgifs_register">Register</string>
+    <string name="redgifs_cookie">Cookie</string>
+    <string name="redgifs_use_website">Use the website instead</string>
+    <string name="redgifs_signin_hint">Enter your email or username. RedGifs will email you a sign-in code.</string>
+    <string name="redgifs_register_hint">Pick a username and enter your email. RedGifs will email you a code to finish creating the account.</string>
+    <string name="redgifs_username">Username</string>
+    <string name="redgifs_email">Email</string>
+    <string name="redgifs_email_or_username">Email or username</string>
+    <string name="redgifs_send_code">Send code</string>
+    <string name="redgifs_captcha_hint">Confirming you are human…</string>
+    <string name="redgifs_captcha_failed">The captcha could not be completed. Please try again.</string>
+    <string name="redgifs_code_hint">Enter the code sent to %1$s</string>
+    <string name="redgifs_code">Code</string>
+    <string name="redgifs_verify">Verify</string>
+    <string name="redgifs_start_over">Start over</string>
+    <string name="redgifs_cookie_invalid">That doesn\'t look like a valid RedGifs session.</string>
+    <string name="redgifs_cookie_hint">Paste your redgifs.com cookies, a refresh_token value, or an access token. They stay on this device.</string>
+    <string name="redgifs_cookie_field">Cookie / token</string>
 </resources>

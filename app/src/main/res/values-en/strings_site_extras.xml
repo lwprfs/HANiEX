@@ -18,6 +18,7 @@
     <string name="backup_section_cookies_rouvideo">RouVideo login</string>
     <string name="backup_section_cookies_xhamster">xHamster login</string>
     <string name="backup_section_cosplaytele_history">Cosplaytele history</string>
+    <string name="backup_section_coser_history">Coser history</string>
     <string name="image_dl_refresh">Refresh</string>
     <string name="image_dl_delete_items">Delete %1$s item(s)?</string>
     <string name="image_dl_delete_items_message">The selected photos and folders, including everything inside the folders, will be removed from your device.</string>

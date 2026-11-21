@@ -27,6 +27,8 @@ object SiteLayoutSettings {
         SiteType.BUONDUA,
         SiteType.FULLVIDEOS,
         SiteType.FUCKINGSESSION,
+        SiteType.WUMAOBI,
+        SiteType.XXXTUBE,
     )
 
     fun gridColumnsKey(site: SiteType): String = "site_${site.name.lowercase()}_grid_columns"
@@ -48,6 +50,8 @@ object SiteLayoutSettings {
         SiteHomeSettings.reset(site)
         SiteSearchSettings.reset(site)
         SiteImageSettings.reset(site)
+        SiteImageCardSettings.reset(site)
+        SiteShortsCardSettings.reset(site)
     }
 
     enum class Preset(
@@ -87,6 +91,8 @@ object SiteCardSettings {
         SiteType.XHAMSTER,
         SiteType.FULLVIDEOS,
         SiteType.FUCKINGSESSION,
+        SiteType.WUMAOBI,
+        SiteType.XXXTUBE,
     )
 
     private var version by mutableIntStateOf(0)
@@ -263,8 +269,8 @@ object SiteImageSettings {
 
     val sites: Set<SiteType> = setOf(
         SiteType.MISSAV, SiteType.HENTAIMAMA, SiteType.ONAIR, SiteType.FAPFOLDER, SiteType.SUPJAV,
-        SiteType.ROUVIDEO, SiteType.XHAMSTER, SiteType.BUONDUA, SiteType.COSPLAYTELE,
-        SiteType.FULLVIDEOS, SiteType.FUCKINGSESSION,
+        SiteType.ROUVIDEO, SiteType.XHAMSTER, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER,
+        SiteType.FULLVIDEOS, SiteType.FUCKINGSESSION, SiteType.WUMAOBI, SiteType.XXXTUBE,
     )
 
     private var version by mutableIntStateOf(0)
@@ -330,3 +336,150 @@ object SiteImageSettings {
         version
     }
 }
+
+/** Cards for photo/gallery/album tiles (Buondua, Cosplaytele, XHamster photos). */
+object SiteImageCardSettings {
+
+    enum class Detail(val keySuffix: String) {
+        Title("title"),
+        Badges("badges"),
+        Subtitle("subtitle"),
+    }
+
+    val sites: Set<SiteType> = setOf(SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.XHAMSTER)
+
+    private var version by mutableIntStateOf(0)
+    private var listening = false
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key != null && key.contains("_imgcard_")) version++
+    }
+
+    private fun touch() {
+        if (!listening) {
+            Preferences.preferenceSp.registerOnSharedPreferenceChangeListener(listener)
+            listening = true
+        }
+        version
+    }
+
+    private fun key(site: SiteType, detail: Detail) =
+        "site_${site.name.lowercase()}_imgcard_show_${detail.keySuffix}"
+
+    private fun aspectKey(site: SiteType) = "site_${site.name.lowercase()}_imgcard_aspect"
+
+    fun isShown(site: SiteType, detail: Detail): Boolean {
+        touch()
+        return Preferences.preferenceSp.getBoolean(key(site, detail), true)
+    }
+
+    fun setShown(site: SiteType, detail: Detail, shown: Boolean) {
+        Preferences.preferenceSp.edit {
+            if (shown) remove(key(site, detail)) else putBoolean(key(site, detail), false)
+        }
+    }
+
+    /** `ratio == null` means "keep the site's own shape". */
+    fun aspect(site: SiteType): SiteCardSettings.Aspect {
+        touch()
+        val stored = Preferences.preferenceSp.getString(aspectKey(site), null)
+        return SiteCardSettings.Aspect.entries.firstOrNull { it.keyValue == stored } ?: SiteCardSettings.Aspect.Default
+    }
+
+    fun setAspect(site: SiteType, aspect: SiteCardSettings.Aspect) {
+        Preferences.preferenceSp.edit {
+            if (aspect == SiteCardSettings.Aspect.Default) remove(aspectKey(site))
+            else putString(aspectKey(site), aspect.keyValue)
+        }
+    }
+
+    fun reset(site: SiteType) {
+        Preferences.preferenceSp.edit {
+            Detail.entries.forEach { remove(key(site, it)) }
+            remove(aspectKey(site))
+        }
+    }
+}
+
+/** Cards for gif / short-video tiles (XHamster moments, RedGifs). */
+object SiteShortsCardSettings {
+
+    enum class Detail(val keySuffix: String, val defaultShown: Boolean) {
+        Views("views", true),
+        Duration("duration", true),
+        GifBadge("gif", true),
+        Title("title", false),
+    }
+
+    val sites: Set<SiteType> = setOf(SiteType.XHAMSTER, SiteType.REDGIFS)
+    val COLUMN_CHOICES = listOf(2, 3, 4)
+    const val DEFAULT_COLUMNS = 3
+
+    private var version by mutableIntStateOf(0)
+    private var listening = false
+
+    private val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key != null && key.contains("_shortcard_")) version++
+    }
+
+    private fun touch() {
+        if (!listening) {
+            Preferences.preferenceSp.registerOnSharedPreferenceChangeListener(listener)
+            listening = true
+        }
+        version
+    }
+
+    private fun key(site: SiteType, detail: Detail) =
+        "site_${site.name.lowercase()}_shortcard_show_${detail.keySuffix}"
+
+    private fun aspectKey(site: SiteType) = "site_${site.name.lowercase()}_shortcard_aspect"
+    private fun columnsKey(site: SiteType) = "site_${site.name.lowercase()}_shortcard_columns"
+
+    fun isShown(site: SiteType, detail: Detail): Boolean {
+        touch()
+        return Preferences.preferenceSp.getBoolean(key(site, detail), detail.defaultShown)
+    }
+
+    fun setShown(site: SiteType, detail: Detail, shown: Boolean) {
+        Preferences.preferenceSp.edit {
+            if (shown == detail.defaultShown) remove(key(site, detail)) else putBoolean(key(site, detail), shown)
+        }
+    }
+
+    /** Tile shape; [SiteCardSettings.Aspect.Default] is the tall 9:16 short-video shape. */
+    fun aspect(site: SiteType): SiteCardSettings.Aspect {
+        touch()
+        val stored = Preferences.preferenceSp.getString(aspectKey(site), null)
+        return SiteCardSettings.Aspect.entries.firstOrNull { it.keyValue == stored } ?: SiteCardSettings.Aspect.Default
+    }
+
+    fun ratio(site: SiteType): Float = aspect(site).ratio ?: (9f / 16f)
+
+    fun setAspect(site: SiteType, aspect: SiteCardSettings.Aspect) {
+        Preferences.preferenceSp.edit {
+            if (aspect == SiteCardSettings.Aspect.Default) remove(aspectKey(site))
+            else putString(aspectKey(site), aspect.keyValue)
+        }
+    }
+
+    fun columns(site: SiteType): Int {
+        touch()
+        return Preferences.preferenceSp.getInt(columnsKey(site), DEFAULT_COLUMNS).coerceIn(2, 4)
+    }
+
+    fun setColumns(site: SiteType, columns: Int) {
+        Preferences.preferenceSp.edit {
+            if (columns == DEFAULT_COLUMNS) remove(columnsKey(site)) else putInt(columnsKey(site), columns)
+        }
+    }
+
+    fun reset(site: SiteType) {
+        Preferences.preferenceSp.edit {
+            Detail.entries.forEach { remove(key(site, it)) }
+            remove(aspectKey(site))
+            remove(columnsKey(site))
+        }
+    }
+}
+

@@ -33,8 +33,8 @@ object SafFileManager {
     const val KEY_TREE_URI = "saf_download_path"
     private const val TAG = "SafFileManager"
     private const val NO_MEDIA_NAME = ".nomedia"
+    private const val INFO_JSON_NAME = "info.json"
     private const val NO_MEDIA_MIME = "application/octet-stream"
-    private val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm")
     private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp")
 
     private val noMediaDupRegex = Regex("""^\s*\(\d+\)\.nomedia$|^\.nomedia\s*\(\d+\)$""")
@@ -122,6 +122,30 @@ object SafFileManager {
         }
     }
 
+    /**
+     * Writes (overwrites) `info.json` next to the downloaded video so the folder can be re-imported later
+     * with the exact code, title and quality. Works for both SAF and private storage.
+     */
+    fun writeInfoJson(context: Context, videoCode: String, content: String): Boolean {
+        return try {
+            if (isSafReady()) {
+                val dir = getDownloadVideoFolderSaf(context, videoCode) ?: return false
+                val doc = dir.findFile(INFO_JSON_NAME)
+                    ?: dir.createFile("application/json", INFO_JSON_NAME) ?: return false
+                context.contentResolver.openOutputStream(doc.uri, "rwt")
+                    ?.use { it.write(content.toByteArray(Charsets.UTF_8)) } != null
+            } else {
+                val file = File(com.yenaly.han1meviewer.HFileManager.getDownloadVideoFolder(context, videoCode), INFO_JSON_NAME)
+                file.parentFile?.mkdirs()
+                file.writeText(content, Charsets.UTF_8)
+                true
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "write info.json failed: ${videoCode.logId()}", e)
+            false
+        }
+    }
+
     private fun DocumentFile.ensureChildDir(name: String): DocumentFile? {
         findFile(name)?.let { return if (it.isDirectory) it else null }
         return createDirectory(name)
@@ -176,6 +200,10 @@ object SafFileManager {
         else -> "application/octet-stream"
     }
 
+    /**
+     * Copies the whole private download root (`hanime_download` and every site folder, recursively) into the
+     * SAF tree. A source file is deleted only after it was copied successfully.
+     */
     fun migratePrivateToSaf(
         context: Context,
         dao: HanimeDownloadDao? = null,
@@ -183,253 +211,130 @@ object SafFileManager {
     ) = CoroutineScope(Dispatchers.IO).launch {
         val privateFolder =
             File(context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), APP_NAME)
-        val hanimeDownloadFolder = File(privateFolder, HANIME_DOWNLOAD_FOLDER)
+        val topDirs = privateFolder.listFiles { f -> f.isDirectory && !f.name.startsWith(".") }
+            ?.toList().orEmpty()
 
-        if (!hanimeDownloadFolder.exists() || !hanimeDownloadFolder.isDirectory) {
-            Log.e("Migrate", "hanime_download 文件夹不存在")
-            withContext(Dispatchers.Main) {
-                onProgress?.invoke(0, 0)
-            }
+        if (topDirs.isEmpty()) {
+            Log.e("Migrate", "private download folder is empty or missing")
+            withContext(Dispatchers.Main) { onProgress?.invoke(0, 0) }
             return@launch
         }
 
         val treeUri = Preferences.safDownloadPath?.toUri()
-        if (treeUri == null) {
-            withContext(Dispatchers.Main) {
-                onProgress?.invoke(0, -1)
-            }
-            Log.e("Migrate", "SAF treeUri 为空")
+        val rootDocFile = treeUri?.let { DocumentFile.fromTreeUri(context, it) }
+        if (treeUri == null || rootDocFile == null) {
+            Log.e("Migrate", "SAF root unavailable")
+            withContext(Dispatchers.Main) { onProgress?.invoke(0, -1) }
             return@launch
         }
 
-        val rootDocFile = DocumentFile.fromTreeUri(context, treeUri)
-        if (rootDocFile == null) {
-            withContext(Dispatchers.Main) {
-                onProgress?.invoke(0, -1)
-            }
-            Log.e("Migrate", "无法获取 DocumentFile 根目录")
-            return@launch
+        // Every folder that directly holds files, with its path relative to the private root.
+        val leafDirs = ArrayList<Pair<File, List<String>>>()
+        fun collect(dir: File, segments: List<String>) {
+            val kids = dir.listFiles().orEmpty()
+            if (kids.any { it.isFile }) leafDirs += dir to segments
+            kids.filter { it.isDirectory && !it.name.startsWith(".") }
+                .forEach { collect(it, segments + it.name) }
         }
+        topDirs.forEach { collect(it, listOf(it.name)) }
 
-        val hanimeDownloadDoc = rootDocFile.findFile(HANIME_DOWNLOAD_FOLDER)
-            ?: rootDocFile.createDirectory(HANIME_DOWNLOAD_FOLDER)
-
-        if (hanimeDownloadDoc == null) {
-            withContext(Dispatchers.Main) {
-                onProgress?.invoke(0, -1)
-            }
-            Log.e("Migrate", "创建/获取 HANIME_DOWNLOAD_FOLDER 失败")
-            return@launch
-        }
-
-        hanimeDownloadDoc.ensureNoMedia()
-
-        val folders = hanimeDownloadFolder.listFiles { it.isDirectory } ?: arrayOf()
-        val total = folders.size
+        val total = leafDirs.size
         var migrated = 0
+        Log.d("Migrate", "start, folders: $total")
 
-        Log.d("Migrate", "开始迁移，总文件夹数: $total")
+        for ((dir, segments) in leafDirs) {
+            var target: DocumentFile? = rootDocFile
+            for ((i, segment) in segments.withIndex()) {
+                target = target?.ensureChildDir(segment)
+                if (i == 0) target?.ensureNoMedia()
+            }
+            if (target == null) {
+                Log.e("Migrate", "cannot create folder: ${segments.joinToString("/").logId()}")
+                continue
+            }
+            target.ensureNoMedia()
+            val destination: DocumentFile = target
 
-        for (folder in folders) {
-            Log.d("Migrate", "正在迁移文件夹: ${folder.name.logId()}")
-
-            var folderDoc = hanimeDownloadDoc.findFile(folder.name)
-
-            if (folderDoc == null) {
-                folderDoc = hanimeDownloadDoc.createDirectory(folder.name)
-                if (folderDoc == null) {
-                    Log.e("Migrate", "创建视频文件夹失败: ${folder.name.logId()}")
-                    continue
+            dir.listFiles()?.filter { it.isFile }?.forEach { file ->
+                if (file.name.startsWith(NO_MEDIA_NAME)) {
+                    file.delete()
+                    return@forEach
                 }
-            } else {
-                folder.listFiles()?.forEach { file ->
-                    if (file.isFile) {
-                        val existingFile = folderDoc.findFile(file.name)
-                        if (existingFile != null) {
-                            existingFile.delete()
-                            Log.d("Migrate", "删除冲突文件: ${file.name.logId()}")
+                try {
+                    destination.findFile(file.name)?.delete()
+                    val newFile = destination.createFile(mimeForExt(file.extension.lowercase()), file.name)
+                    if (newFile == null) {
+                        Log.e("Migrate", "create file failed: ${file.name.logId()}")
+                        return@forEach
+                    }
+                    val copied = file.inputStream().use { input ->
+                        val output = context.contentResolver.openOutputStream(newFile.uri)
+                        if (output == null) false else {
+                            output.use { input.copyTo(it) }
+                            true
                         }
                     }
+                    if (copied) file.delete()
+                } catch (e: Exception) {
+                    Log.e("Migrate", "copy failed: ${file.name.logId()}", e)
                 }
             }
-
-            folder.listFiles()?.forEach { file ->
-                if (file.isFile) {
-                    if (folderDoc.findFile(file.name) == null) {
-                        val mimeType = mimeForExt(file.extension.lowercase())
-                        val newFile = folderDoc.createFile(mimeType, file.name)
-                        if (newFile == null) {
-                            Log.e("Migrate", "创建文件失败: ${file.name.logId()}")
-                            return@forEach
-                        }
-
-                        try {
-                            file.inputStream().use { input ->
-                                context.contentResolver.openOutputStream(newFile.uri)
-                                    ?.use { output ->
-                                        input.copyTo(output)
-                                    }
-                            }
-                            Log.d("Migrate", "已迁移文件: ${file.name.logId()}")
-                        } catch (e: Exception) {
-                            Log.e("Migrate", "复制文件出错: ${file.name.logId()}", e)
-                        }
-                    } else {
-                        Log.d("Migrate", "文件已存在，跳过: ${file.name.logId()}")
-                    }
-                }
-            }
-
-            folder.deleteRecursively()
 
             migrated++
-            Log.d("Migrate", "已完成文件夹: ${folder.name.logId()} ($migrated/$total)")
-
-            withContext(Dispatchers.Main) {
-                onProgress?.invoke(migrated, total)
-            }
+            withContext(Dispatchers.Main) { onProgress?.invoke(migrated, total) }
         }
+
+        fun deleteEmpty(dir: File) {
+            dir.listFiles()?.filter { it.isDirectory }?.forEach { deleteEmpty(it) }
+            if (dir.listFiles().isNullOrEmpty()) dir.delete()
+        }
+        topDirs.forEach { deleteEmpty(it) }
+
         try {
-            if (dao != null) {
-                scanAndImportHanimeDownloads(context, dao)
-            }
+            if (dao != null) DownloadScanner.scan(dao, SafTreeNode.root(context, treeUri))
         } catch (e: Exception) {
             Log.e("saf", e.message.toString())
         }
-        withContext(Dispatchers.Main) {
-            onProgress?.invoke(migrated, total)
+        withContext(Dispatchers.Main) { onProgress?.invoke(migrated, total) }
+    }
+
+    /** True when the saved SAF tree is still granted for reading (no write probe, so read-only grants work). */
+    fun hasReadAccess(context: Context): Boolean {
+        val treeUri = Preferences.safDownloadPath?.toUri() ?: return false
+        val granted = context.contentResolver.persistedUriPermissions
+            .any { it.uri == treeUri && it.isReadPermission }
+        return granted && DocumentFile.fromTreeUri(context, treeUri)?.canRead() == true
+    }
+
+    /** The folder refresh should scan for the current storage mode, or a status explaining why not. */
+    private fun scanRoot(context: Context): Pair<DownloadTreeNode?, ImportResult.Status> {
+        if (Preferences.isUsePrivateStorage) {
+            val dir = com.yenaly.han1meviewer.HFileManager.getAppDownloadFolder(context)
+            return if (dir.exists() && dir.isDirectory) FileTreeNode(dir) to ImportResult.Status.OK
+            else null to ImportResult.Status.ROOT_MISSING
         }
-        Log.d("Migrate", "迁移完成，总文件夹数: $total")
+        val treeUri = Preferences.safDownloadPath?.toUri() ?: return null to ImportResult.Status.ROOT_MISSING
+        if (!hasReadAccess(context)) return null to ImportResult.Status.NO_PERMISSION
+        return SafTreeNode.root(context, treeUri) to ImportResult.Status.OK
     }
 
-    enum class ImportFailureReason {
-        INVALID_FOLDER_NAME,
-        MISSING_INFO_JSON,
-        IMPORT_EXCEPTION,
-    }
-
-    data class ImportFailure(
-        val name: String,
-        val reason: ImportFailureReason,
-    )
-
-    data class ImportResult(
-        val successCount: Int = 0,
-        val failures: List<ImportFailure> = emptyList(),
-    ) {
-        val failureCount get() = failures.size
-    }
-
+    /**
+     * Re-registers downloads found on disk (every site folder, not just `hanime_download`).
+     * Works in both SAF and private-storage mode. See [DownloadScanner] for the algorithm.
+     */
     suspend fun scanAndImportHanimeDownloads(
         context: Context,
         dao: HanimeDownloadDao,
         onProgress: ((imported: Int, total: Int, currentName: String?) -> Unit)? = null,
     ): ImportResult {
-        val treeUri = Preferences.safDownloadPath?.toUri() ?: return ImportResult()
-        val rootDocFile = DocumentFile.fromTreeUri(context, treeUri) ?: return ImportResult()
-        val hanimeDownloadDoc = rootDocFile.findFile(HANIME_DOWNLOAD_FOLDER) ?: return ImportResult()
-
-        val folders = hanimeDownloadDoc.listFiles().filter { it.isDirectory }
-        val total = folders.size
-        val failures = mutableListOf<ImportFailure>()
-        var successCount = 0
-
-        folders.forEachIndexed { index, folderDoc ->
-            var currentName: String? = folderDoc.name
-            var failure: ImportFailure? = null
-            try {
-                val videoCode = folderDoc.name
-                if (videoCode.isNullOrBlank()) {
-                    failure = ImportFailure(
-                        folderDoc.uri.lastPathSegment ?: "?",
-                        ImportFailureReason.INVALID_FOLDER_NAME,
-                    )
-                } else {
-                    try {
-                        val infoFile = folderDoc.findFile("info.json")
-                        if (infoFile == null) {
-                            failure = ImportFailure(videoCode, ImportFailureReason.MISSING_INFO_JSON)
-                        } else {
-                            val inputStream = context.contentResolver.openInputStream(infoFile.uri)
-                            if (inputStream == null) {
-                                failure = ImportFailure(videoCode, ImportFailureReason.MISSING_INFO_JSON)
-                            } else {
-                                inputStream.use { input ->
-                                    val json = input.bufferedReader().use { it.readText() }
-                                    val jsonObj =
-                                        kotlinx.serialization.json.Json.parseToJsonElement(json).jsonObject
-
-                                    val title = jsonObj["title"]?.jsonPrimitive?.content ?: ""
-                                    val coverUrl = jsonObj["coverUrl"]?.jsonPrimitive?.content ?: ""
-                                    val addDate = System.currentTimeMillis()
-                                    val videoUrls = jsonObj["videoUrls"]?.jsonObject
-
-                                    val videoFile = folderDoc.listFiles()
-                                        .firstOrNull { file ->
-                                            file.isFile && file.name?.substringAfterLast('.', "")
-                                                ?.lowercase() in VIDEO_EXTENSIONS
-                                        }
-                                    val pattern = """_(\d+P)\.mp4$""".toRegex()
-                                    val quality = pattern.find(videoFile?.name.toString())?.groupValues?.get(1)
-                                        ?: "unknow"
-                                    val videoUrl = videoUrls?.get(quality)
-                                        ?.jsonObject
-                                        ?.get("link")
-                                        ?.jsonPrimitive
-                                        ?.content
-
-                                    val coverFile = folderDoc.listFiles()
-                                        .firstOrNull { file ->
-                                            file.isFile && file.name?.substringAfterLast('.', "")
-                                                ?.lowercase() in IMAGE_EXTENSIONS
-                                        }
-
-                                    val videoUri = videoFile?.uri?.toString() ?: ""
-                                    val coverUri = coverFile?.uri?.toString()
-                                    val videoLength = videoFile?.length() ?: 0L
-                                    currentName = videoFile?.name ?: videoCode
-                                    val existing = dao.find(videoCode)
-                                    if (existing != null) {
-                                        val updated = existing.copy(
-                                            videoUri = videoUri,
-                                            coverUri = coverUri,
-                                            length = videoLength,
-
-                                        )
-                                        dao.update(updated)
-                                        Log.d("ImportHanime", "已存在，更新 videoUri/coverUri: ${videoCode.logId()}, length:$videoLength")
-                                    } else {
-                                        val entity = HanimeDownloadEntity(
-                                            coverUrl = coverUrl,
-                                            coverUri = coverUri,
-                                            title = title,
-                                            addDate = addDate,
-                                            videoCode = videoCode,
-                                            videoUri = videoUri,
-                                            quality = quality,
-                                            videoUrl = videoUrl.toString(),
-                                            length = videoLength,
-                                            downloadedLength = 0L,
-                                            state = DownloadState.Finished
-                                        )
-                                        dao.insert(entity)
-                                        Log.d("ImportHanime", "导入完成: ${videoCode.logId()}, length:$videoLength")
-                                    }
-                                    successCount++
-                                }
-                            }
-                        }
-                    } catch (e: Exception) {
-                        failure = ImportFailure(videoCode, ImportFailureReason.IMPORT_EXCEPTION)
-                        Log.e("ImportHanime", "导入失败: ${videoCode.logId()}", e)
-                    }
-                }
-            } finally {
-                failure?.let { failures.add(it) }
-                onProgress?.invoke(index + 1, total, currentName)
-            }
+        val (root, status) = scanRoot(context)
+        if (root == null) return ImportResult(status = status)
+        return try {
+            DownloadScanner.scan(dao, root, onProgress)
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            Log.d(TAG, "scan cancelled")
+            ImportResult(status = ImportResult.Status.CANCELLED)
         }
-        return ImportResult(successCount, failures)
     }
 
     fun isValidHanimeFolder(
@@ -438,7 +343,7 @@ object SafFileManager {
     ): Boolean {
         if (!folder.exists() || !folder.isDirectory) return false
         val hasVideo = folder.listFiles()?.any { file ->
-            file.isFile && VIDEO_EXTENSIONS.contains(file.extension.lowercase())
+            file.isFile && DownloadLayout.VIDEO_EXTENSIONS.contains(file.extension.lowercase())
         } ?: false
 
         if (!hasVideo) return false

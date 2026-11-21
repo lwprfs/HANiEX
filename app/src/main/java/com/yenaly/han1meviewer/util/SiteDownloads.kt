@@ -52,9 +52,12 @@ object DownloadLayout {
         SiteType.XHAMSTER -> "xHamster"
         SiteType.BUONDUA -> "Buondua"
         SiteType.COSPLAYTELE -> "Cosplaytele"
+        SiteType.COSER -> "Coser"
         SiteType.FULLVIDEOS -> "FullVideos"
         SiteType.FUCKINGSESSION -> "FuckingSession"
         SiteType.REDGIFS -> "RedGifs"
+        SiteType.XXXTUBE -> "XXXTube"
+        SiteType.WUMAOBI -> "Wumaobi"
     }
 
     fun segmentsFor(videoCode: String): List<String> {
@@ -67,6 +70,33 @@ object DownloadLayout {
             .filter { it.isNotBlank() }
             .map { sanitize(it) }
         return listOf(siteFolder) + rest.ifEmpty { listOf(FALLBACK) }
+    }
+
+    /**
+     * Video file extensions the app recognises when scanning download folders (also used to keep video
+     * folders out of the photo screen). `ts` is the HLS output.
+     */
+    val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm", "ts", "m4v", "mpeg", "mpg")
+
+    fun isVideoFileName(name: String?): Boolean =
+        name?.substringAfterLast('.', "")?.lowercase() in VIDEO_EXTENSIONS
+
+    /**
+     * Inverse of [segmentsFor]: folder path under the download root -> the video code stored in the DB.
+     * Matching is case-insensitive. [sanitize] is lossy, so this is exact only for codes that survive
+     * sanitizing; the scanner prefers `info.json`'s `videoCode` when present.
+     */
+    fun videoCodeFromSegments(segments: List<String>): String? {
+        val first = segments.firstOrNull() ?: return null
+        if (first.equals(HFileManager.HANIME_DOWNLOAD_FOLDER, ignoreCase = true)) {
+            return if (segments.size == 2) segments[1] else null
+        }
+        val site = SiteType.entries.firstOrNull {
+            siteFolderName(it)?.equals(first, ignoreCase = true) == true
+        } ?: return null
+        val rest = segments.drop(1).filter { it.isNotBlank() }
+        if (rest.isEmpty()) return null
+        return SiteCheckIn.dishCode(site, rest.joinToString("/"))
     }
 
     fun fapFolderVideoCode(ownerKind: FapOwnerKind?, ownerName: String?, postId: Long): String {
@@ -186,9 +216,15 @@ object SiteDownloadClients {
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.COSPLAYTELE -> runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.COSER -> runCatching { com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FUCKINGSESSION -> runCatching { com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.WUMAOBI -> runCatching { com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.XXXTUBE -> runCatching { com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
             else -> ServiceCreator.downloadClient
         }
@@ -231,8 +267,18 @@ object SiteDownloadClients {
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
             }
+            SiteType.WUMAOBI -> {
+                val referer = com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
+            }
             SiteType.FUCKINGSESSION -> {
                 val referer = com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf("Referer" to referer)
+            }
+            SiteType.XXXTUBE -> {
+                val referer = com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer)
             }
@@ -258,6 +304,14 @@ object SiteDownloadClients {
                 mapOf(
                     "Referer" to referer,
                     "Origin" to com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleConstants.STREAM_ORIGIN,
+                )
+            }
+            SiteType.COSER -> {
+                val referer = com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf(
+                    "Referer" to referer,
+                    "Origin" to com.yenaly.han1meviewer.Coser.common.CoserConstants.STREAM_ORIGIN,
                 )
             }
             SiteType.FAPFOLDER -> mapOf(

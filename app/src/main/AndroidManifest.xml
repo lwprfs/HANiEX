@@ -85,6 +85,18 @@
             android:launchMode="singleTask"/>
 
         <activity
+            android:name=".Coser.cloudflare.CoserCloudflareActivity"
+            android:theme="@style/Theme.Hanime"
+            android:exported="false"
+            android:launchMode="singleTask"/>
+
+        <activity
+            android:name=".Wumaobi.cloudflare.WumaobiCloudflareActivity"
+            android:theme="@style/Theme.Hanime"
+            android:exported="false"
+            android:launchMode="singleTask"/>
+
+        <activity
             android:name=".FullVideos.cloudflare.FullVideosCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
@@ -92,6 +104,12 @@
 
         <activity
             android:name=".FuckingSession.cloudflare.FuckingSessionCloudflareActivity"
+            android:theme="@style/Theme.Hanime"
+            android:exported="false"
+            android:launchMode="singleTask"/>
+
+        <activity
+            android:name=".XXXTube.cloudflare.XXXTubeCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>

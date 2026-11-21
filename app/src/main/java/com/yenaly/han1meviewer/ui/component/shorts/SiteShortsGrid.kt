@@ -3,6 +3,9 @@ package com.yenaly.han1meviewer.ui.component.shorts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.Text
+import com.yenaly.han1meviewer.ui.screen.SiteShortsCardSettings
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -50,7 +53,17 @@ fun SiteShortsGrid(
     onLoadMore: () -> Unit = {},
     columns: Int = 3,
     state: LazyGridState = rememberLazyGridState(),
+    site: com.yenaly.han1meviewer.SiteType? = null,
 ) {
+    val custom = site?.takeIf { it in SiteShortsCardSettings.sites }
+    val gridColumns = custom?.let { SiteShortsCardSettings.columns(it) } ?: columns
+    val options = ShortCardOptions(
+        ratio = custom?.let { SiteShortsCardSettings.ratio(it) } ?: (9f / 16f),
+        showViews = custom?.let { SiteShortsCardSettings.isShown(it, SiteShortsCardSettings.Detail.Views) } ?: true,
+        showDuration = custom?.let { SiteShortsCardSettings.isShown(it, SiteShortsCardSettings.Detail.Duration) } ?: true,
+        showGif = custom?.let { SiteShortsCardSettings.isShown(it, SiteShortsCardSettings.Detail.GifBadge) } ?: true,
+        showTitle = custom?.let { SiteShortsCardSettings.isShown(it, SiteShortsCardSettings.Detail.Title) } ?: false,
+    )
     val nearEnd by remember(state) {
         derivedStateOf {
             val info = state.layoutInfo
@@ -62,14 +75,14 @@ fun SiteShortsGrid(
 
     LazyVerticalGrid(
         state = state,
-        columns = GridCells.Fixed(columns),
+        columns = GridCells.Fixed(gridColumns),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 6.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(5.dp),
         verticalArrangement = Arrangement.spacedBy(5.dp),
     ) {
         itemsIndexed(items, key = { _, s -> s.id }) { index, short ->
-            SiteShortThumb(short, imageLoader, onClick = { onOpen(index) })
+            SiteShortThumb(short, imageLoader, options, onClick = { onOpen(index) })
         }
         if (loadingMore) item(span = { GridItemSpan(maxLineSpan) }) {
             Box(Modifier.fillMaxWidth().padding(12.dp), contentAlignment = Alignment.Center) {
@@ -79,12 +92,27 @@ fun SiteShortsGrid(
     }
 }
 
+private data class ShortCardOptions(
+    val ratio: Float,
+    val showViews: Boolean,
+    val showDuration: Boolean,
+    val showGif: Boolean,
+    val showTitle: Boolean,
+)
+
 @Composable
-private fun SiteShortThumb(short: SiteShort, imageLoader: ImageLoader?, onClick: () -> Unit) {
-    val views = short.views.compactCount()
+private fun SiteShortThumb(
+    short: SiteShort,
+    imageLoader: ImageLoader?,
+    options: ShortCardOptions,
+    onClick: () -> Unit,
+) {
+    val views = if (options.showViews) short.views.compactCount() else null
+    val duration = if (options.showDuration) short.durationSeconds else null
+    val title = short.title.takeIf { options.showTitle && it.isNotBlank() }
     Box(
         Modifier
-            .aspectRatio(9f / 16f)
+            .aspectRatio(options.ratio)
             .clip(RoundedCornerShape(14.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .clickable(onClick = onClick),
@@ -99,12 +127,12 @@ private fun SiteShortThumb(short: SiteShort, imageLoader: ImageLoader?, onClick:
             imageLoader = imageLoader,
         )
 
-        if (views != null || short.durationSeconds != null) {
+        if (views != null || duration != null || title != null) {
             Box(
                 Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .height(64.dp)
+                    .height(if (title != null) 96.dp else 64.dp)
                     .background(
                         Brush.verticalGradient(
                             listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
@@ -113,21 +141,35 @@ private fun SiteShortThumb(short: SiteShort, imageLoader: ImageLoader?, onClick:
             )
         }
 
-        if (short.isGif) {
+        if (short.isGif && options.showGif) {
             ShortsGifBadge(Modifier.align(Alignment.TopStart).padding(8.dp))
         }
 
-        if (views != null || short.durationSeconds != null) {
-            Row(
-                Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                ShortsViewsBadge(views)
-                ShortsDurationBadge(short.durationSeconds)
+        Column(
+            Modifier
+                .align(Alignment.BottomStart)
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+        ) {
+            if (title != null) {
+                Text(
+                    text = title,
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(bottom = if (views != null || duration != null) 6.dp else 0.dp),
+                )
+            }
+            if (views != null || duration != null) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    ShortsViewsBadge(views)
+                    ShortsDurationBadge(duration)
+                }
             }
         }
     }

@@ -29,8 +29,14 @@ import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsHomeRoute
 import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsSearchRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionSearchRoute
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionVideoRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeHomeRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeSearchRoute
+import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeVideoRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplaytelePostRoute
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserHomeRoute
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserPostRoute
+import com.yenaly.han1meviewer.Coser.ui.navigation.CoserSearchRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSearchRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterVideoRoute
@@ -131,6 +137,11 @@ object NavigationManager {
                             CosplaytelePostRoute(slug = videoCode, resumePosition = resumePosition)
                         )
                     }
+                    SiteType.COSER -> {
+                        navController.navigate(
+                            CoserPostRoute(slug = videoCode, resumePosition = resumePosition)
+                        )
+                    }
                     SiteType.FULLVIDEOS -> {
                         navController.navigate(
                             FullVideosVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
@@ -143,6 +154,16 @@ object NavigationManager {
                     }
                     SiteType.REDGIFS -> {
                         navController.navigate(RedGifsGifRoute(id = videoCode))
+                    }
+                    SiteType.XXXTUBE -> {
+                        navController.navigate(
+                            com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
+                        )
+                    }
+                    SiteType.WUMAOBI -> {
+                        navController.navigate(
+                            com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
+                        )
                     }
                 }
             } catch (e: Exception) {
@@ -185,6 +206,9 @@ object NavigationManager {
                     SiteType.COSPLAYTELE -> {
                         navController.navigate(CosplayteleSearchRoute(query = query))
                     }
+                    SiteType.COSER -> {
+                        navController.navigate(CoserSearchRoute(query = query))
+                    }
                     SiteType.FULLVIDEOS -> {
                         navController.navigate(FullVideosSearchRoute(query = query))
                     }
@@ -193,6 +217,12 @@ object NavigationManager {
                     }
                     SiteType.REDGIFS -> {
                         navController.navigate(RedGifsSearchRoute(query = query))
+                    }
+                    SiteType.XXXTUBE -> {
+                        navController.navigate(com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeSearchRoute(query = query))
+                    }
+                    SiteType.WUMAOBI -> {
+                        navController.navigate(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiSearchRoute(query = query))
                     }
                 }
             } catch (e: Exception) {
@@ -249,6 +279,10 @@ object NavigationManager {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(CosplayteleHomeRoute) { launchSingleTop = true }
                     }
+                    SiteType.COSER -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(CoserHomeRoute) { launchSingleTop = true }
+                    }
                     SiteType.FULLVIDEOS -> {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(FullVideosHomeRoute) { launchSingleTop = true }
@@ -260,6 +294,14 @@ object NavigationManager {
                     SiteType.REDGIFS -> {
                         navController.popToRootSafely()
                         if (!isAtHome(site)) navController.navigate(RedGifsHomeRoute) { launchSingleTop = true }
+                    }
+                    SiteType.XXXTUBE -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeHomeRoute) { launchSingleTop = true }
+                    }
+                    SiteType.WUMAOBI -> {
+                        navController.popToRootSafely()
+                        if (!isAtHome(site)) navController.navigate(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiHomeRoute) { launchSingleTop = true }
                     }
                 }
             } catch (e: Exception) {
@@ -338,9 +380,12 @@ object NavigationManager {
                 SiteType.XHAMSTER -> destination.hasRoute(XHamsterHomeRoute::class)
                 SiteType.BUONDUA -> destination.hasRoute(BuonduaHomeRoute::class)
                 SiteType.COSPLAYTELE -> destination.hasRoute(CosplayteleHomeRoute::class)
+                SiteType.COSER -> destination.hasRoute(CoserHomeRoute::class)
                 SiteType.FULLVIDEOS -> destination.hasRoute(FullVideosHomeRoute::class)
                 SiteType.FUCKINGSESSION -> destination.hasRoute(FuckingSessionHomeRoute::class)
                 SiteType.REDGIFS -> destination.hasRoute(RedGifsHomeRoute::class)
+                SiteType.XXXTUBE -> destination.hasRoute(com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeHomeRoute::class)
+                SiteType.WUMAOBI -> destination.hasRoute(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiHomeRoute::class)
             }
         } catch (e: Exception) {
             false

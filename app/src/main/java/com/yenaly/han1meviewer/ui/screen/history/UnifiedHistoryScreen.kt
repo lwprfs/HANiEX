@@ -58,8 +58,11 @@ import com.yenaly.han1meviewer.SupJav.data.repository.SupJavHistoryRepo
 import com.yenaly.han1meviewer.RouVideo.data.repository.RouVideoHistoryRepo
 import com.yenaly.han1meviewer.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.Cosplaytele.data.repository.CosplayteleHistoryRepo
+import com.yenaly.han1meviewer.Coser.data.repository.CoserHistoryRepo
 import com.yenaly.han1meviewer.FullVideos.data.repository.FullVideosHistoryRepo
+import com.yenaly.han1meviewer.Wumaobi.data.repository.WumaobiHistoryRepo
 import com.yenaly.han1meviewer.FuckingSession.data.repository.FuckingSessionHistoryRepo
+import com.yenaly.han1meviewer.XXXTube.data.repository.XXXTubeHistoryRepo
 import com.yenaly.han1meviewer.XHamster.data.repository.XHamsterHistoryRepo
 import com.yenaly.han1meviewer.HentaiMama.data.local.HentaiMamaHistoryRepo
 import com.yenaly.han1meviewer.MissAV.data.repository.MissAvHistoryRepo
@@ -126,8 +129,11 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         XHamsterHistoryRepo.init(application)
         BuonduaHistoryRepo.init(application)
         CosplayteleHistoryRepo.init(application)
+        CoserHistoryRepo.init(application)
         FullVideosHistoryRepo.init(application)
         FuckingSessionHistoryRepo.init(application)
+        WumaobiHistoryRepo.init(application)
+        XXXTubeHistoryRepo.init(application)
     }
 
     private fun <T> safe(flow: kotlinx.coroutines.flow.Flow<List<T>>) =
@@ -296,6 +302,22 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                         it.lastPosition >= it.totalDuration - 3_000L,
             )
         }).sortedByDescending { it.watchDate }
+    }.combine(safe(CoserHistoryRepo.loadAll())) { base, coser ->
+        (base + coser.map {
+            UnifiedHistoryItem(
+                site = SiteType.COSER,
+                code = it.videoCode,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = it.lastPosition,
+                durationMs = it.totalDuration,
+                path = null,
+                subtitle = null,
+                completed = it.totalDuration > 0 &&
+                        it.lastPosition >= it.totalDuration - 3_000L,
+            )
+        }).sortedByDescending { it.watchDate }
     }.combine(safe(FullVideosHistoryRepo.loadAll())) { base, fullvideos ->
         (base + fullvideos.map {
             UnifiedHistoryItem(
@@ -316,6 +338,38 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         (base + fuckingsession.map {
             UnifiedHistoryItem(
                 site = SiteType.FUCKINGSESSION,
+                code = it.videoCode,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = it.lastPosition,
+                durationMs = it.totalDuration,
+                path = null,
+                subtitle = null,
+                completed = it.totalDuration > 0 &&
+                        it.lastPosition >= it.totalDuration - 3_000L,
+            )
+        }).sortedByDescending { it.watchDate }
+    }.combine(safe(WumaobiHistoryRepo.loadAll())) { base, wumaobi ->
+        (base + wumaobi.map {
+            UnifiedHistoryItem(
+                site = SiteType.WUMAOBI,
+                code = it.videoCode,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = it.lastPosition,
+                durationMs = it.totalDuration,
+                path = null,
+                subtitle = null,
+                completed = it.totalDuration > 0 &&
+                        it.lastPosition >= it.totalDuration - 3_000L,
+            )
+        }).sortedByDescending { it.watchDate }
+    }.combine(safe(XXXTubeHistoryRepo.loadAll())) { base, xxxtube ->
+        (base + xxxtube.map {
+            UnifiedHistoryItem(
+                site = SiteType.XXXTUBE,
                 code = it.videoCode,
                 title = it.title,
                 coverUrl = it.coverUrl,
@@ -363,9 +417,12 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     SiteType.XHAMSTER -> XHamsterHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.BUONDUA -> BuonduaHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.COSPLAYTELE -> CosplayteleHistoryRepo.deleteByVideoCode(item.code)
+                    SiteType.COSER -> CoserHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.FULLVIDEOS -> FullVideosHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.FUCKINGSESSION -> FuckingSessionHistoryRepo.deleteByVideoCode(item.code)
+                    SiteType.WUMAOBI -> WumaobiHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.REDGIFS -> Unit
+                    SiteType.XXXTUBE -> XXXTubeHistoryRepo.deleteByVideoCode(item.code)
                 }
             }
         }
@@ -384,8 +441,11 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                 if (site == null || site == SiteType.XHAMSTER) XHamsterHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.BUONDUA) BuonduaHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.COSPLAYTELE) CosplayteleHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.COSER) CoserHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.FULLVIDEOS) FullVideosHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.FUCKINGSESSION) FuckingSessionHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.WUMAOBI) WumaobiHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.XXXTUBE) XXXTubeHistoryRepo.deleteAll()
             }
         }
     }
@@ -402,8 +462,11 @@ private val filterSites = listOf(
     SiteType.XHAMSTER,
     SiteType.BUONDUA,
     SiteType.COSPLAYTELE,
+    SiteType.COSER,
     SiteType.FULLVIDEOS,
     SiteType.FUCKINGSESSION,
+    SiteType.WUMAOBI,
+    SiteType.XXXTUBE,
 )
 
 private fun siteBadge(site: SiteType): String = when (site) {

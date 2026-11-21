@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_xxxtube_description">免费成人视频站，收录大量模特和分类，直接流式播放</string>
+    <string name="backup_section_xxxtube_history">X-X-X.tube 观看历史</string>
+    <string name="xxxtube_settings_playback_title">网站选项</string>
+    <string name="xxxtube_settings_playback_summary">首页分页与疑难排解</string>
+    <string name="xxxtube_history_title">观看记录</string>
+    <string name="xxxtube_history_summary">你在 X-X-X.tube 观看过的视频</string>
+    <string name="xxxtube_search_hint">搜索 X-X-X.tube</string>
+    <string name="xxxtube_search_prompt">输入关键词，或粘贴 X-X-X.tube 视频链接</string>
+    <string name="xxxtube_search_videos">视频</string>
+    <string name="xxxtube_models">模特</string>
+    <string name="xxxtube_categories">分类</string>
+    <string name="xxxtube_no_results">没有结果</string>
+    <string name="xxxtube_no_history">暂无观看记录</string>
+    <string name="xxxtube_nothing_here">这里没有内容</string>
+    <string name="xxxtube_troubleshooting">疑难排解</string>
+    <string name="xxxtube_cf_cleared">已清除 Cloudflare Cookies</string>
+    <string name="xxxtube_cf_clear">清除 Cloudflare Cookies</string>
+    <string name="xxxtube_reset_defaults">恢复默认值</string>
+    <string name="xxxtube_quality_header">画质</string>
+    <string name="xxxtube_related">相关视频</string>
+    <string name="xxxtube_tags">标签</string>
+    <string name="xxxtube_subtitles">字幕</string>
+    <string name="xxxtube_subtitle_show">显示（%1$d 行）</string>
+    <string name="xxxtube_subtitle_none">尚未加载字幕</string>
+    <string name="xxxtube_subtitle_load_srt">加载 .srt 文件</string>
+    <string name="xxxtube_err_no_link">找不到可直接播放的链接，请稍后重试</string>
+    <string name="xxxtube_home_sections">首页分页</string>
+    <string name="xxxtube_home_sections_hint">调整首页分页顺序，或隐藏不需要的分页。</string>
+    <string name="xxxtube_views">%1$s 次观看</string>
+</resources>

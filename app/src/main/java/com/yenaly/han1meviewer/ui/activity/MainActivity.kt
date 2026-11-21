@@ -81,9 +81,11 @@ import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
+import com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork
 import com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
 import com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
 import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsNetwork
+import com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork
 import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
@@ -414,6 +416,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 CosplayteleNetwork.rebuildNetwork()
             }
 
+            SiteType.COSER -> {
+                CoserNetwork.rebuildNetwork()
+            }
+
             SiteType.FULLVIDEOS -> {
                 FullVideosNetwork.rebuildNetwork()
             }
@@ -424,6 +430,13 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.REDGIFS -> {
                 RedGifsNetwork.rebuildNetwork()
+            }
+            SiteType.XXXTUBE -> {
+                XXXTubeNetwork.rebuildNetwork()
+            }
+
+            SiteType.WUMAOBI -> {
+                com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork()
             }
         }
 

@@ -93,6 +93,7 @@ fun BuonduaAlbumGrid(
                 bottomStartBadge = album.duration,
                 subtitle = album.genre,
                 imageLoader = imageLoader,
+                imageCard = true,
             )
         }
         if (state.isLoadingMore) {

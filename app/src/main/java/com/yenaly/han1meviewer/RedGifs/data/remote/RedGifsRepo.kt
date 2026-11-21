@@ -68,7 +68,7 @@ sealed interface RedGifsFeedSource {
         }
 
     val requiresLogin: Boolean
-        get() = this == ForYou || this == Liked || this == Mine
+        get() = this == ForYou || this == Liked || this == Mine || this == Popular
 
     companion object {
         fun from(kind: String, arg: String): RedGifsFeedSource = when (kind) {
@@ -115,6 +115,8 @@ object RedGifsRepo {
         page.users.forEach { (k, v) -> userCache[k] = v }
     }
 
+    // ------------------------------------------------------------ http
+
     private fun enc(s: String): String = Uri.encode(s)
 
     private suspend fun getJson(path: String, query: List<Pair<String, String>> = emptyList()): JsonElement =
@@ -124,7 +126,7 @@ object RedGifsRepo {
             }.build()
             RedGifsNetwork.client.newCall(Request.Builder().url(url).build()).execute().use { resp ->
                 val text = resp.body?.string().orEmpty()
-                if (!resp.isSuccessful) throw RedGifsHttpException(resp.code, "HTTP ${resp.code}")
+                if (!resp.isSuccessful) throw RedGifsHttpException(resp.code, errorText(resp.code, text))
                 json.parseToJsonElement(text)
             }
         }
@@ -137,10 +139,22 @@ object RedGifsRepo {
                 .method(method, reqBody)
                 .build()
             RedGifsNetwork.client.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) throw RedGifsHttpException(resp.code, "HTTP ${resp.code}")
+                if (!resp.isSuccessful) {
+                    throw RedGifsHttpException(resp.code, errorText(resp.code, resp.body?.string().orEmpty()))
+                }
             }
         }
     }
+
+    /** "HTTP 401: <server message>" so failures can be reported precisely. */
+    private fun errorText(code: Int, body: String): String {
+        val msg = runCatching {
+            json.parseToJsonElement(body).asObj()?.obj("error")?.str("description")
+        }.getOrNull() ?: body.take(120).replace('\n', ' ')
+        return if (msg.isBlank()) "HTTP $code" else "HTTP $code: $msg"
+    }
+
+    // ------------------------------------------------------------ feeds
 
     suspend fun feed(source: RedGifsFeedSource, page: Int): Result<RedGifsFeedPage> = runCatching {
         val p = page.toString()
@@ -180,6 +194,8 @@ object RedGifsRepo {
         gifCache[gif.id] = gif
         gif
     }
+
+    // ------------------------------------------------------------ users / niches
 
     suspend fun user(name: String): Result<RedGifsUser> = runCatching {
         val o = getJson("/v1/users/${enc(name)}").asObj()
@@ -232,6 +248,8 @@ object RedGifsRepo {
         RedGifsListPage(users, root.long("page").toInt().coerceAtLeast(1), root.long("pages").toInt().coerceAtLeast(1))
     }
 
+    // ------------------------------------------------------------ me
+
     suspend fun me(): Result<RedGifsMe> = runCatching {
         val o: JsonObject = getJson("/v1/me").asObj() ?: throw RedGifsHttpException(0, "bad response")
         val user = parseUser(o) ?: throw RedGifsHttpException(0, "bad response")
@@ -251,6 +269,9 @@ object RedGifsRepo {
         send("PATCH", "/v1/me", body)
     }
 
+    // ------------------------------------------------------------ likes / follows
+
+    /** `GET /v2/likes`: tolerant of both a list of ids and a list of objects. */
     suspend fun likedIds(): Set<String> {
         likedIds?.let { return it }
         if (!RedGifsAuth.isLoggedIn) return emptySet()
@@ -286,6 +307,7 @@ object RedGifsRepo {
         Unit
     }
 
+    /** Not present in the HAR; mirrors the like endpoint with DELETE. */
     suspend fun unlike(id: String): Result<Unit> = runCatching {
         send("DELETE", "/v2/gifs/${enc(id)}/like", null)
         likedIds?.remove(id)

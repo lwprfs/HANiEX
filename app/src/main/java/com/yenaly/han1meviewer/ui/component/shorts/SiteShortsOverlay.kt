@@ -75,6 +75,7 @@ internal data class ShortsCommentsState(
     val total: Long? = null,
 )
 
+/** Round floating control for the top bar (back / mute / captions / report). */
 @Composable
 internal fun ShortsCircleButton(
     onClick: () -> Unit,
@@ -88,6 +89,10 @@ internal fun ShortsCircleButton(
     ) { content() }
 }
 
+/**
+ * One action in the right-hand rail: a floating icon on a soft glass disc with its count right
+ * underneath. No rectangular containers, so the video stays the focus.
+ */
 @Composable
 private fun ShortsRailAction(
     onClick: () -> Unit,
@@ -107,7 +112,7 @@ private fun ShortsRailAction(
         label = "ShortsRailTint",
     )
     Column(
-
+        // No clip here: a rounded clip would shave the corners off the label underneath the disc.
         modifier = Modifier
             .widthIn(min = 56.dp, max = 80.dp)
             .clickable(
@@ -148,10 +153,10 @@ internal fun ShortsOwnerRow(
     scrim: Color,
     onSubscribe: () -> Unit,
     modifier: Modifier = Modifier,
-
+    /** When set, tapping the avatar/name opens the owner's profile. */
     onClick: (() -> Unit)? = null,
 ) {
-
+    // Flat, borderless row floating on the video gradient — no card/box behind it.
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,

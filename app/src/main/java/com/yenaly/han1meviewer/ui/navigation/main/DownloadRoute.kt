@@ -35,9 +35,8 @@ import com.yenaly.han1meviewer.ui.screen.home.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.han1meviewer.util.SafFileManager
-import com.yenaly.han1meviewer.util.SafFileManager.ImportFailureReason
-import com.yenaly.han1meviewer.util.SafFileManager.ImportResult
-import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
+import com.yenaly.han1meviewer.util.ImportFailureReason
+import com.yenaly.han1meviewer.util.ImportResult
 import com.yenaly.han1meviewer.util.SafFileManager.scanAndImportHanimeDownloads
 import com.yenaly.han1meviewer.util.application
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
@@ -81,8 +80,9 @@ fun DownloadRouteScreen(
             is DownloadEvent.OnDeleteDownloadingItem -> HanimeDownloadManagerV2.deleteTask(event.item)
 
             is DownloadEvent.OnImportDownloaded -> {
-                if (!Preferences.safDownloadPath.isNullOrBlank() &&
-                    !Preferences.isUsePrivateStorage && !isImportingDownloaded
+                // Works in both modes: private storage scans the private folder, SAF scans the chosen tree.
+                if ((Preferences.isUsePrivateStorage || !Preferences.safDownloadPath.isNullOrBlank()) &&
+                    !isImportingDownloaded
                 ) {
                     showImportDownloadedConfirm = true
                 } else {
@@ -185,7 +185,6 @@ fun DownloadRouteScreen(
             scope.launch {
                 val result = withContext(Dispatchers.IO) {
                     try {
-                        if (!checkSafPermissions(context)) return@withContext null
                         scanAndImportHanimeDownloads(context, dao) { imported, total, currentName ->
                             importProgress = imported
                             importTotal = total
@@ -198,21 +197,35 @@ fun DownloadRouteScreen(
                 }
                 isImportingDownloaded = false
                 showImportProgress = false
-                if (result == null) {
-                    GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
-                } else {
-                    viewModel.loadAllDownloadedHanime(
-                        sortedBy = HanimeDownloadEntity.SortedBy.ID,
-                        ascending = false,
-                    )
-                    if (result.failureCount == 0) {
+                when {
+                    result == null -> GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
+                    result.status == ImportResult.Status.ROOT_MISSING ->
                         GlobalToasts.show(
-                            application.getString(R.string.import_success_count, result.successCount),
-                            level = GlobalToasts.ToastLevel.SUCCESS,
+                            application.getString(R.string.import_root_missing),
+                            level = GlobalToasts.ToastLevel.WARNING,
                         )
-                    } else {
-                        importResult = result
-                        showImportResult = true
+                    result.status == ImportResult.Status.NO_PERMISSION ->
+                        GlobalToasts.show(permissionError, level = GlobalToasts.ToastLevel.ERROR)
+                    result.status == ImportResult.Status.CANCELLED -> Unit
+                    else -> {
+                        viewModel.loadAllDownloadedHanime(
+                            sortedBy = HanimeDownloadEntity.SortedBy.ID,
+                            ascending = false,
+                        )
+                        if (result.failureCount > 0) {
+                            importResult = result
+                            showImportResult = true
+                        } else if (result.successCount == 0) {
+                            GlobalToasts.show(
+                                application.getString(R.string.import_none_found, result.scannedFolders),
+                                level = GlobalToasts.ToastLevel.INFO,
+                            )
+                        } else {
+                            GlobalToasts.show(
+                                application.getString(R.string.import_success_count, result.successCount),
+                                level = GlobalToasts.ToastLevel.SUCCESS,
+                            )
+                        }
                     }
                 }
             }
@@ -264,8 +277,10 @@ fun DownloadRouteScreen(
                             val reasonText = when (failure.reason) {
                                 ImportFailureReason.INVALID_FOLDER_NAME ->
                                     stringResource(R.string.import_fail_reason_invalid_name)
-                                ImportFailureReason.MISSING_INFO_JSON ->
-                                    stringResource(R.string.import_fail_reason_missing_info)
+                                ImportFailureReason.UNRECOGNIZED_FOLDER ->
+                                    stringResource(R.string.import_fail_reason_unrecognized)
+                                ImportFailureReason.UNREADABLE_INFO_JSON ->
+                                    stringResource(R.string.import_fail_reason_bad_info)
                                 ImportFailureReason.IMPORT_EXCEPTION ->
                                     stringResource(R.string.import_fail_reason_exception)
                             }

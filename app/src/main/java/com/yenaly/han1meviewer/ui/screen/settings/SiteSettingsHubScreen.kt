@@ -61,6 +61,8 @@ import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SettingTile
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 import com.yenaly.han1meviewer.ui.screen.SiteCardSettings
+import com.yenaly.han1meviewer.ui.screen.SiteShortsCardSettings
+import com.yenaly.han1meviewer.ui.screen.SiteImageCardSettings
 import com.yenaly.han1meviewer.ui.screen.SiteHomeSettings
 import com.yenaly.han1meviewer.ui.screen.SiteImageSettings
 import com.yenaly.han1meviewer.ui.screen.SiteLayoutSettings
@@ -124,8 +126,10 @@ fun SiteSettingsHubScreen(
     var defaultSort by remember(site) { mutableStateOf(SiteSearchSettings.defaultSort(site).orEmpty()) }
     val cardAspect = if (site in SiteCardSettings.sites) SiteCardSettings.aspect(site) else SiteCardSettings.Aspect.Default
     val hasCardOptions = site in SiteCardSettings.sites
+    val hasShortCardOptions = site in SiteShortsCardSettings.sites
+    val hasImageCardOptions = site in SiteImageCardSettings.sites
     val homeSections = remember(site) { SiteHomeSettings.sectionsOf(site) }
-    val canReset = onResetSite != null || hasGridColumns || hasCardOptions ||
+    val canReset = onResetSite != null || hasGridColumns || hasCardOptions || hasShortCardOptions || hasImageCardOptions ||
         homeSections.isNotEmpty() || sortChoices != null
 
     val hiddenDetails = if (hasCardOptions) {
@@ -243,6 +247,93 @@ fun SiteSettingsHubScreen(
                         icon = Icons.Default.AspectRatio,
                         valueText = stringResource(cardAspect.labelRes()),
                         onClick = { showAspectDialog = true },
+                    )
+                }
+            }
+
+            if (hasShortCardOptions) {
+                item { HubSectionTitle(stringResource(R.string.site_shorts_cards_section)) }
+                items(SiteShortsCardSettings.Detail.entries.size) { index ->
+                    val detail = SiteShortsCardSettings.Detail.entries[index]
+                    SettingSwitchItem(
+                        title = stringResource(
+                            when (detail) {
+                                SiteShortsCardSettings.Detail.Views -> R.string.site_card_show_views
+                                SiteShortsCardSettings.Detail.Duration -> R.string.site_card_show_duration
+                                SiteShortsCardSettings.Detail.GifBadge -> R.string.site_shorts_card_gif_badge
+                                SiteShortsCardSettings.Detail.Title -> R.string.site_card_show_title
+                            }
+                        ),
+                        icon = when (detail) {
+                            SiteShortsCardSettings.Detail.Views -> Icons.Default.Visibility
+                            SiteShortsCardSettings.Detail.Duration -> Icons.Default.Timer
+                            SiteShortsCardSettings.Detail.GifBadge -> Icons.Default.GridView
+                            SiteShortsCardSettings.Detail.Title -> Icons.Default.Subtitles
+                        },
+                        checked = SiteShortsCardSettings.isShown(site, detail),
+                        onCheckedChange = { SiteShortsCardSettings.setShown(site, detail, it) },
+                    )
+                }
+                item {
+                    val shortAspect = SiteShortsCardSettings.aspect(site)
+                    SettingNavigationItem(
+                        title = stringResource(R.string.site_card_aspect_title),
+                        summary = stringResource(R.string.site_card_aspect_summary),
+                        icon = Icons.Default.AspectRatio,
+                        valueText = stringResource(shortAspect.labelRes()),
+                        onClick = {
+                            val all = SiteCardSettings.Aspect.entries
+                            SiteShortsCardSettings.setAspect(site, all[(all.indexOf(shortAspect) + 1) % all.size])
+                        },
+                    )
+                }
+                item {
+                    val shortColumns = SiteShortsCardSettings.columns(site)
+                    SettingNavigationItem(
+                        title = stringResource(R.string.site_grid_columns_title),
+                        summary = stringResource(R.string.site_grid_columns_summary),
+                        icon = Icons.Default.GridView,
+                        valueText = shortColumns.toString(),
+                        onClick = {
+                            val all = SiteShortsCardSettings.COLUMN_CHOICES
+                            SiteShortsCardSettings.setColumns(site, all[(all.indexOf(shortColumns) + 1) % all.size])
+                        },
+                    )
+                }
+            }
+
+            if (hasImageCardOptions) {
+                item { HubSectionTitle(stringResource(R.string.site_image_cards_section)) }
+                items(SiteImageCardSettings.Detail.entries.size) { index ->
+                    val detail = SiteImageCardSettings.Detail.entries[index]
+                    SettingSwitchItem(
+                        title = stringResource(
+                            when (detail) {
+                                SiteImageCardSettings.Detail.Title -> R.string.site_card_show_title
+                                SiteImageCardSettings.Detail.Badges -> R.string.site_image_card_show_badges
+                                SiteImageCardSettings.Detail.Subtitle -> R.string.site_image_card_show_subtitle
+                            }
+                        ),
+                        icon = when (detail) {
+                            SiteImageCardSettings.Detail.Title -> Icons.Default.Subtitles
+                            SiteImageCardSettings.Detail.Badges -> Icons.Default.Visibility
+                            SiteImageCardSettings.Detail.Subtitle -> Icons.Default.CalendarMonth
+                        },
+                        checked = SiteImageCardSettings.isShown(site, detail),
+                        onCheckedChange = { SiteImageCardSettings.setShown(site, detail, it) },
+                    )
+                }
+                item {
+                    val imageAspect = SiteImageCardSettings.aspect(site)
+                    SettingNavigationItem(
+                        title = stringResource(R.string.site_card_aspect_title),
+                        summary = stringResource(R.string.site_card_aspect_summary),
+                        icon = Icons.Default.AspectRatio,
+                        valueText = stringResource(imageAspect.labelRes()),
+                        onClick = {
+                            val all = SiteCardSettings.Aspect.entries
+                            SiteImageCardSettings.setAspect(site, all[(all.indexOf(imageAspect) + 1) % all.size])
+                        },
                     )
                 }
             }

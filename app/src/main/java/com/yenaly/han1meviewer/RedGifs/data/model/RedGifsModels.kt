@@ -79,6 +79,8 @@ data class RedGifsListPage<T>(
     val hasNext: Boolean get() = page < pages
 }
 
+// ---------------------------------------------------------------- JSON helpers
+
 internal fun JsonElement?.asObj(): JsonObject? = this as? JsonObject
 
 internal fun JsonElement?.asArr(): JsonArray? = this as? JsonArray
@@ -102,6 +104,9 @@ internal fun JsonObject.obj(key: String): JsonObject? = this[key] as? JsonObject
 
 internal fun JsonObject.arr(key: String): JsonArray? = this[key] as? JsonArray
 
+// ---------------------------------------------------------------- parsers
+
+/** Returns null for promoted/boosted entries, images/galleries and entries without a video url. */
 internal fun parseGif(o: JsonObject): RedGifsGif? {
     val id = o.str("id") ?: return null
     if (o["cta"] != null && o["cta"] !is JsonNull) return null

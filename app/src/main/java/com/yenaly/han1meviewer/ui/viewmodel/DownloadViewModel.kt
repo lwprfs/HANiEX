@@ -39,11 +39,14 @@ class DownloadViewModel(application: Application) : BaseViewModel(application) {
             .catch { e -> e.printStackTrace() }
             .flowOn(Dispatchers.IO)
 
+    private var loadJob: kotlinx.coroutines.Job? = null
+
     fun loadAllDownloadedHanime(
         sortedBy: HanimeDownloadEntity.SortedBy = HanimeDownloadEntity.SortedBy.ID,
         ascending: Boolean = false,
     ) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             DatabaseRepo.HanimeDownload.loadAllDownloadedHanime(sortedBy, ascending)
                 .catch { e -> e.printStackTrace() }
                 .flowOn(Dispatchers.IO)

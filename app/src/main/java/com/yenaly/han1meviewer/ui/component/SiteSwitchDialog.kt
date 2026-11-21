@@ -160,6 +160,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         accentColor = Color(0xFFE91E63),
     ),
     SiteSwitchOption(
+        name = "Coser",
+        description = applicationContext.getString(R.string.site_coser_description),
+        siteType = SiteType.COSER,
+        logoRes = R.drawable.s_switch_coser,
+        accentColor = Color(0xFF7C4DFF),
+    ),
+    SiteSwitchOption(
         name = "FullVideos",
         description = applicationContext.getString(R.string.site_fullvideos_description),
         siteType = SiteType.FULLVIDEOS,
@@ -179,6 +186,20 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         siteType = SiteType.REDGIFS,
         logoRes = R.drawable.s_switch_redgifs,
         accentColor = Color(0xFFE5334B),
+    ),
+    SiteSwitchOption(
+        name = "X-X-X.tube",
+        description = applicationContext.getString(R.string.site_xxxtube_description),
+        siteType = SiteType.XXXTUBE,
+        logoRes = R.drawable.s_switch_x_x_x,
+        accentColor = Color(0xFFE53935),
+    ),
+    SiteSwitchOption(
+        name = "Wumaobi",
+        description = applicationContext.getString(R.string.site_wumaobi_description),
+        siteType = SiteType.WUMAOBI,
+        logoRes = R.drawable.s_switch_wumaobi,
+        accentColor = Color(0xFFFF7043),
     ),
 )
 
