@@ -31,12 +31,11 @@ internal fun RedGifsGif.toSiteShort(): SiteShort {
         coverUrl = thumbnailUrl.ifBlank { posterUrl },
         views = views,
         durationSeconds = duration.toInt().takeIf { it > 0 },
-        // The shared player hides the mute button for "gifs"; RedGifs clips with sound keep it.
+
         isGif = !hasAudio,
     )
 }
 
-/** RedGifs on top of the shared shorts player (the same base XHamster uses). */
 internal object RedGifsShortsSource : SiteShortsSource {
 
     override val site: SiteType = SiteType.REDGIFS
@@ -51,7 +50,6 @@ internal object RedGifsShortsSource : SiteShortsSource {
 
     override val supportsRating: Boolean = true
 
-    /** RedGifs only has likes. */
     override val supportsDislike: Boolean = false
 
     override suspend fun loadMetas(shorts: List<SiteShort>): Result<Map<String, SiteShortMeta>> =

@@ -17,7 +17,6 @@ class WumaobiNotSignedInException : IOException("Not signed in")
 
 object WumaobiRepo {
 
-    /** The site answers "access frequency is too fast" with HTTP 429 and expects a short wait. */
     private const val MAX_RATE_RETRIES = 3
     private const val RATE_RETRY_DELAY_MS = 3_500L
 
@@ -84,7 +83,6 @@ object WumaobiRepo {
             withContext(Dispatchers.Default) { WumaobiParser.parseListPage(html) }
         }
 
-    /** [sort] is the `category_sort` cookie value for tags / series and unused for actresses. */
     suspend fun entities(
         kind: WumaobiConstants.EntityKind,
         sort: String,
@@ -135,7 +133,6 @@ object WumaobiRepo {
         finishAuth(json)
     }
 
-    /** Normally the server sets `auth_token` itself; fall back to the token in the JSON body. */
     private fun finishAuth(json: JSONObject) {
         val host = host()
         if (!WumaobiCookieJar.hasSession(host)) {

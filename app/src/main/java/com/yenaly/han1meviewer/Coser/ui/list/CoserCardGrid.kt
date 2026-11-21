@@ -58,7 +58,6 @@ import kotlinx.coroutines.flow.filter
 
 const val COSER_CARD_RATIO = 16f / 9f
 
-/** Returns (top-end badge, bottom-start badge) for a card: quality / "+N videos" and duration. */
 @Composable
 fun coserBadges(card: CoserCard): Pair<String?, String?> {
     val top = buildList {

@@ -31,10 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.Wumaobi.data.model.WumaobiDetail
 
-/**
- * Wumaobi keeps favorites in server-side collections: tick the collections this video should be
- * in and confirm (same flow as the website's "Edit fav" dialog).
- */
 @Composable
 internal fun WumaobiFavoriteControl(
     info: WumaobiDetail,

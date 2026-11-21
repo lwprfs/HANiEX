@@ -10,7 +10,6 @@ object RedGifsConstants {
     const val API_BASE = "https://api.redgifs.com"
     const val AUTH_BASE = "https://auth2.redgifs.com"
 
-    /** Public OAuth client id of the RedGifs web app (visible in every browser request). */
     const val CLIENT_ID = "e06c34dac7654821bcb37e0393b54350"
 
     val REFERER: String
@@ -21,15 +20,10 @@ object RedGifsConstants {
 
     const val PAGE_SIZE = 30
 
-    /**
-     * The guest token is bound to IP + User-Agent, and the web app always sends a browser UA, so every
-     * RedGifs request (and the login WebView) uses this one fixed browser-style UA.
-     */
     const val USER_AGENT =
         "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) " +
                 "Chrome/124.0.0.0 Mobile Safari/537.36"
 
-    /** Cloudflare Turnstile site key of the RedGifs login/signup forms. */
     const val TURNSTILE_SITE_KEY = "0x4AAAAAAAVj1T69HYyETNAA"
 
     const val OAUTH_SCOPE = "openid profile email offline"
@@ -40,6 +34,5 @@ object RedGifsConstants {
 
     fun nicheUrl(id: String): String = "$BASE_URL/niches/$id"
 
-    /** Orientation values the web app uses for `/v1/me` preferences. */
     val ORIENTATIONS = listOf("straight", "gay", "lesbian", "trans", "bisexual", "animated")
 }

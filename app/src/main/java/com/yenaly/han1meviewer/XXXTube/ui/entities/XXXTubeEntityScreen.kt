@@ -22,7 +22,6 @@ import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.SiteScrollToTopButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
-/** Browse all models or all categories. Tapping one opens its video listing. */
 @Composable
 fun XXXTubeEntityScreen(
     kind: XXXTubeConstants.EntityKind,

@@ -12,13 +12,6 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
-/**
- * Parser for x-x-x.tube (a KVS based tube site).
- *
- * Every list page (videos, models, categories, search, ...) renders its items as
- * `.thumb-holder .thumb-inner` blocks and a `ul.pagination` whose last `li.pager`
- * carries the link to the next page (and has no `href` on the last page).
- */
 object XXXTubeParser {
 
     private val FLASHVARS_BLOCK = Regex("""var\s+flashvars\s*=\s*\{(.*?)\}\s*;""", RegexOption.DOT_MATCHES_ALL)

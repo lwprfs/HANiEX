@@ -14,7 +14,6 @@ import com.yenaly.han1meviewer.Coser.common.CoserConstants
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 
-/** Length / quality / sort chips supported by coser.tv listings. */
 @Composable
 fun CoserFilterBar(
     filters: CoserConstants.Filters,
@@ -52,7 +51,6 @@ fun CoserFilterBar(
     }
 }
 
-/** Collapsible variant used as a grid header: a single "Filters" chip that reveals the bar. */
 @Composable
 fun CoserFilterHeader(
     filters: CoserConstants.Filters,

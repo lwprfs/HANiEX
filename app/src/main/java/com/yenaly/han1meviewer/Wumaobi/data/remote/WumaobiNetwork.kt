@@ -17,11 +17,6 @@ object WumaobiNetwork {
     const val HEADER_SORT = "X-Wmb-Sort"
     const val HEADER_CATEGORY_SORT = "X-Wmb-Category-Sort"
 
-    /**
-     * The site picks list ordering from the `sort` / `category_sort` cookies. They are applied
-     * per request here (as a network interceptor, after OkHttp has attached the jar cookies) so
-     * two screens with different sorts never race on shared cookie state.
-     */
     private val sortCookieInterceptor = Interceptor { chain ->
         val request = chain.request()
         val sort = request.header(HEADER_SORT)

@@ -33,8 +33,7 @@ fun XXXTubeListScreen(
     viewModel: XXXTubeListViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // The incoming path may already carry a `?by=` sort (e.g. "Top Rated"); honour it as the
-    // initial chip and always rebuild the query from the base path so `by` is never duplicated.
+
     val basePath = remember(path) { path.substringBefore('?') }
     var sortKey by rememberSaveable(path) {
         mutableStateOf(

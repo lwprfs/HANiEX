@@ -29,18 +29,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.TimeUnit
 
-/**
- * Native RedGifs sign-in / registration, reproducing what the web app does (all of it is in the HAR):
- *
- * 1. Turnstile captcha token (the only part that needs a WebView, see RedGifsCaptcha).
- * 2. `POST /v2/auth/login` or `/v2/auth/signup` -> `login_hint` + `connection_id`.
- * 3. OAuth2 authorize (PKCE) on auth2.redgifs.com -> hosted "verify email" page.
- * 4. `POST .../otp/otp_code_form` (multipart) with the emailed code -> redirect.
- * 5. Follow the redirect to `https://www.redgifs.com?code=...` and `POST /oauth2/token`.
- *
- * Steps 3-4 scrape the hosted page for its CSRF token; the HAR does not contain that page's body, so
- * this part is the least verified.
- */
 object RedGifsLoginFlow {
 
     class FlowException(message: String) : Exception(message)
@@ -107,10 +95,6 @@ object RedGifsLoginFlow {
         return msg ?: "HTTP $code"
     }
 
-    /**
-     * Steps 2-3. Pass [username] + [email] to register, or only [login] (email or username) to sign in.
-     * Returns the pending state that [submitCode] needs once the user has the emailed code.
-     */
     suspend fun begin(
         login: String?,
         username: String?,
@@ -200,7 +184,6 @@ object RedGifsLoginFlow {
         Pending(client, verifier, state, psid, csrf, landed.toString())
     }
 
-    /** Value of `<input name="[name]" value="...">`, whichever order the attributes are in. */
     private fun inputValue(html: String, name: String): String? {
         for (m in Regex("<input[^>]*>", RegexOption.IGNORE_CASE).findAll(html)) {
             val tag = m.value
@@ -210,7 +193,6 @@ object RedGifsLoginFlow {
         return null
     }
 
-    /** Steps 4-5. Throws [FlowException] with a readable message when the code is wrong or expired. */
     suspend fun submitCode(pending: Pending, code: String): Unit = withContext(Dispatchers.IO) {
         val client = pending.client
         val form = MultipartBody.Builder().setType(MultipartBody.FORM)

@@ -19,14 +19,12 @@ object RedGifsNetwork {
     val baseUrl: String
         get() = RedGifsConstants.BASE_URL
 
-    /** API client: adds the bearer token and retries once with a fresh token on 401. */
     val client: OkHttpClient
         get() {
             ensure()
             return _client!!
         }
 
-    /** Media / image client: no auth, but media.redgifs.com expects the site Referer. */
     val streamClient: OkHttpClient
         get() {
             ensure()

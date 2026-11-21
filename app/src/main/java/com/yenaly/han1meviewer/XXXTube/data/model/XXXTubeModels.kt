@@ -3,13 +3,11 @@ package com.yenaly.han1meviewer.XXXTube.data.model
 import com.yenaly.han1meviewer.XXXTube.common.XXXTubeConstants
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 
-/** One page of video cards. [nextUrl] is the absolute URL of the next page, or null on the last page. */
 data class XXXTubeListPage(
     val items: List<HanimeInfo>,
     val nextUrl: String?,
 )
 
-/** A model or category card. [path] is the site-relative page path, e.g. `/models/some-slug/`. */
 data class XXXTubeEntity(
     val title: String,
     val coverUrl: String,
@@ -30,7 +28,6 @@ data class XXXTubeLink(val title: String, val url: String) {
     val path: String
         get() = runCatching { java.net.URI(url).path }.getOrNull().orEmpty().ifBlank { url }
 
-    /** Where tapping this link should go: a video listing. */
     val listingPath: String
         get() = XXXTubeConstants.listingPathFor(path)
 }

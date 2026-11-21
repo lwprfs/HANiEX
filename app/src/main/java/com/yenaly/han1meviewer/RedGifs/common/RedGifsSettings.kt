@@ -16,7 +16,6 @@ object RedGifsSettings {
         get() = sp.getString(KEY_QUALITY, null)?.takeIf { it == QUALITY_SD } ?: QUALITY_HD
         set(value) = sp.edit().putString(KEY_QUALITY, value).apply()
 
-    /** Matches the web app's explore default (`verified=y`). */
     var verifiedOnly: Boolean
         get() = sp.getBoolean(KEY_VERIFIED_ONLY, true)
         set(value) = sp.edit().putBoolean(KEY_VERIFIED_ONLY, value).apply()

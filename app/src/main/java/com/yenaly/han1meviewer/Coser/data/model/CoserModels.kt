@@ -37,17 +37,12 @@ data class CoserListPage(
     val hasNext: Boolean get() = !nextUrl.isNullOrBlank()
 }
 
-/** One embed host serving a video (streamtape, doodstream, mixdrop, ...). */
 data class CoserMirror(
     val provider: String,
     val embed: String,
     val direct: String = "",
 )
 
-/**
- * A video of a post. [url] is the embed of the first mirror (kept for compatibility with the
- * shared screens), [mirrors] holds every host in the site's preferred order.
- */
 data class CoserVideoRef(
     val url: String,
     val isEmbed: Boolean,

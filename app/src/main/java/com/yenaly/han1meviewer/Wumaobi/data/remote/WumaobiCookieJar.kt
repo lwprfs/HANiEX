@@ -12,7 +12,6 @@ class WumaobiCookieJar : CookieJar {
     companion object {
         private const val TAG = "WumaobiCookieJar"
 
-        /** The JWT the site sets after /user/login; it is the whole login session. */
         const val SESSION_COOKIE = "auth_token"
 
         private const val KEY_PERSISTED = "wumaobi_auth_cookies"
@@ -62,7 +61,6 @@ class WumaobiCookieJar : CookieJar {
             }
         }
 
-        /** Used when the login response carries the token in its JSON body only. */
         fun importSession(host: String, token: String) {
             restoreIfNeeded()
             val cookie = runCatching {
@@ -139,7 +137,6 @@ class WumaobiCookieJar : CookieJar {
         Log.d(TAG, "saveFromResponse: $host, merged=${valid.size}, removed=${expired.size}")
     }
 
-    /** Clears Cloudflare clearance only; the login session is left alone (use [clearAuth]). */
     fun clearCookies() {
         WumaobiCloudflareCookieManager.clearAllCloudflareCookies()
         Log.d(TAG, "Cleared Wumaobi Cloudflare cookies")

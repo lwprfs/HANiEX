@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 
 sealed interface XXXTubeListSource {
 
-    /** A site-relative path, optionally with a `?by=` sort query. */
     data class Path(val path: String) : XXXTubeListSource
     data class Search(val query: String) : XXXTubeListSource
 }

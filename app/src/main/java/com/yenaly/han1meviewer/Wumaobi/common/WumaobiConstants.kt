@@ -11,14 +11,9 @@ object WumaobiConstants {
             listOf("wumaobi.com", "paipancon.com", "baihuse.com", "shavedjav.com"),
         )
 
-    /** "High" prefers HQ (VIP) lines when the account can play them, "Low" the standard line. */
     val QUALITIES = listOf("High", "Low")
     const val DEFAULT_QUALITY = "High"
 
-    /**
-     * [sort] is the value of the site's `sort` cookie (hits / id / faves); `null` leaves the
-     * cookie alone (used for pages that do not support sorting such as /recommend).
-     */
     data class Section(
         val key: String,
         val title: String,
@@ -35,7 +30,6 @@ object WumaobiConstants {
 
     val TIME_FILTERS: Map<String, List<Section>> = emptyMap()
 
-    /** Sort options for any video list that sits under an actress / series / tag / search path. */
     val ENTITY_SORTS: List<Section> = listOf(
         Section("hits", "Hottest", "", "hits"),
         Section("id", "Newest", "", "id"),
@@ -52,7 +46,6 @@ object WumaobiConstants {
         }
     }
 
-    /** For tags / series the section value is the `category_sort` cookie; actresses are unsorted. */
     fun entitySorts(kind: EntityKind): List<Section> = when (kind) {
         EntityKind.ACTRESS -> emptyList()
         EntityKind.TAGS, EntityKind.SERIES -> listOf(
@@ -66,7 +59,6 @@ object WumaobiConstants {
     fun encodeSegment(text: String): String =
         java.net.URLEncoder.encode(text.trim(), "UTF-8").replace("+", "%20")
 
-    /** `/series/FC2` -> page 2 is `/series/FC2/page-2.html`; the home page is `/page-2.html`. */
     fun pagedUrl(path: String, page: Int): String {
         val clean = "/" + path.trim('/').trim()
         return when {

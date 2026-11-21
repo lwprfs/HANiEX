@@ -337,7 +337,6 @@ object SiteImageSettings {
     }
 }
 
-/** Cards for photo/gallery/album tiles (Buondua, Cosplaytele, XHamster photos). */
 object SiteImageCardSettings {
 
     enum class Detail(val keySuffix: String) {
@@ -379,7 +378,6 @@ object SiteImageCardSettings {
         }
     }
 
-    /** `ratio == null` means "keep the site's own shape". */
     fun aspect(site: SiteType): SiteCardSettings.Aspect {
         touch()
         val stored = Preferences.preferenceSp.getString(aspectKey(site), null)
@@ -401,7 +399,6 @@ object SiteImageCardSettings {
     }
 }
 
-/** Cards for gif / short-video tiles (XHamster moments, RedGifs). */
 object SiteShortsCardSettings {
 
     enum class Detail(val keySuffix: String, val defaultShown: Boolean) {
@@ -447,7 +444,6 @@ object SiteShortsCardSettings {
         }
     }
 
-    /** Tile shape; [SiteCardSettings.Aspect.Default] is the tall 9:16 short-video shape. */
     fun aspect(site: SiteType): SiteCardSettings.Aspect {
         touch()
         val stored = Preferences.preferenceSp.getString(aspectKey(site), null)
@@ -482,4 +478,3 @@ object SiteShortsCardSettings {
         }
     }
 }
-

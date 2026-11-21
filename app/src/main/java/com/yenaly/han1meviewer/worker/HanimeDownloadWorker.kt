@@ -863,7 +863,6 @@ class HanimeDownloadWorker(
         }
     }
 
-    /** `info.json` (schema v2) next to the video, so a later "refresh downloads" restores exact metadata. */
     private fun writeInfoJson(entity: HanimeDownloadEntity) {
         runCatching {
             val site = SiteCheckIn.siteOfDishCode(videoCode)?.name ?: "HANIME"

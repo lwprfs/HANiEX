@@ -37,7 +37,7 @@ object CoserParser {
         val webp = root.selectFirst("picture source[srcset]")?.attr("srcset")
             ?.split(',')?.firstOrNull()?.trim()?.substringBefore(' ').orEmpty()
         val jpg = img.absUrl("src").ifBlank { img.attr("src") }
-        // jpg first: it is universally decodable and has the same dimensions as the webp.
+
         return jpg.ifBlank { webp }
     }
 
@@ -102,7 +102,6 @@ object CoserParser {
         return CoserListPage(cards = cards, terms = terms, nextUrl = nextUrl(doc))
     }
 
-    /** Home page has two rails (weekly trending / latest); not used for paging but kept for reuse. */
     fun parseHome(html: String, baseUri: String): CoserListPage = parseListPage(html, baseUri, false)
 
     private fun termsOf(root: Element): Pair<List<CoserTerm>, List<CoserTerm>> {

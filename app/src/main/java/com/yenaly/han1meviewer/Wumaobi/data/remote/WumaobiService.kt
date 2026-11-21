@@ -12,10 +12,6 @@ import retrofit2.http.Url
 
 interface WumaobiService {
 
-    /**
-     * [sort] / [categorySort] are not real headers: [WumaobiNetwork] turns them into the
-     * site's `sort` / `category_sort` cookies for this one request.
-     */
     @GET
     suspend fun get(
         @Url url: String,

@@ -312,7 +312,7 @@ fun SiteVideoCard(
     imageLoader: ImageLoader? = null,
     contentScale: ContentScale = ContentScale.FillWidth,
     placeholder: androidx.compose.ui.graphics.painter.Painter? = null,
-    /** Photo / album / gallery tile: follows the "image cards" customization instead of the video one. */
+
     imageCard: Boolean = false,
 ) {
     val site = if (LocalInspectionMode.current) null else Preferences.siteType

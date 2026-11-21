@@ -139,7 +139,7 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
                 val name = c.getString(1).orEmpty()
                 val mime = c.getString(2).orEmpty()
                 val isDir = mime == DocumentsContract.Document.MIME_TYPE_DIR
-                // SAF often reports `.ts` as application/octet-stream, so check the extension too.
+
                 if (!isDir && (mime.startsWith("video/") || DownloadLayout.isVideoFileName(name))) {
                     hasVideo = true
                     continue
@@ -155,7 +155,7 @@ private fun listChildren(context: Context, tree: Uri, parentDocId: String): List
             }
         }
     }
-    // A folder that directly holds a video is a video folder: its images are covers, not photos.
+
     if (hasVideo) return emptyList()
     return out
 }

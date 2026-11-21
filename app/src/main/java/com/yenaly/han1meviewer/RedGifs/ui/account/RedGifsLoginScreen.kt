@@ -57,7 +57,6 @@ import kotlinx.coroutines.launch
 
 private enum class Stage { FORM, CAPTCHA, WORKING, CODE }
 
-/** Sign in / Register (both with an emailed code, all in-app), sign in with a cookie, or the website. */
 @Composable
 fun RedGifsLoginScreen(
     onBack: () -> Unit,
@@ -283,10 +282,6 @@ private const val SCAN_STORAGE_JS =
             "if(v&&v.indexOf('eyJ')>=0){out.push(v);}}}catch(e){}}" +
             "scan(window.localStorage);scan(window.sessionStorage);return JSON.stringify(out);})()"
 
-/**
- * Last-resort sign in on the real site. Black-screen fixes: a fixed light background, no forced dark mode,
- * no popup windows, only http(s) navigation, and the render process is recovered instead of left blank.
- */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 private fun RedGifsWebLogin(onBack: () -> Unit, onLoggedIn: () -> Unit) {

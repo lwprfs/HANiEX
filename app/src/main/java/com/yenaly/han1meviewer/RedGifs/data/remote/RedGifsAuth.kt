@@ -24,15 +24,6 @@ import okhttp3.Request
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
-/**
- * RedGifs auth.
- *
- * - Guests use `GET /v2/auth/temporary` (a token bound to IP + User-Agent).
- * - Logged-in users hold an OAuth access token (24h) and refresh token issued by auth2.redgifs.com.
- *
- * Tokens are kept in a private SharedPreferences file on purpose: [com.yenaly.han1meviewer.Preferences.preferenceSp]
- * is exported by the settings backup, and credentials must not end up there.
- */
 object RedGifsAuth {
 
     private const val PREFS = "redgifs_auth"
@@ -52,7 +43,6 @@ object RedGifsAuth {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    /** Plain client: no auth interceptor, so token calls can never recurse into themselves. */
     private val http: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .connectTimeout(20, TimeUnit.SECONDS)
@@ -76,7 +66,6 @@ object RedGifsAuth {
         data object Failed : RefreshResult
     }
 
-    /** Same idea as the web app's numeric `session_id`; sent as a query param and `x-session-id`. */
     val sessionId: String
         get() = sp.getString(K_SESSION, null) ?: run {
             val rnd = java.security.SecureRandom()
@@ -114,7 +103,6 @@ object RedGifsAuth {
         json.parseToJsonElement(String(raw)).jsonObject["exp"]?.let { (it as? JsonPrimitive)?.longOrNull } ?: 0L
     }.getOrDefault(0L)
 
-    /** True when [token] looks like an access token issued by RedGifs' auth server. */
     fun isRedGifsAccessToken(token: String): Boolean = runCatching {
         val payload = token.split('.')[1]
         val raw = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
@@ -123,7 +111,6 @@ object RedGifsAuth {
         iss.contains("auth2.redgifs.com") && o["at_hash"] == null
     }.getOrDefault(false)
 
-    /** Blocking: returns the bearer token to use right now (user token, else guest token). */
     fun bearer(force: Boolean = false): String? = synchronized(lock) {
         val access = sp.getString(K_ACCESS, null)
         val exp = sp.getLong(K_ACCESS_EXP, 0L)
@@ -179,10 +166,6 @@ object RedGifsAuth {
         }
     }
 
-    /**
-     * Same call the web app makes (`grant_type=refresh_token` + `client_id`). The browser sends the
-     * refresh token as a cookie; we send it both as a cookie and as the standard form field.
-     */
     private fun requestToken(refresh: String): RefreshResult {
         val body = FormBody.Builder()
             .add("client_id", RedGifsConstants.CLIENT_ID)
@@ -224,7 +207,6 @@ object RedGifsAuth {
         }
     }
 
-    /** Pull the `refresh_token` cookie the login WebView received from auth2.redgifs.com. */
     fun refreshTokenFromWebView(): String? {
         val cookies = CookieManager.getInstance().getCookie(RedGifsConstants.AUTH_BASE).orEmpty()
         return cookies.split(';')
@@ -234,7 +216,6 @@ object RedGifsAuth {
             ?.takeIf { it.isNotBlank() }
     }
 
-    /** Finishes a WebView login using the refresh token cookie. */
     suspend fun completeLoginWithRefresh(refresh: String): Boolean = withContext(Dispatchers.IO) {
         val result = synchronized(lock) { requestToken(refresh) }
         if (result is RefreshResult.Ok) {
@@ -245,7 +226,6 @@ object RedGifsAuth {
         }
     }
 
-    /** Fallback when only an access token could be read from the page (no refresh token). */
     suspend fun completeLoginWithAccess(access: String): Boolean = withContext(Dispatchers.IO) {
         if (!isRedGifsAccessToken(access) || jwtExp(access) <= nowSec()) return@withContext false
         synchronized(lock) {
@@ -272,7 +252,6 @@ object RedGifsAuth {
         if (bump) RedGifsSession.bump()
     }
 
-    /** Signs out locally and expires the auth2/www cookies so the next login starts clean. Call on the main thread. */
     fun logout() {
         synchronized(lock) { clearUserTokens(bump = false) }
         clearWebSession()
@@ -294,7 +273,6 @@ object RedGifsAuth {
         }
     }
 
-    /** Stores a token response (`access_token` / `refresh_token`) and announces the new session. */
     suspend fun completeLoginWithTokens(access: String, refresh: String?): Boolean = withContext(Dispatchers.IO) {
         if (access.isBlank()) return@withContext false
         synchronized(lock) {
@@ -306,10 +284,6 @@ object RedGifsAuth {
         true
     }
 
-    /**
-     * Sign in from pasted text: a whole cookie string, `refresh_token=...`, a JSON blob, a bare refresh
-     * token, or an access-token JWT. A refresh token wins because it gives a long-lived session.
-     */
     suspend fun importPasted(raw: String): Boolean {
         val text = raw.trim()
         if (text.isEmpty()) return false

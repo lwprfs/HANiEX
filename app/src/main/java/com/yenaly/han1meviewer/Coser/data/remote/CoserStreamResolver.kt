@@ -10,11 +10,6 @@ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Request
 import java.io.IOException
 
-/**
- * Resolves a post video into a directly playable URL. coser.tv itself only lists third-party
- * embeds (streamtape / mixdrop / doodstream), so every mirror is tried in turn with host specific
- * extraction first and the hidden-WebView sniffer as a fallback.
- */
 object CoserStreamResolver {
 
     private val M3U8_REGEX = Regex("""https?:\\?/\\?/[^"'\s<>\\]+(?:\\/[^"'\s<>\\]+)*\.m3u8[^"'\s<>]*""")
@@ -23,16 +18,13 @@ object CoserStreamResolver {
     private val RESOLUTION_REGEX = Regex("""RESOLUTION=(\d+)x(\d+)""")
     private val BANDWIDTH_REGEX = Regex("""BANDWIDTH=(\d+)""")
 
-    // streamtape: document.getElementById('robotlink').innerHTML = '//streamtape.com/get_video?...' + ('xcdx...').substring(n);
     private val ST_ASSIGN = Regex("""getElementById\(\s*['"](?:robotlink|ideoooolink|norobotlink)['"]\s*\)\s*\.innerHTML\s*=\s*([^;]+);""")
     private val ST_PART = Regex("""['"]([^'"]*)['"]\s*(?:\.\s*substring\(\s*(\d+)\s*\))?""")
     private val ST_COMBINED = Regex("""['"]([^'"]*)['"]\s*\+\s*\(\s*['"]([^'"]*)['"]\s*\)\s*\.substring\(\s*(\d+)\s*\)""")
 
-    // doodstream
     private val DOOD_PASS = Regex("""/pass_md5/[\w\-/]+""")
     private val DOOD_TOKEN = Regex("""[?&]token=([\w]+)""")
 
-    // mixdrop packed JS
     private val PACKED = Regex("""\}\('(.*)',\s*(\d+),\s*(\d+),\s*'(.*?)'\.split\('\|'\)""", RegexOption.DOT_MATCHES_ALL)
     private val WURL = Regex("""(?:MDCore\.)?wurl\s*=\s*["']([^"']+)["']""")
 
@@ -77,8 +69,6 @@ object CoserStreamResolver {
         return expandPlaylist(CoserStream(media, "auto", embed, origin), alternates)
     }
 
-    // ---- network helpers --------------------------------------------------------------------
-
     private fun get(url: String, referer: String): String {
         val request = Request.Builder().url(url).header("Referer", referer).get().build()
         CoserNetwork.sharedOkHttpClient.newCall(request).execute().use { resp ->
@@ -97,8 +87,6 @@ object CoserStreamResolver {
         url.startsWith("//") -> "https:$url"
         else -> runCatching { java.net.URI(base).resolve(url).toString() }.getOrDefault(url)
     }
-
-    // ---- extraction -------------------------------------------------------------------------
 
     private fun findMedia(provider: String, html: String, embed: String): String? {
         when (provider.lowercase()) {
@@ -155,7 +143,6 @@ object CoserStreamResolver {
         return absolute(url, "https://mixdrop.ag/")
     }
 
-    /** Dean Edwards' p.a.c.k.e.r. decoder. */
     private fun unpack(payload: String, radix: Int, count: Int, dict: List<String>): String {
         fun encode(n: Int): String {
             val head = if (n < radix) "" else encode(n / radix)
@@ -169,8 +156,6 @@ object CoserStreamResolver {
         }
         return Regex("""\b\w+\b""").replace(payload.replace("\\'", "'")) { map[it.value] ?: it.value }
     }
-
-    // ---- HLS ---------------------------------------------------------------------------------
 
     private fun expandPlaylist(auto: CoserStream, alternates: List<String> = emptyList()): List<CoserStream> {
         if (!auto.url.contains(".m3u8")) return listOf(auto)

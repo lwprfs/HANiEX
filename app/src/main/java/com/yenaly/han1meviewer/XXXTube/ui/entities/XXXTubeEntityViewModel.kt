@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Browse (`query == null`) or search a list of models / categories. */
 data class XXXTubeEntitySource(
     val kind: XXXTubeConstants.EntityKind,
     val query: String? = null,

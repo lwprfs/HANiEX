@@ -35,7 +35,6 @@ object WumaobiAuth {
         )
     }
 
-    /** Re-read the session (e.g. after the mirror host changed). */
     fun reload() {
         _state.value = readState()
     }

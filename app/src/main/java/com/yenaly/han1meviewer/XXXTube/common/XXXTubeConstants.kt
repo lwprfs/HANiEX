@@ -11,7 +11,6 @@ object XXXTubeConstants {
             listOf("x-x-x.tube"),
         )
 
-    /** A home tab. [path] is a site-relative path that may carry a `?by=` sort query. */
     data class Section(val key: String, val title: String, val path: String)
 
     val SECTIONS: List<Section> = listOf(
@@ -22,7 +21,6 @@ object XXXTubeConstants {
         Section("favourited", "Most Favourited", "/videos/?by=most_favourited"),
     )
 
-    /** Sort options for model / category / tag video listings; [path] is the query to append. */
     val ORDERS: List<Section> = listOf(
         Section("latest", "Latest", "?by=post_date"),
         Section("rating", "Top Rated", "?by=rating"),
@@ -35,7 +33,6 @@ object XXXTubeConstants {
         MODELS("models", "/models/", "models/"),
         CATEGORIES("categories", "/categories/", "categories/");
 
-        /** Matches `/models/<slug>/` (or `/categories/<slug>/`) and captures the slug. */
         val itemRegex: Regex = Regex("""^/$key/([^/?#]+)/?$""")
 
         companion object {
@@ -54,14 +51,12 @@ object XXXTubeConstants {
         if (pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://")) pathOrUrl
         else BASE_URL + (if (pathOrUrl.startsWith("/")) pathOrUrl else "/$pathOrUrl")
 
-    /** Joins a listing path with a sort query (`?by=...`), merging if the path already has one. */
     fun withQuery(path: String, query: String): String {
         if (query.isEmpty()) return path
         val q = query.removePrefix("?")
         return if (path.contains('?')) "$path&$q" else "$path?$q"
     }
 
-    /** `/models/<slug>/` and `/categories/<slug>/` list their videos under `.../videos/`. */
     fun listingPathFor(path: String): String {
         val clean = path.substringBefore('?').substringBefore('#')
         val isEntity = EntityKind.entries.any { it.itemRegex.matches(clean) }
@@ -78,7 +73,6 @@ object XXXTubeConstants {
         return "$BASE_URL/search/${type.segment}$encoded/"
     }
 
-    /** A video code is `<id>-<slug>` (slash free, so it is safe as a file / route segment). */
     fun codeFromPath(path: String): String? {
         val clean = path.substringBefore('?').substringBefore('#')
         val m = VIDEO_PATH.find(clean) ?: return null

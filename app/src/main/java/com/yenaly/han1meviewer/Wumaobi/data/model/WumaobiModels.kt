@@ -21,7 +21,6 @@ data class WumaobiEntityPage(
 
 data class WumaobiLink(val title: String, val url: String) {
 
-    /** Raw (still percent-encoded) path so it can be appended to the base url again. */
     val path: String
         get() = runCatching { java.net.URI(url).rawPath }.getOrNull().orEmpty().ifBlank { url }
 }
@@ -51,10 +50,10 @@ data class WumaobiDetail(
     val pageUrl: String,
     val date: String,
     val durationSeconds: Long,
-    /** Series. */
+
     val channel: WumaobiLink?,
     val network: WumaobiLink?,
-    /** Actresses. */
+
     val models: List<WumaobiLink>,
     val categories: List<WumaobiLink>,
     val sources: List<WumaobiSource>,

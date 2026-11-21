@@ -21,10 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsConstants
 
-/**
- * Only the Cloudflare Turnstile widget RedGifs uses on its sign-in/sign-up forms, not the whole site.
- * It is loaded with redgifs.com as the base URL so the site key is accepted, and hands the token back.
- */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun RedGifsCaptcha(

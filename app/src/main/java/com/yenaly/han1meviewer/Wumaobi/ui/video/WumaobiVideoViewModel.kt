@@ -56,7 +56,6 @@ class WumaobiVideoViewModel : ViewModel() {
         _favMessage.value = null
     }
 
-    /** Pushes the chosen favorite collections for this video and mirrors them in the UI state. */
     fun saveFavorites(code: String, collectionIds: List<String>) {
         viewModelScope.launch {
             WumaobiRepo.editFav(code, collectionIds)

@@ -38,11 +38,6 @@ import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortsGrid
 import kotlinx.coroutines.launch
 
-/**
- * One paged grid of RedGifs clips that opens the shared vertical shorts player.
- * Used by the home tabs, niche/creator pages, search and the library lists.
- * Pass `key(source)` at the call site when the source changes.
- */
 @Composable
 fun RedGifsFeedContent(
     source: RedGifsFeedSource,

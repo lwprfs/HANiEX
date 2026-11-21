@@ -72,20 +72,11 @@ object DownloadLayout {
         return listOf(siteFolder) + rest.ifEmpty { listOf(FALLBACK) }
     }
 
-    /**
-     * Video file extensions the app recognises when scanning download folders (also used to keep video
-     * folders out of the photo screen). `ts` is the HLS output.
-     */
     val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm", "ts", "m4v", "mpeg", "mpg")
 
     fun isVideoFileName(name: String?): Boolean =
         name?.substringAfterLast('.', "")?.lowercase() in VIDEO_EXTENSIONS
 
-    /**
-     * Inverse of [segmentsFor]: folder path under the download root -> the video code stored in the DB.
-     * Matching is case-insensitive. [sanitize] is lossy, so this is exact only for codes that survive
-     * sanitizing; the scanner prefers `info.json`'s `videoCode` when present.
-     */
     fun videoCodeFromSegments(segments: List<String>): String? {
         val first = segments.firstOrNull() ?: return null
         if (first.equals(HFileManager.HANIME_DOWNLOAD_FOLDER, ignoreCase = true)) {

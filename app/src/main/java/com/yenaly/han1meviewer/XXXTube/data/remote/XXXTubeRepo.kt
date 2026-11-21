@@ -17,7 +17,6 @@ object XXXTubeRepo {
         response.body()?.string().orEmpty()
     }
 
-    /** [url] is an absolute URL: either a listing's first page or a `nextUrl` from a previous page. */
     suspend fun videos(url: String): Result<XXXTubeListPage> = runCatching {
         withContext(Dispatchers.Default) { XXXTubeParser.parseListPage(fetchHtml(url)) }
     }

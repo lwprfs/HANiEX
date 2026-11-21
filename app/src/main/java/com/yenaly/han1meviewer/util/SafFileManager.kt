@@ -122,10 +122,6 @@ object SafFileManager {
         }
     }
 
-    /**
-     * Writes (overwrites) `info.json` next to the downloaded video so the folder can be re-imported later
-     * with the exact code, title and quality. Works for both SAF and private storage.
-     */
     fun writeInfoJson(context: Context, videoCode: String, content: String): Boolean {
         return try {
             if (isSafReady()) {
@@ -200,10 +196,6 @@ object SafFileManager {
         else -> "application/octet-stream"
     }
 
-    /**
-     * Copies the whole private download root (`hanime_download` and every site folder, recursively) into the
-     * SAF tree. A source file is deleted only after it was copied successfully.
-     */
     fun migratePrivateToSaf(
         context: Context,
         dao: HanimeDownloadDao? = null,
@@ -228,7 +220,6 @@ object SafFileManager {
             return@launch
         }
 
-        // Every folder that directly holds files, with its path relative to the private root.
         val leafDirs = ArrayList<Pair<File, List<String>>>()
         fun collect(dir: File, segments: List<String>) {
             val kids = dir.listFiles().orEmpty()
@@ -298,7 +289,6 @@ object SafFileManager {
         withContext(Dispatchers.Main) { onProgress?.invoke(migrated, total) }
     }
 
-    /** True when the saved SAF tree is still granted for reading (no write probe, so read-only grants work). */
     fun hasReadAccess(context: Context): Boolean {
         val treeUri = Preferences.safDownloadPath?.toUri() ?: return false
         val granted = context.contentResolver.persistedUriPermissions
@@ -306,7 +296,6 @@ object SafFileManager {
         return granted && DocumentFile.fromTreeUri(context, treeUri)?.canRead() == true
     }
 
-    /** The folder refresh should scan for the current storage mode, or a status explaining why not. */
     private fun scanRoot(context: Context): Pair<DownloadTreeNode?, ImportResult.Status> {
         if (Preferences.isUsePrivateStorage) {
             val dir = com.yenaly.han1meviewer.HFileManager.getAppDownloadFolder(context)
@@ -318,10 +307,6 @@ object SafFileManager {
         return SafTreeNode.root(context, treeUri) to ImportResult.Status.OK
     }
 
-    /**
-     * Re-registers downloads found on disk (every site folder, not just `hanime_download`).
-     * Works in both SAF and private-storage mode. See [DownloadScanner] for the algorithm.
-     */
     suspend fun scanAndImportHanimeDownloads(
         context: Context,
         dao: HanimeDownloadDao,

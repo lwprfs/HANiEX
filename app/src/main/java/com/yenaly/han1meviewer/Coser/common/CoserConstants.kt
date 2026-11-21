@@ -13,7 +13,6 @@ object CoserConstants {
     val HOSTNAME: Array<String>
         get() = SiteNetworkPrefs.knownHosts(SiteType.COSER, listOf("coser.tv"))
 
-    /** Referer used for third-party embed hosts (streamtape / mixdrop / doodstream). */
     const val STREAM_ORIGIN = "https://coser.tv"
     const val STREAM_REFERER = "https://coser.tv/"
 
@@ -46,7 +45,6 @@ object CoserConstants {
         SECTION_SERIES,
     )
 
-    /** Filters supported by every post listing (`?mins=&quality=&sort=`). */
     data class Filters(
         val mins: Int = 0,
         val quality: Int = 0,
@@ -71,7 +69,6 @@ object CoserConstants {
         return "/" + clean.trim('/') + "/"
     }
 
-    /** Builds `BASE/path/?page=N&mins=..` for a listing. [path] may already carry a query string. */
     fun pagedUrl(path: String, page: Int, filters: Filters = Filters()): String {
         val raw = path.trim()
         if (raw.startsWith("http://") || raw.startsWith("https://")) return raw
@@ -95,7 +92,6 @@ object CoserConstants {
 
     fun postUrl(slug: String): String = "$BASE_URL/post/${slug.trim('/')}/"
 
-    /** Accepts a full coser.tv post URL (also localized `/ja/post/..`) and returns the post slug. */
     fun parsePostReference(input: String): String? {
         val text = input.trim()
         if (!(text.startsWith("http://") || text.startsWith("https://"))) return null
@@ -107,7 +103,6 @@ object CoserConstants {
 
     private val LANG_PREFIXES = setOf("ja", "zh-hans", "ko")
 
-    /** `/post/<slug>/` (optionally prefixed with a language segment) -> slug. */
     fun slugFromPath(path: String): String? {
         var segments = path.split('/').filter { it.isNotBlank() }
         if (segments.firstOrNull() in LANG_PREFIXES) segments = segments.drop(1)

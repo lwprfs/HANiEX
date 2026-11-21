@@ -110,9 +110,9 @@ fun SiteShortsPlayer(
     owner: SiteShortOwner? = null,
     onToggleSubscribe: () -> Unit = {},
     initialMetas: Map<String, SiteShortMeta> = emptyMap(),
-    /** When set, the short's tags are shown as tappable chips and this is called on tap. */
+
     onOpenTag: ((SiteShortTag) -> Unit)? = null,
-    /** When set, tapping the uploader/channel (that has a [SiteShortOwner.path]) calls this. */
+
     onOpenOwner: ((SiteShortOwner) -> Unit)? = null,
 ) {
     if (items.isEmpty()) return
@@ -140,7 +140,7 @@ fun SiteShortsPlayer(
     var muted by remember { mutableStateOf(rememberedMuted) }
     var isPlaying by remember { mutableStateOf(false) }
     var progress by remember { mutableFloatStateOf(0f) }
-    // Real width/height of the playing video (0 = not known yet); used to letterbox instead of stretch.
+
     var videoRatio by remember { mutableFloatStateOf(0f) }
     var subtitleLang by remember { mutableStateOf<String?>(null) }
     var cueText by remember { mutableStateOf("") }
@@ -524,8 +524,7 @@ fun SiteShortsPlayer(
                         imageLoader = imageLoader,
                     )
                     if (pagerState.currentPage == page) {
-                        // Gestures live on the full-screen wrapper so the letterbox bars are tappable too,
-                        // while the video surface itself keeps its real aspect ratio (never stretched).
+
                         Box(
                             Modifier.fillMaxSize().pointerInput(short.id) {
                                 detectTapGestures(
@@ -648,7 +647,7 @@ fun SiteShortsPlayer(
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
-                                    // Same badges as the grid thumbnails, so the two always match.
+
                                     if (short.isGif) ShortsGifBadge()
                                     ShortsViewsBadge(views)
                                     ShortsDurationBadge(short.durationSeconds)

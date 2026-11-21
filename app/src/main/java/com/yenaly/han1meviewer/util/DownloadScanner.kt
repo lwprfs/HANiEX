@@ -22,20 +22,17 @@ import java.io.File
 import java.io.InputStream
 import kotlin.coroutines.coroutineContext
 
-/** One entry (file or folder) of a download tree, independent of SAF vs plain files. */
 interface DownloadTreeNode {
     val name: String
     val isDirectory: Boolean
     val length: Long
     val lastModified: Long
 
-    /** What goes into `HanimeDownloadEntity.videoUri` / `coverUri`. */
     val uriString: String
     fun children(): List<DownloadTreeNode>
     fun openInput(): InputStream?
 }
 
-/** Private-storage mode: plain `java.io.File`. */
 class FileTreeNode(private val file: File) : DownloadTreeNode {
     override val name: String get() = file.name
     override val isDirectory: Boolean get() = file.isDirectory
@@ -48,10 +45,6 @@ class FileTreeNode(private val file: File) : DownloadTreeNode {
     override fun openInput(): InputStream? = runCatching { file.inputStream() }.getOrNull()
 }
 
-/**
- * SAF mode. One ContentResolver query per directory (with a projection) instead of one per file,
- * which is what makes `DocumentFile.listFiles()` so slow.
- */
 class SafTreeNode(
     private val context: Context,
     private val treeUri: Uri,
@@ -142,7 +135,6 @@ data class ImportResult(
     val failureCount get() = failures.size
 }
 
-/** What a `info.json` (v1 or v2) tells us about one downloaded folder. */
 internal data class DownloadInfo(
     val videoCode: String?,
     val title: String?,
@@ -153,12 +145,6 @@ internal data class DownloadInfo(
     val videoUrls: Map<String, String>,
 )
 
-/**
- * Finds downloaded videos in a download tree and (re)registers them in the DB.
- *
- * A "video leaf" is a folder that directly contains a video file. The video code comes from
- * `info.json` when present, otherwise from the folder path ([DownloadLayout.videoCodeFromSegments]).
- */
 object DownloadScanner {
 
     private const val TAG = "DownloadScanner"
@@ -172,7 +158,6 @@ object DownloadScanner {
 
     private class Leaf(val segments: List<String>, val node: DownloadTreeNode, val children: List<DownloadTreeNode>)
 
-    /** Splits `Title_720P.mp4` into (`Title`, `720P`), and `NoUnderscore.mp4` into (`NoUnderscore`, `default`). */
     fun parseVideoFileName(fileName: String): Pair<String, String> {
         val base = fileName.substringBeforeLast('.', fileName)
         val i = base.lastIndexOf('_')
@@ -198,10 +183,6 @@ object DownloadScanner {
         )
     }.getOrNull()
 
-    /**
-     * Walks [root] (BFS, depth and folder caps, cancellable) and imports every video leaf.
-     * Runs under a mutex so two scans can never overlap.
-     */
     suspend fun scan(
         dao: HanimeDownloadDao,
         root: DownloadTreeNode,

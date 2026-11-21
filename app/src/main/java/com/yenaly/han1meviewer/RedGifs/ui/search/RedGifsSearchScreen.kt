@@ -122,7 +122,7 @@ fun RedGifsSearchScreen(
                             if (page != 1) {
                                 base
                             } else {
-                                // Exact username lookup (`/v1/users/{name}`) so a known creator is always found.
+
                                 val exact = RedGifsRepo.user(submitted.removePrefix("@")).getOrNull()
                                 base.map { result ->
                                     if (exact != null && result.items.none { it.username.equals(exact.username, true) }) {

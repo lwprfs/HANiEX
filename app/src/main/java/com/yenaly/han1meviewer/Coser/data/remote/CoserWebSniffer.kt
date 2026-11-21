@@ -15,10 +15,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 
-/**
- * Last-resort stream finder: loads the embed page in a hidden WebView, presses play and reports the
- * first media request (HLS playlist, mp4 or a host's `get_video` endpoint) it sees.
- */
 object CoserWebSniffer {
 
     private const val TIMEOUT_MS = 25_000L

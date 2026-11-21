@@ -63,7 +63,7 @@ fun RedGifsCreatorScreen(
     LaunchedEffect(name, epoch) {
         following = RedGifsRepo.followingNames().contains(name.lowercase())
     }
-    // The shared player can follow/unfollow too; keep the header in sync with it.
+
     LaunchedEffect(name) {
         while (true) {
             delay(1000)

@@ -80,7 +80,7 @@ fun DownloadRouteScreen(
             is DownloadEvent.OnDeleteDownloadingItem -> HanimeDownloadManagerV2.deleteTask(event.item)
 
             is DownloadEvent.OnImportDownloaded -> {
-                // Works in both modes: private storage scans the private folder, SAF scans the chosen tree.
+
                 if ((Preferences.isUsePrivateStorage || !Preferences.safDownloadPath.isNullOrBlank()) &&
                     !isImportingDownloaded
                 ) {
