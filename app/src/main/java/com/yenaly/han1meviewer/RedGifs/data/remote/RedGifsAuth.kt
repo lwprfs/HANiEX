@@ -27,8 +27,12 @@ import java.util.concurrent.TimeUnit
 object RedGifsAuth {
 
     private const val PREFS = "redgifs_auth"
-    private const val K_ACCESS = "access_token"
-    private const val K_ACCESS_EXP = "access_exp"
+    // RedGifs' API expects the OIDC *id_token* as the Bearer token (the site itself sends the
+    // id_token, never the access_token). Legacy keys are only kept so old installs get cleaned up.
+    private const val K_ID = "id_token"
+    private const val K_ID_EXP = "id_exp"
+    private const val K_LEGACY_ACCESS = "access_token"
+    private const val K_LEGACY_ACCESS_EXP = "access_exp"
     private const val K_REFRESH = "refresh_token"
     private const val K_GUEST = "guest_token"
     private const val K_GUEST_EXP = "guest_exp"
@@ -61,7 +65,7 @@ object RedGifsAuth {
     }
 
     private sealed interface RefreshResult {
-        data class Ok(val access: String) : RefreshResult
+        data class Ok(val idToken: String) : RefreshResult
         data object Rejected : RefreshResult
         data object Failed : RefreshResult
     }
@@ -76,7 +80,7 @@ object RedGifsAuth {
 
     val isLoggedIn: Boolean
         get() = !sp.getString(K_REFRESH, null).isNullOrBlank() ||
-                !sp.getString(K_ACCESS, null).isNullOrBlank()
+                !sp.getString(K_ID, null).isNullOrBlank()
 
     var username: String?
         get() = sp.getString(K_USERNAME, null)
@@ -103,36 +107,71 @@ object RedGifsAuth {
         json.parseToJsonElement(String(raw)).jsonObject["exp"]?.let { (it as? JsonPrimitive)?.longOrNull } ?: 0L
     }.getOrDefault(0L)
 
-    fun isRedGifsAccessToken(token: String): Boolean = runCatching {
+    /** True for the OIDC id_token RedGifs issues (`iss` = auth2.redgifs.com, carries `at_hash`/e-mail/username). */
+    fun isRedGifsIdToken(token: String): Boolean = runCatching {
         val payload = token.split('.')[1]
         val raw = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
         val o = json.parseToJsonElement(String(raw)).jsonObject
         val iss = (o["iss"] as? JsonPrimitive)?.contentOrNull.orEmpty()
-        iss.contains("auth2.redgifs.com") && o["at_hash"] == null
+        iss.contains("auth2.redgifs.com") &&
+                (o["at_hash"] != null || o["email"] != null || o["preferred_username"] != null)
     }.getOrDefault(false)
 
+    private fun claim(token: String, name: String): String? = runCatching {
+        val payload = token.split('.')[1]
+        val raw = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+        (json.parseToJsonElement(String(raw)).jsonObject[name] as? JsonPrimitive)?.contentOrNull
+    }.getOrNull()
+
+    /** Old builds stored the access_token, which the API rejects ("Bad token format"). Drop it. */
+    private fun dropLegacyAccess() {
+        if (sp.contains(K_LEGACY_ACCESS) || sp.contains(K_LEGACY_ACCESS_EXP)) {
+            sp.edit().remove(K_LEGACY_ACCESS).remove(K_LEGACY_ACCESS_EXP).apply()
+        }
+    }
+
+    private fun saveIdToken(idToken: String, refresh: String?) {
+        val e = sp.edit()
+            .putString(K_ID, idToken)
+            .putLong(K_ID_EXP, jwtExp(idToken))
+            .remove(K_LEGACY_ACCESS).remove(K_LEGACY_ACCESS_EXP)
+        if (!refresh.isNullOrBlank()) e.putString(K_REFRESH, refresh)
+        if (sp.getString(K_USERNAME, null).isNullOrBlank()) {
+            claim(idToken, "preferred_username")?.takeIf { it.isNotBlank() }?.let { e.putString(K_USERNAME, it) }
+        }
+        e.apply()
+    }
+
+    /**
+     * Bearer for api.redgifs.com: the user's id_token when signed in (refreshed through the
+     * refresh_token cookie value when it is about to expire), otherwise a guest token.
+     */
     fun bearer(force: Boolean = false): String? = synchronized(lock) {
-        val access = sp.getString(K_ACCESS, null)
-        val exp = sp.getLong(K_ACCESS_EXP, 0L)
+        dropLegacyAccess()
+        val idToken = sp.getString(K_ID, null)
+        val exp = sp.getLong(K_ID_EXP, 0L)
         val refresh = sp.getString(K_REFRESH, null)
-        if (!access.isNullOrBlank() || !refresh.isNullOrBlank()) {
-            if (!force && !access.isNullOrBlank() && exp - 60 > nowSec()) return@synchronized access
+        if (!idToken.isNullOrBlank() || !refresh.isNullOrBlank()) {
+            if (!force && !idToken.isNullOrBlank() && exp - 60 > nowSec()) return@synchronized idToken
             if (!refresh.isNullOrBlank()) {
                 when (val r = requestToken(refresh)) {
-                    is RefreshResult.Ok -> return@synchronized r.access
+                    is RefreshResult.Ok -> return@synchronized r.idToken
                     RefreshResult.Rejected -> clearUserTokens(bump = true)
                     RefreshResult.Failed -> {
-                        if (!access.isNullOrBlank() && exp > nowSec()) return@synchronized access
+                        if (!force && !idToken.isNullOrBlank() && exp > nowSec()) return@synchronized idToken
                     }
                 }
-            } else if (exp <= nowSec()) {
+            } else if (force || exp <= nowSec()) {
                 clearUserTokens(bump = true)
             } else {
-                return@synchronized access
+                return@synchronized idToken
             }
         }
         guestToken(force)
     }
+
+    /** Guest token, used as a last resort when the user's token keeps being refused. */
+    fun guestBearer(force: Boolean = false): String? = synchronized(lock) { guestToken(force) }
 
     private fun guestToken(force: Boolean): String? {
         val cached = sp.getString(K_GUEST, null)
@@ -185,15 +224,11 @@ object RedGifsAuth {
                 val text = resp.body?.string().orEmpty()
                 if (resp.isSuccessful) {
                     val o: JsonObject = json.parseToJsonElement(text).jsonObject
-                    val access = (o["access_token"] as? JsonPrimitive)?.contentOrNull
-                    if (access.isNullOrBlank()) return RefreshResult.Failed
+                    val idToken = (o["id_token"] as? JsonPrimitive)?.contentOrNull
+                    if (idToken.isNullOrBlank()) return RefreshResult.Failed
                     val newRefresh = (o["refresh_token"] as? JsonPrimitive)?.contentOrNull
-                    val editor = sp.edit()
-                        .putString(K_ACCESS, access)
-                        .putLong(K_ACCESS_EXP, jwtExp(access))
-                    if (!newRefresh.isNullOrBlank()) editor.putString(K_REFRESH, newRefresh)
-                    editor.apply()
-                    RefreshResult.Ok(access)
+                    saveIdToken(idToken, newRefresh)
+                    RefreshResult.Ok(idToken)
                 } else if (resp.code in 400..403) {
                     RefreshResult.Rejected
                 } else {
@@ -207,8 +242,13 @@ object RedGifsAuth {
         }
     }
 
+    /** Cookie header the WebView holds for auth2.redgifs.com (empty when there is none). */
+    fun webAuthCookies(): String = runCatching {
+        CookieManager.getInstance().getCookie(RedGifsConstants.AUTH_BASE).orEmpty()
+    }.getOrDefault("")
+
     fun refreshTokenFromWebView(): String? {
-        val cookies = CookieManager.getInstance().getCookie(RedGifsConstants.AUTH_BASE).orEmpty()
+        val cookies = webAuthCookies()
         return cookies.split(';')
             .map { it.trim() }
             .firstOrNull { it.startsWith("refresh_token=") }
@@ -226,14 +266,9 @@ object RedGifsAuth {
         }
     }
 
-    suspend fun completeLoginWithAccess(access: String): Boolean = withContext(Dispatchers.IO) {
-        if (!isRedGifsAccessToken(access) || jwtExp(access) <= nowSec()) return@withContext false
-        synchronized(lock) {
-            sp.edit()
-                .putString(K_ACCESS, access)
-                .putLong(K_ACCESS_EXP, jwtExp(access))
-                .apply()
-        }
+    suspend fun completeLoginWithIdToken(idToken: String): Boolean = withContext(Dispatchers.IO) {
+        if (!isRedGifsIdToken(idToken) || jwtExp(idToken) <= nowSec()) return@withContext false
+        synchronized(lock) { saveIdToken(idToken, null) }
         onLoggedIn()
         true
     }
@@ -245,7 +280,8 @@ object RedGifsAuth {
 
     private fun clearUserTokens(bump: Boolean) {
         sp.edit()
-            .remove(K_ACCESS).remove(K_ACCESS_EXP).remove(K_REFRESH)
+            .remove(K_ID).remove(K_ID_EXP).remove(K_REFRESH)
+            .remove(K_LEGACY_ACCESS).remove(K_LEGACY_ACCESS_EXP)
             .remove(K_USERNAME).remove(K_AVATAR)
             .apply()
         RedGifsRepo.clearCaches()
@@ -258,28 +294,43 @@ object RedGifsAuth {
         RedGifsSession.bump()
     }
 
+    /**
+     * Wipes every RedGifs / Kinde cookie from the WebView. Cookies set with a `Domain=` attribute
+     * (e.g. `.redgifs.com`) are only removed by an expiry that names the same domain, so each cookie
+     * is expired for the host-only and the domain variants.
+     */
     fun clearWebSession() {
         runCatching {
             val cm = CookieManager.getInstance()
-            listOf(RedGifsConstants.AUTH_BASE, RedGifsConstants.BASE_URL).forEach { url ->
+            val urls = listOf(
+                RedGifsConstants.AUTH_BASE,
+                RedGifsConstants.BASE_URL,
+                "https://redgifs.com",
+                "https://www.redgifs.com",
+                RedGifsConstants.API_BASE,
+            ).distinct()
+            val expired = "Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/"
+            urls.forEach { url ->
+                val host = runCatching { url.toHttpUrl().host }.getOrNull() ?: return@forEach
+                val parent = host.split('.').takeLast(2).joinToString(".")
                 cm.getCookie(url).orEmpty().split(';')
                     .map { it.substringBefore('=').trim() }
                     .filter { it.isNotEmpty() }
                     .forEach { name ->
-                        cm.setCookie(url, "$name=; Max-Age=0; Path=/")
+                        cm.setCookie(url, "$name=; $expired")
+                        cm.setCookie(url, "$name=; $expired; Domain=$host")
+                        cm.setCookie(url, "$name=; $expired; Domain=.$host")
+                        cm.setCookie(url, "$name=; $expired; Domain=$parent")
+                        cm.setCookie(url, "$name=; $expired; Domain=.$parent")
                     }
             }
             cm.flush()
         }
     }
 
-    suspend fun completeLoginWithTokens(access: String, refresh: String?): Boolean = withContext(Dispatchers.IO) {
-        if (access.isBlank()) return@withContext false
-        synchronized(lock) {
-            val e = sp.edit().putString(K_ACCESS, access).putLong(K_ACCESS_EXP, jwtExp(access))
-            if (!refresh.isNullOrBlank()) e.putString(K_REFRESH, refresh)
-            e.apply()
-        }
+    suspend fun completeLoginWithTokens(idToken: String, refresh: String?): Boolean = withContext(Dispatchers.IO) {
+        if (idToken.isBlank()) return@withContext false
+        synchronized(lock) { saveIdToken(idToken, refresh) }
         onLoggedIn()
         true
     }
@@ -290,8 +341,8 @@ object RedGifsAuth {
         val refresh = Regex("""refresh_token["']?\s*[=:]\s*["']?([A-Za-z0-9._~+/\-]{20,})""").find(text)?.groupValues?.get(1)
             ?: text.takeIf { it.length in 20..400 && it.none { c -> c.isWhitespace() || c == ';' || c == '=' || c == '"' } && it.count { c -> c == '.' } != 2 }
         if (refresh != null && completeLoginWithRefresh(refresh)) return true
-        val access = Regex("eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+").findAll(text)
-            .map { it.value }.firstOrNull { isRedGifsAccessToken(it) }
-        return access != null && completeLoginWithAccess(access)
+        val idToken = Regex("eyJ[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+").findAll(text)
+            .map { it.value }.firstOrNull { isRedGifsIdToken(it) }
+        return idToken != null && completeLoginWithIdToken(idToken)
     }
 }

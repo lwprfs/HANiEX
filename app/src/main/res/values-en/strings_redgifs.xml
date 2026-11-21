@@ -62,7 +62,7 @@
     <string name="redgifs_verify">Verify</string>
     <string name="redgifs_start_over">Start over</string>
     <string name="redgifs_cookie_invalid">That doesn\'t look like a valid RedGifs session.</string>
-    <string name="redgifs_cookie_hint">Paste your redgifs.com cookies, a refresh_token value, or an access token. They stay on this device.</string>
+    <string name="redgifs_cookie_hint">Paste your redgifs.com cookies, a refresh_token value, or an id_token. They stay on this device.</string>
     <string name="redgifs_cookie_field">Cookie / token</string>
     <string name="redgifs_login_title">Welcome back</string>
     <string name="redgifs_signup_title">Create your account</string>

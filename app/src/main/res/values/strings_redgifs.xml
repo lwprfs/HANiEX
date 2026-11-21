@@ -62,7 +62,7 @@
     <string name="redgifs_verify">驗證</string>
     <string name="redgifs_start_over">重新開始</string>
     <string name="redgifs_cookie_invalid">這看起來不是有效的 RedGifs 登入資料。</string>
-    <string name="redgifs_cookie_hint">貼上 redgifs.com 的 Cookie、refresh_token 值或 access token，資料只保存在本機。</string>
+    <string name="redgifs_cookie_hint">貼上 redgifs.com 的 Cookie、refresh_token 值或 id_token，資料只保存在本機。</string>
     <string name="redgifs_cookie_field">Cookie / Token</string>
     <string name="redgifs_login_title">歡迎回來</string>
     <string name="redgifs_signup_title">建立帳號</string>

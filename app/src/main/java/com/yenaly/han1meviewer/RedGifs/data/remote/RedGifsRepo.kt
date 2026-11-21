@@ -146,8 +146,9 @@ object RedGifsRepo {
 
     private fun errorText(code: Int, body: String): String {
         val msg = runCatching {
-            json.parseToJsonElement(body).asObj()?.obj("error")?.str("description")
-        }.getOrNull() ?: body.take(120).replace('\n', ' ')
+            val err = json.parseToJsonElement(body).asObj()?.obj("error")
+            err?.str("description")?.takeIf { it.isNotBlank() } ?: err?.str("message")
+        }.getOrNull()?.takeIf { it.isNotBlank() } ?: body.take(120).replace('\n', ' ')
         return if (msg.isBlank()) "HTTP $code" else "HTTP $code: $msg"
     }
 

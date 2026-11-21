@@ -53,6 +53,14 @@ object RedGifsNetwork {
             response.close()
             val fresh = RedGifsAuth.bearer(force = true) ?: token
             response = chain.proceed(builder.header("Authorization", "Bearer $fresh").build())
+            if (response.code == 401 && RedGifsAuth.isLoggedIn) {
+                // The user's token is still refused: fall back to a guest token so public pages keep loading.
+                val guest = RedGifsAuth.guestBearer(force = true)
+                if (guest != null && guest != fresh) {
+                    response.close()
+                    response = chain.proceed(builder.header("Authorization", "Bearer $guest").build())
+                }
+            }
         }
         response
     }

@@ -192,19 +192,35 @@ object RedGifsLoginFlow {
             .header("Origin", RedGifsConstants.ORIGIN)
             .header("Referer", RedGifsConstants.REFERER)
             .header("Accept", "application/json")
-            .build()
-        val (access, refresh) = try {
-            client.newCall(tokenReq).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
-                if (!resp.isSuccessful) throw FlowException("Token exchange failed (HTTP ${resp.code})")
-                val o = json.parseToJsonElement(text).jsonObject
-                ((o["access_token"] as? JsonPrimitive)?.contentOrNull.orEmpty()) to
-                        (o["refresh_token"] as? JsonPrimitive)?.contentOrNull
+            .apply {
+                // The browser sends the auth2 session cookies (refresh_token, kbtc, ...) with this call.
+                val cookies = RedGifsAuth.webAuthCookies()
+                if (cookies.isNotBlank()) header("Cookie", cookies)
             }
-        } catch (e: IOException) {
-            throw FlowException(e.message ?: "Network error")
+            .build()
+        val (idToken, refresh) = readTokens(client, tokenReq)
+        // Some responses omit the refresh token from the body; the WebView holds it as a cookie then.
+        val refreshToken = refresh ?: RedGifsAuth.refreshTokenFromWebView()
+        if (!RedGifsAuth.completeLoginWithTokens(idToken, refreshToken)) {
+            throw FlowException("No id token received")
         }
-        if (!RedGifsAuth.completeLoginWithTokens(access, refresh)) throw FlowException("No access token received")
+    }
+
+    /**
+     * Runs the /oauth2/token call and returns (id_token, refresh_token). RedGifs' API only accepts the
+     * id_token as Bearer, so the access_token from this response is intentionally ignored.
+     */
+    private fun readTokens(client: OkHttpClient, tokenReq: Request): Pair<String, String?> = try {
+        client.newCall(tokenReq).execute().use { resp ->
+            val text = resp.body?.string().orEmpty()
+            if (!resp.isSuccessful) throw FlowException("Token exchange failed (HTTP ${resp.code})")
+            val o = json.parseToJsonElement(text).jsonObject
+            val idToken = (o["id_token"] as? JsonPrimitive)?.contentOrNull.orEmpty()
+            if (idToken.isBlank()) throw FlowException("No id token received")
+            idToken to (o["refresh_token"] as? JsonPrimitive)?.contentOrNull
+        }
+    } catch (e: IOException) {
+        throw FlowException(e.message ?: "Network error")
     }
 
     suspend fun begin(
@@ -391,17 +407,7 @@ object RedGifsLoginFlow {
             .header("Referer", RedGifsConstants.REFERER)
             .header("Accept", "application/json")
             .build()
-        val (access, refresh) = try {
-            client.newCall(tokenReq).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
-                if (!resp.isSuccessful) throw FlowException("Token exchange failed (HTTP ${resp.code})")
-                val o = json.parseToJsonElement(text).jsonObject
-                ((o["access_token"] as? JsonPrimitive)?.contentOrNull.orEmpty()) to
-                        (o["refresh_token"] as? JsonPrimitive)?.contentOrNull
-            }
-        } catch (e: IOException) {
-            throw FlowException(e.message ?: "Network error")
-        }
-        if (!RedGifsAuth.completeLoginWithTokens(access, refresh)) throw FlowException("No access token received")
+        val (idToken, refresh) = readTokens(client, tokenReq)
+        if (!RedGifsAuth.completeLoginWithTokens(idToken, refresh)) throw FlowException("No id token received")
     }
 }
