@@ -29,6 +29,7 @@ gradle-app.setting
 # 构建输出
 **/build/
 **/outputs/
+add.md
 
 # 本地配置文件
 **/google-services.json
