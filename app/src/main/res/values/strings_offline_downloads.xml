@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="offline_pick_download_folder">Choose a download folder in the download settings first.</string>
+    <string name="offl_photos_title">Photos</string>
+    <string name="offl_shorts_title">Shorts / gifs</string>
+    <string name="offl_empty_photos">No photos downloaded yet</string>
+    <string name="offl_empty_shorts">No shorts or gifs downloaded yet</string>
+    <string name="offl_empty_downloading">Nothing is downloading</string>
+    <string name="offl_selected_fmt">%1$d / %2$d selected</string>
+    <string name="offl_items_fmt">%d items</string>
+    <string name="offl_photos_fmt">%d photos</string>
+    <string name="offl_play">Play</string>
+    <string name="offl_view_photos">View photos</string>
+    <string name="offl_details">Details</string>
+    <string name="offl_detail_site">Site</string>
+    <string name="offl_detail_channel">Channel</string>
+    <string name="offl_detail_size">Size</string>
+    <string name="offl_detail_added">Downloaded</string>
+    <string name="offl_detail_duration">Duration</string>
+    <string name="offl_detail_views">Views</string>
+    <string name="offl_detail_likes">Likes</string>
+    <string name="offl_detail_tags">Tags</string>
+    <string name="offl_detail_source">Source</string>
+    <string name="offl_detail_quality">Quality</string>
+    <string name="offl_detail_code">Code</string>
+    <string name="offl_detail_group">Group</string>
+    <string name="offl_group_name_hint">Group name</string>
+    <string name="offl_new_group">New group</string>
+    <string name="offl_rename_group">Rename group</string>
+    <string name="offl_delete_group">Delete group</string>
+    <string name="offl_move_to_group">Move to group</string>
+    <string name="offl_confirm_delete_items">Delete %d items from your device?</string>
+    <string name="offl_confirm_cancel_task">Cancel this download and remove what was saved so far?</string>
+    <string name="offl_task_queued">Queued</string>
+    <string name="offl_task_failed">Failed, tap to retry</string>
+    <string name="offl_task_done">Done</string>
+    <string name="offl_task_progress_photos">%1$d / %2$d photos</string>
+    <string name="offl_search_hint">Search downloads…</string>
+    <string name="offl_refresh">Refresh</string>
+    <string name="offl_photo_counter">%1$d / %2$d</string>
+    <string name="offl_delete_photo">Delete this photo</string>
+    <string name="offl_not_found">File not found</string>
+    <string name="offl_migrate_title">Update download folders</string>
+    <string name="offl_migrate_message">Your downloads use the old folder structure. Move them to the new one (Videos / Photos / Shorts, then site, then title) to avoid problems?
+
+Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
+    <string name="offl_migrate_action">Migrate</string>
+    <string name="offl_migrate_later">Later</string>
+    <string name="offl_migrating">Moving your downloads… keep the app open.</string>
+    <string name="offl_migrate_done">Moved %d folders to the new structure.</string>
+    <string name="offl_migrate_partial">Moved %1$d folders, %2$d could not be moved. You can try again later.</string>
+    <string name="offl_video_popup_title">Video details</string>
+</resources>

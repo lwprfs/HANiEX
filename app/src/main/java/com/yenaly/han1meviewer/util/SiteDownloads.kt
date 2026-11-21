@@ -18,6 +18,9 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.SiteCheckIn
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
+import com.yenaly.han1meviewer.util.offline.OfflineDownloads
+import com.yenaly.han1meviewer.util.offline.OfflineFs
+import com.yenaly.han1meviewer.util.offline.OfflineKind
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -63,7 +66,29 @@ object DownloadLayout {
         SiteType.WUMAOBI -> "Wumaobi"
     }
 
-    fun segmentsFor(videoCode: String): List<String> {
+    /** Top level folders of the download path. */
+    const val VIDEOS_FOLDER = "Videos"
+    const val PHOTOS_FOLDER = "Photos"
+    const val SHORTS_FOLDER = "Shorts"
+
+    val RESERVED_ROOT_FOLDERS = setOf(VIDEOS_FOLDER, PHOTOS_FOLDER, SHORTS_FOLDER)
+
+    fun siteLabel(site: SiteType?): String = site?.let { siteFolderName(it) } ?: "Hanime"
+
+    /** `Videos/<Site>/<title>`, the folder of a video in the current layout. */
+    fun newSegmentsFor(videoCode: String, title: String): List<String> =
+        listOf(
+            VIDEOS_FOLDER,
+            siteLabel(SiteCheckIn.siteOfDishCode(videoCode)),
+            sanitize(title),
+        )
+
+    /** Folder of a video: the registered `Videos/<Site>/<title>` one, or the old layout for old downloads. */
+    fun segmentsFor(videoCode: String): List<String> =
+        DownloadFolderRegistry.get(videoCode) ?: legacySegmentsFor(videoCode)
+
+    /** Folder layout used before `Videos/<Site>/<title>`. */
+    fun legacySegmentsFor(videoCode: String): List<String> {
         val site = SiteCheckIn.siteOfDishCode(videoCode)
             ?: return listOf(HFileManager.HANIME_DOWNLOAD_FOLDER, videoCode)
         val siteFolder = siteFolderName(site)
@@ -81,6 +106,14 @@ object DownloadLayout {
         name?.substringAfterLast('.', "")?.lowercase() in VIDEO_EXTENSIONS
 
     fun videoCodeFromSegments(segments: List<String>): String? {
+        val first = segments.firstOrNull() ?: return null
+        if (first.equals(VIDEOS_FOLDER, ignoreCase = true)) {
+            return DownloadFolderRegistry.codeFor(segments)
+        }
+        return legacyVideoCodeFromSegments(segments)
+    }
+
+    fun legacyVideoCodeFromSegments(segments: List<String>): String? {
         val first = segments.firstOrNull() ?: return null
         if (first.equals(HFileManager.HANIME_DOWNLOAD_FOLDER, ignoreCase = true)) {
             return if (segments.size == 2) segments[1] else null
@@ -111,6 +144,50 @@ object DownloadLayout {
         kind == null || name.isNullOrBlank() -> listOf("Other")
         kind == FapOwnerKind.GROUP -> listOf("Groups", sanitize(name))
         else -> listOf("Profiles", sanitize(name))
+    }
+}
+
+/**
+ * videoCode -> `Videos/<Site>/<title>` folder. Videos downloaded before this layout are not
+ * registered and keep resolving to their old folder until they are migrated.
+ */
+object DownloadFolderRegistry {
+    private const val PREFS = "video_folder_registry"
+    private fun prefs() = com.yenaly.han1meviewer.util.applicationContext
+        .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+
+    fun get(videoCode: String): List<String>? =
+        prefs().getString(videoCode, null)?.split('/')?.filter { it.isNotEmpty() }?.takeIf { it.size >= 3 }
+
+    fun codeFor(segments: List<String>): String? {
+        val path = segments.joinToString("/")
+        return prefs().all.entries.firstOrNull { it.value == path }?.key
+    }
+
+    fun set(videoCode: String, segments: List<String>) {
+        prefs().edit().putString(videoCode, segments.joinToString("/")).apply()
+    }
+
+    fun remove(videoCode: String) {
+        prefs().edit().remove(videoCode).apply()
+    }
+
+    /**
+     * Registers the folder of a new download. Reuses an existing registration, keeps the old folder
+     * for videos that already have files there, and makes the title folder unique.
+     */
+    fun ensure(videoCode: String, title: String) {
+        if (get(videoCode) != null) return
+        val legacy = DownloadLayout.legacySegmentsFor(videoCode)
+        if (OfflineFs.find(com.yenaly.han1meviewer.util.applicationContext, legacy) != null) return
+        val wanted = DownloadLayout.newSegmentsFor(videoCode, title)
+        val taken = prefs().all.filter { it.key != videoCode }.values.toSet()
+        var candidate = wanted
+        if (candidate.joinToString("/") in taken) {
+            val suffix = DownloadLayout.sanitize(SiteCheckIn.rawCodeOfDishCode(videoCode), "x").take(24)
+            candidate = wanted.dropLast(1) + (wanted.last() + " [" + suffix + "]")
+        }
+        set(videoCode, candidate)
     }
 }
 
@@ -327,66 +404,19 @@ object SiteImageSaver {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    fun isDownloadPermissionGranted(context: Context): Boolean =
-        FapFolderImageLocation.isReady(context)
-
-    private fun extensionOf(url: String): String {
-        val path = url.substringBefore('?').substringBefore('#').lowercase()
-        val ext = path.substringAfterLast('.', "")
-        return if (ext in setOf("jpg", "jpeg", "png", "webp", "gif", "mp4", "webm")) ext else "jpg"
-    }
-
-    private fun mimeOf(ext: String) = when (ext) {
-        "png" -> "image/png"
-        "webp" -> "image/webp"
-        "gif" -> "image/gif"
-        "mp4" -> "video/mp4"
-        "webm" -> "video/webm"
-        else -> "image/jpeg"
-    }
-
-    private fun openOutput(
-        context: Context,
-        segments: List<String>,
-        fileName: String,
-        mime: String,
-    ): OutputStream? {
-        val treeUri = FapFolderImageLocation.uri ?: return null
-        val tree = DocumentFile.fromTreeUri(context, treeUri.toUri()) ?: return null
-        var dir: DocumentFile = tree
-
-        val parts = if (segments.firstOrNull() == "FapFolder") segments.drop(1) else segments
-        for (seg in parts) {
-            dir = dir.findFile(seg)?.takeIf { it.isDirectory }
-                ?: dir.createDirectory(seg)
-                ?: return null
-        }
-        val existing = dir.findFile(fileName)
-        if (existing != null && existing.length() > 0L) return null
-        val target = existing ?: dir.createFile(mime, fileName) ?: return null
-        return context.contentResolver.openOutputStream(target.uri, "wt")
-    }
-
-    private fun fetch(
-        client: OkHttpClient,
-        url: String,
-        headers: Map<String, String>,
-        out: OutputStream,
-    ) {
-        val request = Request.Builder().url(url).get().apply {
-            headers.forEach { (k, v) -> header(k, v) }
-        }.build()
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
-            val body = response.body
-            body.byteStream().use { input -> input.copyTo(out) }
-        }
-    }
+    fun isDownloadPermissionGranted(context: Context): Boolean = OfflineFs.isReady(context)
 
     sealed interface SaveResult {
         data class Saved(val count: Int, val skipped: Int, val failed: Int) : SaveResult
         data class Error(val message: String) : SaveResult
     }
+
+    private fun toResult(o: OfflineDownloads.Outcome): SaveResult =
+        if (o.saved == 0 && o.skipped == 0 && o.failed > 0) {
+            SaveResult.Error(o.error ?: "Download failed.")
+        } else {
+            SaveResult.Saved(o.saved, o.skipped, o.failed)
+        }
 
     suspend fun saveOne(
         context: Context,
@@ -395,10 +425,17 @@ object SiteImageSaver {
         baseName: String,
         client: OkHttpClient = FapFolderNetwork.sharedOkHttpClient,
         headers: Map<String, String> = fapHeaders(),
-    ): SaveResult = withContext(Dispatchers.IO) {
-        saveBatch(context, listOf(url), segments, baseName, client, headers, onProgress = null)
-    }
+        title: String? = null,
+        sourceUrl: String? = null,
+    ): SaveResult = saveBatch(
+        context, listOf(url), segments, baseName, client, headers,
+        onProgress = null, title = title, sourceUrl = sourceUrl,
+    )
 
+    /**
+     * Queues the photos in the photo downloader (`Photos/<Site>/<channel or title>/`) and waits
+     * until they are written. The same job is visible in the photo "Downloading" tab.
+     */
     suspend fun saveBatch(
         context: Context,
         urls: List<String>,
@@ -407,48 +444,28 @@ object SiteImageSaver {
         client: OkHttpClient = FapFolderNetwork.sharedOkHttpClient,
         headers: Map<String, String> = fapHeaders(),
         onProgress: ((done: Int, total: Int) -> Unit)?,
-    ): SaveResult = withContext(Dispatchers.IO) {
+        title: String? = null,
+        sourceUrl: String? = null,
+    ): SaveResult {
         if (!isDownloadPermissionGranted(context)) {
-            return@withContext SaveResult.Error("Choose an image download folder first.")
+            return SaveResult.Error("Choose a download folder first.")
         }
-        var saved = 0
-        var skipped = 0
-        var failed = 0
-        var lastError: String? = null
-        val jobId = ImageDownloadTracker.start(segments.lastOrNull() ?: baseName, urls.size)
-        try {
-        val pad = urls.size.toString().length.coerceAtLeast(2)
-        urls.forEachIndexed { index, url ->
-            val ext = extensionOf(url)
-            val name = DownloadLayout.sanitize(baseName, "photo") +
-                    (if (urls.size > 1) "_" + (index + 1).toString().padStart(pad, '0') else "") +
-                    "." + ext
-            try {
-                val out = openOutput(context, segments, name, mimeOf(ext))
-                if (out == null) {
-                    skipped++
-                } else {
-                    try {
-                        out.use { fetch(client, url, headers, it) }
-                        saved++
-                    } catch (e: Exception) {
-                        failed++
-                        lastError = e.message
-                    }
-                }
-            } catch (e: Exception) {
-                failed++
-                lastError = e.message
-            }
-            ImageDownloadTracker.update(jobId, index + 1)
-            onProgress?.invoke(index + 1, urls.size)
-        }
-        if (saved == 0 && skipped == 0 && failed > 0) {
-            SaveResult.Error(lastError ?: "Download failed.")
-        } else SaveResult.Saved(saved, skipped, failed)
-        } finally {
-            ImageDownloadTracker.finish(jobId)
-        }
+        val layout = OfflineDownloads.layoutFor(segments, baseName)
+        val outcome = OfflineDownloads.enqueue(
+            OfflineDownloads.Request(
+                kind = OfflineKind.PHOTOS,
+                siteFolder = layout.siteFolder,
+                folder = layout.folder,
+                title = title ?: layout.folder,
+                channel = layout.channel,
+                urls = urls,
+                baseName = baseName,
+                sourceUrl = sourceUrl,
+            ),
+            client, headers,
+        ).await()
+        onProgress?.invoke(urls.size, urls.size)
+        return toResult(outcome)
     }
 
     fun saveBatchInBackground(
@@ -470,8 +487,8 @@ object SiteImageSaver {
     }
 
     /**
-     * Saves one gif / short clip into the image-download folder as `<Site>/Gifs/<creator>/<name>.mp4`.
-     * (The video scanner skips `Gifs` folders and the photo screen hides folders that hold videos.)
+     * Saves one gif / short clip with the shorts downloader:
+     * `Shorts/<Site>/<creator>/<id>.mp4` + thumbnail + json + `.nomedia`.
      */
     suspend fun saveGif(
         context: Context,
@@ -481,22 +498,42 @@ object SiteImageSaver {
         baseName: String,
         client: OkHttpClient,
         headers: Map<String, String>,
+        title: String? = null,
+        coverUrl: String? = null,
+        pageUrl: String? = null,
+        views: Long? = null,
+        durationSeconds: Int? = null,
+        tags: List<String> = emptyList(),
     ): Result<Unit> {
         if (url.substringBefore('?').lowercase().endsWith(".m3u8")) {
             return Result.failure(IOException("Streaming (HLS) clips can't be saved yet."))
         }
-        val segments = listOf(
-            DownloadLayout.siteFolderName(site) ?: site.name,
-            DownloadLayout.GIFS_FOLDER,
-            DownloadLayout.sanitize(creator, "Unknown"),
-        )
-        return when (val r = saveBatch(context, listOf(url), segments, baseName, client, headers, onProgress = null)) {
-            is SaveResult.Error -> Result.failure(IOException(r.message))
-            is SaveResult.Saved -> when {
-                r.saved > 0 -> Result.success(Unit)
-                r.skipped > 0 -> Result.failure(IOException("Already downloaded."))
-                else -> Result.failure(IOException("Download failed."))
-            }
+        if (!isDownloadPermissionGranted(context)) {
+            return Result.failure(IOException("Choose a download folder first."))
+        }
+        val folder = DownloadLayout.sanitize(creator, "Unknown")
+        val outcome = OfflineDownloads.enqueue(
+            OfflineDownloads.Request(
+                kind = OfflineKind.SHORTS,
+                siteFolder = DownloadLayout.siteFolderName(site) ?: "Hanime",
+                folder = folder,
+                title = title?.takeIf { it.isNotBlank() } ?: baseName,
+                channel = creator?.takeIf { it.isNotBlank() },
+                urls = listOf(url),
+                baseName = baseName,
+                coverUrl = coverUrl,
+                sourceUrl = pageUrl,
+                views = views,
+                durationSeconds = durationSeconds,
+                tags = tags,
+            ),
+            client, headers,
+        ).await()
+        return when {
+            outcome.saved > 0 -> Result.success(Unit)
+            outcome.skipped > 0 -> Result.failure(IOException("Already downloaded."))
+            outcome.paused -> Result.failure(IOException("Paused."))
+            else -> Result.failure(IOException(outcome.error ?: "Download failed."))
         }
     }
 

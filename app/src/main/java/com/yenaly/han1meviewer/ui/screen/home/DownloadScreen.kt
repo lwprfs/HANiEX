@@ -11,6 +11,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.SelectAll
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -98,8 +101,8 @@ fun DownloadScreen(
     var downloadedGroupExpandedState by rememberSaveable(stateSaver = intBooleanMapSaver()) {
         mutableStateOf(emptyMap())
     }
-    val downloadedLazyListState = rememberSaveable(saver = LazyListState.Saver) {
-        LazyListState()
+    val downloadedLazyListState = rememberSaveable(saver = androidx.compose.foundation.lazy.grid.LazyGridState.Saver) {
+        androidx.compose.foundation.lazy.grid.LazyGridState()
     }
     val scope = rememberCoroutineScope()
     var showCreateGroupDialog by remember { mutableStateOf(false) }
@@ -112,6 +115,7 @@ fun DownloadScreen(
     var sort by rememberSaveable { mutableStateOf(DownloadSort.DATE_DESC) }
     var showSearchBar by rememberSaveable { mutableStateOf(false) }
     var showSortMenu by remember { mutableStateOf(false) }
+    var pendingBatchDelete by remember { mutableStateOf<List<VideoWithCategories>?>(null) }
 
     val displayGroups = downloadedGroups.toDisplayGroups()
 
@@ -217,9 +221,20 @@ fun DownloadScreen(
         onLoadDownloaded()
     }
 
+    val allDownloadedItems = downloadedNodes.filterIsInstance<DownloadItemNode>()
+    val selectedDownloaded = allDownloadedItems.filter { it.data.video.id in selectedVideoIds }.map { it.data }
+
     HanimeScaffold(
-        title = stringResource(R.string.download),
-        onBack = onBack,
+        title = if (uiState.multiSelectMode) {
+            stringResource(R.string.offl_selected_fmt, selectedDownloaded.size, allDownloadedItems.size)
+        } else {
+            stringResource(R.string.download)
+        },
+        onBack = if (uiState.multiSelectMode) {
+            { handleEvent(DownloadEvent.OnToggleMultiSelect) }
+        } else {
+            onBack
+        },
         actions = {
             if (uiState.currentPage == 0) {
 
@@ -307,6 +322,37 @@ fun DownloadScreen(
                             contentDescription = stringResource(R.string.read_download_dir_title),
                         )
                     }
+                } else {
+                    FilledIconButton(onClick = {
+                        selectedVideoIds = if (selectedVideoIds.size == allDownloadedItems.size) {
+                            emptySet()
+                        } else {
+                            allDownloadedItems.map { it.data.video.id }.toSet()
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.SelectAll,
+                            contentDescription = stringResource(R.string.select_all),
+                        )
+                    }
+                    FilledIconButton(
+                        enabled = selectedDownloaded.isNotEmpty(),
+                        onClick = { handleEvent(DownloadEvent.OnBatchMoveRequest) },
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.DriveFileMove,
+                            contentDescription = stringResource(R.string.move_group),
+                        )
+                    }
+                    FilledIconButton(
+                        enabled = selectedDownloaded.isNotEmpty(),
+                        onClick = { pendingBatchDelete = selectedDownloaded },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = stringResource(R.string.delete),
+                        )
+                    }
                 }
             }
         },
@@ -378,6 +424,27 @@ fun DownloadScreen(
             }
         }
     }
+
+    pendingBatchDelete?.let { videos ->
+        ConfirmDialog(
+            visible = true,
+            title = stringResource(R.string.delete),
+            message = stringResource(R.string.confirm_delete_videos, videos.size),
+            confirmText = stringResource(R.string.confirm),
+            dismissText = stringResource(R.string.cancel),
+            onConfirm = {
+                handleEvent(DownloadEvent.OnBatchDelete(videos))
+                pendingBatchDelete = null
+                multiSelectMode = false
+                selectedVideoIds = emptySet()
+            },
+            onDismiss = { pendingBatchDelete = null },
+        )
+    }
+
+    com.yenaly.han1meviewer.ui.screen.library.offline.OfflineMigrationGate(
+        onMigrated = { onLoadDownloaded() },
+    )
 
     if (pendingBatchMove) {
         val selectedVideos = downloadedNodes

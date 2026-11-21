@@ -6,6 +6,8 @@ import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.WatchLater
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.yenaly.han1meviewer.R
@@ -43,5 +45,15 @@ enum class ContentLibraryEntry(
         icon = Icons.Filled.Download,
         titleRes = R.string.download,
         descriptionRes = R.string.content_library_download_desc,
+    ),
+    PhotoDownloads(
+        icon = Icons.Filled.PhotoLibrary,
+        titleRes = R.string.hub_image_downloads,
+        descriptionRes = R.string.hub_image_downloads_desc,
+    ),
+    ShortDownloads(
+        icon = Icons.Filled.PlayCircle,
+        titleRes = R.string.hub_gif_downloads,
+        descriptionRes = R.string.hub_gif_downloads_desc,
     ),
 }

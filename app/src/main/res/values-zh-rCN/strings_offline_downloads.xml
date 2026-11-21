@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="offline_pick_download_folder">请先在下载设置中选择下载文件夹。</string>
+    <string name="offl_photos_title">图片</string>
+    <string name="offl_shorts_title">短视频 / GIF</string>
+    <string name="offl_empty_photos">还没有下载图片</string>
+    <string name="offl_empty_shorts">还没有下载短视频 / GIF</string>
+    <string name="offl_empty_downloading">没有正在下载的内容</string>
+    <string name="offl_selected_fmt">已选 %1$d / %2$d</string>
+    <string name="offl_items_fmt">%d 项</string>
+    <string name="offl_photos_fmt">%d 张</string>
+    <string name="offl_play">播放</string>
+    <string name="offl_view_photos">查看图片</string>
+    <string name="offl_details">详情</string>
+    <string name="offl_detail_site">站点</string>
+    <string name="offl_detail_channel">频道</string>
+    <string name="offl_detail_size">大小</string>
+    <string name="offl_detail_added">下载时间</string>
+    <string name="offl_detail_duration">时长</string>
+    <string name="offl_detail_views">播放量</string>
+    <string name="offl_detail_likes">点赞</string>
+    <string name="offl_detail_tags">标签</string>
+    <string name="offl_detail_source">来源</string>
+    <string name="offl_detail_quality">清晰度</string>
+    <string name="offl_detail_code">编号</string>
+    <string name="offl_detail_group">分组</string>
+    <string name="offl_group_name_hint">分组名称</string>
+    <string name="offl_new_group">新建分组</string>
+    <string name="offl_rename_group">重命名分组</string>
+    <string name="offl_delete_group">删除分组</string>
+    <string name="offl_move_to_group">移动到分组</string>
+    <string name="offl_confirm_delete_items">要从设备中删除 %d 项吗?</string>
+    <string name="offl_confirm_cancel_task">取消此下载并删除已保存的部分吗?</string>
+    <string name="offl_task_queued">排队中</string>
+    <string name="offl_task_failed">失败,点按重试</string>
+    <string name="offl_task_done">完成</string>
+    <string name="offl_task_progress_photos">%1$d / %2$d 张</string>
+    <string name="offl_search_hint">搜索下载…</string>
+    <string name="offl_refresh">刷新</string>
+    <string name="offl_photo_counter">%1$d / %2$d</string>
+    <string name="offl_delete_photo">删除这张图片</string>
+    <string name="offl_not_found">找不到文件</string>
+    <string name="offl_migrate_title">更新下载文件夹结构</string>
+    <string name="offl_migrate_message">你的下载使用的是旧的文件夹结构。是否迁移到新结构(Videos / Photos / Shorts → 站点 → 标题)以避免出现问题?
+
+发现:视频文件夹 %1$d 个,图片相册 %2$d 个,短视频文件夹 %3$d 个。</string>
+    <string name="offl_migrate_action">迁移</string>
+    <string name="offl_migrate_later">稍后</string>
+    <string name="offl_migrating">正在迁移下载内容…请保持应用打开。</string>
+    <string name="offl_migrate_done">已将 %d 个文件夹迁移到新结构。</string>
+    <string name="offl_migrate_partial">已迁移 %1$d 个文件夹,%2$d 个失败。可稍后重试。</string>
+    <string name="offl_video_popup_title">视频详情</string>
+</resources>

@@ -129,7 +129,5 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
         subscriptionSections = listOf(subscription),
         profileExtraQuickActions = listOf(account),
         customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navController, SiteType.REDGIFS)),
-        includeDownloads = false,
-        includeImageDownloads = false,
     )
 }

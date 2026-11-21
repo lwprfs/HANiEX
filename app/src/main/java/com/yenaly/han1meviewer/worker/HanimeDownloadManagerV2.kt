@@ -308,6 +308,7 @@ object HanimeDownloadManagerV2 {
         redownload: Boolean = false,
         @Suppress("UNUSED_PARAMETER") waiting: Boolean = false,
     ) {
+        com.yenaly.han1meviewer.util.DownloadFolderRegistry.ensure(args.videoCode, args.hanimeName)
         downloadChannel.trySend(DownloadMsg.Add(args, redownload))
     }
 

@@ -99,6 +99,11 @@ internal class XHamsterShortsSource(private val referer: String) : SiteShortsSou
             url = short.videoUrl,
             creator = creator,
             baseName = short.id,
+            title = short.title,
+            coverUrl = short.coverUrl,
+            pageUrl = short.pageUrl.ifBlank { null },
+            views = short.views,
+            durationSeconds = short.durationSeconds,
             client = XHamsterNetwork.streamClient,
             headers = mapOf("Referer" to com.yenaly.han1meviewer.XHamster.common.XHamsterConstants.REFERER),
         )

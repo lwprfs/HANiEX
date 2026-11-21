@@ -446,7 +446,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                             str(R.string.redgifs_following), R.drawable.ic_video_person_24,
                             RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name), rgLoggedIn, RedGifsLoginRoute,
                         ),
-                        entry(str(R.string.hub_gif_downloads), R.drawable.ic_baseline_image_24, GifDownloadsRoute),
                     ),
                 ),
                 SiteDrawerSection(
@@ -499,7 +498,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(
                     entry(str(R.string.watch_history), history, BuonduaHistoryRoute),
-                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
                 ),
             ),
             SiteDrawerSection(
@@ -565,8 +563,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     gatedEntry(str(R.string.xhamster_liked_videos), R.drawable.ic_baseline_thumb_up_alt_24, XHamsterLibraryRoute("LIKED"), loggedIn, XHamsterAccountRoute),
                     gatedEntry(str(R.string.xhamster_playlists), R.drawable.ic_drawer_category, XHamsterLibraryRoute("PLAYLISTS"), loggedIn, XHamsterAccountRoute),
                     gatedEntry(str(R.string.xhamster_my_subscriptions), R.drawable.ic_subscribtion, XHamsterLibraryRoute("SUBSCRIPTIONS"), loggedIn, XHamsterAccountRoute),
-                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
-                    entry(str(R.string.hub_gif_downloads), R.drawable.ic_baseline_image_24, GifDownloadsRoute),
                 ),
             ),
             SiteDrawerSection(
@@ -611,7 +607,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(
                     entry(str(R.string.watch_history), history, CosplayteleHistoryRoute),
-                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
                 ),
             ),
             SiteDrawerSection(
@@ -652,7 +647,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(
                     entry(str(R.string.watch_history), history, CoserHistoryRoute),
-                    entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
                 ),
             ),
             SiteDrawerSection(
@@ -670,6 +664,8 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
 
 private fun appEntries(context: Context): List<SiteDrawerEntry> = listOf(
     entry(context.getString(R.string.download), R.drawable.ic_baseline_download_24, DownloadRoute),
+    entry(context.getString(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
+    entry(context.getString(R.string.hub_gif_downloads), R.drawable.ic_baseline_image_24, GifDownloadsRoute),
     entry(context.getString(R.string.settings), R.drawable.ic_baseline_settings_24, HomeSettingsRoute),
     entry(context.getString(R.string.player_settings), R.drawable.baseline_player_24, PlayerSettingsRoute),
     entry(context.getString(R.string.network_settings), R.drawable.baseline_mobile_data_24, NetworkSettingsRoute),

@@ -277,5 +277,9 @@ private fun ContentLibraryDetailPane(
             onNavigateToVideo = onNavigateToVideo,
             onNavigateToLocalVideo = onNavigateToLocalVideo,
         )
+
+        ContentLibraryEntry.PhotoDownloads -> ImageDownloadsScreen(onBack = onBack)
+
+        ContentLibraryEntry.ShortDownloads -> GifDownloadsScreen(onBack = onBack)
     }
 }

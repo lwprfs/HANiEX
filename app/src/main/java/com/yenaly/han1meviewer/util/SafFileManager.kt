@@ -380,4 +380,10 @@ object SafFileManager {
             dir.delete()
         }.onFailure { Log.w("SafFileManager", "delete SAF folder failed", it) }
     }
+
+    /** Deletes a video's folder and forgets its registered `Videos/<Site>/<title>` path. */
+    fun deleteVideoFolderAndForget(context: Context, videoCode: String) {
+        deleteDownloadVideoFolder(context, videoCode)
+        DownloadFolderRegistry.remove(videoCode)
+    }
 }

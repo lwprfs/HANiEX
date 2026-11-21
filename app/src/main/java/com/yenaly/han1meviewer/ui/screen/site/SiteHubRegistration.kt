@@ -412,8 +412,8 @@ fun standardSiteHubConfig(
     extraLibrarySections: List<SiteHubSection> = emptyList(),
     profileExtraQuickActions: List<SiteHubEntry> = emptyList(),
     includeDownloads: Boolean = true,
-    includeImageDownloads: Boolean = site in IMAGE_DOWNLOAD_SITES,
-    includeGifDownloads: Boolean = site == SiteType.XHAMSTER || site == SiteType.REDGIFS,
+    includeImageDownloads: Boolean = true,
+    includeGifDownloads: Boolean = true,
     customizeExtras: (LazyListScope.() -> Unit)? = null,
     subscriptionContent: (@Composable () -> Unit)? = null,
 ): SiteHubConfig {

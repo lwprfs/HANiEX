@@ -89,6 +89,12 @@ internal object RedGifsShortsSource : SiteShortsSource {
             url = short.videoUrl,
             creator = creator ?: RedGifsRepo.cachedGif(short.id)?.userName,
             baseName = short.id,
+            title = short.title,
+            coverUrl = short.coverUrl,
+            pageUrl = short.pageUrl.ifBlank { null },
+            views = short.views,
+            durationSeconds = short.durationSeconds,
+            tags = RedGifsRepo.cachedGif(short.id)?.tags.orEmpty().take(12),
             client = RedGifsNetwork.streamClient,
             headers = mapOf(
                 "Referer" to com.yenaly.han1meviewer.RedGifs.common.RedGifsConstants.REFERER,
