@@ -7,6 +7,7 @@ import androidx.core.content.edit
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.util.applicationContext
 
 object SitePlayerSettings {
@@ -106,6 +107,9 @@ object SitePlayerSettings {
     const val ID_SHOW_FULLSCREEN_BUTTON = "show_fullscreen_button"
     const val ID_SHOW_SKIP_BUTTONS = "show_skip_buttons"
     const val ID_SHOW_REMAINING = "show_remaining_time"
+    const val ID_PIN_VIDEO = "pin_video_to_top"
+    const val ID_AUTO_PIP = "auto_pip"
+    const val ID_PINCH_ZOOM = "pinch_zoom"
 
     private val speedOptions = listOf(
         "0.5x" to "0.5", "0.75x" to "0.75", "1.0x" to "1.0", "1.25x" to "1.25",
@@ -152,6 +156,15 @@ object SitePlayerSettings {
         Spec.Switch(
             ID_STRETCH, applicationContext.getString(R.string.site_player_stretch_title), applicationContext.getString(R.string.site_player_stretch_summary),
         ) { false },
+        Spec.Switch(
+            ID_PIN_VIDEO, applicationContext.getString(R.string.site_player_pin_video_title), applicationContext.getString(R.string.site_player_pin_video_summary),
+        ) { Preferences.pinVideoToTop },
+        Spec.Switch(
+            ID_AUTO_PIP, applicationContext.getString(R.string.site_player_auto_pip_title), applicationContext.getString(R.string.site_player_auto_pip_summary),
+        ) { Preferences.allowPipMode },
+        Spec.Switch(
+            ID_PINCH_ZOOM, applicationContext.getString(R.string.site_player_pinch_zoom_title), applicationContext.getString(R.string.site_player_pinch_zoom_summary),
+        ) { Preferences.pinchZoomFullscreen },
 
         Spec.Switch(
             ID_GESTURES, applicationContext.getString(R.string.site_player_gestures_title), applicationContext.getString(R.string.site_player_gestures_summary),
@@ -217,6 +230,7 @@ object SitePlayerSettings {
         get() = listOf(
         applicationContext.getString(R.string.site_player_group_playback) to listOf(
             ID_AUTO_PLAY, ID_RESUME, ID_DEFAULT_SPEED, ID_DEFAULT_QUALITY, ID_KEEP_SCREEN_ON, ID_STRETCH,
+            ID_PIN_VIDEO, ID_AUTO_PIP, ID_PINCH_ZOOM,
         ),
         applicationContext.getString(R.string.site_player_group_gestures) to listOf(
             ID_GESTURES, ID_GESTURE_SEEK, ID_GESTURE_BRIGHTNESS, ID_GESTURE_VOLUME, ID_SLIDE_SENSITIVITY,
@@ -265,7 +279,11 @@ object SitePlayerSettings {
 
     fun spec(id: String): Spec? = specs.firstOrNull { it.id == id }
 
+    // RedGifs only has a vertical shorts feed: no video page to pin, no picture-in-picture, no zoom.
+    private val feedOnlyHiddenIds = setOf(ID_PIN_VIDEO, ID_AUTO_PIP, ID_PINCH_ZOOM)
+
     fun specsFor(site: SiteType): List<Spec> = specs.filter {
+        if (site == SiteType.REDGIFS && it.id in feedOnlyHiddenIds) return@filter false
         val only = (it as? Spec.Choice)?.onlySites
         only == null || site in only
     }
@@ -302,7 +320,13 @@ object SitePlayerSettings {
         if (isSynced(site)) separate(site)
         Preferences.preferenceSp.edit {
             specsFor(site).filterIsInstance<Spec.Switch>().forEach {
-                putString(key(site, it.id), enabled.toString())
+                val value = if (it.id == ID_AUTO_PIP && enabled) {
+                    PipSupport.isSupported(applicationContext) &&
+                            PipSupport.isPermissionGranted(applicationContext)
+                } else {
+                    enabled
+                }
+                putString(key(site, it.id), value.toString())
             }
         }
         revision++
@@ -325,6 +349,25 @@ object SitePlayerSettings {
     }
 
     private fun bool(site: SiteType, id: String) = getString(site, id).toBooleanStrictOrNull() ?: true
+
+    /** True when auto picture-in-picture is switched on for the app or for any site with its own settings. */
+    fun isAutoPipEnabledAnywhere(): Boolean {
+        if (Preferences.allowPipMode) return true
+        return configurableSites.any {
+            !isSynced(it) &&
+                    getString(it, ID_AUTO_PIP).toBooleanStrictOrNull() == true
+        }
+    }
+
+    /** Switches auto picture-in-picture off for the app and for every site that keeps its own settings. */
+    fun disableAutoPipEverywhere() {
+        val separated = configurableSites.filter { !isSynced(it) }
+        Preferences.preferenceSp.edit {
+            putBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, false)
+            separated.forEach { putString(key(it, ID_AUTO_PIP), "false") }
+        }
+        revision++
+    }
     private fun int(site: SiteType, id: String, def: Int) = getString(site, id).toIntOrNull() ?: def
     private fun float(site: SiteType, id: String, def: Float) =
         getString(site, id).toFloatOrNull() ?: def
@@ -362,6 +405,9 @@ object SitePlayerSettings {
             showFullscreenButton = bool(site, ID_SHOW_FULLSCREEN_BUTTON),
             showSkipButtons = getString(site, ID_SHOW_SKIP_BUTTONS).toBooleanStrictOrNull() ?: false,
             showRemainingTime = getString(site, ID_SHOW_REMAINING).toBooleanStrictOrNull() ?: false,
+            pinVideo = getString(site, ID_PIN_VIDEO).toBooleanStrictOrNull() ?: false,
+            autoPip = getString(site, ID_AUTO_PIP).toBooleanStrictOrNull() ?: false,
+            pinchZoom = getString(site, ID_PINCH_ZOOM).toBooleanStrictOrNull() ?: false,
         )
     }
 }
@@ -396,4 +442,7 @@ data class SitePlayerConfig(
     val showFullscreenButton: Boolean = true,
     val showSkipButtons: Boolean = false,
     val showRemainingTime: Boolean = false,
+    val pinVideo: Boolean = false,
+    val autoPip: Boolean = false,
+    val pinchZoom: Boolean = false,
 )

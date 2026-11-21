@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_player_pin_video_title">影片置頂懸浮</string>
+    <string name="site_player_pin_video_summary">播放時在影片頁往下捲動，影片會變成帶關閉按鈕的懸浮小視窗；暫停時不會觸發。預設關閉</string>
+    <string name="site_player_auto_pip_title">自動畫中畫</string>
+    <string name="site_player_auto_pip_summary">播放時從影片頁退到桌面，自動進入畫中畫（需要開啟畫中畫權限）。預設關閉</string>
+    <string name="site_player_pinch_zoom_title">雙指縮放畫面</string>
+    <string name="site_player_pinch_zoom_summary">全螢幕時可用雙指縮放影片畫面，不會記住縮放位置。預設關閉</string>
+    <string name="player_pin_close">關閉懸浮播放器</string>
+    <string name="pip_permission_revoked_title">畫中畫已關閉</string>
+    <string name="pip_permission_revoked_message">系統中的畫中畫權限已被關閉，因此已自動停用自動畫中畫。重新授予權限後，可在播放器設定中再次開啟。</string>
+    <string name="pip_permission_needed">需要畫中畫權限。請在剛打開的設定頁允許後，再次開啟此選項。</string>
+</resources>

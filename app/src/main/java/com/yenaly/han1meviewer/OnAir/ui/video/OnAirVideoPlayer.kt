@@ -72,6 +72,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomGestures
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomLayer
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -130,6 +132,15 @@ fun OnAirVideoPlayer(
     val context = LocalContext.current
     val playerConfig = com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
         .config(com.yenaly.han1meviewer.SiteType.ONAIR)
+    val hideChrome = com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact.current ||
+            com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
+    val zoomState = remember { com.yenaly.han1meviewer.ui.component.player.PinchZoomState() }
+    // The video is a SurfaceView here; scaling it is only reliable from Android 10.
+    val zoomEnabled = isFullscreen && playerConfig.pinchZoom &&
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+    LaunchedEffect(isFullscreen) {
+        if (!isFullscreen) zoomState.reset()
+    }
     var showControls by remember { mutableStateOf(true) }
     var interaction by remember { mutableIntStateOf(0) }
     var playbackState by remember(player) { mutableIntStateOf(player.playbackState) }
@@ -340,7 +351,8 @@ fun OnAirVideoPlayer(
     Box(
         modifier = containerModifier
             .background(Color.Black)
-            .clipToBounds(),
+            .clipToBounds()
+            .pinchZoomGestures(zoomState, zoomEnabled),
         contentAlignment = Alignment.Center,
     ) {
         if (!url.isNullOrBlank()) {
@@ -353,7 +365,9 @@ fun OnAirVideoPlayer(
                         )
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (zoomEnabled) Modifier.pinchZoomLayer(zoomState) else Modifier),
                 update = { view ->
                     if (view.childCount == 0) {
                         val surfaceView = android.view.SurfaceView(view.context).apply {
@@ -432,7 +446,7 @@ fun OnAirVideoPlayer(
                 }
             }
 
-            if (!state.isSwitchLoading && !streamError &&
+            if (!state.isSwitchLoading && !streamError && !hideChrome &&
                 state.playbackIntent != PlaybackIntent.NotStarted
             ) {
                 val orderedQualities = remember(state.streamsByQuality) {

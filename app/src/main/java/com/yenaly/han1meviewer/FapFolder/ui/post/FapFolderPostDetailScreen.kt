@@ -78,6 +78,14 @@ fun FapFolderPostDetailScreen(
     val listState = rememberLazyListState()
 
     var playing by remember(slugOrId) { mutableStateOf(false) }
+    var videoPlaying by remember(slugOrId) { mutableStateOf(false) }
+    val inPip = com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
+    com.yenaly.han1meviewer.ui.component.player.SitePipEffect(
+        site = com.yenaly.han1meviewer.SiteType.FAPFOLDER,
+        isPlaying = playing && videoPlaying,
+    )
+    val fapPlayerConfig = com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+        .config(com.yenaly.han1meviewer.SiteType.FAPFOLDER)
     var imageViewerPayload by remember {
         mutableStateOf<Pair<List<FapFolderMedia.Image>, Int>?>(null)
     }
@@ -121,7 +129,7 @@ fun FapFolderPostDetailScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
+            if (!inPip) SiteTopAppBar(
                 title = {
                     Text(
                         text = if (uiState.post?.primaryVideo != null) stringResource(R.string.video) else stringResource(R.string.fap_post),
@@ -163,12 +171,17 @@ fun FapFolderPostDetailScreen(
                     if (video != null) {
                         CollapsingPlayerLayout(
                             modifier = Modifier.fillMaxSize(),
+                            pip = inPip,
+                            pinEnabled = fapPlayerConfig.pinVideo,
+                            pinActive = playing && videoPlaying,
+                            onPinClose = { playing = false },
                             player = {
                                 InlineVideoSlot(
                                     post = post,
                                     video = video,
                                     playing = playing,
                                     onPlayingChange = { playing = it },
+                                    onPlayingChanged = { videoPlaying = it },
                                     onPrevious = FapFolderVideoPlaylist.previous(slugOrId)
                                         ?.let { id -> { onReplaceVideo(id) } },
                                     onNext = FapFolderVideoPlaylist.next(slugOrId)

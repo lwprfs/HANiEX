@@ -232,7 +232,13 @@ object Preferences {
         get() = SiteNetworkPrefs.baseUrl(SiteType.ONAIR)
 
     val allowPipMode: Boolean
-        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, true)
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, false)
+
+    val pinVideoToTop: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.PIN_VIDEO_TO_TOP, false)
+
+    val pinchZoomFullscreen: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.PINCH_ZOOM_FULLSCREEN, false)
 
     val switchPlayerKernel: String
         get() = preferenceSp.getString(

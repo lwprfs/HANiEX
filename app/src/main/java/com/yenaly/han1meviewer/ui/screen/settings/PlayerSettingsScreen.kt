@@ -32,6 +32,9 @@ data class PlayerSettingsUiState(
     val longPressSpeedTimesLabel: String,
     val slideSensitivity: Int,
     val slideSensitivitySummary: String,
+    val pinVideoToTop: Boolean = false,
+    val allowPipMode: Boolean = false,
+    val pinchZoom: Boolean = false,
 )
 
 private enum class PlayerChoiceDialog {
@@ -52,6 +55,9 @@ fun PlayerSettingsScreen(
     onLongPressSpeedChange: (String) -> Unit,
     onSlideSensitivityChange: (Int) -> Unit,
     onOpenMpvSettings: () -> Unit,
+    onPinVideoChange: (Boolean) -> Unit = {},
+    onAllowPipModeChange: (Boolean) -> Unit = {},
+    onPinchZoomChange: (Boolean) -> Unit = {},
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<PlayerChoiceDialog?>(null) }
 
@@ -122,6 +128,36 @@ fun PlayerSettingsScreen(
                 checked = state.showBottomProgress,
                 iconRes = R.drawable.baseline_seek_24,
                 onCheckedChange = onShowBottomProgressChange,
+            )
+        }
+
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.site_player_pin_video_title),
+                summary = stringResource(R.string.site_player_pin_video_summary),
+                checked = state.pinVideoToTop,
+                iconRes = R.drawable.ic_settings_aspect_ratio_24,
+                onCheckedChange = onPinVideoChange,
+            )
+        }
+
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.site_player_auto_pip_title),
+                summary = stringResource(R.string.site_player_auto_pip_summary),
+                checked = state.allowPipMode,
+                iconRes = R.drawable.ic_pip_mode,
+                onCheckedChange = onAllowPipModeChange,
+            )
+        }
+
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.site_player_pinch_zoom_title),
+                summary = stringResource(R.string.site_player_pinch_zoom_summary),
+                checked = state.pinchZoom,
+                iconRes = R.drawable.ic_settings_touch_app_24,
+                onCheckedChange = onPinchZoomChange,
             )
         }
 

@@ -37,6 +37,9 @@ import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.yenaly.han1meviewer.ui.component.player.PinchZoomState
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomGestures
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomLayer
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -229,12 +232,19 @@ fun HanimeVideoPlayer(
         showControls = true
     }
 
+    val zoomState = remember { PinchZoomState() }
+    val zoomEnabled = isFullscreen && Preferences.pinchZoomFullscreen
+    LaunchedEffect(isFullscreen) {
+        if (!isFullscreen) zoomState.reset()
+    }
+
     Box(
         modifier = modifier
             .background(Color.Black)
 
             .clipToBounds()
             .onGloballyPositioned { playerRootCoords = it }
+            .pinchZoomGestures(zoomState, zoomEnabled)
             .playerGestures(
                 enabled = true,
                 dragEnabled = !uiState.isGestureLocked && !speedBoostActive,
@@ -280,7 +290,9 @@ fun HanimeVideoPlayer(
             0f
         }
         Box(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .then(if (zoomEnabled) Modifier.pinchZoomLayer(zoomState) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
             playerSurface(

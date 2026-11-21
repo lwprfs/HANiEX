@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.FapFolder.ui.video
 
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomLayer
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomGestures
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import com.yenaly.han1meviewer.util.PlayerOrientation
@@ -172,6 +175,7 @@ fun FapFolderVideoPlayerScreen(
     minInlineAspect: Float = 0f,
     onPrevious: (() -> Unit)? = null,
     onNext: (() -> Unit)? = null,
+    onPlayingChanged: (Boolean) -> Unit = {},
 ) {
     val context = LocalContext.current
     val activity = context as? Activity
@@ -203,6 +207,21 @@ fun FapFolderVideoPlayerScreen(
     var controlsLocked by remember { mutableStateOf(false) }
     var controlsInteractionTick by remember { mutableLongStateOf(0L) }
     var isFullscreen by remember { mutableStateOf(false) }
+    val currentOnPlayingChanged by androidx.compose.runtime.rememberUpdatedState(onPlayingChanged)
+    LaunchedEffect(isPlaying) { currentOnPlayingChanged(isPlaying) }
+    DisposableEffect(Unit) { onDispose { currentOnPlayingChanged(false) } }
+    // Floating mini player / picture-in-picture show the picture only, without controls.
+    val hideChrome = com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact.current ||
+            com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
+    val zoomState = remember { com.yenaly.han1meviewer.ui.component.player.PinchZoomState() }
+    // The video is a SurfaceView here; scaling it is only reliable from Android 10.
+    val zoomEnabled = isFullscreen &&
+            com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+                .config(com.yenaly.han1meviewer.SiteType.FAPFOLDER).pinchZoom &&
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+    LaunchedEffect(isFullscreen) {
+        if (!isFullscreen) zoomState.reset()
+    }
     var mpvUrl by remember(playerKey) { mutableStateOf<String?>(null) }
     val fitState = remember { VideoFitState().also { it.aspect = initialAspect } }
     var stretched by rememberSaveable { mutableStateOf(com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings.config(com.yenaly.han1meviewer.SiteType.FAPFOLDER).stretchFullscreen) }
@@ -655,7 +674,9 @@ fun FapFolderVideoPlayerScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black),
+                .background(Color.Black)
+                .then(if (zoomEnabled) Modifier.clipToBounds() else Modifier)
+                .pinchZoomGestures(zoomState, zoomEnabled),
         ) {
             if (!isReady || (playbackError == null && isBuffering)) {
                 val poster: String? = video.posterUrl ?: coverUrl
@@ -707,7 +728,15 @@ fun FapFolderVideoPlayerScreen(
                         installVideoFit(this, surface, fitState)
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(
+                        if (zoomEnabled) {
+                            Modifier.pinchZoomLayer(zoomState)
+                        } else {
+                            Modifier
+                        },
+                    ),
                 update = { frame ->
                     val view = frame.getChildAt(0) as? SurfaceView ?: return@AndroidView
                     surfaceRef.value = view
@@ -756,7 +785,7 @@ fun FapFolderVideoPlayerScreen(
                 }
             }
 
-            if (playbackError == null) {
+            if (playbackError == null && !hideChrome) {
                 com.yenaly.han1meviewer.ui.component.player.SitePlayerOverlay(
                     config = com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
                         .config(com.yenaly.han1meviewer.SiteType.FAPFOLDER),

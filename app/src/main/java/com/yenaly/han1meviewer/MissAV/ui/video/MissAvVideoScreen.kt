@@ -575,9 +575,15 @@ fun MissAvVideoScreen(
 
     BackHandler(enabled = isFullscreen) { exitFullscreen() }
 
+    val inPip = com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
+    com.yenaly.han1meviewer.ui.component.player.SitePipEffect(
+        site = com.yenaly.han1meviewer.SiteType.MISSAV,
+        isPlaying = isPlaying,
+    )
+
     Scaffold(
         topBar = {
-            SiteTopAppBar(
+            if (!inPip) SiteTopAppBar(
                 title = { Text(stringResource(R.string.video), maxLines = 1) },
                 navigationIcon = { SiteBackWithHomeButton(onBack = onBack) },
                 actions = {
@@ -603,6 +609,14 @@ fun MissAvVideoScreen(
                 val videoPageUrl = baseUrl.trimEnd('/') + normalizedPath
 
                 CollapsingPlayerLayout(
+                    pip = inPip,
+                    pinEnabled = com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+                        .config(com.yenaly.han1meviewer.SiteType.MISSAV).pinVideo,
+                    pinActive = isPlaying,
+                    onPinClose = {
+                        exoPlayer?.playWhenReady = false
+                        isPlaying = false
+                    },
                     modifier = modifier
                         .fillMaxSize()
                         .padding(paddingValues),

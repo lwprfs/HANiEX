@@ -98,6 +98,11 @@ fun OnAirVideoScreen(
     val playerState by viewModel.playerState.collectAsStateWithLifecycle()
     val showResumeBanner by viewModel.showResumeBanner.collectAsStateWithLifecycle()
     val resumePosition by viewModel.resumePosition.collectAsStateWithLifecycle()
+    val inPip = com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
+    com.yenaly.han1meviewer.ui.component.player.SitePipEffect(
+        site = com.yenaly.han1meviewer.SiteType.ONAIR,
+        isPlaying = playerState.playbackIntent == PlaybackIntent.Playing,
+    )
 
     val context = LocalContext.current
     val exoPlayer = remember { com.yenaly.han1meviewer.ui.component.player.createSitePlayer(context) }
@@ -121,7 +126,9 @@ fun OnAirVideoScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP) {
-                if (viewModel.playerState.value.playbackIntent == PlaybackIntent.Playing) {
+                if (!com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip &&
+                    viewModel.playerState.value.playbackIntent == PlaybackIntent.Playing
+                ) {
                     viewModel.pausePlayback()
                 }
                 viewModel.persistProgress()
@@ -260,7 +267,7 @@ fun OnAirVideoScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
+            if (!inPip) SiteTopAppBar(
                 title = {
                     val title = (state as? VideoLoadingState.Success)?.info?.title ?: stringResource(R.string.video)
                     Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -303,6 +310,10 @@ fun OnAirVideoScreen(
             is VideoLoadingState.Success -> {
                 val detail = s.info
                 CollapsingPlayerLayout(
+                    pip = inPip,
+                    pinEnabled = onAirConfig.pinVideo,
+                    pinActive = playerState.playbackIntent == PlaybackIntent.Playing,
+                    onPinClose = { viewModel.pausePlayback() },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
@@ -339,7 +350,9 @@ fun OnAirVideoScreen(
                         )
 
                         val activeUrl = playerState.activeUrl
-                        if (!activeUrl.isNullOrBlank()) {
+                        if (!activeUrl.isNullOrBlank() && !inPip &&
+                            !com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact.current
+                        ) {
                             OnAirStreamUrlBar(
                                 url = activeUrl,
                                 quality = playerState.currentQuality,

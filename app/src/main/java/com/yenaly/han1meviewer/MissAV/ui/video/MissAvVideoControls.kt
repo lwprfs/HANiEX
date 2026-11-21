@@ -72,6 +72,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clipToBounds
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomGestures
+import com.yenaly.han1meviewer.ui.component.player.pinchZoomLayer
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -258,6 +261,16 @@ fun MissAvVideoPlayer(
     val playerConfig = com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
         .config(com.yenaly.han1meviewer.SiteType.MISSAV)
 
+    val hideChrome = com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact.current ||
+            com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
+    val zoomState = remember { com.yenaly.han1meviewer.ui.component.player.PinchZoomState() }
+    // The video is a SurfaceView here; scaling it is only reliable from Android 10.
+    val zoomEnabled = isFullscreen && playerConfig.pinchZoom &&
+            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
+    LaunchedEffect(isFullscreen) {
+        if (!isFullscreen) zoomState.reset()
+    }
+
     var isBuffering by remember { mutableStateOf(false) }
     var playingHeight by remember { mutableStateOf(0) }
     var hasRenderedFirstFrame by remember { mutableStateOf(false) }
@@ -311,7 +324,10 @@ fun MissAvVideoPlayer(
     }
 
     Box(
-        modifier = surfaceModifier.background(Color.Black),
+        modifier = surfaceModifier
+            .background(Color.Black)
+            .then(if (zoomEnabled) Modifier.clipToBounds() else Modifier)
+            .pinchZoomGestures(zoomState, zoomEnabled),
         contentAlignment = Alignment.Center,
     ) {
         if (playerStarted && currentUrl.isNotEmpty()) {
@@ -363,7 +379,9 @@ fun MissAvVideoPlayer(
 
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (zoomEnabled) Modifier.pinchZoomLayer(zoomState) else Modifier),
                 update = { frame ->
                     fitState.stretched = stretched && isFullscreen
                     lastSurfaceView?.let { fitVideoSurface(frame, it, fitState) }
@@ -379,7 +397,7 @@ fun MissAvVideoPlayer(
                 },
             )
 
-            if (showResumeButton && !isPlaying) {
+            if (showResumeButton && !isPlaying && !hideChrome) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -431,7 +449,7 @@ fun MissAvVideoPlayer(
                 }
             }
 
-            if (!showResumeButton) {
+            if (!showResumeButton && !hideChrome) {
                 val realQualities = remember(qualityMap) {
                     qualityMap.entries.distinctBy { it.value }.map { it.key }
                         .filter { it != QUALITY_UNAVAILABLE }

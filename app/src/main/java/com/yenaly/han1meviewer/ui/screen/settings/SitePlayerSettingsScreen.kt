@@ -65,6 +65,9 @@ private fun specIcon(id: String): Int = when (id) {
     SitePlayerSettings.ID_SHOW_LOCK_BUTTON -> R.drawable.ic_settings_lock_24
     SitePlayerSettings.ID_SHOW_FULLSCREEN_BUTTON -> R.drawable.ic_settings_fullscreen_24
     SitePlayerSettings.ID_SHOW_SKIP_BUTTONS -> R.drawable.ic_settings_skip_next_24
+    SitePlayerSettings.ID_AUTO_PIP -> R.drawable.ic_pip_mode
+    SitePlayerSettings.ID_PINCH_ZOOM -> R.drawable.ic_settings_touch_app_24
+    SitePlayerSettings.ID_PIN_VIDEO -> R.drawable.ic_settings_aspect_ratio_24
     else -> R.drawable.ic_baseline_settings_24
 }
 
@@ -100,6 +103,10 @@ fun SitePlayerSettingsScreen(site: SiteType, modifier: Modifier = Modifier) {
     val synced = SitePlayerSettings.isSynced(site)
     var dialogSpec by rememberSaveable { mutableStateOf<String?>(null) }
     var showCustomize by rememberSaveable { mutableStateOf(false) }
+
+    val pipToggle = com.yenaly.han1meviewer.ui.component.player.rememberPipEnableHandler {
+        SitePlayerSettings.setString(site, SitePlayerSettings.ID_AUTO_PIP, it.toString())
+    }
 
     val choiceSpec = dialogSpec?.let { SitePlayerSettings.spec(it) } as? SitePlayerSettings.Spec.Choice
     if (choiceSpec != null) {
@@ -193,7 +200,13 @@ fun SitePlayerSettingsScreen(site: SiteType, modifier: Modifier = Modifier) {
                         iconRes = specIcon(spec.id),
                         checked = SitePlayerSettings.getString(site, spec.id).toBooleanStrictOrNull() ?: true,
                         enabled = enabled,
-                        onCheckedChange = { SitePlayerSettings.setString(site, spec.id, it.toString()) },
+                        onCheckedChange = {
+                            if (spec.id == SitePlayerSettings.ID_AUTO_PIP) {
+                                pipToggle(it)
+                            } else {
+                                SitePlayerSettings.setString(site, spec.id, it.toString())
+                            }
+                        },
                     )
 
                     is SitePlayerSettings.Spec.Choice -> {

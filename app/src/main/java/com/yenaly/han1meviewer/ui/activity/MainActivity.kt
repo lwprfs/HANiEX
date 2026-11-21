@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.activity
 
 import com.yenaly.han1meviewer.ui.component.player.PlayerMediaControl
+import com.yenaly.han1meviewer.ui.component.player.PipSupport
 import android.view.KeyEvent
 import android.Manifest
 import android.annotation.SuppressLint
@@ -485,6 +486,13 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         currentVideoHost = host
     }
 
+    /** Clears the host only if it is still the registered one. Returns true when it was cleared. */
+    fun unregisterCurrentVideoHost(host: VideoPageHost): Boolean {
+        if (currentVideoHost !== host) return false
+        currentVideoHost = null
+        return true
+    }
+
     private var onGranted: (() -> Unit)? = null
     private var onDenied: (() -> Unit)? = null
     private var onPermanentlyDenied: (() -> Unit)? = null
@@ -550,11 +558,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         val currentFragment = currentVideoHost
-        val allowPip = Preferences.allowPipMode
 
-        Log.i("pipmode", "enter pip mode?\n$currentFragment\nallowpip:$allowPip\n")
+        Log.i("pipmode", "enter pip mode?\n$currentFragment\n")
 
-        if (currentFragment?.shouldEnterPip() == true && allowPip) {
+        if (currentFragment?.shouldEnterPip() == true) {
             Log.i("pipmode", "enter pip mode")
             currentFragment.enterPipMode()
         }
@@ -565,6 +572,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         newConfig: Configuration
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
+        PipSupport.updateInPip(isInPictureInPictureMode)
         currentVideoHost?.onPipModeChanged(isInPictureInPictureMode)
     }
 
@@ -618,6 +626,12 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         pendingClipboardCheck = true
     }
 
+    override fun onResume() {
+        super.onResume()
+        PipSupport.updateInPip(isInPictureInPictureMode)
+        PipSupport.verifyPermission(this)
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
 
@@ -644,6 +658,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     override fun onStop() {
         super.onStop()
+        PipSupport.updateInPip(isInPictureInPictureMode)
         runCatching { unregisterReceiver(pipActionReceiver) }
     }
 

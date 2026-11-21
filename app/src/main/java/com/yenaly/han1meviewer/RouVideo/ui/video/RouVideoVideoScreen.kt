@@ -94,6 +94,8 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.SiteVideoActionBar
 import com.yenaly.han1meviewer.ui.component.SiteVideoSectionHeader
 import com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+import com.yenaly.han1meviewer.ui.component.player.PipSupport
+import com.yenaly.han1meviewer.ui.component.player.SitePipEffect
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -158,7 +160,7 @@ fun RouVideoVideoScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP && viewModel.playerState.value.isPlaying) {
+            if (event == Lifecycle.Event.ON_STOP && !PipSupport.inPip && viewModel.playerState.value.isPlaying) {
                 viewModel.setPlaying(false)
             }
         }
@@ -215,6 +217,8 @@ fun RouVideoVideoScreen(
     }
 
     val playerConfig = SitePlayerSettings.config(SiteType.ROUVIDEO)
+    val inPip = PipSupport.inPip
+    SitePipEffect(site = SiteType.ROUVIDEO, isPlaying = playerState.isPlaying)
     LaunchedEffect(playerConfig.defaultSpeed) {
         viewModel.setSpeed(playerConfig.defaultSpeed)
     }
@@ -389,7 +393,7 @@ fun RouVideoVideoScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
+            if (!inPip) SiteTopAppBar(
                 title = {
                     Text(
                         text = detail?.displayTitle ?: stringResource(R.string.video),
@@ -413,6 +417,10 @@ fun RouVideoVideoScreen(
 
             is RouVideoDetailState.Success -> {
                 CollapsingPlayerLayout(
+                    pip = inPip,
+                    pinEnabled = playerConfig.pinVideo,
+                    pinActive = playerState.isPlaying,
+                    onPinClose = { viewModel.setPlaying(false) },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),

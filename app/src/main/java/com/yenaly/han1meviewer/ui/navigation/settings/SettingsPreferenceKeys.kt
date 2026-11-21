@@ -18,6 +18,8 @@ object SettingsPreferenceKeys {
     const val PURE_BLACK_DARK_MODE = "pure_black_dark_mode"
     const val ALLOW_RESUME_PLAYBACK = "allow_resume_playback"
     const val ALLOW_PIP_MODE = "allow_pip_mode"
+    const val PIN_VIDEO_TO_TOP = "pin_video_to_top"
+    const val PINCH_ZOOM_FULLSCREEN = "pinch_zoom_fullscreen"
     const val SEARCH_ARTIST_IGNORE_VIDEO_TYPE = "search_artist_ignore_video_type"
     const val DISABLE_MOBILE_DATA_WARNING = "disable_mobile_data_warning"
     const val COLLAPSE_DOWNLOADED_GROUP = "collapse_downloaded_group"

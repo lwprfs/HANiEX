@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -34,6 +35,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.AlertDialog
@@ -102,6 +104,7 @@ import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.player.PipSupport
 import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
@@ -295,7 +298,7 @@ fun VideoRouteHostScreen(
         }
     }
 
-    val pipAllowed = Preferences.allowPipMode
+    val pipAllowed = Preferences.allowPipMode && PipSupport.isPermissionGranted(activity)
 
     val pipEligible = playerUiState.state == PlayerState.PLAYING
 
@@ -311,26 +314,9 @@ fun VideoRouteHostScreen(
     }
 
     fun buildPipParams(includeSourceHint: Boolean, eligible: Boolean): PictureInPictureParams {
-        val intent = PendingIntent.getBroadcast(
-            activity,
-            0,
-            Intent(MainActivity.ACTION_TOGGLE_PLAY).setPackage(activity.packageName),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
-        )
-        val icon = if (controller.isPlaying) {
-            Icon.createWithResource(activity, R.drawable.ic_pip_pause_24)
-        } else {
-            Icon.createWithResource(activity, R.drawable.ic_pip_play_arrow_24)
-        }
-        val action = RemoteAction(
-            icon,
-            activity.getString(R.string.play_pause),
-            activity.getString(R.string.play_pause),
-            intent,
-        )
         val builder = PictureInPictureParams.Builder()
             .setAspectRatio(pipAspectRatio())
-            .setActions(listOf(action))
+            .setActions(emptyList())
         if (includeSourceHint && playerWindowBounds.width > 0) {
             builder.setSourceRectHint(
                 android.graphics.Rect(
@@ -391,7 +377,8 @@ fun VideoRouteHostScreen(
             }
 
             override fun shouldEnterPip(): Boolean {
-                return controller.isActiveForPip
+                return controller.isActiveForPip && Preferences.allowPipMode &&
+                        PipSupport.isPermissionGranted(activity)
             }
 
             override fun enterPipMode() {
@@ -414,7 +401,7 @@ fun VideoRouteHostScreen(
 
     DisposableEffect(activity, pageHost) {
         activity.registerCurrentVideoHost(pageHost)
-        onDispose { activity.registerCurrentVideoHost(null) }
+        onDispose { activity.unregisterCurrentVideoHost(pageHost) }
     }
 
     val currentOnNoVideoUrl by rememberUpdatedState {
@@ -770,6 +757,21 @@ fun VideoRouteHostScreen(
 
     var lastReportedExpanded by remember { mutableStateOf(true) }
 
+    val pinEnabled = Preferences.pinVideoToTop
+    val playbackActive = playerUiState.state in setOf(
+        PlayerState.PREPARING, PlayerState.BUFFERING, PlayerState.PLAYING,
+    )
+    var headerCollapseRatio by remember {
+        mutableFloatStateOf(if (viewModel.isAppBarExpanded(route.videoCode)) 0f else 1f)
+    }
+    var miniDismissed by remember { mutableStateOf(false) }
+    LaunchedEffect(playbackActive) {
+        if (!playbackActive) miniDismissed = false
+    }
+    val miniVisible = pinEnabled && playbackActive && headerCollapseRatio >= 0.999f &&
+            !miniDismissed && !showSplitLayout && !isFullscreen && !isInPipMode &&
+            !showFullscreenOverlay
+
     Box(modifier = Modifier.fillMaxSize()) {
         when {
 
@@ -786,11 +788,10 @@ fun VideoRouteHostScreen(
             !showSplitLayout -> {
                 VideoCollapsingHeader(
                     headerHeightPx = playerHeightPx,
-                    scrollEnabled = playerUiState.state !in setOf(
-                        PlayerState.PREPARING, PlayerState.BUFFERING, PlayerState.PLAYING,
-                    ),
+                    scrollEnabled = pinEnabled || !playbackActive,
                     initialCollapsed = !viewModel.isAppBarExpanded(route.videoCode),
                     onCollapseRatioChange = { ratio ->
+                        headerCollapseRatio = ratio
                         val expanded = ratio < 0.5f
                         if (expanded != lastReportedExpanded) {
                             lastReportedExpanded = expanded
@@ -802,7 +803,7 @@ fun VideoRouteHostScreen(
                         .statusBarsPadding()
                         .navigationBarsPadding(),
                     headerContent = {
-                        if (showFullscreenOverlay) {
+                        if (showFullscreenOverlay || miniVisible) {
 
                             Box(modifier = Modifier.fillMaxSize().background(Color.Black))
                         } else {
@@ -971,6 +972,41 @@ fun VideoRouteHostScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        if (miniVisible) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(8.dp)
+                    .fillMaxWidth(0.5f)
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.Black),
+            ) {
+                playerSurface(Modifier.fillMaxSize())
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(28.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .clickable {
+                            miniDismissed = true
+                            controller.pause()
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Close,
+                        contentDescription = activity.getString(R.string.player_pin_close),
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
         }

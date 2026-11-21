@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_player_pin_video_title">视频置顶悬浮</string>
+    <string name="site_player_pin_video_summary">播放时在视频页向下滚动，视频会变成带关闭按钮的悬浮小窗口；暂停时不会触发。默认关闭</string>
+    <string name="site_player_auto_pip_title">自动画中画</string>
+    <string name="site_player_auto_pip_summary">播放时从视频页退到桌面，自动进入画中画（需要开启画中画权限）。默认关闭</string>
+    <string name="site_player_pinch_zoom_title">双指缩放画面</string>
+    <string name="site_player_pinch_zoom_summary">全屏时可用双指缩放视频画面，不会记住缩放位置。默认关闭</string>
+    <string name="player_pin_close">关闭悬浮播放器</string>
+    <string name="pip_permission_revoked_title">画中画已关闭</string>
+    <string name="pip_permission_revoked_message">系统中的画中画权限已被关闭，因此已自动停用自动画中画。重新授予权限后，可在播放器设置中再次开启。</string>
+    <string name="pip_permission_needed">需要画中画权限。请在刚打开的设置页允许后，再次开启此选项。</string>
+</resources>

@@ -7,7 +7,28 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -92,11 +113,37 @@ private class CollapseState(private val scope: CoroutineScope) {
 @Composable
 fun CollapsingPlayerLayout(
     modifier: Modifier = Modifier,
+    pip: Boolean = false,
+    pinEnabled: Boolean = false,
+    pinActive: Boolean = false,
+    onPinClose: () -> Unit = {},
     player: @Composable () -> Unit,
     content: @Composable () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     val state = remember { CollapseState(scope) }
+
+    // Floating (pinned) mini player: only while playing, fully scrolled away, and this page is
+    // the one on screen. Leaving the page (back / another video) hides it at once.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var pageResumed by remember {
+        mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, _ ->
+            pageResumed = lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    var dismissed by remember { mutableStateOf(false) }
+    LaunchedEffect(pinActive) {
+        if (!pinActive) dismissed = false
+    }
+    val collapsed by remember {
+        derivedStateOf { state.heightPx > 0f && state.offsetPx <= -state.heightPx + 1f }
+    }
+    val showMini = pinEnabled && pinActive && collapsed && !dismissed && !pip && pageResumed
 
     val connection = remember(state) {
         object : NestedScrollConnection {
@@ -139,6 +186,7 @@ fun CollapsingPlayerLayout(
 
     Layout(
         modifier = modifier
+            .then(if (pip) Modifier.background(Color.Black) else Modifier)
             .clipToBounds()
             .nestedScroll(connection),
         content = {
@@ -146,9 +194,12 @@ fun CollapsingPlayerLayout(
                 modifier = Modifier.draggable(
                     state = dragState,
                     orientation = Orientation.Vertical,
+                    enabled = !showMini && !pip,
                     onDragStopped = { velocity -> state.settle(velocity) },
                 ),
-            ) { player() }
+            ) {
+                CompositionLocalProvider(LocalPlayerCompact provides showMini) { player() }
+            }
             Box(
                 modifier = Modifier
                     .graphicsLayer {
@@ -161,10 +212,80 @@ fun CollapsingPlayerLayout(
             Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
                 content()
             }
+            Box {
+                if (showMini) {
+                    val closeDescription = stringResource(R.string.player_pin_close)
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color.Black.copy(alpha = 0.6f))
+                            .clickable {
+                                dismissed = true
+                                onPinClose()
+                            },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = closeDescription,
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                }
+            }
         },
     ) { measurables, constraints ->
         val width = constraints.maxWidth
         val height = constraints.maxHeight
+
+        if (pip) {
+            // Picture-in-picture: only the player, centred on black, list measured to nothing.
+            val pipPlayer = measurables[0].measure(
+                Constraints(minWidth = width, maxWidth = width, minHeight = 0, maxHeight = height),
+            )
+            val zero = Constraints.fixed(0, 0)
+            val pipScrim = measurables[1].measure(zero)
+            val pipList = measurables[2].measure(zero)
+            val pipClose = measurables[3].measure(zero)
+            return@Layout layout(width, height) {
+                pipList.place(0, 0)
+                pipScrim.place(0, 0)
+                pipClose.place(0, 0)
+                pipPlayer.place(0, ((height - pipPlayer.height) / 2).coerceAtLeast(0))
+            }
+        }
+
+        if (showMini) {
+            val margin = 8.dp.roundToPx()
+            val miniWidth = (width * 0.5f).roundToInt().coerceAtLeast(1)
+            val miniHeight = (miniWidth * 9f / 16f).roundToInt().coerceAtLeast(1)
+            val miniPlayer = measurables[0].measure(
+                Constraints(
+                    minWidth = miniWidth,
+                    maxWidth = miniWidth,
+                    minHeight = 0,
+                    maxHeight = miniHeight,
+                ),
+            )
+            val miniScrim = measurables[1].measure(Constraints.fixed(0, 0))
+            val miniList = measurables[2].measure(
+                Constraints(minWidth = width, maxWidth = width, minHeight = height, maxHeight = height),
+            )
+            val miniClose = measurables[3].measure(Constraints())
+            val playerX = (width - miniPlayer.width - margin).coerceAtLeast(0)
+            return@Layout layout(width, height) {
+                miniList.place(0, 0, 0f)
+                miniScrim.place(0, 0, 0f)
+                miniPlayer.place(playerX, margin, 1f)
+                miniClose.place(
+                    (playerX + miniPlayer.width - miniClose.width - margin / 2).coerceAtLeast(0),
+                    margin + margin / 2,
+                    2f,
+                )
+            }
+        }
 
         val playerPlaceable = measurables[0].measure(
             Constraints(minWidth = width, maxWidth = width, minHeight = 0, maxHeight = height),
@@ -177,6 +298,7 @@ fun CollapsingPlayerLayout(
         val listHeight = (height - visiblePlayer).coerceAtLeast(0)
 
         val scrimPlaceable = measurables[1].measure(Constraints.fixed(width, ph))
+        val closePlaceable = measurables[3].measure(Constraints.fixed(0, 0))
 
         val listPlaceable = measurables[2].measure(
             Constraints(
@@ -193,6 +315,7 @@ fun CollapsingPlayerLayout(
             playerPlaceable.place(0, parallaxY)
             scrimPlaceable.place(0, parallaxY)
             listPlaceable.place(0, visiblePlayer)
+            closePlaceable.place(0, 0)
         }
     }
 }

@@ -102,6 +102,8 @@ import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.source.MediaSource
 import com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+import com.yenaly.han1meviewer.ui.component.player.PipSupport
+import com.yenaly.han1meviewer.ui.component.player.SitePipEffect
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -230,7 +232,7 @@ fun FullVideosVideoScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP && viewModel.playerState.value.isPlaying) {
+            if (event == Lifecycle.Event.ON_STOP && !PipSupport.inPip && viewModel.playerState.value.isPlaying) {
                 viewModel.setPlaying(false)
             }
         }
@@ -287,6 +289,8 @@ fun FullVideosVideoScreen(
     }
 
     val playerConfig = SitePlayerSettings.config(SiteType.FULLVIDEOS)
+    val inPip = PipSupport.inPip
+    SitePipEffect(site = SiteType.FULLVIDEOS, isPlaying = playerState.isPlaying)
     LaunchedEffect(playerConfig.defaultSpeed) {
         viewModel.setSpeed(playerConfig.defaultSpeed)
     }
@@ -436,7 +440,7 @@ fun FullVideosVideoScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
+            if (!inPip) SiteTopAppBar(
                 title = {
                     Text(
                         text = detail?.title ?: stringResource(R.string.video),
@@ -459,6 +463,10 @@ fun FullVideosVideoScreen(
             is FullVideosDetailState.Success -> {
                 val info = state.detail
                 CollapsingPlayerLayout(
+                    pip = inPip,
+                    pinEnabled = playerConfig.pinVideo,
+                    pinActive = playerState.isPlaying,
+                    onPinClose = { viewModel.setPlaying(false) },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),

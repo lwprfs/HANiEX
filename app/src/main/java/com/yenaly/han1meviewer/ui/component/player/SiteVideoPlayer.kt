@@ -99,6 +99,14 @@ fun SiteVideoPlayer(
     var resumeAtMs by remember(state.url) { mutableLongStateOf(0L) }
     val context = LocalContext.current
 
+    // Floating mini player / picture-in-picture show the picture only, without controls.
+    val hideChrome = LocalPlayerCompact.current || PipSupport.inPip
+    val zoomState = remember { PinchZoomState() }
+    val zoomEnabled = isFullscreen && config.pinchZoom && !useMpv
+    LaunchedEffect(isFullscreen, state.url) {
+        if (!isFullscreen) zoomState.reset()
+    }
+
     val sourceReady = state.isReady && state.url.isNotBlank()
     val isExoReady = playbackState == Player.STATE_READY
     val isInitialLoading = sourceReady && !hasRenderedFirstFrame && playbackError == null
@@ -203,6 +211,7 @@ fun SiteVideoPlayer(
         modifier = surfaceModifier
             .background(Color.Black)
             .clipToBounds()
+            .pinchZoomGestures(zoomState, zoomEnabled)
             .onSizeChanged { size ->
                 val ok = size.width > 0 && size.height > 0
                 if (ok != surfaceReady) {
@@ -281,7 +290,9 @@ fun SiteVideoPlayer(
                         addView(subtitle)
                     }
                 },
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (zoomEnabled) Modifier.pinchZoomLayer(zoomState) else Modifier),
                 update = { frame ->
                     fitState.stretched = stretched && isFullscreen
                     frame.getChildAt(0)?.let { fitVideoSurface(frame, it, fitState) }
@@ -330,7 +341,7 @@ fun SiteVideoPlayer(
                 }
             }
 
-            if (showResumeButton && !state.isPlaying) {
+            if (showResumeButton && !state.isPlaying && !hideChrome) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -358,7 +369,7 @@ fun SiteVideoPlayer(
                 }
             }
 
-            if (!showResumeButton) {
+            if (!showResumeButton && !hideChrome) {
                 SitePlayerOverlay(
                     config = config,
                     title = title,

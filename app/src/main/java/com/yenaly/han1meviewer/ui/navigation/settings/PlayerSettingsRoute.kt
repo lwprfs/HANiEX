@@ -44,6 +44,11 @@ fun PlayerSettingsRouteScreen(
     var refreshKey by remember { mutableIntStateOf(0) }
     val uiState = remember(refreshKey, context) { buildPlayerSettingsUiState(context) }
 
+    val pipToggle = com.yenaly.han1meviewer.ui.component.player.rememberPipEnableHandler {
+        saveBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, it)
+        refreshKey++
+    }
+
     var selectedSite by rememberSaveable { mutableStateOf(SiteType.HANIME) }
     Column(modifier = Modifier.fillMaxSize()) {
         FullscreenOrientationSetting()
@@ -96,6 +101,15 @@ fun PlayerSettingsRouteScreen(
             refreshKey++
         },
         onOpenMpvSettings = onNavigateToMpvSettings,
+        onPinVideoChange = {
+            saveBoolean(SettingsPreferenceKeys.PIN_VIDEO_TO_TOP, it)
+            refreshKey++
+        },
+        onAllowPipModeChange = pipToggle,
+        onPinchZoomChange = {
+            saveBoolean(SettingsPreferenceKeys.PINCH_ZOOM_FULLSCREEN, it)
+            refreshKey++
+        },
     )
         }
     }
@@ -157,5 +171,8 @@ private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState 
         longPressSpeedTimesLabel = longPressDisplay,
         slideSensitivity = Preferences.slideSensitivity,
         slideSensitivitySummary = toPrettySensitivityString(context, Preferences.slideSensitivity),
+        pinVideoToTop = Preferences.pinVideoToTop,
+        allowPipMode = Preferences.allowPipMode,
+        pinchZoom = Preferences.pinchZoomFullscreen,
     )
 }

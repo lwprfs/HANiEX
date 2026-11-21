@@ -78,6 +78,8 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.ui.component.SiteVideoActionBar
 import com.yenaly.han1meviewer.ui.component.SiteVideoCard
 import com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
+import com.yenaly.han1meviewer.ui.component.player.PipSupport
+import com.yenaly.han1meviewer.ui.component.player.SitePipEffect
 import com.yenaly.han1meviewer.ui.component.player.createSitePlayer
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.util.PlayerOrientation
@@ -124,7 +126,7 @@ fun BuonduaAlbumScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_STOP && viewModel.playerState.value.isPlaying) {
+            if (event == Lifecycle.Event.ON_STOP && !PipSupport.inPip && viewModel.playerState.value.isPlaying) {
                 viewModel.setPlaying(false)
             }
         }
@@ -173,6 +175,8 @@ fun BuonduaAlbumScreen(
     }
 
     val playerConfig = SitePlayerSettings.config(SiteType.BUONDUA)
+    val inPip = PipSupport.inPip
+    SitePipEffect(site = SiteType.BUONDUA, isPlaying = playerState.isPlaying)
     LaunchedEffect(playerConfig.defaultSpeed) { viewModel.setSpeed(playerConfig.defaultSpeed) }
     LaunchedEffect(playerState.isReady, playerState.url, playerConfig.autoPlay) {
         if (playerConfig.autoPlay && playerState.isReady && playerState.url.isNotBlank()) {
@@ -240,7 +244,7 @@ fun BuonduaAlbumScreen(
 
     Scaffold(
         topBar = {
-            SiteTopAppBar(
+            if (!inPip) SiteTopAppBar(
                 title = { Text(state.title.ifBlank { stringResource(R.string.buondua_album) }, maxLines = 1) },
                 navigationIcon = { SiteBackButton(onClick = onBack) },
             )
@@ -280,6 +284,10 @@ fun BuonduaAlbumScreen(
                     }
                     if (state.videos.isNotEmpty()) {
                         CollapsingPlayerLayout(
+                            pip = inPip,
+                            pinEnabled = playerConfig.pinVideo,
+                            pinActive = playerState.isPlaying,
+                            onPinClose = { viewModel.setPlaying(false) },
                             modifier = Modifier.fillMaxSize(),
                             player = {
                                 if (!playerState.isFullscreen) Player(fullscreen = false, modifier = Modifier.fillMaxWidth())

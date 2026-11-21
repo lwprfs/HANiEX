@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_player_pin_video_title">Pin video while scrolling</string>
+    <string name="site_player_pin_video_summary">While a video is playing, scrolling down the video page turns it into a small floating player with a close button. Does nothing while paused. Off by default</string>
+    <string name="site_player_auto_pip_title">Auto picture-in-picture</string>
+    <string name="site_player_auto_pip_summary">Go to picture-in-picture when you leave the app from a playing video page (picture-in-picture permission needed). Off by default</string>
+    <string name="site_player_pinch_zoom_title">Pinch to zoom</string>
+    <string name="site_player_pinch_zoom_summary">Pinch the video to zoom in fullscreen. The zoom is not remembered. Off by default</string>
+    <string name="player_pin_close">Close floating player</string>
+    <string name="pip_permission_revoked_title">Picture-in-picture turned off</string>
+    <string name="pip_permission_revoked_message">The picture-in-picture permission was removed in system settings, so auto picture-in-picture has been disabled. Grant the permission again, then re-enable it in the player settings.</string>
+    <string name="pip_permission_needed">Picture-in-picture permission is needed. Allow it in the settings page that just opened, then turn this option on again.</string>
+</resources>
