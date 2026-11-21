@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.OnAir.data.parser
 import com.yenaly.han1meviewer.util.logId
 
 import android.util.Log
+import com.yenaly.han1meviewer.OnAir.common.OnAirThumbCache
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirQualityLink
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoDetail
@@ -64,6 +65,7 @@ object OnAirWatchParser {
         val currentMediaType = currentStream?.mediaType
 
         val recommended = parseRecommended(doc, baseUrl)
+        val coverUrl = resolveCoverUrl(doc, baseUrl, videoId)
 
         Log.d(
             TAG,
@@ -90,7 +92,37 @@ object OnAirWatchParser {
             currentQuality = currentQuality,
             currentMediaType = currentMediaType,
             recommendedVideos = recommended,
+            coverUrl = coverUrl,
         )
+    }
+
+    /**
+     * Thumbnail of the video being watched. Order: the player's own poster, then the thumbnail
+     * this exact video had on a listing page, then page-level meta images. Never uses the
+     * recommended-videos sidebar, which belongs to other videos.
+     */
+    private fun resolveCoverUrl(doc: Document, baseUrl: String, videoId: String): String {
+        val poster = listOf("video#watch-video", "video#watch-video-fallback", "video[poster]")
+            .firstNotNullOfOrNull { sel ->
+                doc.selectFirst(sel)?.attr("poster")?.takeIf { it.isNotBlank() }
+            }
+        resolveCover(poster, baseUrl)?.let { return it }
+
+        OnAirThumbCache.get(videoId)?.let { return it }
+
+        val meta = listOf(
+            "meta[property=og:image]" to "content",
+            "meta[name=twitter:image]" to "content",
+            "link[rel=image_src]" to "href",
+        ).firstNotNullOfOrNull { (sel, attr) ->
+            doc.selectFirst(sel)?.attr(attr)?.takeIf { it.isNotBlank() }
+        }
+        return resolveCover(meta, baseUrl).orEmpty()
+    }
+
+    private fun resolveCover(raw: String?, baseUrl: String): String? {
+        val value = raw?.trim()?.takeIf { it.isNotBlank() && !it.startsWith("data:") } ?: return null
+        return resolveUrl(value, baseUrl)
     }
 
     fun parseStreamFromPage(
@@ -280,6 +312,7 @@ object OnAirWatchParser {
                 val thumbUrl = thumb?.absUrl("src")?.takeIf { it.isNotBlank() } ?: ""
                 val preview = thumb?.attr("data-preview")?.takeIf { it.isNotBlank() }
                 val duration = anchor.selectFirst("span.thumb-duration-sm")?.text()?.trim()
+                OnAirThumbCache.put(videoId, thumbUrl)
                 OnAirVideoCard(
                     videoId = videoId,
                     title = title,

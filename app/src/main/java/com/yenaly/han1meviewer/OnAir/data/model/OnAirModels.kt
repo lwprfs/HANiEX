@@ -111,6 +111,8 @@ data class OnAirVideoDetail(
     val currentQuality: String,
     val currentMediaType: String?,
     val recommendedVideos: List<OnAirVideoCard>,
+    /** Thumbnail of THIS video (not of a recommended one). May be blank. */
+    val coverUrl: String = "",
 )
 
 data class OnAirVideoTag(

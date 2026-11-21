@@ -625,7 +625,7 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
                 OnAirHistoryRepo.saveProgress(
                     videoId = detail.videoId,
                     title = detail.title,
-                    coverUrl = detail.recommendedVideos.firstOrNull()?.thumbUrl.orEmpty(),
+                    coverUrl = detail.coverUrl,
                     uploaderName = detail.uploaderName,
                     position = state.position,
                     duration = state.duration,
@@ -645,7 +645,7 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
                 OnAirHistoryRepo.saveProgress(
                     videoId = detail.videoId,
                     title = detail.title,
-                    coverUrl = "",
+                    coverUrl = detail.coverUrl,
                     uploaderName = detail.uploaderName,
                     position = state.duration,
                     duration = state.duration,

@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.OnAir.data.parser
 
 import android.util.Log
 import com.yenaly.han1meviewer.OnAir.common.OnAirConstants
+import com.yenaly.han1meviewer.OnAir.common.OnAirThumbCache
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirAnnouncement
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirAnnouncementEntry
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirHomePage
@@ -141,6 +142,7 @@ object OnAirListingParser {
                 views = parseViews(viewsRaw)
             }
         }
+        OnAirThumbCache.put(videoId, thumbUrl)
         return OnAirVideoCard(
             videoId = videoId,
             title = title,

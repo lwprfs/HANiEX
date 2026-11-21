@@ -252,7 +252,7 @@ fun OnAirVideoScreen(
                         applicationContext.getString(R.string.onair_session_expired_sign_in_again_to),
                     )
                 },
-                coverUrl = info?.recommendedVideos?.firstOrNull()?.thumbUrl,
+                coverUrl = info?.coverUrl?.takeIf { it.isNotBlank() },
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -335,7 +335,7 @@ fun OnAirVideoScreen(
                                     applicationContext.getString(R.string.onair_session_expired_sign_in_again_to),
                                 )
                             },
-                            coverUrl = detail.recommendedVideos.firstOrNull()?.thumbUrl,
+                            coverUrl = detail.coverUrl.takeIf { it.isNotBlank() },
                         )
 
                         val activeUrl = playerState.activeUrl
@@ -401,7 +401,7 @@ fun OnAirVideoScreen(
                         site = SiteType.ONAIR,
                         videoCode = videoId,
                         title = detail.title,
-                        coverUrl = detail.recommendedVideos.firstOrNull()?.thumbUrl,
+                        coverUrl = detail.coverUrl.takeIf { it.isNotBlank() },
                         webUrl = OnAirUrlUtils.normalizeVideoUrl(videoId),
 
                         downloadUrl = playerState.activeUrl,
