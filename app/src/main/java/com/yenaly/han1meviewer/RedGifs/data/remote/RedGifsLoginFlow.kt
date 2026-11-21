@@ -178,7 +178,7 @@ object RedGifsLoginFlow {
             .addQueryParameter("state", state)
             .build()
 
-    private fun exchangeToken(client: OkHttpClient, authCode: String, verifier: String) {
+    private suspend fun exchangeToken(client: OkHttpClient, authCode: String, verifier: String) {
         val body = FormBody.Builder()
             .add("client_id", RedGifsConstants.CLIENT_ID)
             .add("code", authCode)
