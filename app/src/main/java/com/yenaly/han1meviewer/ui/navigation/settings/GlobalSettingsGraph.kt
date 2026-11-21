@@ -16,6 +16,7 @@ import com.yenaly.han1meviewer.ui.navigation.main.VideoRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.screen.history.UnifiedHistoryScreen
+import com.yenaly.han1meviewer.ui.screen.library.GifDownloadsScreen
 import com.yenaly.han1meviewer.ui.screen.library.ImageDownloadsScreen
 import com.yenaly.han1meviewer.ui.screen.library.LocalPlaylistsScreen
 import kotlinx.serialization.Serializable
@@ -28,6 +29,9 @@ object LocalPlaylistsRoute
 
 @Serializable
 object ImageDownloadsRoute
+
+@Serializable
+object GifDownloadsRoute
 
 fun NavGraphBuilder.registerGlobalSettingsRoutes(
     activity: MainActivity,
@@ -52,6 +56,10 @@ fun NavGraphBuilder.registerGlobalSettingsRoutes(
             onBack = { navController.popBackStackSafely() },
             onNavigateToVideo = openHanimeVideo,
         )
+    }
+
+    composable<GifDownloadsRoute> {
+        GifDownloadsScreen(onBack = { navController.popBackStackSafely() })
     }
 
     composable<ImageDownloadsRoute> {

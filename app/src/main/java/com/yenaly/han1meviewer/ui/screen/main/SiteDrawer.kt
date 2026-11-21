@@ -101,6 +101,7 @@ import com.yenaly.han1meviewer.Coser.ui.navigation.CoserListRoute
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserSearchRoute
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.GifDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
@@ -445,6 +446,7 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                             str(R.string.redgifs_following), R.drawable.ic_video_person_24,
                             RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name), rgLoggedIn, RedGifsLoginRoute,
                         ),
+                        entry(str(R.string.hub_gif_downloads), R.drawable.ic_baseline_image_24, GifDownloadsRoute),
                     ),
                 ),
                 SiteDrawerSection(
@@ -564,6 +566,7 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     gatedEntry(str(R.string.xhamster_playlists), R.drawable.ic_drawer_category, XHamsterLibraryRoute("PLAYLISTS"), loggedIn, XHamsterAccountRoute),
                     gatedEntry(str(R.string.xhamster_my_subscriptions), R.drawable.ic_subscribtion, XHamsterLibraryRoute("SUBSCRIPTIONS"), loggedIn, XHamsterAccountRoute),
                     entry(str(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
+                    entry(str(R.string.hub_gif_downloads), R.drawable.ic_baseline_image_24, GifDownloadsRoute),
                 ),
             ),
             SiteDrawerSection(

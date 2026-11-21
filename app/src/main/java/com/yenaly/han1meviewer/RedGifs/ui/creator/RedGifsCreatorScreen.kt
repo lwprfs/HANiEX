@@ -1,6 +1,10 @@
 package com.yenaly.han1meviewer.RedGifs.ui.creator
 
 import androidx.compose.foundation.layout.Arrangement
+import com.yenaly.han1meviewer.ui.component.SiteChipRow
+import com.yenaly.han1meviewer.RedGifs.ui.navigation.LocalRedGifsActions
+import androidx.compose.runtime.key
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -56,9 +60,17 @@ fun RedGifsCreatorScreen(
     var user by remember(name) { mutableStateOf<RedGifsUser?>(RedGifsRepo.cachedUser(name)) }
     var following by remember(name) { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
+    var socials by remember(name) { mutableStateOf<List<String>>(emptyList()) }
+    var creatorTags by remember(name) { mutableStateOf<List<String>>(emptyList()) }
+    var pinned by remember(name) { mutableStateOf(false) }
+    val actions = LocalRedGifsActions.current
+    val pinsLabel = stringResource(R.string.redgifs_pinned)
+    val allLabel = stringResource(R.string.redgifs_tab_new)
 
     LaunchedEffect(name) {
         RedGifsRepo.user(name).onSuccess { user = it }
+        RedGifsRepo.socials(name).onSuccess { socials = it }
+        RedGifsRepo.creatorTags(name).onSuccess { creatorTags = it.take(12) }
     }
     LaunchedEffect(name, epoch) {
         following = RedGifsRepo.followingNames().contains(name.lowercase())
@@ -143,7 +155,49 @@ fun RedGifsCreatorScreen(
                     )
                 }
             }
-            RedGifsFeedContent(source = RedGifsFeedSource.Creator(name), onLogin = onLogin)
+            if (socials.isNotEmpty()) {
+                Row(
+                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    socials.take(4).forEach { url ->
+                        Text(
+                            url.removePrefix("https://").removePrefix("http://").removePrefix("www.").substringBefore('/'),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                runCatching {
+                                    context.startActivity(
+                                        android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)),
+                                    )
+                                }
+                            },
+                        )
+                    }
+                }
+            }
+            if (creatorTags.isNotEmpty()) {
+                SiteChipRow(
+                    options = creatorTags,
+                    selected = "",
+                    label = { "#$it" },
+                    onSelect = { actions.openTag(it) },
+                    key = { it },
+                )
+            }
+            SiteChipRow(
+                options = listOf(false, true),
+                selected = pinned,
+                label = { if (it) pinsLabel else allLabel },
+                onSelect = { pinned = it },
+                key = { it },
+            )
+            key(pinned) {
+                RedGifsFeedContent(
+                    source = if (pinned) RedGifsFeedSource.Pins(name) else RedGifsFeedSource.Creator(name),
+                    onLogin = onLogin,
+                )
+            }
         }
     }
 }

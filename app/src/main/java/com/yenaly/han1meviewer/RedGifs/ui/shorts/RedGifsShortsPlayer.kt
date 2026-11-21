@@ -80,6 +80,22 @@ internal object RedGifsShortsSource : SiteShortsSource {
             }.toMap()
         }
 
+    override val supportsDownload: Boolean = true
+
+    override suspend fun downloadShort(context: Context, short: SiteShort, creator: String?): Result<Unit> =
+        com.yenaly.han1meviewer.util.SiteImageSaver.saveGif(
+            context = context,
+            site = SiteType.REDGIFS,
+            url = short.videoUrl,
+            creator = creator ?: RedGifsRepo.cachedGif(short.id)?.userName,
+            baseName = short.id,
+            client = RedGifsNetwork.streamClient,
+            headers = mapOf(
+                "Referer" to com.yenaly.han1meviewer.RedGifs.common.RedGifsConstants.REFERER,
+                "Origin" to com.yenaly.han1meviewer.RedGifs.common.RedGifsConstants.ORIGIN,
+            ),
+        )
+
     override suspend fun rate(short: SiteShort, like: Boolean): Result<Unit> {
         if (!isLoggedIn) return Result.failure(Exception(SiteShortsSource.LOGIN_REQUIRED))
         if (!like) return SiteShortsSource.unsupported()

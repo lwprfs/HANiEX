@@ -43,6 +43,7 @@ import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import com.yenaly.han1meviewer.ui.navigation.settings.GifDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.LocalPlaylistsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UpdateSettingsRoute
@@ -101,6 +102,7 @@ class CommonProfileEntries(
     val downloads: SiteHubEntry,
     val update: SiteHubEntry,
     val imageDownloads: SiteHubEntry,
+    val gifDownloads: SiteHubEntry,
 )
 
 @Composable
@@ -129,6 +131,8 @@ fun rememberCommonProfileEntries(
     val updateDesc = stringResource(R.string.hub_update_desc)
     val imageDownloadsTitle = stringResource(R.string.hub_image_downloads)
     val imageDownloadsDesc = stringResource(R.string.hub_image_downloads_desc)
+    val gifDownloadsTitle = stringResource(R.string.hub_gif_downloads)
+    val gifDownloadsDesc = stringResource(R.string.hub_gif_downloads_desc)
     return CommonProfileEntries(
         siteSettings = SiteHubEntry(
             key = "site_settings",
@@ -192,6 +196,13 @@ fun rememberCommonProfileEntries(
             subtitle = imageDownloadsDesc,
             icon = Icons.Filled.PhotoLibrary,
             onClick = { navController.navigateSafely(ImageDownloadsRoute) },
+        ),
+        gifDownloads = SiteHubEntry(
+            key = "gif_downloads",
+            title = gifDownloadsTitle,
+            subtitle = gifDownloadsDesc,
+            icon = Icons.Filled.PhotoLibrary,
+            onClick = { navController.navigateSafely(GifDownloadsRoute) },
         ),
     )
 }
@@ -402,6 +413,7 @@ fun standardSiteHubConfig(
     profileExtraQuickActions: List<SiteHubEntry> = emptyList(),
     includeDownloads: Boolean = true,
     includeImageDownloads: Boolean = site in IMAGE_DOWNLOAD_SITES,
+    includeGifDownloads: Boolean = site == SiteType.XHAMSTER || site == SiteType.REDGIFS,
     customizeExtras: (LazyListScope.() -> Unit)? = null,
     subscriptionContent: (@Composable () -> Unit)? = null,
 ): SiteHubConfig {
@@ -411,6 +423,7 @@ fun standardSiteHubConfig(
         add(common.offlinePlaylist)
         if (includeDownloads) add(common.downloads)
         if (includeImageDownloads) add(common.imageDownloads)
+        if (includeGifDownloads) add(common.gifDownloads)
     }
     return SiteHubConfig(
         site = site,

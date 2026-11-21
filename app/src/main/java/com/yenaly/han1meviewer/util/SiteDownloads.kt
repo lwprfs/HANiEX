@@ -34,6 +34,9 @@ object DownloadLayout {
 
     private const val FALLBACK = "untitled"
 
+    /** Sub-folder (under a site folder) that holds saved gifs/shorts; never scanned as videos. */
+    const val GIFS_FOLDER = "Gifs"
+
     fun sanitize(name: String?, fallback: String = FALLBACK): String {
         val cleaned = HFileManager.illegalCharsRegex.replace(name.orEmpty(), "_")
             .trim().trim('.').replace(Regex("\\s+"), " ")
@@ -330,13 +333,15 @@ object SiteImageSaver {
     private fun extensionOf(url: String): String {
         val path = url.substringBefore('?').substringBefore('#').lowercase()
         val ext = path.substringAfterLast('.', "")
-        return if (ext in setOf("jpg", "jpeg", "png", "webp", "gif")) ext else "jpg"
+        return if (ext in setOf("jpg", "jpeg", "png", "webp", "gif", "mp4", "webm")) ext else "jpg"
     }
 
     private fun mimeOf(ext: String) = when (ext) {
         "png" -> "image/png"
         "webp" -> "image/webp"
         "gif" -> "image/gif"
+        "mp4" -> "video/mp4"
+        "webm" -> "video/webm"
         else -> "image/jpeg"
     }
 
@@ -461,6 +466,37 @@ object SiteImageSaver {
                 appContext, urls, segments, baseName, client, headers, onProgress = null,
             )
             withContext(Dispatchers.Main) { onResult(result) }
+        }
+    }
+
+    /**
+     * Saves one gif / short clip into the image-download folder as `<Site>/Gifs/<creator>/<name>.mp4`.
+     * (The video scanner skips `Gifs` folders and the photo screen hides folders that hold videos.)
+     */
+    suspend fun saveGif(
+        context: Context,
+        site: SiteType,
+        url: String,
+        creator: String?,
+        baseName: String,
+        client: OkHttpClient,
+        headers: Map<String, String>,
+    ): Result<Unit> {
+        if (url.substringBefore('?').lowercase().endsWith(".m3u8")) {
+            return Result.failure(IOException("Streaming (HLS) clips can't be saved yet."))
+        }
+        val segments = listOf(
+            DownloadLayout.siteFolderName(site) ?: site.name,
+            DownloadLayout.GIFS_FOLDER,
+            DownloadLayout.sanitize(creator, "Unknown"),
+        )
+        return when (val r = saveBatch(context, listOf(url), segments, baseName, client, headers, onProgress = null)) {
+            is SaveResult.Error -> Result.failure(IOException(r.message))
+            is SaveResult.Saved -> when {
+                r.saved > 0 -> Result.success(Unit)
+                r.skipped > 0 -> Result.failure(IOException("Already downloaded."))
+                else -> Result.failure(IOException("Download failed."))
+            }
         }
     }
 

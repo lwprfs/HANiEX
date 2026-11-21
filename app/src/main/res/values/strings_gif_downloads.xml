@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_shorts_download">下載</string>
+    <string name="site_shorts_download_saved">已儲存</string>
+    <string name="hub_gif_downloads">GIF／短影片下載</string>
+    <string name="hub_gif_downloads_desc">依網站與創作者整理的已儲存 GIF 與短影片</string>
+    <string name="gif_downloads_title">GIF／短影片</string>
+    <string name="gif_downloads_empty">還沒有下載任何 GIF 或短影片</string>
+    <string name="gif_downloads_choose_folder">請先選擇圖片下載資料夾，GIF 會存放在同一處。</string>
+    <string name="gif_downloads_pick_folder">選擇資料夾</string>
+</resources>

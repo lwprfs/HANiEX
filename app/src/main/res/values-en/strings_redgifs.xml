@@ -75,4 +75,21 @@
     <string name="redgifs_login_failed">Sign-in failed. Please try again.</string>
     <string name="redgifs_load_failed">Couldn\'t load the page. Check your connection and try again.</string>
     <string name="redgifs_retry">Retry</string>
+    <string name="redgifs_edit_profile">Edit profile</string>
+    <string name="redgifs_profile_name">Name</string>
+    <string name="redgifs_profile_bio">Bio</string>
+    <string name="redgifs_profile_website">Website</string>
+    <string name="redgifs_collections">Collections</string>
+    <string name="redgifs_new_collection">New collection</string>
+    <string name="redgifs_collections_empty">No collections yet</string>
+    <string name="redgifs_collection_count">%1$d items</string>
+    <string name="redgifs_collection_public">Public</string>
+    <string name="redgifs_tags">Tags</string>
+    <string name="redgifs_dashboard">Dashboard</string>
+    <string name="redgifs_dash_followers">%1$d followers</string>
+    <string name="redgifs_dash_following">%1$d following</string>
+    <string name="redgifs_dash_gifs">%1$d gifs</string>
+    <string name="redgifs_dash_views">%1$d views</string>
+    <string name="redgifs_dash_likes">%1$d likes</string>
+    <string name="redgifs_pinned">Pinned</string>
 </resources>

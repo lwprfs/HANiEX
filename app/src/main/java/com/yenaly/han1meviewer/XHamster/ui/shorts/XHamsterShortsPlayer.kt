@@ -90,6 +90,18 @@ internal class XHamsterShortsSource(private val referer: String) : SiteShortsSou
     override val supportsRating = true
     override val supportsFavorite = true
     override val supportsComments = true
+    override val supportsDownload = true
+
+    override suspend fun downloadShort(context: Context, short: SiteShort, creator: String?): Result<Unit> =
+        com.yenaly.han1meviewer.util.SiteImageSaver.saveGif(
+            context = context,
+            site = SiteType.XHAMSTER,
+            url = short.videoUrl,
+            creator = creator,
+            baseName = short.id,
+            client = XHamsterNetwork.streamClient,
+            headers = mapOf("Referer" to com.yenaly.han1meviewer.XHamster.common.XHamsterConstants.REFERER),
+        )
 
     private fun SiteShort.ref() = pageUrl.ifBlank { referer }
     private fun SiteShort.videoId() = id.toLong()

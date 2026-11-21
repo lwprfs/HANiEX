@@ -136,6 +136,7 @@ fun CoserCardGrid(
                 bottomStartBadge = bottom,
                 imageLoader = imageLoader,
                 contentScale = ContentScale.Crop,
+                imageCard = true,
             )
         }
         if (state.isLoadingMore) {
@@ -166,6 +167,7 @@ fun CoserTermCard(
             topEndBadge = badge,
             imageLoader = imageLoader,
             contentScale = ContentScale.Crop,
+            imageCard = true,
         )
         return
     }

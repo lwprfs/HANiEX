@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="site_shorts_download">Download</string>
+    <string name="site_shorts_download_saved">Saved</string>
+    <string name="hub_gif_downloads">Gif / short downloads</string>
+    <string name="hub_gif_downloads_desc">Saved gifs and shorts, by site and creator</string>
+    <string name="gif_downloads_title">Gifs / shorts</string>
+    <string name="gif_downloads_empty">No gifs or shorts downloaded yet</string>
+    <string name="gif_downloads_choose_folder">Choose the image download folder first. Gifs are saved there too.</string>
+    <string name="gif_downloads_pick_folder">Choose folder</string>
+</resources>

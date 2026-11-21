@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.RedGifs.data.remote
 import android.net.Uri
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsConstants
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSettings
+import com.yenaly.han1meviewer.RedGifs.data.model.RedGifsCollection
 import com.yenaly.han1meviewer.RedGifs.data.model.RedGifsFeedPage
 import com.yenaly.han1meviewer.RedGifs.data.model.RedGifsGif
 import com.yenaly.han1meviewer.RedGifs.data.model.RedGifsListPage
@@ -14,6 +15,7 @@ import com.yenaly.han1meviewer.RedGifs.data.model.asArr
 import com.yenaly.han1meviewer.RedGifs.data.model.asObj
 import com.yenaly.han1meviewer.RedGifs.data.model.long
 import com.yenaly.han1meviewer.RedGifs.data.model.obj
+import com.yenaly.han1meviewer.RedGifs.data.model.parseCollection
 import com.yenaly.han1meviewer.RedGifs.data.model.parseFeedPage
 import com.yenaly.han1meviewer.RedGifs.data.model.parseGif
 import com.yenaly.han1meviewer.RedGifs.data.model.parseNiche
@@ -44,6 +46,7 @@ sealed interface RedGifsFeedSource {
     data object Mine : RedGifsFeedSource
     data class Niche(val id: String) : RedGifsFeedSource
     data class Creator(val name: String) : RedGifsFeedSource
+    data class Pins(val name: String) : RedGifsFeedSource
     data class Search(val query: String) : RedGifsFeedSource
 
     val kind: String
@@ -56,6 +59,7 @@ sealed interface RedGifsFeedSource {
             Mine -> "mine"
             is Niche -> "niche"
             is Creator -> "creator"
+            is Pins -> "pins"
             is Search -> "search"
         }
 
@@ -63,6 +67,7 @@ sealed interface RedGifsFeedSource {
         get() = when (this) {
             is Niche -> id
             is Creator -> name
+            is Pins -> name
             is Search -> query
             else -> ""
         }
@@ -79,6 +84,7 @@ sealed interface RedGifsFeedSource {
             "mine" -> Mine
             "niche" -> Niche(arg)
             "creator" -> Creator(arg)
+            "pins" -> Pins(arg)
             "search" -> Search(arg)
             else -> Trending
         }
@@ -172,6 +178,8 @@ object RedGifsRepo {
                 "/v2/niches/${enc(source.id)}/gifs" to listOf("count" to "30", "page" to p, "order" to "hot")
             is RedGifsFeedSource.Creator ->
                 "/v2/users/${enc(source.name)}/search" to listOf("order" to "new", "count" to "40", "type" to "g", "page" to p)
+            is RedGifsFeedSource.Pins ->
+                "/v2/pins/${enc(source.name)}" to emptyList()
             is RedGifsFeedSource.Search ->
                 "/v2/gifs/search" to listOf(
                     "search_text" to source.query, "type" to "g", "order" to "trending",
@@ -311,5 +319,55 @@ object RedGifsRepo {
             followNames?.remove(name.lowercase())
         }
         Unit
+    }
+
+    // ------------------------------------------------------------ profile, collections, tags, creator extras
+
+    /** `PATCH /v1/me` with `add` operations on `/name`, `/description` and `/profile_url`. */
+    suspend fun updateProfile(name: String, description: String, profileUrl: String): Result<Unit> = runCatching {
+        val body = """{"operations":[""" +
+                """{"op":"add","path":"/name","value":${JsonPrimitive(name)}},""" +
+                """{"op":"add","path":"/description","value":${JsonPrimitive(description)}},""" +
+                """{"op":"add","path":"/profile_url","value":${JsonPrimitive(profileUrl)}}]}"""
+        send("PATCH", "/v1/me", body)
+    }
+
+    suspend fun collections(username: String, page: Int): Result<RedGifsListPage<RedGifsCollection>> = runCatching {
+        val root = getJson(
+            "/v2/users/${enc(username)}/collections",
+            listOf("count" to "50", "page" to page.toString()),
+        ).asObj() ?: throw RedGifsHttpException(0, "bad response")
+        val items = root.arr("collections")?.mapNotNull { it.asObj()?.let(::parseCollection) }.orEmpty()
+        RedGifsListPage(items, root.long("page").toInt().coerceAtLeast(1), root.long("pages").toInt().coerceAtLeast(1))
+    }
+
+    suspend fun createCollection(name: String, description: String, published: Boolean): Result<Unit> = runCatching {
+        send(
+            "POST", "/v2/me/collections",
+            """{"published":$published,"description":${JsonPrimitive(description)},"folderName":${JsonPrimitive(name)}}""",
+        )
+    }
+
+    /** `GET /v2/socials/{user}` -> `{"links":[{"social":"https://..."}]}`. */
+    suspend fun socials(name: String): Result<List<String>> = runCatching {
+        getJson("/v2/socials/${enc(name)}").asObj()?.arr("links")?.mapNotNull { e ->
+            e.asObj()?.str("social") ?: (e as? JsonPrimitive)?.contentOrNull
+        }.orEmpty().filter { it.startsWith("http") }
+    }
+
+    /** `GET /v2/creators/{user}/tags` -> `{"tags":{"all":[...],"gifs":[...],"images":[...]}}`. */
+    suspend fun creatorTags(name: String): Result<List<String>> = runCatching {
+        getJson("/v2/creators/${enc(name)}/tags").asObj()?.obj("tags")?.arr("all")?.mapNotNull { e ->
+            (e as? JsonPrimitive)?.contentOrNull ?: e.asObj()?.str("name")
+        }.orEmpty().distinct()
+    }
+
+    /** `GET /v1/tags` -> `{"tags":[{"name","count"}]}`. */
+    suspend fun tags(): Result<List<Pair<String, Long>>> = runCatching {
+        getJson("/v1/tags").asObj()?.arr("tags")?.mapNotNull { e ->
+            val o = e.asObj() ?: return@mapNotNull null
+            val n = o.str("name") ?: return@mapNotNull null
+            n to o.long("count")
+        }.orEmpty()
     }
 }

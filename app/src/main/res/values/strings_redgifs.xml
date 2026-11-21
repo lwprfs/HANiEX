@@ -75,4 +75,21 @@
     <string name="redgifs_login_failed">登入失敗，請再試一次。</string>
     <string name="redgifs_load_failed">無法載入頁面，請檢查網路後重試。</string>
     <string name="redgifs_retry">重試</string>
+    <string name="redgifs_edit_profile">編輯個人資料</string>
+    <string name="redgifs_profile_name">名稱</string>
+    <string name="redgifs_profile_bio">自我介紹</string>
+    <string name="redgifs_profile_website">網站</string>
+    <string name="redgifs_collections">收藏集</string>
+    <string name="redgifs_new_collection">新增收藏集</string>
+    <string name="redgifs_collections_empty">還沒有收藏集</string>
+    <string name="redgifs_collection_count">%1$d 個項目</string>
+    <string name="redgifs_collection_public">公開</string>
+    <string name="redgifs_tags">標籤</string>
+    <string name="redgifs_dashboard">儀表板</string>
+    <string name="redgifs_dash_followers">%1$d 位粉絲</string>
+    <string name="redgifs_dash_following">追蹤 %1$d</string>
+    <string name="redgifs_dash_gifs">%1$d 個 GIF</string>
+    <string name="redgifs_dash_views">%1$d 次觀看</string>
+    <string name="redgifs_dash_likes">%1$d 個讚</string>
+    <string name="redgifs_pinned">置頂</string>
 </resources>

@@ -55,6 +55,14 @@ data class RedGifsNiche(
     val thumbnailUrl: String?,
 )
 
+data class RedGifsCollection(
+    val folderId: String,
+    val name: String,
+    val description: String,
+    val count: Long,
+    val published: Boolean,
+)
+
 data class RedGifsMe(
     val user: RedGifsUser,
     val email: String?,
@@ -172,3 +180,15 @@ internal fun parseFeedPage(root: JsonObject): RedGifsFeedPage {
         pages = root.long("pages").toInt().coerceAtLeast(1),
     )
 }
+
+internal fun parseCollection(o: JsonObject): RedGifsCollection? {
+    val id = o.str("folderId") ?: return null
+    return RedGifsCollection(
+        folderId = id,
+        name = o.str("folderName").orEmpty().ifBlank { id },
+        description = o.str("description").orEmpty().trim(),
+        count = o.long("contentCount"),
+        published = o.bool("published"),
+    )
+}
+

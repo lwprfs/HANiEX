@@ -345,7 +345,7 @@ object SiteImageCardSettings {
         Subtitle("subtitle"),
     }
 
-    val sites: Set<SiteType> = setOf(SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.XHAMSTER)
+    val sites: Set<SiteType> = setOf(SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER, SiteType.XHAMSTER)
 
     private var version by mutableIntStateOf(0)
     private var listening = false

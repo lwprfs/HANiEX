@@ -21,6 +21,10 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSettings
 import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsFeedSource
 import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsAccountScreen
+import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsCollectionsScreen
+import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsDashboardScreen
+import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsEditProfileScreen
+import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsTagsScreen
 import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsLoginScreen
 import com.yenaly.han1meviewer.RedGifs.ui.browse.RedGifsNichesScreen
 import com.yenaly.han1meviewer.RedGifs.ui.browse.RedGifsUsersMode
@@ -81,6 +85,18 @@ object RedGifsAccountRoute
 
 @Serializable
 object RedGifsLoginRoute
+
+@Serializable
+object RedGifsEditProfileRoute
+
+@Serializable
+object RedGifsCollectionsRoute
+
+@Serializable
+object RedGifsTagsRoute
+
+@Serializable
+object RedGifsDashboardRoute
 
 @Composable
 fun RedGifsNavHost(
@@ -192,6 +208,40 @@ fun RedGifsNavHost(
                     )
                 },
                 onOpenSettings = { navController.navigateSafely(RedGifsSettingsRoute) },
+                onOpenDashboard = { navController.navigateSafely(RedGifsDashboardRoute) },
+                onOpenEditProfile = { navController.navigateSafely(RedGifsEditProfileRoute) },
+                onOpenCollections = { navController.navigateSafely(RedGifsCollectionsRoute) },
+            )
+        }
+
+        composable<RedGifsEditProfileRoute> { RedGifsEditProfileScreen(onBack = { back() }) }
+
+        composable<RedGifsCollectionsRoute> { RedGifsCollectionsScreen(onBack = { back() }) }
+
+        composable<RedGifsTagsRoute> {
+            RedGifsTagsScreen(
+                onBack = { back() },
+                onOpenTag = { tag -> navController.navigateSafely(RedGifsFeedRoute("search", tag, "#$tag")) },
+            )
+        }
+
+        composable<RedGifsDashboardRoute> {
+            RedGifsDashboardScreen(
+                onBack = { back() },
+                onEditProfile = { navController.navigateSafely(RedGifsEditProfileRoute) },
+                onCollections = { navController.navigateSafely(RedGifsCollectionsRoute) },
+                onMine = {
+                    navController.navigateSafely(
+                        RedGifsFeedRoute("mine", "", activity.getString(R.string.redgifs_my_uploads)),
+                    )
+                },
+                onLiked = {
+                    navController.navigateSafely(
+                        RedGifsFeedRoute("liked", "", activity.getString(R.string.redgifs_liked)),
+                    )
+                },
+                onFollowers = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
+                onFollowing = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
             )
         }
 

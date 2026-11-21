@@ -50,6 +50,9 @@ fun RedGifsAccountScreen(
     onOpenLiked: () -> Unit,
     onOpenMine: () -> Unit,
     onOpenSettings: () -> Unit,
+    onOpenDashboard: () -> Unit = {},
+    onOpenEditProfile: () -> Unit = {},
+    onOpenCollections: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val imageLoader = remember { RedGifsImageLoader.get(context) }
@@ -118,6 +121,9 @@ fun RedGifsAccountScreen(
                         }
                     }
                 }
+                SettingNavigationItem(title = stringResource(R.string.redgifs_dashboard), onClick = onOpenDashboard)
+                SettingNavigationItem(title = stringResource(R.string.redgifs_edit_profile), onClick = onOpenEditProfile)
+                SettingNavigationItem(title = stringResource(R.string.redgifs_collections), onClick = onOpenCollections)
                 SettingNavigationItem(title = stringResource(R.string.redgifs_following), onClick = onOpenFollowing)
                 SettingNavigationItem(title = stringResource(R.string.redgifs_followers), onClick = onOpenFollowers)
                 SettingNavigationItem(title = stringResource(R.string.redgifs_followed_niches), onClick = onOpenFollowedNiches)

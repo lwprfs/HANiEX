@@ -208,6 +208,7 @@ object DownloadScanner {
                 }
                 if (segments.size >= MAX_DEPTH) continue
                 children.filter { it.isDirectory && !it.name.startsWith(".") && it.name.isNotBlank() }
+                    .filterNot { segments.size == 1 && it.name.equals(DownloadLayout.GIFS_FOLDER, ignoreCase = true) }
                     .forEach { queue.add(Item(it, segments + it.name)) }
             }
             onProgress?.invoke(0, leaves.size, null)

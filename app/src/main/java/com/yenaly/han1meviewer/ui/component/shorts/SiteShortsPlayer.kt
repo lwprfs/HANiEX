@@ -35,6 +35,7 @@ import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ClosedCaptionDisabled
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -129,6 +130,7 @@ fun SiteShortsPlayer(
     val failedMsg = stringResource(R.string.site_shorts_play_failed)
     val loginRequired = stringResource(R.string.site_shorts_login_required)
     val actionFailed = stringResource(R.string.site_shorts_action_failed)
+    val downloadSaved = stringResource(R.string.site_shorts_download_saved)
     val captchaMsg = stringResource(R.string.xh_comment_captcha)
     val postedMsg = stringResource(R.string.xh_comment_posted)
 
@@ -357,6 +359,15 @@ fun SiteShortsPlayer(
             source.setFavorite(short, !cur.favorite)
                 .onSuccess { metas[short.id] = cur.copy(favorite = !cur.favorite) }
                 .onFailure(::toastError)
+        }
+    }
+
+    fun downloadCurrent(short: SiteShort) {
+        val creator = metas[short.id]?.owner?.name
+        scope.launch {
+            source.downloadShort(context, short, creator)
+                .onSuccess { GlobalToasts.show(downloadSaved, level = GlobalToasts.ToastLevel.SUCCESS) }
+                .onFailure { toastError(it) }
         }
     }
 
@@ -719,6 +730,14 @@ fun SiteShortsPlayer(
                         Icon(
                             painterResource(R.drawable.ic_baseline_report_24),
                             stringResource(R.string.site_shorts_report_title), tint = Color.White,
+                        )
+                    }
+                }
+                if (currentShort != null && source.supportsDownload) {
+                    ShortsCircleButton(onClick = { downloadCurrent(currentShort) }, scrim = scrim) {
+                        Icon(
+                            Icons.Filled.Download,
+                            stringResource(R.string.site_shorts_download), tint = Color.White,
                         )
                     }
                 }

@@ -61,6 +61,12 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
                 onClick = { navController.navigateSafely(RedGifsNichesRoute()) },
             ),
             SiteHubEntry(
+                key = "tags",
+                title = stringResource(R.string.redgifs_tags),
+                icon = Icons.Filled.Category,
+                onClick = { navController.navigateSafely(RedGifsTagsRoute) },
+            ),
+            SiteHubEntry(
                 key = "creators",
                 title = stringResource(R.string.redgifs_creators),
                 icon = Icons.Filled.Star,
@@ -81,6 +87,18 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
             title = mineTitle,
             icon = Icons.Filled.PhotoLibrary,
             onClick = { navController.navigateSafely(RedGifsFeedRoute("mine", "", mineTitle)) },
+        ).gated(loggedIn, onLogin),
+        SiteHubEntry(
+            key = "collections",
+            title = stringResource(R.string.redgifs_collections),
+            icon = Icons.Filled.PhotoLibrary,
+            onClick = { navController.navigateSafely(RedGifsCollectionsRoute) },
+        ).gated(loggedIn, onLogin),
+        SiteHubEntry(
+            key = "dashboard",
+            title = stringResource(R.string.redgifs_dashboard),
+            icon = Icons.Filled.AccountCircle,
+            onClick = { navController.navigateSafely(RedGifsDashboardRoute) },
         ).gated(loggedIn, onLogin),
     )
 
