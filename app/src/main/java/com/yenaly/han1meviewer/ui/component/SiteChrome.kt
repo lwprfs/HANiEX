@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.component
 
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.util.translatedTitle
 import androidx.compose.animation.core.RepeatMode
@@ -20,8 +21,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.ui.text.style.TextAlign
@@ -636,7 +635,6 @@ fun SiteTopAppBar(
     )
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SiteLoadingContent(
     modifier: Modifier = Modifier,
@@ -652,7 +650,7 @@ fun SiteLoadingContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            LoadingIndicator()
+            SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,

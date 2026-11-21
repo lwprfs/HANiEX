@@ -18,7 +18,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +42,7 @@ import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 
 @Composable
 fun RouVideoSettingsScreen(onBack: () -> Unit) {
@@ -204,7 +204,7 @@ private fun TabRow(
         IconButton(onClick = onMoveDown, enabled = canMoveDown) {
             Icon(Icons.Filled.ArrowDownward, contentDescription = null)
         }
-        Switch(
+        PawSwitch(
             checked = enabled,
             onCheckedChange = onToggle,
             modifier = Modifier.padding(start = 4.dp, end = 8.dp),

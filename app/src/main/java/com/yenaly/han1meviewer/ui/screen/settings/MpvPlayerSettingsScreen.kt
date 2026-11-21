@@ -3,9 +3,7 @@ package com.yenaly.han1meviewer.ui.screen.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,6 +19,7 @@ import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSliderItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
+import com.yenaly.han1meviewer.ui.component.SettingsGroupTitle
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
@@ -98,7 +97,7 @@ fun MpvPlayerSettingsScreen(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        item { MpvGroupTitle(stringResource(R.string.player_settings_quality_performance)) }
+        item { SettingsGroupTitle(stringResource(R.string.player_settings_quality_performance)) }
 
         item {
             SettingNavigationItem(
@@ -158,7 +157,7 @@ fun MpvPlayerSettingsScreen(
             )
         }
 
-        item { MpvGroupTitle(stringResource(R.string.player_settings_network_cache)) }
+        item { SettingsGroupTitle(stringResource(R.string.player_settings_network_cache)) }
 
         item {
             SettingSliderItem(
@@ -193,7 +192,7 @@ fun MpvPlayerSettingsScreen(
             )
         }
 
-        item { MpvGroupTitle(stringResource(R.string.advanced)) }
+        item { SettingsGroupTitle(stringResource(R.string.advanced)) }
 
         item {
             SettingNavigationItem(
@@ -235,11 +234,6 @@ private fun CustomParamsDialog(
             }
         },
     )
-}
-
-@Composable
-private fun MpvGroupTitle(title: String) {
-    com.yenaly.han1meviewer.ui.component.SettingSectionHeader(title)
 }
 
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)

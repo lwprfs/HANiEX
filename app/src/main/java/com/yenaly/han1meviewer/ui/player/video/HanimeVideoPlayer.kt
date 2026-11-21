@@ -33,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,6 +65,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.animation.WalkingCatAnimation
 import com.yenaly.han1meviewer.ui.player.HanimePlayerController
 import com.yenaly.han1meviewer.ui.player.PlayerDefaults
 import com.yenaly.han1meviewer.ui.player.PlayerEvent
@@ -606,7 +606,7 @@ private fun PlayerCenterArea(
         when (state) {
 
             PlayerState.PREPARING, PlayerState.BUFFERING -> {
-                LoadingIndicator()
+                WalkingCatAnimation(modifier = Modifier.size(80.dp))
             }
 
             PlayerState.ERROR -> {

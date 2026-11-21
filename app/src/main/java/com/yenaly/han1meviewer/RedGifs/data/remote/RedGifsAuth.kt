@@ -192,7 +192,7 @@ object RedGifsAuth {
         return try {
             http.newCall(req).execute().use { resp ->
                 if (!resp.isSuccessful) return null
-                val token = json.parseToJsonElement(resp.body?.string().orEmpty())
+                val token = json.parseToJsonElement(resp.body.string().orEmpty())
                     .jsonObject["token"]?.let { (it as? JsonPrimitive)?.contentOrNull }
                 if (token.isNullOrBlank()) return null
                 sp.edit().putString(K_GUEST, token).putLong(K_GUEST_EXP, jwtExp(token)).apply()
@@ -221,7 +221,7 @@ object RedGifsAuth {
             .build()
         return try {
             http.newCall(req).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
+                val text = resp.body.string().orEmpty()
                 if (resp.isSuccessful) {
                     val o: JsonObject = json.parseToJsonElement(text).jsonObject
                     val idToken = (o["id_token"] as? JsonPrimitive)?.contentOrNull

@@ -2,6 +2,10 @@
 
 package com.yenaly.han1meviewer.ui.component
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,19 +18,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,12 +42,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import kotlin.math.roundToInt
 
@@ -167,6 +177,57 @@ private fun SettingTexts(
     }
 }
 
+/**
+ * 带猫爪图标的 M3 开关。
+ *
+ * 切换时猫爪会「撞墙摇晃」：先顺着拇指滑动的方向快速倾倒、撞上轨道边缘，
+ * 再高弹性地来回晃几下回正。
+ */
+@Composable
+fun PawSwitch(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    val pawRotation = remember { Animatable(0f) }
+    // 首次组合时不播动画，只在用户切换时摇晃。
+    var settled by remember { mutableStateOf(false) }
+    LaunchedEffect(checked) {
+        if (!settled) {
+            settled = true
+            return@LaunchedEffect
+        }
+        // 开启时拇指向右滑（撞右墙、顺时针倾倒），关闭时相反。
+        val wall = if (checked) 50f else -50f
+        // 第一段：快速冲向墙。
+        pawRotation.animateTo(wall, tween(durationMillis = 70))
+        // 第二段：低阻尼弹性摇晃着回正。
+        pawRotation.animateTo(
+            targetValue = 0f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioHighBouncy,
+                stiffness = Spring.StiffnessMedium,
+            ),
+        )
+    }
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier,
+        enabled = enabled,
+        thumbContent = {
+            Icon(
+                painter = painterResource(R.drawable.ic_baseline_paw_24),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(SwitchDefaults.IconSize)
+                    .graphicsLayer { rotationZ = pawRotation.value },
+            )
+        },
+    )
+}
+
 @Composable
 fun SettingSwitchItem(
     title: String,
@@ -196,7 +257,7 @@ fun SettingSwitchItem(
             iconRes?.let { SettingIconBadge(it, enabled = enabled) }
                 ?: icon?.let { SettingIconBadge(it, enabled = enabled) }
             SettingTexts(title, summary, Modifier.weight(1f), enabled)
-            Switch(
+            PawSwitch(
                 checked = checked,
                 onCheckedChange = null,
                 enabled = enabled,
@@ -226,16 +287,18 @@ fun SettingNavigationItem(
         ) {
             iconRes?.let { SettingIconBadge(it, enabled = enabled) }
                 ?: icon?.let { SettingIconBadge(it, enabled = enabled) }
-            SettingTexts(title, summary, Modifier.weight(1f), enabled)
-            if (!valueText.isNullOrBlank()) {
-                Text(
-                    text = valueText,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(0.6f, fill = false),
-                )
+            Column(modifier = Modifier.weight(1f)) {
+                SettingTexts(title, summary, enabled = enabled)
+                if (!valueText.isNullOrBlank()) {
+                    Text(
+                        text = valueText,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = if (enabled) 1f else 0.38f),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
             }
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -272,6 +335,26 @@ fun SettingInfoItem(
                 )
             }
         }
+    }
+}
+
+/**
+ * 猫头滑块拇指
+ */
+@Composable
+private fun CatHeadSliderThumb(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.size(30.dp),
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary,
+        shadowElevation = 4.dp,
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.ic_baseline_cat_head_24),
+            contentDescription = null,
+            modifier = Modifier.padding(2.dp),
+        )
     }
 }
 
@@ -322,6 +405,7 @@ fun SettingSliderItem(
                 },
                 valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
                 steps = totalSteps.coerceAtLeast(0),
+                thumb = { CatHeadSliderThumb() },
             )
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -388,11 +472,11 @@ fun SettingChoiceItem(
                 }
             }
             if (selected) {
-
                 Icon(
-                    imageVector = Icons.Filled.CheckCircle,
+                    painter = painterResource(R.drawable.ic_fill_cat_head_24),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -444,9 +528,10 @@ fun SettingRadioItem(
             SettingTexts(title, summary, Modifier.weight(1f))
             if (selected) {
                 Icon(
-                    imageVector = Icons.Filled.CheckCircle,
+                    painter = painterResource(R.drawable.ic_fill_cat_head_24),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
         }
@@ -474,6 +559,20 @@ fun SettingActionItem(
         }
     }
 }
+
+@Composable
+fun SettingsGroupTitle(title: String) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+        )
+        HorizontalDivider()
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
@@ -535,6 +634,16 @@ private fun SettingChoiceItemPreview() {
             title = "跟随系统",
             selected = true,
             onClick = {},
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun SettingsGroupTitlePreview() {
+    ComponentPreview {
+        SettingsGroupTitle(
+            title = "系统"
         )
     }
 }

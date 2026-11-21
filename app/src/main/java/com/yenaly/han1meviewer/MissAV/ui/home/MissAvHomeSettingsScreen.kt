@@ -41,7 +41,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,6 +54,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -288,7 +288,7 @@ private fun CategoryEditorRow(
                 modifier = Modifier.size(18.dp),
             )
         }
-        Switch(
+        PawSwitch(
             checked = visible,
             onCheckedChange = onToggleHidden,
             modifier = Modifier.padding(start = 4.dp, end = 8.dp),

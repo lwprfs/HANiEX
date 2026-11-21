@@ -1095,7 +1095,7 @@ object Parser {
         val content = textClass.getOrNull(1)?.text()
             .throwIfParseNull(Parser::commentReply.name, "content")
         val thumbUp = postClass
-            .select("span[style]")?.getOrNull(1)
+            .select("span[style]").getOrNull(1)
             ?.text()?.toIntOrNull()
 
         val foreignId = postClass.getElementById("foreign_id")?.attr("value")

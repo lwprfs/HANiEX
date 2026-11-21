@@ -129,7 +129,7 @@ object RedGifsRepo {
                 query.forEach { (k, v) -> addQueryParameter(k, v) }
             }.build()
             RedGifsNetwork.client.newCall(Request.Builder().url(url).build()).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
+                val text = resp.body.string().orEmpty()
                 if (!resp.isSuccessful) throw RedGifsHttpException(resp.code, errorText(resp.code, text))
                 json.parseToJsonElement(text)
             }
@@ -144,7 +144,7 @@ object RedGifsRepo {
                 .build()
             RedGifsNetwork.client.newCall(req).execute().use { resp ->
                 if (!resp.isSuccessful) {
-                    throw RedGifsHttpException(resp.code, errorText(resp.code, resp.body?.string().orEmpty()))
+                    throw RedGifsHttpException(resp.code, errorText(resp.code, resp.body.string().orEmpty()))
                 }
             }
         }
@@ -301,13 +301,11 @@ object RedGifsRepo {
     suspend fun like(id: String): Result<Unit> = runCatching {
         send("PUT", "/v2/gifs/${enc(id)}/like", """{"context":null,"source":"explore-gifs","source_id":null,"position":0}""")
         likedIds?.add(id)
-        Unit
     }
 
     suspend fun unlike(id: String): Result<Unit> = runCatching {
         send("DELETE", "/v2/gifs/${enc(id)}/like", null)
         likedIds?.remove(id)
-        Unit
     }
 
     suspend fun setFollowing(name: String, follow: Boolean): Result<Unit> = runCatching {
@@ -318,7 +316,6 @@ object RedGifsRepo {
             send("DELETE", "/v1/me/follows/${enc(name)}", null)
             followNames?.remove(name.lowercase())
         }
-        Unit
     }
 
     // ------------------------------------------------------------ profile, collections, tags, creator extras

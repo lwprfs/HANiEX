@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +48,7 @@ import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.launch
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -315,7 +315,7 @@ fun FapFolderPrivacySettingsScreen(onBack: () -> Unit) {
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.weight(1f),
                     )
-                    Switch(
+                    PawSwitch(
                         checked = settings.newsletter,
                         onCheckedChange = {
                             settings = settings.copy(newsletter = it); message = null

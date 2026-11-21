@@ -147,7 +147,7 @@ fun RedGifsCreatorScreen(
                 }
                 if (!u?.description.isNullOrBlank()) {
                     Text(
-                        u?.description.orEmpty(),
+                        u.description.orEmpty(),
                         style = MaterialTheme.typography.bodySmall,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,

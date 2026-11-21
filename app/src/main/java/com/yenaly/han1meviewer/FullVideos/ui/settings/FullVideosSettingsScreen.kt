@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Switch
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.ui.component.SettingActionItem
 import androidx.compose.material.icons.filled.CleaningServices
@@ -33,6 +32,7 @@ import com.yenaly.han1meviewer.ui.component.SettingRadioItem
 import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,7 +76,7 @@ fun FullVideosSettingsScreen(onBack: () -> Unit) {
                             },
                             enabled = index < order.lastIndex,
                         ) { Icon(Icons.Filled.ArrowDownward, contentDescription = null) }
-                        Switch(
+                        PawSwitch(
                             checked = key !in hidden,
                             onCheckedChange = { on ->
                                 hidden = if (on) hidden - key else hidden + key

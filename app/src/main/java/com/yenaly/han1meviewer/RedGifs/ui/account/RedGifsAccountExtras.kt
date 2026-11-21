@@ -14,7 +14,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,6 +40,7 @@ import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import kotlinx.coroutines.launch
+import com.yenaly.han1meviewer.ui.component.PawSwitch
 
 /** `PATCH /v1/me` for display name, bio and website. */
 @Composable
@@ -168,7 +168,7 @@ fun RedGifsCollectionsScreen(onBack: () -> Unit) {
                         label = { Text(stringResource(R.string.redgifs_profile_bio)) },
                     )
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Switch(checked = published, onCheckedChange = { published = it })
+                        PawSwitch(checked = published, onCheckedChange = { published = it })
                         Text(stringResource(R.string.redgifs_collection_public))
                     }
                 }

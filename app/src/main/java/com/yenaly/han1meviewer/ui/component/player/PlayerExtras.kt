@@ -74,6 +74,7 @@ object PipSupport {
             ?: return false
         return try {
             val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                @Suppress("DEPRECATION")
                 appOps.unsafeCheckOpNoThrow(
                     AppOpsManager.OPSTR_PICTURE_IN_PICTURE,
                     Process.myUid(),

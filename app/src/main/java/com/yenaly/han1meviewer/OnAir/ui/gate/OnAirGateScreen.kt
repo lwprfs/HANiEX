@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.OnAir.ui.gate
 
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,7 +28,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -90,7 +90,7 @@ fun OnAirGateScreen(
         ) {
 
             if (showProgress) {
-                LoadingIndicator()
+                SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
             } else {
                 Image(
                     modifier = Modifier.size(150.dp),

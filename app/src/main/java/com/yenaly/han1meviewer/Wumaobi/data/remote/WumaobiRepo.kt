@@ -166,7 +166,6 @@ object WumaobiRepo {
             "${WumaobiConstants.BASE_URL}/user/editFav",
             mapOf("collectionIDs" to collectionIds.joinToString(","), "VidID" to videoId),
         ).requireOk()
-        Unit
     }
 
     suspend fun createFavFolder(name: String): Result<Unit> = runCatching {
@@ -174,6 +173,5 @@ object WumaobiRepo {
             "${WumaobiConstants.BASE_URL}/user/createFavCollection",
             mapOf("favCollectionName" to name),
         ).requireOk()
-        Unit
     }
 }

@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.FapFolder.ui.navigation
 
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.util.applicationContext
@@ -21,7 +22,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -526,7 +526,7 @@ private fun GatePlaceholder(message: String) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            LoadingIndicator()
+            SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
             Text(
                 text = "FapFolder",
                 style = MaterialTheme.typography.labelLarge,

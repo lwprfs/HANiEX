@@ -152,7 +152,7 @@ object RedGifsLoginFlow {
             .build()
         return try {
             client.newCall(apiReq).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
+                val text = resp.body.string().orEmpty()
                 if (!resp.isSuccessful) throw FlowException(apiError(resp.code, text))
                 val o = json.parseToJsonElement(text).jsonObject
                 val hint = (o["login_hint"] as? JsonPrimitive)?.contentOrNull
@@ -212,7 +212,7 @@ object RedGifsLoginFlow {
      */
     private fun readTokens(client: OkHttpClient, tokenReq: Request): Pair<String, String?> = try {
         client.newCall(tokenReq).execute().use { resp ->
-            val text = resp.body?.string().orEmpty()
+            val text = resp.body.string().orEmpty()
             if (!resp.isSuccessful) throw FlowException("Token exchange failed (HTTP ${resp.code})")
             val o = json.parseToJsonElement(text).jsonObject
             val idToken = (o["id_token"] as? JsonPrimitive)?.contentOrNull.orEmpty()
@@ -251,7 +251,7 @@ object RedGifsLoginFlow {
             .build()
         val (loginHint, connectionId) = try {
             client.newCall(apiReq).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
+                val text = resp.body.string().orEmpty()
                 if (!resp.isSuccessful) throw FlowException(apiError(resp.code, text))
                 val o = json.parseToJsonElement(text).jsonObject
                 val hint = (o["login_hint"] as? JsonPrimitive)?.contentOrNull
@@ -293,7 +293,7 @@ object RedGifsLoginFlow {
                             ?: throw FlowException("Bad redirect")
                         url = next
                     } else {
-                        html = resp.body?.string().orEmpty()
+                        html = resp.body.string().orEmpty()
                         landed = resp.request.url
                         hops = Int.MAX_VALUE - 1
                     }
@@ -349,7 +349,7 @@ object RedGifsLoginFlow {
             .build()
         val location: String = try {
             client.newCall(req).execute().use { resp ->
-                val text = resp.body?.string().orEmpty()
+                val text = resp.body.string().orEmpty()
                 val header = resp.header("Location")
                 val inner = runCatching {
                     val outer = json.parseToJsonElement(text).jsonObject

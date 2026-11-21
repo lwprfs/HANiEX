@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.component.SettingInfoItem
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
+import com.yenaly.han1meviewer.ui.component.SettingsGroupTitle
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.util.applicationContext
@@ -305,7 +306,7 @@ fun NetworkSettingsScreen(
             }
         }
 
-        item { NetworkGroupTitle(stringResource(R.string.builtin_dns)) }
+        item { SettingsGroupTitle(stringResource(R.string.builtin_dns)) }
 
         item {
             SettingSwitchItem(
@@ -335,7 +336,7 @@ fun NetworkSettingsScreen(
             )
         }
 
-        item { NetworkGroupTitle(stringResource(R.string.debug)) }
+        item { SettingsGroupTitle(stringResource(R.string.debug)) }
 
         item {
             SettingNavigationItem(
@@ -364,11 +365,6 @@ fun NetworkSettingsScreen(
             )
         }
     }
-}
-
-@Composable
-private fun NetworkGroupTitle(title: String) {
-    com.yenaly.han1meviewer.ui.component.SettingSectionHeader(title)
 }
 
 @Preview(showBackground = true, widthDp = 420, heightDp = 900)
@@ -415,7 +411,7 @@ private fun NetworkSettingsScreenPreview() {
             proxyIp = "",
             proxyPort = -1,
             dohEnabled = false,
-            dohPreset = "cloudflare",
+            dohPreset = "Cloudflare",
             dohCustomUrl = "",
             dohBootstrapIps = "1.1.1.1, 8.8.8.8",
             dohTimeoutSeconds = 10,

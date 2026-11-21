@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.ui.screen.home.myplaylist
 
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,7 +12,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults.pinnedScrollBehavior
 import androidx.compose.material3.pulltorefresh.pullToRefresh
@@ -143,7 +145,7 @@ fun PlaylistScreen(
             when (state) {
                 is WebsiteState.Loading -> {
                     if (uiState.playlists.isEmpty()) {
-                        LoadingIndicator(Modifier.align(Alignment.Center))
+                        SittingCatLoadingAnimation(modifier = Modifier.size(70.dp).align(Alignment.Center))
                     } else {
                         PlaylistContent(uiState = uiState, onEvent = handleEvent, rawState = state)
                     }
