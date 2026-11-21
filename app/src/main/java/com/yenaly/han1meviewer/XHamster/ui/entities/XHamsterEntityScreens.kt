@@ -431,7 +431,7 @@ fun XHamsterPhotosScreen(
                                     maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
                                 )
-                                val meta = if (!showImgBadges) emptyList<String>() else listOfNotNull<String>(
+                                val meta = if (!showImgBadges) "" else listOfNotNull(
                                     gallery.photosCount?.let {
                                         stringResource(R.string.xhamster_n_photos, it.toString())
                                     },
