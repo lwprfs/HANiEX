@@ -95,6 +95,118 @@ object RedGifsLoginFlow {
         return msg ?: "HTTP $code"
     }
 
+    /** Result of [startWeb]: the Kinde authorize URL to open in a WebView plus the PKCE values to finish with. */
+    class WebStart internal constructor(
+        val authorizeUrl: String,
+        val verifier: String,
+        val state: String,
+    )
+
+    /**
+     * Step 1 for the WebView login page: asks RedGifs to send the e-mail code and returns the real
+     * auth page URL. The WebView then shows the page where the code is typed (handled by the site itself).
+     */
+    suspend fun startWeb(
+        login: String?,
+        username: String?,
+        email: String?,
+        captcha: String,
+    ): WebStart = withContext(Dispatchers.IO) {
+        val client = newClient()
+        val (loginHint, connectionId) = requestLoginHint(client, login, username, email, captcha)
+        val verifier = randomUrlSafe(48)
+        val state = randomUrlSafe(24)
+        WebStart(authorizeUrl(loginHint, connectionId, verifier, state).toString(), verifier, state)
+    }
+
+    /** Step 2 for the WebView login page: exchanges the authorization code from the redirect for tokens. */
+    suspend fun finishWeb(code: String, verifier: String): Unit = withContext(Dispatchers.IO) {
+        exchangeToken(newClient(), code, verifier)
+    }
+
+    private fun requestLoginHint(
+        client: OkHttpClient,
+        login: String?,
+        username: String?,
+        email: String?,
+        captcha: String,
+    ): Pair<String, String> {
+        val signup = username != null
+        val payload = buildJsonObject {
+            if (signup) {
+                put("username", username.orEmpty())
+                put("email", email.orEmpty())
+            } else {
+                put("blocked", false)
+                put("login", login.orEmpty())
+            }
+            put("captcha", captcha)
+            put("session_id", RedGifsAuth.sessionId)
+        }.toString()
+        val apiReq = Request.Builder()
+            .url("${RedGifsConstants.API_BASE}/v2/auth/${if (signup) "signup" else "login"}")
+            .post(payload.toRequestBody(jsonMedia))
+            .header("Origin", RedGifsConstants.ORIGIN)
+            .header("Referer", RedGifsConstants.REFERER)
+            .header("Accept", "application/json")
+            .build()
+        return try {
+            client.newCall(apiReq).execute().use { resp ->
+                val text = resp.body?.string().orEmpty()
+                if (!resp.isSuccessful) throw FlowException(apiError(resp.code, text))
+                val o = json.parseToJsonElement(text).jsonObject
+                val hint = (o["login_hint"] as? JsonPrimitive)?.contentOrNull
+                val conn = (o["connection_id"] as? JsonPrimitive)?.contentOrNull
+                if (hint.isNullOrBlank() || conn.isNullOrBlank()) throw FlowException("Unexpected server response")
+                hint to conn
+            }
+        } catch (e: IOException) {
+            throw FlowException(e.message ?: "Network error")
+        }
+    }
+
+    private fun authorizeUrl(loginHint: String, connectionId: String, verifier: String, state: String): HttpUrl =
+        "${RedGifsConstants.AUTH_BASE}/oauth2/auth".toHttpUrl().newBuilder()
+            .addQueryParameter("login_hint", loginHint)
+            .addQueryParameter("connection_id", connectionId)
+            .addQueryParameter("redirect_uri", RedGifsConstants.ORIGIN)
+            .addQueryParameter("client_id", RedGifsConstants.CLIENT_ID)
+            .addQueryParameter("response_type", "code")
+            .addQueryParameter("scope", RedGifsConstants.OAUTH_SCOPE)
+            .addQueryParameter("code_challenge", challengeOf(verifier))
+            .addQueryParameter("code_challenge_method", "S256")
+            .addQueryParameter("state", state)
+            .build()
+
+    private fun exchangeToken(client: OkHttpClient, authCode: String, verifier: String) {
+        val body = FormBody.Builder()
+            .add("client_id", RedGifsConstants.CLIENT_ID)
+            .add("code", authCode)
+            .add("code_verifier", verifier)
+            .add("grant_type", "authorization_code")
+            .add("redirect_uri", RedGifsConstants.ORIGIN)
+            .build()
+        val tokenReq = Request.Builder()
+            .url("${RedGifsConstants.AUTH_BASE}/oauth2/token")
+            .post(body)
+            .header("Origin", RedGifsConstants.ORIGIN)
+            .header("Referer", RedGifsConstants.REFERER)
+            .header("Accept", "application/json")
+            .build()
+        val (access, refresh) = try {
+            client.newCall(tokenReq).execute().use { resp ->
+                val text = resp.body?.string().orEmpty()
+                if (!resp.isSuccessful) throw FlowException("Token exchange failed (HTTP ${resp.code})")
+                val o = json.parseToJsonElement(text).jsonObject
+                ((o["access_token"] as? JsonPrimitive)?.contentOrNull.orEmpty()) to
+                        (o["refresh_token"] as? JsonPrimitive)?.contentOrNull
+            }
+        } catch (e: IOException) {
+            throw FlowException(e.message ?: "Network error")
+        }
+        if (!RedGifsAuth.completeLoginWithTokens(access, refresh)) throw FlowException("No access token received")
+    }
+
     suspend fun begin(
         login: String?,
         username: String?,
@@ -177,11 +289,21 @@ object RedGifsLoginFlow {
 
         val psid = Regex("psid[:=]([A-Za-z0-9]+)").find(landed.toString())?.groupValues?.get(1)
             ?: inputValue(html, "p_psid")
-        val csrf = inputValue(html, "x_csrf_token")
+        val csrf = inputValue(html, "x_csrf_token") ?: metaCsrf(html)
         if (psid.isNullOrBlank() || csrf.isNullOrBlank()) {
             throw FlowException("Could not read the verification page")
         }
         Pending(client, verifier, state, psid, csrf, landed.toString())
+    }
+
+    private fun metaCsrf(html: String): String? {
+        for (m in Regex("<meta[^>]*>", RegexOption.IGNORE_CASE).findAll(html)) {
+            val tag = m.value
+            if (!Regex("""name\s*=\s*["']csrf-token["']""", RegexOption.IGNORE_CASE).containsMatchIn(tag)) continue
+            Regex("""content\s*=\s*["']([^"']*)["']""", RegexOption.IGNORE_CASE).find(tag)?.groupValues?.get(1)
+                ?.let { return it }
+        }
+        return null
     }
 
     private fun inputValue(html: String, name: String): String? {
@@ -205,6 +327,9 @@ object RedGifsLoginFlow {
             .post(form)
             .header("Origin", RedGifsConstants.AUTH_BASE)
             .header("Referer", pending.pageUrl)
+            .header("Accept", "roast/mixed")
+            .header("X-Requested-With", "XMLHttpRequest")
+            .header("X-CSRF-Token", pending.csrf)
             .build()
         val location: String = try {
             client.newCall(req).execute().use { resp ->

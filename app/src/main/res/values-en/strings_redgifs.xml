@@ -64,4 +64,15 @@
     <string name="redgifs_cookie_invalid">That doesn\'t look like a valid RedGifs session.</string>
     <string name="redgifs_cookie_hint">Paste your redgifs.com cookies, a refresh_token value, or an access token. They stay on this device.</string>
     <string name="redgifs_cookie_field">Cookie / token</string>
+    <string name="redgifs_login_title">Welcome back</string>
+    <string name="redgifs_signup_title">Create your account</string>
+    <string name="redgifs_continue">Continue</string>
+    <string name="redgifs_verifying">Verifying…</string>
+    <string name="redgifs_working">Please wait…</string>
+    <string name="redgifs_no_account">New to RedGifs?</string>
+    <string name="redgifs_create_account">Create account</string>
+    <string name="redgifs_have_account">Already have an account?</string>
+    <string name="redgifs_login_failed">Sign-in failed. Please try again.</string>
+    <string name="redgifs_load_failed">Couldn\'t load the page. Check your connection and try again.</string>
+    <string name="redgifs_retry">Retry</string>
 </resources>

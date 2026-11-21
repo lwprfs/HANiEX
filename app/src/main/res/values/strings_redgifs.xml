@@ -64,4 +64,15 @@
     <string name="redgifs_cookie_invalid">這看起來不是有效的 RedGifs 登入資料。</string>
     <string name="redgifs_cookie_hint">貼上 redgifs.com 的 Cookie、refresh_token 值或 access token，資料只保存在本機。</string>
     <string name="redgifs_cookie_field">Cookie / Token</string>
+    <string name="redgifs_login_title">歡迎回來</string>
+    <string name="redgifs_signup_title">建立帳號</string>
+    <string name="redgifs_continue">繼續</string>
+    <string name="redgifs_verifying">驗證中…</string>
+    <string name="redgifs_working">處理中…</string>
+    <string name="redgifs_no_account">還沒有帳號？</string>
+    <string name="redgifs_create_account">建立帳號</string>
+    <string name="redgifs_have_account">已經有帳號？</string>
+    <string name="redgifs_login_failed">登入失敗，請再試一次。</string>
+    <string name="redgifs_load_failed">無法載入頁面，請檢查網路後重試。</string>
+    <string name="redgifs_retry">重試</string>
 </resources>

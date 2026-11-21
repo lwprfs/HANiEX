@@ -258,7 +258,7 @@ object RedGifsAuth {
         RedGifsSession.bump()
     }
 
-    private fun clearWebSession() {
+    fun clearWebSession() {
         runCatching {
             val cm = CookieManager.getInstance()
             listOf(RedGifsConstants.AUTH_BASE, RedGifsConstants.BASE_URL).forEach { url ->
