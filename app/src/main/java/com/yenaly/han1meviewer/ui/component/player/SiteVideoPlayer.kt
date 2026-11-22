@@ -99,7 +99,6 @@ fun SiteVideoPlayer(
     var resumeAtMs by remember(state.url) { mutableLongStateOf(0L) }
     val context = LocalContext.current
 
-    // Floating mini player / picture-in-picture show the picture only, without controls.
     val hideChrome = LocalPlayerCompact.current || PipSupport.inPip
     val zoomState = remember { PinchZoomState() }
     val zoomEnabled = isFullscreen && config.pinchZoom && !useMpv

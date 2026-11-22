@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import com.yenaly.han1meviewer.ui.screen.library.offline.OfflineMediaScreen
 import com.yenaly.han1meviewer.util.offline.OfflineKind
 
-/** Gif / short downloads: `Shorts/<Site>/<channel or title>/` in the download path. */
 @Composable
 fun GifDownloadsScreen(onBack: () -> Unit) {
     OfflineMediaScreen(kind = OfflineKind.SHORTS, onBack = onBack)

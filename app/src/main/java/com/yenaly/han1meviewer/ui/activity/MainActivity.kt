@@ -486,7 +486,6 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
         currentVideoHost = host
     }
 
-    /** Clears the host only if it is still the registered one. Returns true when it was cleared. */
     fun unregisterCurrentVideoHost(host: VideoPageHost): Boolean {
         if (currentVideoHost !== host) return false
         currentVideoHost = null

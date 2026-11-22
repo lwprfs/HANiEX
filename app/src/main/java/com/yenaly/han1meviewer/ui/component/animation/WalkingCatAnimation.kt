@@ -103,7 +103,7 @@ fun WalkingCatAnimation(
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            // 将画布统一缩放到 100x100 逻辑坐标，保证 1:1 比例一致
+
             val baseSize = 100f
             val scale = size.minDimension / baseSize
             val offsetX = (size.width - baseSize * scale) * 0.5f
@@ -130,11 +130,8 @@ private fun DrawScope.drawWalkingCatRight(
 ) {
     val angle = phase * 2f * PI.toFloat()
 
-    // 身体随步频上下微起伏（每步两个峰值 -> 2 * angle）
     val bodyBobY = -abs(sin(angle)) * 2.2f
 
-    // 四条腿摆动角度（度），面向右侧（+X）
-    // 远侧腿（偏暗一点更有层次，但仍保持纯实心风格）
     val farColor = palette.bodyColor.copy(alpha = 0.82f)
     val nearColor = palette.bodyColor
 
@@ -143,7 +140,6 @@ private fun DrawScope.drawWalkingCatRight(
     val nearBackSwing = sin(angle + PI.toFloat()) * 26f
     val nearFrontSwing = sin(angle + PI.toFloat() * 1.55f) * 26f
 
-    // 1. 远侧腿（后腿、前腿）
     drawCatLeg(
         pivot = Offset(34f, 64f + bodyBobY),
         angleDeg = farBackSwing,
@@ -159,14 +155,12 @@ private fun DrawScope.drawWalkingCatRight(
         color = farColor
     )
 
-    // 2. 尾巴（位于左侧躯干后端，随步伐摆动）
     drawCatTail(
         start = Offset(26f, 54f + bodyBobY),
         swing = tailSwing,
         color = nearColor
     )
 
-    // 3. 实心躯干（圆角胶囊体）
     drawRoundRect(
         color = nearColor,
         topLeft = Offset(24f, 46f + bodyBobY),
@@ -174,7 +168,6 @@ private fun DrawScope.drawWalkingCatRight(
         cornerRadius = CornerRadius(11.5f, 11.5f)
     )
 
-    // 4. 近侧腿（后腿、前腿）
     drawCatLeg(
         pivot = Offset(32f, 65f + bodyBobY),
         angleDeg = nearBackSwing,
@@ -190,7 +183,6 @@ private fun DrawScope.drawWalkingCatRight(
         color = nearColor
     )
 
-    // 5. 头部与尖耳（位于右侧，朝向 +X）
     val headCenter = Offset(68f, 41f + bodyBobY * 1.15f)
     drawCatHead(
         center = headCenter,
@@ -243,7 +235,7 @@ private fun DrawScope.drawCatHead(
     center: Offset,
     palette: WalkingCatPalette
 ) {
-    // 左耳（靠后）
+
     val backEar = Path().apply {
         moveTo(center.x - 11f, center.y - 6f)
         lineTo(center.x - 13f, center.y - 20f)
@@ -252,7 +244,6 @@ private fun DrawScope.drawCatHead(
     }
     drawPath(path = backEar, color = palette.bodyColor)
 
-    // 右耳（靠前）
     val frontEar = Path().apply {
         moveTo(center.x - 1f, center.y - 10f)
         lineTo(center.x + 4f, center.y - 22f)
@@ -261,7 +252,6 @@ private fun DrawScope.drawCatHead(
     }
     drawPath(path = frontEar, color = palette.bodyColor)
 
-    // 前耳粉色内耳三角
     val innerEar = Path().apply {
         moveTo(center.x + 1.5f, center.y - 11f)
         lineTo(center.x + 4.5f, center.y - 18f)
@@ -270,14 +260,12 @@ private fun DrawScope.drawCatHead(
     }
     drawPath(path = innerEar, color = palette.earInnerColor)
 
-    // 实心圆润猫头
     drawCircle(
         color = palette.bodyColor,
         radius = 14.5f,
         center = center
     )
 
-    // 朝向右方的简约眼睛与小鼻子
     drawCircle(
         color = palette.eyeColor,
         radius = 2.1f,

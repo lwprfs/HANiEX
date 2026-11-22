@@ -65,7 +65,6 @@ import com.yenaly.han1meviewer.util.DownloadLayout
 import com.yenaly.han1meviewer.util.formatFileSizeV2
 import com.yenaly.han1meviewer.util.offline.OfflineItem
 
-/** Plays downloaded clips with the same vertical-scroll player that plays shorts online. */
 private class LocalShortsSource(override val site: SiteType) : SiteShortsSource
 
 fun siteTypeForFolder(folder: String): SiteType =
@@ -113,10 +112,6 @@ fun OfflineShortsViewer(
     }
 }
 
-/**
- * Full-screen photo viewer for one album: swipe left/right through the album's photos, pinch or
- * double tap to zoom, thumbnail strip, details and delete.
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OfflinePhotoViewer(

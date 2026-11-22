@@ -64,18 +64,12 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-/** Holds the WebView and the PKCE values of the sign-in that is currently running. */
 private class LoginHolder {
     var webView: WebView? = null
     var start: RedGifsLoginFlow.WebStart? = null
     var handled: Boolean = false
 }
 
-/**
- * RedGifs sign-in, laid out like the Hanime1 login: one real login page inside a WebView.
- * The first page asks for the e-mail / username, then RedGifs' own page asks for the e-mail code.
- * "Cookie" in the top bar keeps the manual token import as a fallback.
- */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun RedGifsLoginScreen(
@@ -126,7 +120,6 @@ fun RedGifsLoginScreen(
     var loadError by remember { mutableStateOf(false) }
     var showCookie by rememberSaveable { mutableStateOf(false) }
 
-    // Start from a clean web session so an old half-finished sign-in can't leak into this one.
     remember { RedGifsAuth.clearWebSession(); true }
 
     fun showLoginPage() {
@@ -191,7 +184,6 @@ fun RedGifsLoginScreen(
         }
     }
 
-    // On the real RedGifs code page "back" returns to the first login page instead of leaving.
     BackHandler(enabled = onAuthPage && !exchanging) { showLoginPage() }
 
     Scaffold(
@@ -209,7 +201,7 @@ fun RedGifsLoginScreen(
         },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
-            // A new key builds a fresh WebView, which is the only valid recovery after the renderer dies.
+
             key(generation) {
                 val mine = remember { arrayOfNulls<WebView>(1) }
                 DisposableEffect(Unit) {
@@ -365,7 +357,6 @@ fun RedGifsLoginScreen(
     }
 }
 
-/** Manual fallback: paste a redgifs.com cookie string, refresh_token or access token. */
 @Composable
 private fun CookieDialog(onDismiss: () -> Unit, onLoggedIn: () -> Unit) {
     val scope = rememberCoroutineScope()
@@ -417,7 +408,6 @@ private fun CookieDialog(onDismiss: () -> Unit, onLoggedIn: () -> Unit) {
     )
 }
 
-/** True for the final redirect back to redgifs.com that carries the OAuth `code` (or an `error`). */
 private fun isOAuthReturn(uri: Uri): Boolean {
     val host = uri.host ?: return false
     val base = Uri.parse(RedGifsConstants.ORIGIN).host ?: return false

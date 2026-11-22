@@ -9,7 +9,6 @@ val IMAGE_DOWNLOAD_SITES = setOf(
     SiteType.FAPFOLDER, SiteType.BUONDUA, SiteType.XHAMSTER, SiteType.COSPLAYTELE, SiteType.COSER,
 )
 
-/** Photo downloads: `Photos/<Site>/<channel or title>/` in the download path. */
 @Composable
 fun ImageDownloadsScreen(onBack: () -> Unit) {
     OfflineMediaScreen(kind = OfflineKind.PHOTOS, onBack = onBack)

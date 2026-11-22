@@ -53,7 +53,6 @@ import com.yenaly.han1meviewer.util.offline.OfflineGroup
 import com.yenaly.han1meviewer.util.offline.OfflineGroups
 import com.yenaly.han1meviewer.util.offline.OfflineMigration
 
-/** Asks once (per app start) whether to move old-layout downloads to the new folder structure. */
 @Composable
 fun OfflineMigrationGate(onMigrated: () -> Unit = {}) {
     val context = LocalContext.current
@@ -135,7 +134,6 @@ fun OfflineMigrationGate(onMigrated: () -> Unit = {}) {
     }
 }
 
-/** One cell of the downloaded grid: thumbnail, title, a small subtitle, selection mark. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MediaGridCard(

@@ -53,12 +53,6 @@ private fun formatAdded(ms: Long): String =
     java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT)
         .format(java.util.Date(ms))
 
-/**
- * Downloaded videos as a grid (cover, title, quality and size only).
- *  - tap: details popup (local player / external player / delete); tap outside closes it
- *  - double tap: play straight away in the in-app player
- *  - long press: selection mode (the top bar switches to select all / move / delete)
- */
 @Composable
 fun DownloadedScreen(
     uiState: DownloadUiState,

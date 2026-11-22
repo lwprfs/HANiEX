@@ -98,7 +98,6 @@ interface SiteShortsSource {
     val supportsComments: Boolean get() = false
     val supportsDislike: Boolean get() = true
 
-    /** Shows a download button in the player; [downloadShort] does the saving. */
     val supportsDownload: Boolean get() = false
     suspend fun downloadShort(context: Context, short: SiteShort, creator: String?): Result<Unit> = unsupported()
 

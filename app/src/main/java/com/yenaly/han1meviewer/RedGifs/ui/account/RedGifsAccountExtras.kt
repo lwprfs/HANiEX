@@ -42,7 +42,6 @@ import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import kotlinx.coroutines.launch
 import com.yenaly.han1meviewer.ui.component.PawSwitch
 
-/** `PATCH /v1/me` for display name, bio and website. */
 @Composable
 fun RedGifsEditProfileScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
@@ -106,7 +105,6 @@ fun RedGifsEditProfileScreen(onBack: () -> Unit) {
     }
 }
 
-/** Lists your collections and creates new ones (the HAR has no endpoint for opening one). */
 @Composable
 fun RedGifsCollectionsScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
@@ -195,7 +193,6 @@ fun RedGifsCollectionsScreen(onBack: () -> Unit) {
     }
 }
 
-/** `GET /v1/tags`; tapping a tag opens a tag search. */
 @Composable
 fun RedGifsTagsScreen(onBack: () -> Unit, onOpenTag: (String) -> Unit) {
     Scaffold(
@@ -225,7 +222,6 @@ fun RedGifsTagsScreen(onBack: () -> Unit, onOpenTag: (String) -> Unit) {
     }
 }
 
-/** Your numbers plus shortcuts to everything you manage. */
 @Composable
 fun RedGifsDashboardScreen(
     onBack: () -> Unit,

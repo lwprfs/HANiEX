@@ -123,8 +123,6 @@ fun CollapsingPlayerLayout(
     val scope = rememberCoroutineScope()
     val state = remember { CollapseState(scope) }
 
-    // Floating (pinned) mini player: only while playing, fully scrolled away, and this page is
-    // the one on screen. Leaving the page (back / another video) hides it at once.
     val lifecycleOwner = LocalLifecycleOwner.current
     var pageResumed by remember {
         mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
@@ -241,7 +239,7 @@ fun CollapsingPlayerLayout(
         val height = constraints.maxHeight
 
         if (pip) {
-            // Picture-in-picture: only the player, centred on black, list measured to nothing.
+
             val pipPlayer = measurables[0].measure(
                 Constraints(minWidth = width, maxWidth = width, minHeight = 0, maxHeight = height),
             )

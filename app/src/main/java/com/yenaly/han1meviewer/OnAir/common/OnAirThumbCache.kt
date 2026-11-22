@@ -1,11 +1,5 @@
 package com.yenaly.han1meviewer.OnAir.common
 
-/**
- * Remembers the thumbnail of each video as seen on listing pages (home, search, tag, user,
- * recommended sidebar). The watch page route only carries the video id, so this lets the
- * detail screen save the real thumbnail of *that* video into history, downloads and playlists
- * instead of borrowing some other video's picture.
- */
 object OnAirThumbCache {
 
     private const val MAX_ENTRIES = 2000

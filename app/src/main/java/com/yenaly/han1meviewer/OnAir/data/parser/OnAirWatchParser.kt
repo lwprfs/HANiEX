@@ -96,11 +96,6 @@ object OnAirWatchParser {
         )
     }
 
-    /**
-     * Thumbnail of the video being watched. Order: the player's own poster, then the thumbnail
-     * this exact video had on a listing page, then page-level meta images. Never uses the
-     * recommended-videos sidebar, which belongs to other videos.
-     */
     private fun resolveCoverUrl(doc: Document, baseUrl: String, videoId: String): String {
         val poster = listOf("video#watch-video", "video#watch-video-fallback", "video[poster]")
             .firstNotNullOfOrNull { sel ->

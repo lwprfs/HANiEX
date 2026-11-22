@@ -32,12 +32,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.job
 
-/**
- * Downloader for photos and shorts / gifs (the video downloader has its own, Room-based one).
- *
- * Files go to `Photos/<Site>/<channel or title>/` or `Shorts/<Site>/<channel or title>/` inside the
- * download path, each folder with a `.nomedia` and json metadata.
- */
 object OfflineDownloads {
 
     enum class State { QUEUED, DOWNLOADING, PAUSED, FAILED, DONE }
@@ -45,7 +39,7 @@ object OfflineDownloads {
     data class Request(
         val kind: OfflineKind,
         val siteFolder: String,
-        /** Folder name: channel name or title. Already sanitized. */
+
         val folder: String,
         val title: String,
         val channel: String? = null,
@@ -102,17 +96,13 @@ object OfflineDownloads {
     private val _tasks = MutableStateFlow<List<Task>>(emptyList())
     val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
 
-    /** Bumped whenever something finished, so screens know to rescan. */
     private val _revision = MutableStateFlow(0)
     val revision: StateFlow<Int> = _revision.asStateFlow()
-
-    // ---------------------------------------------------------------- layout helpers
 
     data class Layout(val siteFolder: String, val folder: String, val channel: String?)
 
     private val GENERIC_SEGMENTS = setOf("photos", "gifs", "groups", "profiles", "other", "videos", "shorts")
 
-    /** Maps the `segments` the site screens pass (e.g. `["Coser", title]`) to the new folder layout. */
     fun layoutFor(segments: List<String>, fallbackFolder: String): Layout {
         val site = DownloadLayout.sanitize(segments.firstOrNull(), "Other")
         val rest = segments.drop(1).filter { it.isNotBlank() && it.lowercase() !in GENERIC_SEGMENTS }
@@ -126,8 +116,6 @@ object OfflineDownloads {
             )
         }
     }
-
-    // ---------------------------------------------------------------- queue control
 
     fun enqueue(request: Request, client: OkHttpClient, headers: Map<String, String>): Deferred<Outcome> {
         val id = ids.incrementAndGet()
@@ -174,7 +162,6 @@ object OfflineDownloads {
         .filter { it.request.kind == kind && (it.state == State.PAUSED || it.state == State.FAILED) }
         .forEach { resume(it.id) }
 
-    /** Cancels a task and removes what it has written so far. */
     fun cancel(id: Long) {
         val rt = runtimes.remove(id)
         val task = taskOf(id)
@@ -197,8 +184,6 @@ object OfflineDownloads {
     private fun setTask(id: Long, block: (Task) -> Task) {
         _tasks.update { list -> list.map { if (it.id == id) block(it) else it } }
     }
-
-    // ---------------------------------------------------------------- running a task
 
     private fun extensionOf(url: String, allowed: Set<String>, fallback: String): String {
         val path = url.substringBefore('?').substringBefore('#').lowercase()
@@ -369,8 +354,6 @@ object OfflineDownloads {
             }
         }
     }
-
-    // ---------------------------------------------------------------- metadata
 
     private fun writePhotoInfo(ctx: android.content.Context, segments: List<String>, req: Request) {
         val node = OfflineFs.find(ctx, segments)

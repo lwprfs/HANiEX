@@ -95,17 +95,12 @@ object RedGifsLoginFlow {
         return msg ?: "HTTP $code"
     }
 
-    /** Result of [startWeb]: the Kinde authorize URL to open in a WebView plus the PKCE values to finish with. */
     class WebStart internal constructor(
         val authorizeUrl: String,
         val verifier: String,
         val state: String,
     )
 
-    /**
-     * Step 1 for the WebView login page: asks RedGifs to send the e-mail code and returns the real
-     * auth page URL. The WebView then shows the page where the code is typed (handled by the site itself).
-     */
     suspend fun startWeb(
         login: String?,
         username: String?,
@@ -119,7 +114,6 @@ object RedGifsLoginFlow {
         WebStart(authorizeUrl(loginHint, connectionId, verifier, state).toString(), verifier, state)
     }
 
-    /** Step 2 for the WebView login page: exchanges the authorization code from the redirect for tokens. */
     suspend fun finishWeb(code: String, verifier: String): Unit = withContext(Dispatchers.IO) {
         exchangeToken(newClient(), code, verifier)
     }
@@ -193,23 +187,19 @@ object RedGifsLoginFlow {
             .header("Referer", RedGifsConstants.REFERER)
             .header("Accept", "application/json")
             .apply {
-                // The browser sends the auth2 session cookies (refresh_token, kbtc, ...) with this call.
+
                 val cookies = RedGifsAuth.webAuthCookies()
                 if (cookies.isNotBlank()) header("Cookie", cookies)
             }
             .build()
         val (idToken, refresh) = readTokens(client, tokenReq)
-        // Some responses omit the refresh token from the body; the WebView holds it as a cookie then.
+
         val refreshToken = refresh ?: RedGifsAuth.refreshTokenFromWebView()
         if (!RedGifsAuth.completeLoginWithTokens(idToken, refreshToken)) {
             throw FlowException("No id token received")
         }
     }
 
-    /**
-     * Runs the /oauth2/token call and returns (id_token, refresh_token). RedGifs' API only accepts the
-     * id_token as Bearer, so the access_token from this response is intentionally ignored.
-     */
     private fun readTokens(client: OkHttpClient, tokenReq: Request): Pair<String, String?> = try {
         client.newCall(tokenReq).execute().use { resp ->
             val text = resp.body.string().orEmpty()

@@ -27,8 +27,7 @@ import java.util.concurrent.TimeUnit
 object RedGifsAuth {
 
     private const val PREFS = "redgifs_auth"
-    // RedGifs' API expects the OIDC *id_token* as the Bearer token (the site itself sends the
-    // id_token, never the access_token). Legacy keys are only kept so old installs get cleaned up.
+
     private const val K_ID = "id_token"
     private const val K_ID_EXP = "id_exp"
     private const val K_LEGACY_ACCESS = "access_token"
@@ -107,7 +106,6 @@ object RedGifsAuth {
         json.parseToJsonElement(String(raw)).jsonObject["exp"]?.let { (it as? JsonPrimitive)?.longOrNull } ?: 0L
     }.getOrDefault(0L)
 
-    /** True for the OIDC id_token RedGifs issues (`iss` = auth2.redgifs.com, carries `at_hash`/e-mail/username). */
     fun isRedGifsIdToken(token: String): Boolean = runCatching {
         val payload = token.split('.')[1]
         val raw = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
@@ -123,7 +121,6 @@ object RedGifsAuth {
         (json.parseToJsonElement(String(raw)).jsonObject[name] as? JsonPrimitive)?.contentOrNull
     }.getOrNull()
 
-    /** Old builds stored the access_token, which the API rejects ("Bad token format"). Drop it. */
     private fun dropLegacyAccess() {
         if (sp.contains(K_LEGACY_ACCESS) || sp.contains(K_LEGACY_ACCESS_EXP)) {
             sp.edit().remove(K_LEGACY_ACCESS).remove(K_LEGACY_ACCESS_EXP).apply()
@@ -142,10 +139,6 @@ object RedGifsAuth {
         e.apply()
     }
 
-    /**
-     * Bearer for api.redgifs.com: the user's id_token when signed in (refreshed through the
-     * refresh_token cookie value when it is about to expire), otherwise a guest token.
-     */
     fun bearer(force: Boolean = false): String? = synchronized(lock) {
         dropLegacyAccess()
         val idToken = sp.getString(K_ID, null)
@@ -170,7 +163,6 @@ object RedGifsAuth {
         guestToken(force)
     }
 
-    /** Guest token, used as a last resort when the user's token keeps being refused. */
     fun guestBearer(force: Boolean = false): String? = synchronized(lock) { guestToken(force) }
 
     private fun guestToken(force: Boolean): String? {
@@ -242,7 +234,6 @@ object RedGifsAuth {
         }
     }
 
-    /** Cookie header the WebView holds for auth2.redgifs.com (empty when there is none). */
     fun webAuthCookies(): String = runCatching {
         CookieManager.getInstance().getCookie(RedGifsConstants.AUTH_BASE).orEmpty()
     }.getOrDefault("")
@@ -294,11 +285,6 @@ object RedGifsAuth {
         RedGifsSession.bump()
     }
 
-    /**
-     * Wipes every RedGifs / Kinde cookie from the WebView. Cookies set with a `Domain=` attribute
-     * (e.g. `.redgifs.com`) are only removed by an expiry that names the same domain, so each cookie
-     * is expired for the host-only and the domain variants.
-     */
     fun clearWebSession() {
         runCatching {
             val cm = CookieManager.getInstance()

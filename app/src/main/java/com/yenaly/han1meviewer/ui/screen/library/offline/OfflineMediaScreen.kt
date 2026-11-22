@@ -108,10 +108,6 @@ private fun formatDuration(seconds: Int): String {
     return "%d:%02d".format(m, s)
 }
 
-/**
- * The photo / short downloader page. Same layout as the video downloader: a "Downloading" tab
- * and a "Downloaded" tab with groups, search, sort and multi-select.
- */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
@@ -167,7 +163,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
             filtered.sortedWith(sortComparator(sort))
         }
     }
-    /** Flat order as displayed (group by group), used by the in-app shorts player. */
+
     val displayOrder = remember(shown, groupsState, query) {
         if (query.isNotBlank()) shown
         else groupsState.groups.flatMap { g -> shown.filter { groupsState.groupOf(it.key) == g.id } }
@@ -361,8 +357,6 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
             }
         }
     }
-
-    // ----------------------------------------------------------- dialogs
 
     popup?.let { item ->
         ShortDetailsPopup(

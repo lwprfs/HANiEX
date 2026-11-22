@@ -23,17 +23,12 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
 
-/**
- * Moves downloads made with the old folder layout into
- * `Videos/<Site>/<title>`, `Photos/<Site>/<channel or title>` and `Shorts/<Site>/<channel or title>`.
- */
 object OfflineMigration {
 
     private const val TAG = "OfflineMigration"
     private const val KEY_DONE = "offline_layout_v3_done"
     private val json = Json { ignoreUnknownKeys = true }
 
-    /** Set when the user chose "Later"; the dialog is not shown again until the app restarts. */
     @Volatile
     var postponedThisSession = false
 
@@ -50,7 +45,6 @@ object OfflineMigration {
 
     private val appScope = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO)
 
-    /** Runs the migration on an app-wide scope so leaving the screen does not cancel it half way. */
     fun migrateAsync(
         context: Context,
         onProgress: (done: Int, total: Int) -> Unit,
@@ -71,7 +65,7 @@ object OfflineMigration {
         val chain: List<DownloadTreeNode>,
         val node: DownloadTreeNode,
         val children: List<DownloadTreeNode>,
-        /** True when the folder lives inside the download path (fast moves), false for the old image folder. */
+
         val inRoot: Boolean,
     )
 
@@ -190,7 +184,7 @@ object OfflineMigration {
     }
 
     private fun prune(context: Context, leaf: Leaf) {
-        // Remove the old folders that are now empty, from the deepest one up.
+
         for (i in leaf.chain.indices.reversed()) {
             val node = leaf.chain[i]
             val rest = node.children().filterNot { it.name == OfflineFs.NO_MEDIA }

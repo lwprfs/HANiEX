@@ -25,10 +25,6 @@ data class OfflineGroupsState(
     fun groupOf(key: String): Int = assignments[key]?.takeIf { id -> groups.any { it.id == id } } ?: OfflineGroups.DEFAULT_ID
 }
 
-/**
- * Groups for photos / shorts, the same idea as the video downloader's groups.
- * Kept in the app's preferences (group list + item key -> group id).
- */
 object OfflineGroups {
 
     const val DEFAULT_ID = 1
@@ -61,7 +57,7 @@ object OfflineGroups {
                 }
             }
         }
-        // The default group is always first; its name is shown from a string resource.
+
         return OfflineGroupsState(listOf(OfflineGroup(DEFAULT_ID, "")) + groups, assign)
     }
 
@@ -121,13 +117,11 @@ object OfflineGroups {
         }
     }
 
-    /** Drops assignments of items that no longer exist. */
     fun forget(kind: OfflineKind, keys: Collection<String>) {
         if (keys.isEmpty()) return
         update(kind) { s -> s.copy(assignments = s.assignments - keys.toSet()) }
     }
 
-    /** Keeps the group of an item whose folder was renamed/moved. */
     fun rekey(kind: OfflineKind, oldKey: String, newKey: String) {
         update(kind) { s ->
             val id = s.assignments[oldKey] ?: return@update s

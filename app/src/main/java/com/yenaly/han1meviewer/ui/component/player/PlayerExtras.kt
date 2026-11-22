@@ -48,16 +48,10 @@ import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import kotlin.math.roundToInt
 
-/**
- * True while the small floating ("pinned") player is shown by [com.yenaly.han1meviewer.ui.component.CollapsingPlayerLayout].
- * Players read this to hide their controls, so the floating box only shows the picture.
- */
 val LocalPlayerCompact = compositionLocalOf { false }
 
-/** Helpers for the optional auto picture-in-picture feature. */
 object PipSupport {
 
-    /** True while the activity is in picture-in-picture mode. Written by MainActivity. */
     var inPip by mutableStateOf(false)
         private set
 
@@ -110,10 +104,6 @@ object PipSupport {
         }
     }
 
-    /**
-     * Picture-in-picture parameters without custom actions, so the window only shows the
-     * system's own expand (double arrow) button, which brings the video page back.
-     */
     fun buildParams(aspect: Float, autoEnter: Boolean): PictureInPictureParams {
         val ratio = aspect.coerceIn(0.42f, 2.38f)
         val builder = PictureInPictureParams.Builder()
@@ -131,11 +121,6 @@ object PipSupport {
         false
     }
 
-    /**
-     * Called whenever the app comes back to the foreground. If auto picture-in-picture is on but
-     * the system permission was removed in the meantime, switch the option off everywhere and
-     * tell the user.
-     */
     fun verifyPermission(context: Context) {
         if (!SitePlayerSettings.isAutoPipEnabledAnywhere()) return
         if (!isSupported(context)) {
@@ -164,10 +149,6 @@ private fun Context.findMainActivity(): MainActivity? {
     return null
 }
 
-/**
- * Registers the current site video page as the picture-in-picture host while it is on screen.
- * Does nothing unless auto picture-in-picture is enabled for [site].
- */
 @Composable
 fun SitePipEffect(
     site: SiteType,
@@ -233,7 +214,6 @@ fun SitePipEffect(
     }
 }
 
-/** Zoom/pan state for the pinch-to-zoom option. Never persisted, so every fullscreen starts at 1x. */
 @Stable
 class PinchZoomState {
     var scale by mutableFloatStateOf(1f)
@@ -288,11 +268,6 @@ class PinchZoomState {
     }
 }
 
-/**
- * Detects two-finger pinch/pan on the container. Runs in the initial pass and only consumes
- * events while two or more fingers are down, so one-finger gestures of the player (tap, seek,
- * brightness, volume, long press) keep working untouched.
- */
 fun Modifier.pinchZoomGestures(state: PinchZoomState, enabled: Boolean): Modifier {
     if (!enabled) return this
     return this
@@ -316,7 +291,6 @@ fun Modifier.pinchZoomGestures(state: PinchZoomState, enabled: Boolean): Modifie
         }
 }
 
-/** Applies the current zoom to the video surface only (not to the player controls). */
 fun Modifier.pinchZoomLayer(state: PinchZoomState): Modifier = graphicsLayer {
     scaleX = state.scale
     scaleY = state.scale
@@ -324,12 +298,6 @@ fun Modifier.pinchZoomLayer(state: PinchZoomState): Modifier = graphicsLayer {
     translationY = state.offsetY
 }
 
-/**
- * Returns the handler for an "auto picture-in-picture" switch. Turning it off is immediate.
- * Turning it on first needs the system picture-in-picture permission: if it is missing the
- * system settings page opens, the switch stays off, and it only turns on when the user comes
- * back with the permission granted.
- */
 @Composable
 fun rememberPipEnableHandler(setEnabled: (Boolean) -> Unit): (Boolean) -> Unit {
     val context = LocalContext.current

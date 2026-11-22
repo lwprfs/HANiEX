@@ -135,7 +135,7 @@ fun OnAirVideoPlayer(
     val hideChrome = com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact.current ||
             com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
     val zoomState = remember { com.yenaly.han1meviewer.ui.component.player.PinchZoomState() }
-    // The video is a SurfaceView here; scaling it is only reliable from Android 10.
+
     val zoomEnabled = isFullscreen && playerConfig.pinchZoom &&
             android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q
     LaunchedEffect(isFullscreen) {

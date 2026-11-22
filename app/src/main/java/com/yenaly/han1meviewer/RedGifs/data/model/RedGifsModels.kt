@@ -191,4 +191,3 @@ internal fun parseCollection(o: JsonObject): RedGifsCollection? {
         published = o.bool("published"),
     )
 }
-

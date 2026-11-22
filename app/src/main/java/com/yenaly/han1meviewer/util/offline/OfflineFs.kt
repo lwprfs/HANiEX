@@ -14,15 +14,6 @@ import com.yenaly.han1meviewer.util.SafTreeNode
 import java.io.File
 import java.io.OutputStream
 
-/**
- * File access for photos / shorts under the same download path the video downloader uses
- * (app-private folder, or the folder chosen with the system picker).
- *
- * Layout (relative to the download path):
- *  - Videos/<Site>/<title>/<videos, cover jpg/png, info.json, .nomedia>
- *  - Photos/<Site>/<channel or title>/<photos, info.json, .nomedia>
- *  - Shorts/<Site>/<channel or title>/<clips, thumbnails, one json per clip, .nomedia>
- */
 object OfflineFs {
 
     private const val TAG = "OfflineFs"
@@ -50,7 +41,6 @@ object OfflineFs {
         return SafTreeNode.root(context, uri)
     }
 
-    /** Walks [segments] down from the download path; null when any folder is missing. */
     fun find(context: Context, segments: List<String>): DownloadTreeNode? {
         var node = root(context) ?: return null
         for (segment in segments) {
@@ -91,7 +81,6 @@ object OfflineFs {
         else -> "application/octet-stream"
     }
 
-    /** Creates the folder chain and puts a `.nomedia` in the last folder (and the first one). */
     fun ensureDir(context: Context, segments: List<String>): Boolean = synchronized(lock) {
         runCatching {
             if (Preferences.isUsePrivateStorage) {
@@ -116,7 +105,6 @@ object OfflineFs {
         }
     }
 
-    /** Opens (creating) a file for writing. Returns the stream and the file's uri string. */
     fun openOutput(
         context: Context,
         segments: List<String>,
@@ -178,17 +166,12 @@ object OfflineFs {
         return delete(context, node.uriString)
     }
 
-    /** Deletes [dir]'s folder when it no longer holds anything but `.nomedia`. */
     fun deleteIfEmpty(context: Context, segments: List<String>) {
         val node = find(context, segments) ?: return
         val rest = node.children().filterNot { it.name == NO_MEDIA }
         if (rest.isEmpty()) delete(context, node.uriString)
     }
 
-    /**
-     * Moves one file inside the download path. Fast rename when possible, copy + delete as the
-     * fallback. Returns the new uri string, or null when it failed.
-     */
     fun moveFile(
         context: Context,
         srcSegments: List<String>,
@@ -248,7 +231,6 @@ object OfflineFs {
         }
     }
 
-    /** Copies [node] (possibly from another tree) into the download path and deletes the source. */
     fun importNode(
         context: Context,
         node: DownloadTreeNode,

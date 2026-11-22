@@ -279,7 +279,6 @@ object SitePlayerSettings {
 
     fun spec(id: String): Spec? = specs.firstOrNull { it.id == id }
 
-    // RedGifs only has a vertical shorts feed: no video page to pin, no picture-in-picture, no zoom.
     private val feedOnlyHiddenIds = setOf(ID_PIN_VIDEO, ID_AUTO_PIP, ID_PINCH_ZOOM)
 
     fun specsFor(site: SiteType): List<Spec> = specs.filter {
@@ -350,7 +349,6 @@ object SitePlayerSettings {
 
     private fun bool(site: SiteType, id: String) = getString(site, id).toBooleanStrictOrNull() ?: true
 
-    /** True when auto picture-in-picture is switched on for the app or for any site with its own settings. */
     fun isAutoPipEnabledAnywhere(): Boolean {
         if (Preferences.allowPipMode) return true
         return configurableSites.any {
@@ -359,7 +357,6 @@ object SitePlayerSettings {
         }
     }
 
-    /** Switches auto picture-in-picture off for the app and for every site that keeps its own settings. */
     fun disableAutoPipEverywhere() {
         val separated = configurableSites.filter { !isSynced(it) }
         Preferences.preferenceSp.edit {

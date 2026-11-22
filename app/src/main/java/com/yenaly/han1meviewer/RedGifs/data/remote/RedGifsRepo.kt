@@ -318,9 +318,6 @@ object RedGifsRepo {
         }
     }
 
-    // ------------------------------------------------------------ profile, collections, tags, creator extras
-
-    /** `PATCH /v1/me` with `add` operations on `/name`, `/description` and `/profile_url`. */
     suspend fun updateProfile(name: String, description: String, profileUrl: String): Result<Unit> = runCatching {
         val body = """{"operations":[""" +
                 """{"op":"add","path":"/name","value":${JsonPrimitive(name)}},""" +
@@ -345,21 +342,18 @@ object RedGifsRepo {
         )
     }
 
-    /** `GET /v2/socials/{user}` -> `{"links":[{"social":"https://..."}]}`. */
     suspend fun socials(name: String): Result<List<String>> = runCatching {
         getJson("/v2/socials/${enc(name)}").asObj()?.arr("links")?.mapNotNull { e ->
             e.asObj()?.str("social") ?: (e as? JsonPrimitive)?.contentOrNull
         }.orEmpty().filter { it.startsWith("http") }
     }
 
-    /** `GET /v2/creators/{user}/tags` -> `{"tags":{"all":[...],"gifs":[...],"images":[...]}}`. */
     suspend fun creatorTags(name: String): Result<List<String>> = runCatching {
         getJson("/v2/creators/${enc(name)}/tags").asObj()?.obj("tags")?.arr("all")?.mapNotNull { e ->
             (e as? JsonPrimitive)?.contentOrNull ?: e.asObj()?.str("name")
         }.orEmpty().distinct()
     }
 
-    /** `GET /v1/tags` -> `{"tags":[{"name","count"}]}`. */
     suspend fun tags(): Result<List<Pair<String, Long>>> = runCatching {
         getJson("/v1/tags").asObj()?.arr("tags")?.mapNotNull { e ->
             val o = e.asObj() ?: return@mapNotNull null

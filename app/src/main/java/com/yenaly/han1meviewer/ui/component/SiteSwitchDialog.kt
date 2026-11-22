@@ -227,7 +227,12 @@ fun SiteSwitchDialog(
     val ordered = pinned.mapNotNull { p -> visible.firstOrNull { it.siteType == p } } +
             visible.filter { it.siteType !in pinned }
     val pages = ordered.chunked(SitesPerPage)
-    val pagerState = rememberPagerState(pageCount = { pages.size.coerceAtLeast(1) })
+    val currentPage = (ordered.indexOfFirst { it.siteType == currentSite } / SitesPerPage)
+        .coerceIn(0, (pages.size - 1).coerceAtLeast(0))
+    val pagerState = rememberPagerState(
+        initialPage = currentPage,
+        pageCount = { pages.size.coerceAtLeast(1) },
+    )
 
     ModalBottomSheet(
         modifier = modifier,

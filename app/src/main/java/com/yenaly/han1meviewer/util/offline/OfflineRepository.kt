@@ -8,7 +8,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
-/** Reads `Photos/` and `Shorts/` from the download path into [OfflineItem]s. */
 object OfflineRepository {
 
     val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp", "gif", "bmp")
@@ -103,7 +102,6 @@ object OfflineRepository {
         }
     }
 
-    /** Deletes the given entries from storage. Photo albums lose their whole folder; clips lose their own files. */
     suspend fun delete(context: Context, items: List<OfflineItem>) = withContext(Dispatchers.IO) {
         if (items.isEmpty()) return@withContext
         val touchedDirs = LinkedHashSet<List<String>>()

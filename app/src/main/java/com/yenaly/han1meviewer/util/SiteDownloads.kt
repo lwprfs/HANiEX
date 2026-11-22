@@ -37,7 +37,6 @@ object DownloadLayout {
 
     private const val FALLBACK = "untitled"
 
-    /** Sub-folder (under a site folder) that holds saved gifs/shorts; never scanned as videos. */
     const val GIFS_FOLDER = "Gifs"
 
     fun sanitize(name: String?, fallback: String = FALLBACK): String {
@@ -66,7 +65,6 @@ object DownloadLayout {
         SiteType.WUMAOBI -> "Wumaobi"
     }
 
-    /** Top level folders of the download path. */
     const val VIDEOS_FOLDER = "Videos"
     const val PHOTOS_FOLDER = "Photos"
     const val SHORTS_FOLDER = "Shorts"
@@ -75,7 +73,6 @@ object DownloadLayout {
 
     fun siteLabel(site: SiteType?): String = site?.let { siteFolderName(it) } ?: "Hanime"
 
-    /** `Videos/<Site>/<title>`, the folder of a video in the current layout. */
     fun newSegmentsFor(videoCode: String, title: String): List<String> =
         listOf(
             VIDEOS_FOLDER,
@@ -83,11 +80,9 @@ object DownloadLayout {
             sanitize(title),
         )
 
-    /** Folder of a video: the registered `Videos/<Site>/<title>` one, or the old layout for old downloads. */
     fun segmentsFor(videoCode: String): List<String> =
         DownloadFolderRegistry.get(videoCode) ?: legacySegmentsFor(videoCode)
 
-    /** Folder layout used before `Videos/<Site>/<title>`. */
     fun legacySegmentsFor(videoCode: String): List<String> {
         val site = SiteCheckIn.siteOfDishCode(videoCode)
             ?: return listOf(HFileManager.HANIME_DOWNLOAD_FOLDER, videoCode)
@@ -147,10 +142,6 @@ object DownloadLayout {
     }
 }
 
-/**
- * videoCode -> `Videos/<Site>/<title>` folder. Videos downloaded before this layout are not
- * registered and keep resolving to their old folder until they are migrated.
- */
 object DownloadFolderRegistry {
     private const val PREFS = "video_folder_registry"
     private fun prefs() = com.yenaly.han1meviewer.util.applicationContext
@@ -172,10 +163,6 @@ object DownloadFolderRegistry {
         prefs().edit().remove(videoCode).apply()
     }
 
-    /**
-     * Registers the folder of a new download. Reuses an existing registration, keeps the old folder
-     * for videos that already have files there, and makes the title folder unique.
-     */
     fun ensure(videoCode: String, title: String) {
         if (get(videoCode) != null) return
         val legacy = DownloadLayout.legacySegmentsFor(videoCode)
@@ -432,10 +419,6 @@ object SiteImageSaver {
         onProgress = null, title = title, sourceUrl = sourceUrl,
     )
 
-    /**
-     * Queues the photos in the photo downloader (`Photos/<Site>/<channel or title>/`) and waits
-     * until they are written. The same job is visible in the photo "Downloading" tab.
-     */
     suspend fun saveBatch(
         context: Context,
         urls: List<String>,
@@ -486,10 +469,6 @@ object SiteImageSaver {
         }
     }
 
-    /**
-     * Saves one gif / short clip with the shorts downloader:
-     * `Shorts/<Site>/<creator>/<id>.mp4` + thumbnail + json + `.nomedia`.
-     */
     suspend fun saveGif(
         context: Context,
         site: SiteType,

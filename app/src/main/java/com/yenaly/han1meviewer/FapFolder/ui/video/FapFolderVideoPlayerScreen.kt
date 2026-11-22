@@ -210,11 +210,11 @@ fun FapFolderVideoPlayerScreen(
     val currentOnPlayingChanged by androidx.compose.runtime.rememberUpdatedState(onPlayingChanged)
     LaunchedEffect(isPlaying) { currentOnPlayingChanged(isPlaying) }
     DisposableEffect(Unit) { onDispose { currentOnPlayingChanged(false) } }
-    // Floating mini player / picture-in-picture show the picture only, without controls.
+
     val hideChrome = com.yenaly.han1meviewer.ui.component.player.LocalPlayerCompact.current ||
             com.yenaly.han1meviewer.ui.component.player.PipSupport.inPip
     val zoomState = remember { com.yenaly.han1meviewer.ui.component.player.PinchZoomState() }
-    // The video is a SurfaceView here; scaling it is only reliable from Android 10.
+
     val zoomEnabled = isFullscreen &&
             com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
                 .config(com.yenaly.han1meviewer.SiteType.FAPFOLDER).pinchZoom &&
