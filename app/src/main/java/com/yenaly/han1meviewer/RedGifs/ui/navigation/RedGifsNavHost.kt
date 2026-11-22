@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -18,7 +20,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.RedGifs.common.RedGifsSession
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSettings
+import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth
 import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsFeedSource
 import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsAccountScreen
 import com.yenaly.han1meviewer.RedGifs.ui.account.RedGifsCollectionsScreen
@@ -37,6 +41,7 @@ import com.yenaly.han1meviewer.RedGifs.ui.search.RedGifsSearchScreen
 import com.yenaly.han1meviewer.RedGifs.ui.settings.RedGifsSettingsScreen
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.component.content.LoginGate
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.navigateSafely
@@ -114,6 +119,9 @@ fun RedGifsNavHost(
     val goLogin = { navController.navigateSafely(RedGifsLoginRoute) }
     val back = { navController.popBackStackSafely() }
 
+    val sessionEpoch by RedGifsSession.epoch.collectAsState()
+    val loggedIn = remember(sessionEpoch) { RedGifsAuth.isLoggedIn }
+
     val actions = remember(navController) {
         RedGifsActions(
             openCreator = { name -> navController.navigateSafely(RedGifsCreatorRoute(name)) },
@@ -172,22 +180,39 @@ fun RedGifsNavHost(
 
         composable<RedGifsNichesRoute> {
             val route = it.toRoute<RedGifsNichesRoute>()
-            RedGifsNichesScreen(
-                following = route.following,
+            LoginGate(
+                loggedIn = loggedIn || !route.following,
+                title = stringResource(R.string.redgifs_followed_niches),
                 onBack = { back() },
-                onOpenNiche = { niche ->
-                    navController.navigateSafely(RedGifsFeedRoute("niche", niche.id, niche.name))
-                },
-            )
+                onSignIn = { goLogin() },
+            ) {
+                RedGifsNichesScreen(
+                    following = route.following,
+                    onBack = { back() },
+                    onOpenNiche = { niche ->
+                        navController.navigateSafely(RedGifsFeedRoute("niche", niche.id, niche.name))
+                    },
+                )
+            }
         }
 
         composable<RedGifsUsersRoute> {
             val route = it.toRoute<RedGifsUsersRoute>()
-            RedGifsUsersScreen(
-                mode = RedGifsUsersMode.entries.firstOrNull { m -> m.name == route.mode } ?: RedGifsUsersMode.CREATORS,
+            val mode = RedGifsUsersMode.entries.firstOrNull { m -> m.name == route.mode } ?: RedGifsUsersMode.CREATORS
+            LoginGate(
+                loggedIn = loggedIn || mode == RedGifsUsersMode.CREATORS,
+                title = stringResource(
+                    if (mode == RedGifsUsersMode.FOLLOWERS) R.string.redgifs_followers else R.string.redgifs_following,
+                ),
                 onBack = { back() },
-                onOpenUser = { user -> navController.navigateSafely(RedGifsCreatorRoute(user.username)) },
-            )
+                onSignIn = { goLogin() },
+            ) {
+                RedGifsUsersScreen(
+                    mode = mode,
+                    onBack = { back() },
+                    onOpenUser = { user -> navController.navigateSafely(RedGifsCreatorRoute(user.username)) },
+                )
+            }
         }
 
         composable<RedGifsAccountRoute> {
@@ -214,9 +239,23 @@ fun RedGifsNavHost(
             )
         }
 
-        composable<RedGifsEditProfileRoute> { RedGifsEditProfileScreen(onBack = { back() }) }
+        composable<RedGifsEditProfileRoute> {
+            LoginGate(
+                loggedIn = loggedIn,
+                title = stringResource(R.string.redgifs_edit_profile),
+                onBack = { back() },
+                onSignIn = { goLogin() },
+            ) { RedGifsEditProfileScreen(onBack = { back() }) }
+        }
 
-        composable<RedGifsCollectionsRoute> { RedGifsCollectionsScreen(onBack = { back() }) }
+        composable<RedGifsCollectionsRoute> {
+            LoginGate(
+                loggedIn = loggedIn,
+                title = stringResource(R.string.redgifs_collections),
+                onBack = { back() },
+                onSignIn = { goLogin() },
+            ) { RedGifsCollectionsScreen(onBack = { back() }) }
+        }
 
         composable<RedGifsTagsRoute> {
             RedGifsTagsScreen(
@@ -226,23 +265,30 @@ fun RedGifsNavHost(
         }
 
         composable<RedGifsDashboardRoute> {
-            RedGifsDashboardScreen(
+            LoginGate(
+                loggedIn = loggedIn,
+                title = stringResource(R.string.redgifs_dashboard),
                 onBack = { back() },
-                onEditProfile = { navController.navigateSafely(RedGifsEditProfileRoute) },
-                onCollections = { navController.navigateSafely(RedGifsCollectionsRoute) },
-                onMine = {
-                    navController.navigateSafely(
-                        RedGifsFeedRoute("mine", "", activity.getString(R.string.redgifs_my_uploads)),
-                    )
-                },
-                onLiked = {
-                    navController.navigateSafely(
-                        RedGifsFeedRoute("liked", "", activity.getString(R.string.redgifs_liked)),
-                    )
-                },
-                onFollowers = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
-                onFollowing = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
-            )
+                onSignIn = { goLogin() },
+            ) {
+                RedGifsDashboardScreen(
+                    onBack = { back() },
+                    onEditProfile = { navController.navigateSafely(RedGifsEditProfileRoute) },
+                    onCollections = { navController.navigateSafely(RedGifsCollectionsRoute) },
+                    onMine = {
+                        navController.navigateSafely(
+                            RedGifsFeedRoute("mine", "", activity.getString(R.string.redgifs_my_uploads)),
+                        )
+                    },
+                    onLiked = {
+                        navController.navigateSafely(
+                            RedGifsFeedRoute("liked", "", activity.getString(R.string.redgifs_liked)),
+                        )
+                    },
+                    onFollowers = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
+                    onFollowing = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
+                )
+            }
         }
 
         composable<RedGifsLoginRoute> {

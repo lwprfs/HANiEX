@@ -33,6 +33,7 @@ import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsRepo
 import com.yenaly.han1meviewer.RedGifs.ui.shorts.RedGifsShortsPlayer
 import com.yenaly.han1meviewer.RedGifs.ui.shorts.toSiteShort
 import com.yenaly.han1meviewer.ui.component.SiteEmptyContent
+import com.yenaly.han1meviewer.ui.component.content.LoginLockedContent
 import com.yenaly.han1meviewer.ui.component.SiteErrorContent
 import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
 import com.yenaly.han1meviewer.ui.component.shorts.SiteShortsGrid
@@ -102,20 +103,7 @@ fun RedGifsFeedContent(
 
     Box(modifier.fillMaxSize()) {
         when {
-            blocked -> Column(
-                Modifier.fillMaxSize().padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.redgifs_login_required),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                )
-                Button(onClick = onLogin, modifier = Modifier.padding(top = 16.dp)) {
-                    Text(stringResource(R.string.redgifs_sign_in))
-                }
-            }
+            blocked -> LoginLockedContent(onSignIn = onLogin)
             loading && gifs.isEmpty() -> SiteLoadingContent()
             gifs.isEmpty() && error != null -> SiteErrorContent(message = error, onRetry = { reload++ })
             gifs.isEmpty() -> SiteEmptyContent(hint = stringResource(R.string.redgifs_empty))

@@ -48,6 +48,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +58,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yenaly.han1meviewer.ui.component.content.LoginGate
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -382,33 +388,47 @@ fun FapFolderNavHost(
         }
 
         composable<FapFolderFollowedCommunitiesRoute> {
-            FapFolderFollowedCommunitiesScreen(
+            LoginGate(
+                loggedIn = rememberFapFolderLoggedIn(),
+                title = stringResource(R.string.drawer_followed_communities),
                 onBack = { navController.popBackStackSafely() },
-                onOpenGroup = { slug ->
-                    navController.navigateSafely(FapFolderGroupRoute(slug))
-                },
-            )
+                onSignIn = { navController.navigateSafely(FapFolderLoginRoute) },
+            ) {
+                FapFolderFollowedCommunitiesScreen(
+                    onBack = { navController.popBackStackSafely() },
+                    onOpenGroup = { slug ->
+                        navController.navigateSafely(FapFolderGroupRoute(slug))
+                    },
+                )
+            }
         }
 
         composable<FapFolderSavedRoute> {
-            FapFolderSavedScreen(
+            LoginGate(
+                loggedIn = rememberFapFolderLoggedIn(),
+                title = stringResource(R.string.saved),
                 onBack = { navController.popBackStackSafely() },
-                onOpenPost = { slug ->
-                    navController.navigateSafely(FapFolderPostRoute(slug))
-                },
-                onOpenVideoPost = { slug ->
-                    navController.navigateSafely(FapFolderPostRoute(slug, autoPlay = true))
-                },
-                onOpenHashtag = { tag ->
-                    navController.navigateSafely(FapFolderHashtagRoute(tag))
-                },
-                onOpenGroup = { slug ->
-                    navController.navigateSafely(FapFolderGroupRoute(slug))
-                },
-                onOpenProfile = { username ->
-                    navController.navigateSafely(FapFolderProfileRoute(username))
-                },
-            )
+                onSignIn = { navController.navigateSafely(FapFolderLoginRoute) },
+            ) {
+                FapFolderSavedScreen(
+                    onBack = { navController.popBackStackSafely() },
+                    onOpenPost = { slug ->
+                        navController.navigateSafely(FapFolderPostRoute(slug))
+                    },
+                    onOpenVideoPost = { slug ->
+                        navController.navigateSafely(FapFolderPostRoute(slug, autoPlay = true))
+                    },
+                    onOpenHashtag = { tag ->
+                        navController.navigateSafely(FapFolderHashtagRoute(tag))
+                    },
+                    onOpenGroup = { slug ->
+                        navController.navigateSafely(FapFolderGroupRoute(slug))
+                    },
+                    onOpenProfile = { username ->
+                        navController.navigateSafely(FapFolderProfileRoute(username))
+                    },
+                )
+            }
         }
 
         composable<FapFolderCookiesRoute> {
@@ -488,7 +508,14 @@ fun FapFolderNavHost(
         }
 
         composable<FapFolderPrivacyRoute> {
-            FapFolderPrivacySettingsScreen(onBack = { navController.popBackStackSafely() })
+            LoginGate(
+                loggedIn = rememberFapFolderLoggedIn(),
+                title = stringResource(R.string.privacy),
+                onBack = { navController.popBackStackSafely() },
+                onSignIn = { navController.navigateSafely(FapFolderLoginRoute) },
+            ) {
+                FapFolderPrivacySettingsScreen(onBack = { navController.popBackStackSafely() })
+            }
         }
 
         composable<FapFolderImageFolderRoute> {
@@ -833,4 +860,18 @@ private fun fapFolderHubEntries(
             )
         )
     }
+}
+
+@Composable
+private fun rememberFapFolderLoggedIn(): Boolean {
+    var tick by remember { mutableIntStateOf(0) }
+    val owner = LocalLifecycleOwner.current
+    DisposableEffect(owner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) tick++
+        }
+        owner.lifecycle.addObserver(observer)
+        onDispose { owner.lifecycle.removeObserver(observer) }
+    }
+    return remember(tick) { FapFolderNetwork.hasAuthCookies() }
 }

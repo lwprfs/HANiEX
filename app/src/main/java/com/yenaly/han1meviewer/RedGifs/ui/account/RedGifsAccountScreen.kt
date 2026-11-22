@@ -38,6 +38,7 @@ import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsRepo
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SiteAvatar
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.content.LoginLockedContent
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 
 @Composable
@@ -75,20 +76,7 @@ fun RedGifsAccountScreen(
         },
     ) { padding ->
         if (!loggedIn) {
-            Column(
-                Modifier.fillMaxSize().padding(padding).padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    stringResource(R.string.redgifs_login_required),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                )
-                Button(onClick = onLogin, modifier = Modifier.padding(top = 16.dp)) {
-                    Text(stringResource(R.string.redgifs_sign_in))
-                }
-            }
+            LoginLockedContent(onSignIn = onLogin, modifier = Modifier.padding(padding))
         } else {
             val user = me?.user
             val name = user?.username ?: RedGifsAuth.username.orEmpty()

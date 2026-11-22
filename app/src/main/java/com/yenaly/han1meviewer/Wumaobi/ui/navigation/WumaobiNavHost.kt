@@ -12,6 +12,10 @@ import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.History
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth
+import com.yenaly.han1meviewer.ui.component.content.LoginGate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -181,21 +185,37 @@ fun WumaobiNavHost(
         }
 
         composable<WumaobiFavoritesRoute> {
-            WumaobiFavoritesScreen(
+            val auth by WumaobiAuth.state.collectAsStateWithLifecycle()
+            LoginGate(
+                loggedIn = auth.loggedIn,
+                title = stringResource(R.string.wumaobi_favorites),
                 onBack = { navController.popBackStackSafely() },
-                onOpenFolder = { name -> navController.navigateSafely(WumaobiFavFolderRoute(name)) },
-            )
+                onSignIn = { navController.navigateSafely(WumaobiAccountRoute) },
+            ) {
+                WumaobiFavoritesScreen(
+                    onBack = { navController.popBackStackSafely() },
+                    onOpenFolder = { name -> navController.navigateSafely(WumaobiFavFolderRoute(name)) },
+                )
+            }
         }
 
         composable<WumaobiFavFolderRoute> {
             val route = it.toRoute<WumaobiFavFolderRoute>()
-            WumaobiFavFolderScreen(
-                name = route.name,
+            val auth by WumaobiAuth.state.collectAsStateWithLifecycle()
+            LoginGate(
+                loggedIn = auth.loggedIn,
+                title = route.name,
                 onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { code ->
-                    navController.navigateSafely(WumaobiVideoRoute(code))
-                },
-            )
+                onSignIn = { navController.navigateSafely(WumaobiAccountRoute) },
+            ) {
+                WumaobiFavFolderScreen(
+                    name = route.name,
+                    onBack = { navController.popBackStackSafely() },
+                    onNavigateToVideo = { code ->
+                        navController.navigateSafely(WumaobiVideoRoute(code))
+                    },
+                )
+            }
         }
 
         composable<WumaobiBrowseRoute> {
