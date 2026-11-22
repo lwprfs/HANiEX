@@ -20,4 +20,7 @@
     <string name="site_shorts_report_title">Report this video</string>
     <string name="site_shorts_report_message">The site\'s report form will open in your browser, pre-filled with this video.</string>
     <string name="site_shorts_report_open">Open report form</string>
+    <string name="site_shorts_loading">Loading</string>
+    <string name="site_shorts_play">Play</string>
+    <string name="site_shorts_pause">Pause</string>
 </resources>

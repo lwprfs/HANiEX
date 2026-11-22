@@ -20,4 +20,7 @@
     <string name="site_shorts_report_title">举报此视频</string>
     <string name="site_shorts_report_message">网站的举报表单将在浏览器中打开，并已预先填入此视频。</string>
     <string name="site_shorts_report_open">打开举报表单</string>
+    <string name="site_shorts_loading">加载中</string>
+    <string name="site_shorts_play">播放</string>
+    <string name="site_shorts_pause">暂停</string>
 </resources>

@@ -1,31 +1,44 @@
 package com.yenaly.han1meviewer.ui.component.shorts
 
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Build
 import android.view.TextureView
+import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.pager.PagerDefaults
 import androidx.compose.foundation.pager.PagerSnapDistance
+import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -37,12 +50,15 @@ import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.ClosedCaptionDisabled
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Fullscreen
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,14 +70,21 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -87,6 +110,9 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import coil3.SingletonImageLoader
+import coil3.request.ImageRequest
+import coil3.size.Size
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.openSiteWebPage
@@ -94,12 +120,51 @@ import com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
 import com.yenaly.han1meviewer.ui.component.shareSiteText
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.util.compactCount
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 private var rememberedMuted = false
 
+/** Longest the player waits for metadata (stream URL) of the active short before using the raw URL. */
+private const val META_WAIT_MS = 8_000L
+private const val FIRST_FRAME_FADE_MS = 180
+private const val PROGRESS_TICK_MS = 100L
+
+/**
+ * Everything that belongs to exactly one short. A fresh instance is created *during composition*
+ * whenever the active short id changes, so cover/progress/subtitle/error/loading state of the
+ * previous item can never be shown for the new one.
+ */
+@Stable
+private class ShortItemState(val id: String?) {
+    /** The player really holds media for this short (prepare() has been called). */
+    var loaded by mutableStateOf(false)
+    var failed by mutableStateOf(false)
+
+    /** First video frame of this short was rendered. */
+    var rendered by mutableStateOf(false)
+    var videoRatio by mutableFloatStateOf(0f)
+    var progress by mutableFloatStateOf(0f)
+    var cue by mutableStateOf("")
+    var exoState by mutableIntStateOf(Player.STATE_IDLE)
+    var isPlaying by mutableStateOf(false)
+
+    /** User tapped pause while the stream was still being resolved. */
+    var userPaused = false
+}
+
+private class ShortsSessionFlags {
+    var firstId: String? = null
+    var swiped = false
+    var handlesAudioFocus: Boolean? = null
+}
+
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+@Suppress("DEPRECATION")
 @Composable
 fun SiteShortsPlayer(
     source: SiteShortsSource,
@@ -116,16 +181,19 @@ fun SiteShortsPlayer(
 
     onOpenOwner: ((SiteShortOwner) -> Unit)? = null,
 ) {
-    if (items.isEmpty()) return
+    val shorts = remember(items) { dedupeShorts(items) }
+    if (shorts.isEmpty()) return
     val context = LocalContext.current
     val config = remember(source.site) { SitePlayerSettings.config(source.site) }
     val imageLoader = remember(source) { source.imageLoader(context) }
     val scrim = Color.Black.copy(alpha = config.controlsOpacity.coerceIn(0.35f, 0.6f))
     val scope = rememberCoroutineScope()
+    val startIndex = remember { resolveInitialIndex(items.map { it.id }, initialIndex) }
     val pagerState = rememberPagerState(
-        initialPage = initialIndex.coerceIn(0, items.lastIndex),
-        pageCount = { items.size },
+        initialPage = startIndex.coerceIn(0, shorts.lastIndex),
+        pageCount = { shorts.size },
     )
+    val currentItems by rememberUpdatedState(shorts)
 
     val failedMsg = stringResource(R.string.site_shorts_play_failed)
     val loginRequired = stringResource(R.string.site_shorts_login_required)
@@ -133,19 +201,17 @@ fun SiteShortsPlayer(
     val downloadSaved = stringResource(R.string.site_shorts_download_saved)
     val captchaMsg = stringResource(R.string.xh_comment_captcha)
     val postedMsg = stringResource(R.string.xh_comment_posted)
+    val loadingDesc = stringResource(R.string.site_shorts_loading)
+    val playDesc = stringResource(R.string.site_shorts_play)
+    val pauseDesc = stringResource(R.string.site_shorts_pause)
+    val retryDesc = stringResource(R.string.retry)
 
-    var failed by remember { mutableStateOf(false) }
-    var started by remember { mutableStateOf(false) }
     var showHeart by remember { mutableStateOf(false) }
+    var heartShortId by remember { mutableStateOf<String?>(null) }
     var fullscreen by remember { mutableStateOf(false) }
     var heartTick by remember { mutableIntStateOf(0) }
     var muted by remember { mutableStateOf(rememberedMuted) }
-    var isPlaying by remember { mutableStateOf(false) }
-    var progress by remember { mutableFloatStateOf(0f) }
-
-    var videoRatio by remember { mutableFloatStateOf(0f) }
     var subtitleLang by remember { mutableStateOf<String?>(null) }
-    var cueText by remember { mutableStateOf("") }
     var showSubtitlePicker by remember { mutableStateOf(false) }
     var showReport by remember { mutableStateOf(false) }
     var commentsFor by remember { mutableStateOf<SiteShort?>(null) }
@@ -154,53 +220,80 @@ fun SiteShortsPlayer(
     val metas = remember { mutableStateMapOf<String, SiteShortMeta>().also { it.putAll(initialMetas) } }
     val busy = remember { mutableStateMapOf<String, Boolean>() }
     val attempted = remember { mutableSetOf<String>() }
+    val inflight = remember { HashMap<String, Job>() }
     val commentStates = remember { mutableStateMapOf<String, ShortsCommentsState>() }
+    val retryTokens = remember { mutableStateMapOf<String, Int>() }
+    val handledRetries = remember { HashMap<String, Int>() }
+    val flags = remember { ShortsSessionFlags() }
 
-    val player = remember {
-        ExoPlayer.Builder(context)
-            .setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setUsage(C.USAGE_MEDIA)
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                    .build(),
-                true,
-            )
-            .setHandleAudioBecomingNoisy(true)
-            .build().apply {
-                repeatMode = Player.REPEAT_MODE_ONE
-                playWhenReady = config.autoPlay
-                volume = if (rememberedMuted) 0f else 1f
-            }
+    // Identity of the active short. All per-item state hangs off this and resets synchronously.
+    val activeId = shorts.getOrNull(pagerState.currentPage)?.id
+    val itemState = remember(activeId) { ShortItemState(activeId) }
+    val itemStateRef = rememberUpdatedState(itemState)
+
+    val audioAttributes = remember {
+        AudioAttributes.Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+            .build()
     }
     val dataSourceFactory = remember(source) {
         val client = source.streamClient
         if (client != null) DefaultDataSource.Factory(context, OkHttpDataSource.Factory(client))
         else DefaultDataSource.Factory(context)
     }
+    val mediaSourceFactory = remember(dataSourceFactory) { DefaultMediaSourceFactory(dataSourceFactory) }
+    val player = remember(source) {
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(mediaSourceFactory)
+            .setAudioAttributes(audioAttributes, true)
+            .setHandleAudioBecomingNoisy(true)
+            .build().apply {
+                repeatMode = Player.REPEAT_MODE_ONE
+                playWhenReady = false
+                volume = if (rememberedMuted) 0f else 1f
+            }
+    }
 
     DisposableEffect(player) {
+        // Events are only applied while the active item owns the player (loaded == true), so
+        // callbacks that belong to a previous item cannot touch the new item's state.
         val listener = object : Player.Listener {
+            private fun active(): ShortItemState? = itemStateRef.value.takeIf { it.loaded }
+
             override fun onPlayerError(error: PlaybackException) {
-                failed = true
+                active()?.let { it.failed = true; it.isPlaying = false }
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                active()?.exoState = playbackState
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                active()?.isPlaying = isPlaying
             }
 
             override fun onVideoSizeChanged(videoSize: VideoSize) {
-                videoRatio = if (videoSize.width > 0 && videoSize.height > 0) {
+                active()?.videoRatio = if (videoSize.width > 0 && videoSize.height > 0) {
                     videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
                 } else 0f
             }
 
-            override fun onIsPlayingChanged(playing: Boolean) {
-                isPlaying = playing
+            override fun onRenderedFirstFrame() {
+                val st = active() ?: return
+                if (player.currentMediaItem?.mediaId == st.id &&
+                    player.playbackState != Player.STATE_IDLE
+                ) st.rendered = true
             }
 
             override fun onCues(cueGroup: CueGroup) {
-                cueText = cueGroup.cues.mapNotNull { it.text?.toString() }.joinToString("\n")
+                active()?.cue = cueGroup.cues.mapNotNull { it.text?.toString() }.joinToString("\n")
             }
         }
         player.addListener(listener)
         onDispose {
             player.removeListener(listener)
+            player.stop()
             player.release()
         }
     }
@@ -208,14 +301,20 @@ fun SiteShortsPlayer(
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner, player) {
         var resume = false
+        var paused = false
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_PAUSE -> {
+                Lifecycle.Event.ON_PAUSE -> if (!paused) {
+                    paused = true
                     resume = player.playWhenReady
                     player.pause()
                 }
 
-                Lifecycle.Event.ON_RESUME -> if (resume) player.play()
+                Lifecycle.Event.ON_RESUME -> if (paused) {
+                    paused = false
+                    if (resume && itemStateRef.value.let { it.loaded && !it.failed }) player.play()
+                }
+
                 else -> Unit
             }
         }
@@ -231,80 +330,205 @@ fun SiteShortsPlayer(
         }
     }
 
-    LaunchedEffect(muted) {
+    LaunchedEffect(muted, player) {
         rememberedMuted = muted
         player.volume = if (muted) 0f else 1f
     }
 
-    LaunchedEffect(player) {
-        while (true) {
+    // Progress ticker: only runs while the active item is really playing.
+    LaunchedEffect(itemState, itemState.isPlaying, itemState.loaded) {
+        val st = itemState
+        fun update() {
             val duration = player.duration
-            progress = if (duration > 0) (player.currentPosition.toFloat() / duration).coerceIn(0f, 1f) else 0f
-            delay(250)
+            st.progress = if (st.loaded && duration > 0) {
+                (player.currentPosition.toFloat() / duration).coerceIn(0f, 1f)
+            } else 0f
+        }
+        update()
+        while (isActive && st.isPlaying) {
+            delay(PROGRESS_TICK_MS)
+            update()
         }
     }
 
-    val currentItems by rememberUpdatedState(items)
-    var loadedShortId by remember { mutableStateOf<String?>(null) }
+    fun requestMetas(from: Int) {
+        val batch = currentItems.drop(from).take(6)
+            .filter { it.id !in metas && it.id !in attempted && it.id !in inflight }
+        if (batch.isEmpty()) return
+        // Not tied to the page effect, so a quick swipe does not cancel it and strand the ids.
+        val job = scope.launch(start = CoroutineStart.LAZY) {
+            try {
+                source.loadMetas(batch).onSuccess {
+                    metas.putAll(it)
+                    attempted += batch.map { b -> b.id }
+                }
+            } finally {
+                batch.forEach { inflight.remove(it.id) }
+            }
+        }
+        batch.forEach { inflight[it.id] = job }
+        job.start()
+    }
 
-    LaunchedEffect(pagerState.currentPage, subtitleLang) {
-        val page = pagerState.currentPage
-        val short = currentItems.getOrNull(page) ?: return@LaunchedEffect
-        val sameShort = loadedShortId == short.id
-        val resumeAt = if (sameShort) player.currentPosition else 0L
-        if (!sameShort) {
+    // Load / (re)prepare the active short. Keyed by identity, subtitle choice and per-item retry.
+    val retryNonce = activeId?.let { retryTokens[it] } ?: 0
+    LaunchedEffect(activeId, subtitleLang, retryNonce) {
+        val id = activeId ?: return@LaunchedEffect
+        val st = itemState
+        if (st.id != id) return@LaunchedEffect
+        val short = currentItems.firstOrNull { it.id == id } ?: return@LaunchedEffect
+        if (flags.firstId == null) flags.firstId = id else if (id != flags.firstId) flags.swiped = true
+
+        val sameMedia = st.loaded && !st.failed
+        val resumeAt: Long
+        var play: Boolean
+        if (sameMedia) {
+            // Subtitle change: keep position and the user's play/pause intent.
+            resumeAt = player.currentPosition
+            play = player.playWhenReady
+        } else {
+            // New item or retry: detach the old media synchronously, before any async work.
             player.pause()
             player.stop()
             player.clearMediaItems()
-            failed = false
-            progress = 0f
-            cueText = ""
-            videoRatio = 0f
+            st.loaded = false
+            st.rendered = false
+            st.videoRatio = 0f
+            st.progress = 0f
+            st.exoState = Player.STATE_IDLE
+            st.isPlaying = false
+            resumeAt = 0L
+            play = false
+        }
+        st.cue = ""
+        st.failed = false
+        heartShortId = heartShortId?.takeIf { it == id }
+
+        if (flags.handlesAudioFocus != !short.isGif) {
+            flags.handlesAudioFocus = !short.isGif
+            player.setAudioAttributes(audioAttributes, !short.isGif)
         }
 
-        if (metas[short.id] == null) {
-            val batch = currentItems.drop(page).take(6).filter { it.id !in metas && it.id !in attempted }
-            if (batch.isNotEmpty()) {
-                attempted += batch.map { it.id }
-                source.loadMetas(batch)
-                    .onSuccess { metas.putAll(it) }
-                    .onFailure { attempted -= batch.map { b -> b.id }.toSet() }
-            }
-        }
-
-        val meta = metas[short.id]
-        val url = meta?.streamUrl ?: short.videoUrl
-        val track = subtitleLang?.let { lang -> meta?.subtitles?.firstOrNull { it.lang == lang } }
-        val mediaItem = MediaItem.Builder()
-            .setUri(url)
-            .apply {
-                if (url.contains(".m3u8")) setMimeType(MimeTypes.APPLICATION_M3U8)
-                if (track != null) {
-                    setSubtitleConfigurations(
-                        listOf(
-                            MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
-                                .setMimeType(MimeTypes.TEXT_VTT)
-                                .setLanguage(track.lang)
-                                .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
-                                .build()
-                        )
-                    )
+        val idx = currentItems.indexOfFirst { it.id == id }
+        if (retryNonce > (handledRetries[id] ?: 0)) {
+            // Manual retry: also refresh metadata once, the stream URL may have expired.
+            handledRetries[id] = retryNonce
+            attempted.remove(id)
+            withTimeoutOrNull(META_WAIT_MS) {
+                source.loadMetas(listOf(short)).onSuccess {
+                    metas.putAll(it)
+                    attempted += id
                 }
             }
-            .build()
+        } else {
+            requestMetas(idx.coerceAtLeast(0))
+            if (metas[id] == null) {
+                inflight[id]?.let { job -> withTimeoutOrNull(META_WAIT_MS) { job.join() } }
+            }
+        }
+
+        if (!sameMedia) {
+            play = shouldAutoPlayItem(config.autoPlay, flags.swiped) && !st.userPaused
+        }
+
+        val meta = metas[id]
+        val url = (meta?.streamUrl ?: short.videoUrl).trim()
+        val mediaItem = if (url.isEmpty()) null else runCatching {
+            val track = subtitleLang?.let { lang -> meta?.subtitles?.firstOrNull { it.lang == lang } }
+            MediaItem.Builder()
+                .setMediaId(id)
+                .setUri(url)
+                .apply {
+                    if (url.contains(".m3u8")) setMimeType(MimeTypes.APPLICATION_M3U8)
+                    if (track != null) {
+                        setSubtitleConfigurations(
+                            listOf(
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(track.url))
+                                    .setMimeType(MimeTypes.TEXT_VTT)
+                                    .setLanguage(track.lang)
+                                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
+                                    .build()
+                            )
+                        )
+                    }
+                }
+                .build()
+        }.getOrNull()
+        if (mediaItem == null) {
+            st.failed = true
+            return@LaunchedEffect
+        }
+
         player.volume = if (muted) 0f else 1f
-        player.setMediaSource(DefaultMediaSourceFactory(dataSourceFactory).createMediaSource(mediaItem))
+        player.setMediaItem(mediaItem)
+        player.playWhenReady = play
         player.prepare()
         if (resumeAt > 0) player.seekTo(resumeAt)
-        if (started || config.autoPlay) player.play() else player.pause()
-        started = true
-        loadedShortId = short.id
+        // Events fired synchronously by the calls above were ignored (loaded == false); sync now.
+        st.exoState = player.playbackState
+        st.isPlaying = player.isPlaying
+        st.loaded = true
     }
-    LaunchedEffect(pagerState.currentPage, items.size, hasMore) {
-        if (hasMore && pagerState.currentPage >= items.size - 3) onLoadMore()
+
+    // Warm the cover cache for neighbours only; bounded to +1, -1 and +2.
+    val coverLoader = remember(imageLoader) { imageLoader ?: SingletonImageLoader.get(context) }
+    val prefetchedCovers = remember { HashSet<String>() }
+    LaunchedEffect(activeId) {
+        val idx = currentItems.indexOfFirst { it.id == activeId }
+        if (idx < 0) return@LaunchedEffect
+        val metrics = context.resources.displayMetrics
+        for (offset in intArrayOf(1, -1, 2)) {
+            val url = currentItems.getOrNull(idx + offset)?.coverUrl.orEmpty()
+            if (url.isBlank() || !prefetchedCovers.add(url)) continue
+            coverLoader.enqueue(
+                ImageRequest.Builder(context)
+                    .data(url)
+                    .size(Size(metrics.widthPixels, metrics.heightPixels))
+                    .memoryCacheKey("$url#r0")
+                    .diskCacheKey("$url#r0")
+                    .build()
+            )
+        }
     }
-    LaunchedEffect(failed) {
-        if (failed) GlobalToasts.show(failedMsg, level = GlobalToasts.ToastLevel.ERROR)
+
+    var lastLoadMoreSize by remember { mutableIntStateOf(-1) }
+    LaunchedEffect(pagerState.currentPage, shorts.size, hasMore) {
+        if (pagerState.currentPage < shorts.size - 3) lastLoadMoreSize = -1
+        if (shouldRequestLoadMore(hasMore, pagerState.currentPage, shorts.size, lastLoadMoreSize)) {
+            lastLoadMoreSize = shorts.size
+            onLoadMore()
+        }
+    }
+    LaunchedEffect(itemState, itemState.failed) {
+        if (itemState.failed) GlobalToasts.show(failedMsg, level = GlobalToasts.ToastLevel.ERROR)
+    }
+
+    fun retryActive() {
+        val id = activeId ?: return
+        retryTokens[id] = (retryTokens[id] ?: 0) + 1
+    }
+
+    fun togglePlayback() {
+        val st = itemStateRef.value
+        when {
+            st.failed -> retryActive()
+            !st.loaded -> st.userPaused = !st.userPaused
+            player.playbackState == Player.STATE_ENDED -> {
+                player.seekToDefaultPosition()
+                player.play()
+            }
+
+            player.playWhenReady -> player.pause()
+            else -> player.play()
+        }
+    }
+
+    val handleBack: () -> Unit = {
+        when {
+            commentsFor != null -> commentsFor = null
+            fullscreen -> fullscreen = false
+            else -> onDismiss()
+        }
     }
 
     fun toastError(t: Throwable) {
@@ -481,18 +705,41 @@ fun SiteShortsPlayer(
         }
     }
 
+    val cutoutSides = WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)
+
     Dialog(
-        onDismissRequest = {
-            when {
-                commentsFor != null -> commentsFor = null
-                fullscreen -> fullscreen = false
-                else -> onDismiss()
-            }
-        },
+        onDismissRequest = handleBack,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false),
     ) {
         val dialogView = LocalView.current
         val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
+
+        // Make the dialog window cover the whole display so every page gets the full viewport.
+        DisposableEffect(dialogWindow) {
+            dialogWindow?.let { w ->
+                w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+                w.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                w.setBackgroundDrawable(ColorDrawable(android.graphics.Color.BLACK))
+                WindowCompat.setDecorFitsSystemWindows(w, false)
+                w.statusBarColor = android.graphics.Color.TRANSPARENT
+                w.navigationBarColor = android.graphics.Color.TRANSPARENT
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    w.attributes = w.attributes.also {
+                        it.layoutInDisplayCutoutMode =
+                            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    w.isNavigationBarContrastEnforced = false
+                    w.isStatusBarContrastEnforced = false
+                }
+                WindowCompat.getInsetsController(w, dialogView).apply {
+                    isAppearanceLightStatusBars = false
+                    isAppearanceLightNavigationBars = false
+                }
+            }
+            onDispose { }
+        }
         DisposableEffect(dialogWindow, fullscreen) {
             if (dialogWindow != null) {
                 val controller = WindowCompat.getInsetsController(dialogWindow, dialogView)
@@ -511,76 +758,182 @@ fun SiteShortsPlayer(
                 }
             }
         }
+        val fling = PagerDefaults.flingBehavior(
+            state = pagerState,
+            pagerSnapDistance = PagerSnapDistance.atMost(1),
+        )
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             VerticalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
-                beyondViewportPageCount = 0,
-                flingBehavior = PagerDefaults.flingBehavior(
-                    state = pagerState,
-                    pagerSnapDistance = PagerSnapDistance.atMost(1),
-                ),
+                pageSize = PageSize.Fill,
+                // Neighbour pages compose only their cover and chrome (never a video surface), so
+                // the incoming cover is already on screen when the swipe starts.
+                beyondViewportPageCount = 1,
+                key = { index -> shorts.getOrNull(index)?.id ?: index },
+                flingBehavior = fling,
                 userScrollEnabled = commentsFor == null,
             ) { page ->
-                val short = items[page]
+                val short = shorts.getOrNull(page) ?: return@VerticalPager
                 val meta = metas[short.id]
                 val pageOwner = owner ?: meta?.owner
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    RetryableImage(
-                        model = short.coverUrl,
-                        modifier = Modifier.fillMaxSize(),
-                        placeholder = painterResource(R.drawable.h_chan_loading),
-                        error = painterResource(R.drawable.h_chan_load_failed),
-                        contentScale = ContentScale.Fit,
-                        imageLoader = imageLoader,
-                    )
-                    if (pagerState.currentPage == page) {
+                val isActive = pagerState.currentPage == page
+                val st = itemState.takeIf { isActive && it.id == short.id }
+                val videoAlpha = animateFloatAsState(
+                    targetValue = if (st != null && st.rendered) 1f else 0f,
+                    animationSpec = tween(FIRST_FRAME_FADE_MS),
+                    label = "shortVideoAlpha",
+                )
+                Box(
+                    Modifier.fillMaxSize().background(Color.Black),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    // Every page owns its cover; it stays until its own first frame is rendered.
+                    if (short.coverUrl.isNotBlank()) {
+                        RetryableImage(
+                            model = short.coverUrl,
+                            modifier = Modifier.fillMaxSize().graphicsLayer {
+                                alpha = if (videoAlpha.value >= 1f) 0f else 1f
+                            },
+                            placeholder = painterResource(R.drawable.h_chan_loading),
+                            error = painterResource(R.drawable.h_chan_load_failed),
+                            contentScale = ContentScale.Fit,
+                            imageLoader = imageLoader,
+                        )
+                    }
+                    if (st != null) {
+                        val ui = resolveShortsPlaybackUi(st.loaded, st.failed, st.exoState, st.isPlaying)
+                        var spinnerVisible by remember(st) { mutableStateOf(true) }
+                        LaunchedEffect(st, ui, st.rendered) {
+                            if (ui == ShortsPlaybackUi.Loading) {
+                                val wait = shortsSpinnerDelayMs(st.rendered)
+                                if (wait > 0) delay(wait)
+                                spinnerVisible = true
+                            } else {
+                                spinnerVisible = false
+                            }
+                        }
+                        val stateDesc = when {
+                            ui == ShortsPlaybackUi.Loading -> loadingDesc
+                            ui == ShortsPlaybackUi.Failed -> failedMsg
+                            ui == ShortsPlaybackUi.Playing -> pauseDesc
+                            else -> playDesc
+                        }
 
                         Box(
-                            Modifier.fillMaxSize().pointerInput(short.id) {
-                                detectTapGestures(
-                                    onTap = { if (player.isPlaying) player.pause() else player.play() },
-                                    onDoubleTap = {
-                                        if (source.supportsRating) {
-                                            heartTick++
-                                            likeShort(short, onlyLike = true)
-                                        }
-                                    },
-                                )
-                            },
+                            Modifier.fillMaxSize()
+                                .semantics(mergeDescendants = true) {
+                                    contentDescription = stateDesc
+                                    onClick(label = if (ui == ShortsPlaybackUi.Failed) retryDesc else stateDesc) {
+                                        togglePlayback()
+                                        true
+                                    }
+                                }
+                                .pointerInput(short.id) {
+                                    detectTapGestures(
+                                        onTap = { if (!pagerState.isScrollInProgress) togglePlayback() },
+                                        onDoubleTap = {
+                                            if (source.supportsRating && !pagerState.isScrollInProgress) {
+                                                heartShortId = short.id
+                                                heartTick++
+                                                likeShort(short, onlyLike = true)
+                                            }
+                                        },
+                                    )
+                                },
                             contentAlignment = Alignment.Center,
                         ) {
-                            AndroidView(
-                                modifier = if (videoRatio > 0f) {
-                                    Modifier.aspectRatio(videoRatio, matchHeightConstraintsFirst = false)
-                                } else Modifier.fillMaxSize(),
-                                factory = { ctx ->
-                                    TextureView(ctx).also {
-                                        it.keepScreenOn = config.keepScreenOn
-                                        player.setVideoTextureView(it)
-                                    }
-                                },
-                                onRelease = { player.clearVideoTextureView(it) },
-                            )
+                            // The surface is attached only while the player holds THIS item's media,
+                            // so a previous video's last frame can never be drawn into this page.
+                            if (st.loaded) {
+                                AndroidView(
+                                    modifier = (if (st.videoRatio > 0f) {
+                                        Modifier.aspectRatio(st.videoRatio, matchHeightConstraintsFirst = false)
+                                    } else Modifier.fillMaxSize()).graphicsLayer {
+                                        alpha = videoAlpha.value
+                                    },
+                                    factory = { ctx ->
+                                        TextureView(ctx).also {
+                                            it.keepScreenOn = config.keepScreenOn
+                                            player.setVideoTextureView(it)
+                                        }
+                                    },
+                                    onRelease = { player.clearVideoTextureView(it) },
+                                )
+                            }
                         }
                         AnimatedVisibility(
-                            visible = !isPlaying && !fullscreen,
+                            visible = spinnerVisible && ui == ShortsPlaybackUi.Loading,
+                            enter = fadeIn(tween(120)),
+                            exit = fadeOut(tween(120)),
+                        ) {
+                            Box(
+                                Modifier.size(68.dp)
+                                    .background(Color.Black.copy(alpha = 0.38f), CircleShape)
+                                    .semantics { contentDescription = loadingDesc },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(36.dp),
+                                    color = Color.White,
+                                    trackColor = Color.Transparent,
+                                    strokeWidth = 3.dp,
+                                )
+                            }
+                        }
+                        AnimatedVisibility(
+                            visible = (ui == ShortsPlaybackUi.Paused || ui == ShortsPlaybackUi.Ended) &&
+                                    !spinnerVisible && !fullscreen,
                             enter = fadeIn() + scaleIn(initialScale = 0.8f),
                             exit = fadeOut(),
                         ) {
                             Box(
-                                Modifier.size(68.dp).background(Color.Black.copy(alpha = 0.38f), CircleShape),
+                                Modifier.size(68.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Black.copy(alpha = 0.38f))
+                                    .clickable(role = Role.Button, onClickLabel = playDesc) { togglePlayback() },
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
-                                    painterResource(R.drawable.ic_baseline_play_arrow_24), null,
+                                    painterResource(R.drawable.ic_baseline_play_arrow_24), playDesc,
                                     tint = Color.White,
                                     modifier = Modifier.size(40.dp),
                                 )
                             }
                         }
                         AnimatedVisibility(
-                            visible = heartTick > 0 && showHeart,
+                            visible = ui == ShortsPlaybackUi.Failed,
+                            enter = fadeIn(),
+                            exit = fadeOut(),
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Box(
+                                    Modifier.size(68.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Black.copy(alpha = 0.38f))
+                                        .clickable(role = Role.Button, onClickLabel = retryDesc) { retryActive() },
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Icon(
+                                        Icons.Filled.Refresh, retryDesc,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(36.dp),
+                                    )
+                                }
+                                Text(
+                                    failedMsg,
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        shadow = ShortsBadgeDefaults.TextShadow,
+                                    ),
+                                )
+                            }
+                        }
+                        AnimatedVisibility(
+                            visible = showHeart && heartShortId == short.id,
                             enter = scaleIn(initialScale = 0.4f) + fadeIn(),
                             exit = fadeOut(),
                         ) {
@@ -591,9 +944,9 @@ fun SiteShortsPlayer(
                                 modifier = Modifier.size(110.dp),
                             )
                         }
-                        if (cueText.isNotBlank()) {
+                        if (st.cue.isNotBlank()) {
                             Text(
-                                cueText,
+                                st.cue,
                                 color = Color.White,
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyMedium,
@@ -629,7 +982,8 @@ fun SiteShortsPlayer(
                         Column(
                             Modifier.align(Alignment.BottomStart)
                                 .padding(start = 14.dp, end = 84.dp, bottom = 22.dp)
-                                .navigationBarsPadding(),
+                                .navigationBarsPadding()
+                                .windowInsetsPadding(cutoutSides),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             if (pageOwner != null) {
@@ -697,19 +1051,22 @@ fun SiteShortsPlayer(
                             onShare = { shareSiteText(context, "${short.title}\n${short.pageUrl}", short.title) },
                             modifier = Modifier.align(Alignment.BottomEnd)
                                 .padding(end = 8.dp, bottom = 22.dp)
-                                .navigationBarsPadding(),
+                                .navigationBarsPadding()
+                                .windowInsetsPadding(cutoutSides),
                         )
                     }
                 }
             }
 
-            val currentShort = items.getOrNull(pagerState.currentPage)
+            val currentShort = shorts.getOrNull(pagerState.currentPage)
             if (!fullscreen) Row(
-                Modifier.align(Alignment.TopStart).fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp),
+                Modifier.align(Alignment.TopStart).fillMaxWidth().statusBarsPadding()
+                    .windowInsetsPadding(cutoutSides)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                ShortsCircleButton(onClick = onDismiss, scrim = scrim) {
+                ShortsCircleButton(onClick = handleBack, scrim = scrim) {
                     Icon(
                         painterResource(R.drawable.ic_baseline_arrow_back_24),
                         stringResource(R.string.back), tint = Color.White,
@@ -718,9 +1075,10 @@ fun SiteShortsPlayer(
                 Spacer(Modifier.weight(1f))
                 val subtitles = currentShort?.let { metas[it.id] }?.subtitles.orEmpty()
                 if (subtitles.isNotEmpty()) {
+                    val subtitleOn = subtitleLang != null && subtitles.any { it.lang == subtitleLang }
                     ShortsCircleButton(onClick = { showSubtitlePicker = true }, scrim = scrim) {
                         Icon(
-                            if (subtitleLang != null) Icons.Filled.ClosedCaption else Icons.Filled.ClosedCaptionDisabled,
+                            if (subtitleOn) Icons.Filled.ClosedCaption else Icons.Filled.ClosedCaptionDisabled,
                             stringResource(R.string.site_shorts_subtitles), tint = Color.White,
                         )
                     }
@@ -765,8 +1123,13 @@ fun SiteShortsPlayer(
                     .navigationBarsPadding().height(2.dp)
                     .background(Color.White.copy(alpha = 0.18f)),
             ) {
+                // Read inside graphicsLayer so ticks invalidate only this layer, not composition.
                 Box(
-                    Modifier.fillMaxHeight().fillMaxWidth(progress.coerceIn(0f, 1f))
+                    Modifier.fillMaxHeight().fillMaxWidth()
+                        .graphicsLayer {
+                            scaleX = itemState.progress.coerceIn(0f, 1f)
+                            transformOrigin = TransformOrigin(0f, 0.5f)
+                        }
                         .background(Color.White),
                 )
             }
@@ -800,7 +1163,7 @@ fun SiteShortsPlayer(
     }
 
     if (showSubtitlePicker) {
-        val tracks = items.getOrNull(pagerState.currentPage)?.let { metas[it.id] }?.subtitles.orEmpty()
+        val tracks = shorts.getOrNull(pagerState.currentPage)?.let { metas[it.id] }?.subtitles.orEmpty()
         ShortsSubtitleDialog(
             tracks = tracks,
             selectedLang = subtitleLang,
@@ -813,7 +1176,7 @@ fun SiteShortsPlayer(
         ShortsReportDialog(
             onConfirm = {
                 showReport = false
-                items.getOrNull(pagerState.currentPage)
+                shorts.getOrNull(pagerState.currentPage)
                     ?.let { source.reportUrl(it) }
                     ?.let { openSiteWebPage(context, it) }
             },
