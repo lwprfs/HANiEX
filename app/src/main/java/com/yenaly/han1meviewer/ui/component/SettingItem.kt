@@ -27,7 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SliderState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -179,6 +178,12 @@ private fun SettingTexts(
     }
 }
 
+/**
+ * 带猫爪图标的 M3 开关。
+ *
+ * 切换时猫爪会「撞墙摇晃」：先顺着拇指滑动的方向快速倾倒、撞上轨道边缘，
+ * 再高弹性地来回晃几下回正。
+ */
 @Composable
 fun PawSwitch(
     checked: Boolean,
@@ -187,18 +192,18 @@ fun PawSwitch(
     enabled: Boolean = true,
 ) {
     val pawRotation = remember { Animatable(0f) }
-
+    // 首次组合时不播动画，只在用户切换时摇晃。
     var settled by remember { mutableStateOf(false) }
     LaunchedEffect(checked) {
         if (!settled) {
             settled = true
             return@LaunchedEffect
         }
-
+        // 开启时拇指向右滑（撞右墙、顺时针倾倒），关闭时相反。
         val wall = if (checked) 50f else -50f
-
+        // 第一段：快速冲向墙。
         pawRotation.animateTo(wall, tween(durationMillis = 70))
-
+        // 第二段：低阻尼弹性摇晃着回正。
         pawRotation.animateTo(
             targetValue = 0f,
             animationSpec = spring(
@@ -334,6 +339,9 @@ fun SettingInfoItem(
     }
 }
 
+/**
+ * 猫头滑块拇指
+ */
 @Composable
 private fun CatHeadSliderThumb(modifier: Modifier = Modifier) {
     Surface(
@@ -351,7 +359,6 @@ private fun CatHeadSliderThumb(modifier: Modifier = Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingSliderItem(
     title: String,
@@ -370,16 +377,7 @@ fun SettingSliderItem(
         0
     }
 
-    val sliderState = remember(valueRange.first, valueRange.last, totalSteps) {
-        SliderState(
-            value = value.toFloat(),
-            steps = totalSteps.coerceAtLeast(0),
-            valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
-        )
-    }
-    LaunchedEffect(value) {
-        if (sliderState.value != value.toFloat()) sliderState.value = value.toFloat()
-    }
+    var sliderValue by remember(value) { mutableFloatStateOf(value.toFloat()) }
     SettingTile(modifier = modifier) {
         Column(
             modifier = Modifier
@@ -401,12 +399,13 @@ fun SettingSliderItem(
                 )
             }
             Slider(
-                state = sliderState,
+                value = sliderValue,
                 onValueChange = {
-                    sliderState.value = it
+                    sliderValue = it
                     onValueChange(it.roundToInt())
                 },
-                thumb = { CatHeadSliderThumb() },
+                valueRange = valueRange.first.toFloat()..valueRange.last.toFloat(),
+                steps = totalSteps.coerceAtLeast(0),
             )
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -573,6 +572,7 @@ fun SettingsGroupTitle(title: String) {
         HorizontalDivider()
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
