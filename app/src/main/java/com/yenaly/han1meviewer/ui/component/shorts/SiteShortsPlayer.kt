@@ -219,7 +219,7 @@ fun SiteShortsPlayer(
     val retryTokens = remember { mutableStateMapOf<String, Int>() }
     val handledRetries = remember { HashMap<String, Int>() }
     val flags = remember { ShortsSessionFlags() }
-    // Bumped whenever a metadata batch finished so the preloader re-reads the resolved stream urls.
+
     var metaTick by remember { mutableIntStateOf(0) }
     val sessionOwner = remember { Any() }
 
@@ -247,7 +247,7 @@ fun SiteShortsPlayer(
             .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
-            // While this player loads, background preloading is held back (current video first).
+
             .setPriorityTaskManager(ShortsSessionCache.priorityTaskManager)
             .build().apply {
                 repeatMode = Player.REPEAT_MODE_ONE
@@ -350,8 +350,6 @@ fun SiteShortsPlayer(
         }
     }
 
-    // Sliding window around [idx] for the session cache. Upcoming items only get a key once their
-    // metadata was resolved, otherwise the preloader could cache a url that is replaced right after.
     fun windowEntries(idx: Int): List<ShortsWindowEntry> = (-4..4).mapNotNull { off ->
         val item = currentItems.getOrNull(idx + off) ?: return@mapNotNull null
         val resolved = off <= 0 || item.id in metas || item.id in attempted
@@ -446,8 +444,6 @@ fun SiteShortsPlayer(
         val meta = metas[id]
         val url = (meta?.streamUrl ?: short.videoUrl).trim()
 
-        // Reserve a slot in the session cache (evicting the farthest entry if all 6 are taken)
-        // before the player starts writing anything.
         val cacheKey = if (idx >= 0 && ShortsSessionCache.isCacheable(url)) {
             val key = ShortsSessionCache.cacheKey(source.site.name, id, url)
             key.takeIf { ShortsSessionCache.beginCurrent(sessionOwner, key, windowEntries(idx)) }

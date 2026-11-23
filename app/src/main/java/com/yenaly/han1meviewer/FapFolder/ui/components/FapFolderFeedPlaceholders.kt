@@ -43,7 +43,6 @@ import com.yenaly.han1meviewer.ui.component.social.SocialUserCard
 import com.yenaly.han1meviewer.ui.component.social.formatSocialCount
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
-/** User result card. Built on the shared social kit; shows only what [FapFolderUserRow] provides. */
 @Composable
 fun FapFolderUserRowCard(
     user: FapFolderUserRow,
@@ -72,7 +71,6 @@ fun FapFolderUserRowCard(
     )
 }
 
-/** Community result card. Built on the shared social kit; shows only what [FapFolderGroupRow] provides. */
 @Composable
 fun FapFolderGroupRowCard(
     group: FapFolderGroupRow,

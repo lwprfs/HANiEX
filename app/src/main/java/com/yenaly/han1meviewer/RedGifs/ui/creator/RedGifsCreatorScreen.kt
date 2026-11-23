@@ -127,7 +127,7 @@ fun RedGifsCreatorScreen(
                 u?.likes?.takeIf { it > 0 }?.let { stringResource(R.string.redgifs_dash_likes, it) },
             ).joinToString(" · ")
             val shownName = u?.displayName?.takeIf { it.isNotBlank() && !it.equals(name, true) }
-            // Header can be tall; keep the feed below usable on small screens.
+
             Box(Modifier.fillMaxWidth().heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
                 SocialProfileHeader(
                     name = shownName ?: u?.username ?: name,

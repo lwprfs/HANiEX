@@ -67,17 +67,6 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteVerifiedBadge
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 
-/**
- * Shared "social" UI kit used by every site's user/community search results,
- * profile pages and community pages.
- *
- * Rules for callers:
- *  - Pass ONLY data the site really provides. Every optional parameter (bio, meta, stats,
- *    badges, cover...) is hidden when null/blank/empty, so nothing is ever invented.
- *  - Every site keeps its own models, view-models, navigation and actions; this file only
- *    draws. To show something extra, use the `extra` / `trailing` / `actions` slots, or add a
- *    new optional parameter here and it becomes available to all sites.
- */
 object SocialDefaults {
     val CardRadius = 20.dp
     val CardAvatar = 72.dp
@@ -88,7 +77,6 @@ object SocialDefaults {
     val CommunityAvatarShape: Shape = RoundedCornerShape(20.dp)
 }
 
-/** Formats 1234 -> 1.2K, 1_500_000 -> 1.5M. */
 fun formatSocialCount(value: Long): String = when {
     value >= 1_000_000L -> trimZero(String.format("%.1f", value / 1_000_000.0)) + "M"
     value >= 1_000L -> trimZero(String.format("%.1f", value / 1_000.0)) + "K"
@@ -99,7 +87,6 @@ fun formatSocialCount(value: Int): String = formatSocialCount(value.toLong())
 
 private fun trimZero(s: String) = if (s.endsWith(".0")) s.dropLast(2) else s
 
-/** One statistic. A null [value] means "the site doesn't provide it": it is not drawn. */
 data class SocialStat(
     val label: String,
     val value: Long?,
@@ -108,12 +95,7 @@ data class SocialStat(
 
 enum class SocialTone { Neutral, Accent, Warning, Positive }
 
-/** Small text pill (privacy, "Joined", "Gold", category...). */
 data class SocialChip(val text: String, val tone: SocialTone = SocialTone.Neutral)
-
-// ---------------------------------------------------------------------------------------------
-// Atoms
-// ---------------------------------------------------------------------------------------------
 
 @Composable
 fun SocialAvatar(
@@ -196,7 +178,6 @@ fun SocialChipFlow(
     ) { chips.forEach { SocialChipPill(it) } }
 }
 
-/** Clickable tag cloud (#tags, categories, external links). [onClick] null = static. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SocialTagFlow(
@@ -232,7 +213,6 @@ fun SocialTagFlow(
     }
 }
 
-/** External links as outlined pills that open through the system URI handler. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SocialLinkFlow(
@@ -270,10 +250,6 @@ fun SocialLinkFlow(
 
 enum class SocialButtonStyle { Primary, Tonal, Outlined }
 
-/**
- * Pill action button with an animated busy state. Behaviour (what happens on click, whether it
- * is enabled) always stays in the caller.
- */
 @Composable
 fun SocialActionButton(
     label: String,
@@ -325,11 +301,6 @@ fun SocialActionButton(
     }
 }
 
-// ---------------------------------------------------------------------------------------------
-// Stats / tabs
-// ---------------------------------------------------------------------------------------------
-
-/** Evenly spread stat tiles. Stats whose value is null are dropped; nothing left = nothing drawn. */
 @Composable
 fun SocialStatRow(
     stats: List<SocialStat>,
@@ -377,10 +348,6 @@ fun SocialStatRow(
     }
 }
 
-/**
- * Scrollable pill tab strip with animated selection. Pass only the tabs the site really has;
- * a single tab draws nothing (nothing to switch between) unless [showSingle] is set.
- */
 @Composable
 fun SocialTabRow(
     labels: List<String>,
@@ -430,14 +397,6 @@ fun SocialTabRow(
     }
 }
 
-// ---------------------------------------------------------------------------------------------
-// Search-result / list cards
-// ---------------------------------------------------------------------------------------------
-
-/**
- * Core card for a person or community in lists and search results. The whole card is
- * clickable. Optional pieces vanish when null/blank.
- */
 @Composable
 fun SocialEntityCard(
     name: String,
@@ -539,7 +498,6 @@ fun SocialEntityCard(
     }
 }
 
-/** Person card (circle avatar). */
 @Composable
 fun SocialUserCard(
     name: String,
@@ -559,7 +517,6 @@ fun SocialUserCard(
     verified = verified, chips = chips, trailing = trailing, imageLoader = imageLoader,
 )
 
-/** Community / group / niche / channel card (rounded-square avatar). */
 @Composable
 fun SocialCommunityCard(
     name: String,
@@ -580,20 +537,6 @@ fun SocialCommunityCard(
     imageLoader = imageLoader,
 )
 
-// ---------------------------------------------------------------------------------------------
-// Profile / community header
-// ---------------------------------------------------------------------------------------------
-
-/**
- * Header for a profile or community page.
- *
- *  - [coverUrl]: shown only when the site gave one. No cover = no fake banner; the avatar simply
- *    sits at the top of a clean layout.
- *  - [actions]: the site's real actions (follow, join, edit...). Drawn on their own row.
- *  - [stats]: see [SocialStatRow].
- *  - [extra]: free slot below the stats for anything site-specific (tags, links, notices).
- *  - [bio]: expands/collapses with animation when it is long.
- */
 @Composable
 fun SocialProfileHeader(
     name: String,
@@ -618,7 +561,7 @@ fun SocialProfileHeader(
 
     Column(modifier = modifier.fillMaxWidth()) {
         if (hasCover) {
-            // Cover with the avatar straddling its bottom edge.
+
             Box(modifier = Modifier.fillMaxWidth()) {
                 Box(
                     modifier = Modifier
@@ -660,7 +603,7 @@ fun SocialProfileHeader(
             }
             Spacer(Modifier.height(avatarSize / 2 + 10.dp))
         } else {
-            // No cover from the site: clean layout, nothing invented.
+
             SocialAvatar(
                 url = avatarUrl,
                 name = name,
@@ -738,7 +681,6 @@ fun SocialProfileHeader(
     }
 }
 
-/** Bio text that collapses to [collapsedLines] and expands with an animation when truncated. */
 @Composable
 fun SocialExpandableText(
     text: String?,
@@ -772,7 +714,6 @@ fun SocialExpandableText(
     }
 }
 
-/** Titled rounded card for "About"-style sections. */
 @Composable
 fun SocialSectionCard(
     modifier: Modifier = Modifier,

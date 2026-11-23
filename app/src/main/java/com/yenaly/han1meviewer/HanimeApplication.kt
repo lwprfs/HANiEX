@@ -115,7 +115,6 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
         super.onCreate()
         if (!isMainProcess()) return
 
-        // Short-video session cache: wipe leftovers of a previous/killed session, arm exit cleanup.
         ShortsSessionCache.onAppStart(this)
 
         SingletonImageLoader.setSafe { context -> SupJavImageLoader.buildGlobal(context) }
