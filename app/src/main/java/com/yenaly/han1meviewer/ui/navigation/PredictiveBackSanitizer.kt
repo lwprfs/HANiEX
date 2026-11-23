@@ -27,11 +27,20 @@ fun SanitizedPredictiveBackOwner(content: @Composable () -> Unit) {
 
     val bridge = remember(activity) {
         val decorView = activity.window?.decorView
-        val previousOwner = decorView?.findViewTreeNavigationEventDispatcherOwner()
         val bridge = SanitizingBackBridge(activity)
+        // Site switches compose the incoming host before the outgoing one is disposed, so the
+        // "previous" owner may itself be a bridge that is about to die. Keep it only as a link
+        // in a chain and resolve to a live owner when restoring.
+        bridge.previousOwner = decorView?.findViewTreeNavigationEventDispatcherOwner()
         decorView?.setViewTreeNavigationEventDispatcherOwner(bridge)
         bridge.restoreViewTreeOwner = {
-            decorView?.setViewTreeNavigationEventDispatcherOwner(previousOwner)
+            // Only touch the window if it still points at this bridge; otherwise a newer host
+            // already took over and overwriting its owner would leave a dangling reference.
+            if (decorView != null &&
+                decorView.findViewTreeNavigationEventDispatcherOwner() === bridge
+            ) {
+                decorView.setViewTreeNavigationEventDispatcherOwner(bridge.liveFallbackOwner())
+            }
         }
         bridge
     }
@@ -50,6 +59,22 @@ private class SanitizingBackBridge(
 ) : NavigationEventDispatcherOwner {
 
     var restoreViewTreeOwner: (() -> Unit)? = null
+
+    /** Owner that was installed on the decor view when this bridge was created. */
+    var previousOwner: NavigationEventDispatcherOwner? = null
+
+    @Volatile
+    var disposed = false
+        private set
+
+    /** Nearest earlier owner that has not been disposed (skips dead bridges in the chain). */
+    fun liveFallbackOwner(): NavigationEventDispatcherOwner? {
+        var candidate = previousOwner
+        while (candidate is SanitizingBackBridge && candidate.disposed) {
+            candidate = candidate.previousOwner
+        }
+        return candidate
+    }
 
     val dispatcher = NavigationEventDispatcher()
 
@@ -103,6 +128,8 @@ private class SanitizingBackBridge(
     }
 
     fun dispose() {
+        if (disposed) return
+        disposed = true
         callback.remove()
         dispatcher.dispose()
     }
