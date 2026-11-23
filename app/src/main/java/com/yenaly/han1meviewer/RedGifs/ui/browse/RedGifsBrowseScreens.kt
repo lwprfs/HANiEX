@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.RedGifs.ui.browse
 
+import com.yenaly.han1meviewer.ui.component.social.SocialCommunityCard
+import com.yenaly.han1meviewer.ui.component.social.SocialUserCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -138,50 +140,32 @@ private fun compact(n: Long): String = when {
 @Composable
 internal fun RedGifsNicheRow(niche: RedGifsNiche, onClick: () -> Unit) {
     val imageLoader = RedGifsImageLoader.get(LocalContext.current)
-    Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        SiteAvatar(url = niche.thumbnailUrl, name = niche.name, size = 48.dp, imageLoader = imageLoader)
-        Column(Modifier.weight(1f)) {
-            Text(niche.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(
-                stringResource(R.string.redgifs_niche_stats, compact(niche.gifs), compact(niche.subscribers)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    SocialCommunityCard(
+        name = niche.name,
+        avatarUrl = niche.thumbnailUrl,
+        description = niche.description.takeIf { it.isNotBlank() },
+        meta = stringResource(R.string.redgifs_niche_stats, compact(niche.gifs), compact(niche.subscribers)),
+        onClick = onClick,
+        imageLoader = imageLoader,
+        modifier = Modifier.padding(vertical = 6.dp),
+    )
 }
 
 @Composable
 internal fun RedGifsUserRow(user: RedGifsUser, onClick: () -> Unit) {
     val imageLoader = RedGifsImageLoader.get(LocalContext.current)
-    Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        SiteAvatar(url = user.avatarUrl, name = user.username, size = 48.dp, imageLoader = imageLoader)
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    user.username,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (user.verified) SiteVerifiedBadge()
-            }
-            Text(
-                stringResource(R.string.redgifs_user_stats, compact(user.followers), compact(user.gifs)),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    val display = user.displayName.takeIf { it.isNotBlank() && !it.equals(user.username, true) }
+    SocialUserCard(
+        name = display ?: user.username,
+        username = if (display != null) "@${user.username}" else null,
+        avatarUrl = user.avatarUrl,
+        bio = user.description.takeIf { it.isNotBlank() },
+        meta = stringResource(R.string.redgifs_user_stats, compact(user.followers), compact(user.gifs)),
+        verified = user.verified,
+        onClick = onClick,
+        imageLoader = imageLoader,
+        modifier = Modifier.padding(vertical = 6.dp),
+    )
 }
 
 @Composable

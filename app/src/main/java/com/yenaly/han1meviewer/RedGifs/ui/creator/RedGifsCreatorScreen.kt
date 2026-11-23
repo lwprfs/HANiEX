@@ -1,5 +1,16 @@
 package com.yenaly.han1meviewer.RedGifs.ui.creator
 
+import com.yenaly.han1meviewer.ui.component.social.SocialActionButton
+import com.yenaly.han1meviewer.ui.component.social.SocialButtonStyle
+import com.yenaly.han1meviewer.ui.component.social.SocialLinkFlow
+import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
+import com.yenaly.han1meviewer.ui.component.social.SocialStat
+import com.yenaly.han1meviewer.ui.component.social.SocialTabRow
+import com.yenaly.han1meviewer.ui.component.social.SocialTagFlow
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.RedGifs.ui.navigation.LocalRedGifsActions
@@ -94,103 +105,73 @@ fun RedGifsCreatorScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             val u = user
-            Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    SiteAvatar(url = u?.avatarUrl, name = name, size = 56.dp, imageLoader = imageLoader)
-                    Column(Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            Text(
-                                u?.username ?: name,
-                                style = MaterialTheme.typography.titleMedium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f, fill = false),
-                            )
-                            if (u?.verified == true) SiteVerifiedBadge()
-                        }
-                        if (u != null) {
-                            Text(
-                                stringResource(R.string.redgifs_user_stats, compactCount(u.followers), compactCount(u.gifs)),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+            val toggleFollow: () -> Unit = {
+                if (!RedGifsAuth.isLoggedIn) {
+                    GlobalToasts.show(loginRequired, level = GlobalToasts.ToastLevel.ERROR)
+                    onLogin()
+                } else if (!busy) {
+                    busy = true
+                    val want = !following
+                    scope.launch {
+                        RedGifsRepo.setFollowing(name, want)
+                            .onSuccess { following = want }
+                            .onFailure {
+                                GlobalToasts.show(it.message ?: actionFailed, level = GlobalToasts.ToastLevel.ERROR)
+                            }
+                        busy = false
                     }
-                    SiteSubscribeButton(
-                        subscribed = following,
-                        busy = busy,
-                        onClick = {
-                            if (!RedGifsAuth.isLoggedIn) {
-                                GlobalToasts.show(loginRequired, level = GlobalToasts.ToastLevel.ERROR)
-                                onLogin()
-                                return@SiteSubscribeButton
-                            }
-                            if (busy) return@SiteSubscribeButton
-                            busy = true
-                            val want = !following
-                            scope.launch {
-                                RedGifsRepo.setFollowing(name, want)
-                                    .onSuccess { following = want }
-                                    .onFailure {
-                                        GlobalToasts.show(it.message ?: actionFailed, level = GlobalToasts.ToastLevel.ERROR)
-                                    }
-                                busy = false
-                            }
-                        },
-                    )
-                }
-                if (!u?.description.isNullOrBlank()) {
-                    Text(
-                        u.description.orEmpty(),
-                        style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 8.dp),
-                    )
                 }
             }
-            if (socials.isNotEmpty()) {
-                Row(
-                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    socials.take(4).forEach { url ->
-                        Text(
-                            url.removePrefix("https://").removePrefix("http://").removePrefix("www.").substringBefore('/'),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.clickable {
-                                runCatching {
-                                    context.startActivity(
-                                        android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)),
-                                    )
-                                }
-                            },
+            val viewsLikes = listOfNotNull(
+                u?.views?.takeIf { it > 0 }?.let { stringResource(R.string.redgifs_dash_views, it) },
+                u?.likes?.takeIf { it > 0 }?.let { stringResource(R.string.redgifs_dash_likes, it) },
+            ).joinToString(" · ")
+            val shownName = u?.displayName?.takeIf { it.isNotBlank() && !it.equals(name, true) }
+            // Header can be tall; keep the feed below usable on small screens.
+            Box(Modifier.fillMaxWidth().heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                SocialProfileHeader(
+                    name = shownName ?: u?.username ?: name,
+                    username = "@${u?.username ?: name}".takeIf { shownName != null },
+                    avatarUrl = u?.avatarUrl,
+                    verified = u?.verified == true,
+                    bio = u?.description?.takeIf { it.isNotBlank() },
+                    metaLines = listOf(viewsLikes),
+                    imageLoader = imageLoader,
+                    actions = {
+                        SocialActionButton(
+                            label = stringResource(
+                                if (following) R.string.site_subscribed else R.string.site_subscribe
+                            ),
+                            onClick = toggleFollow,
+                            style = if (following) SocialButtonStyle.Tonal else SocialButtonStyle.Primary,
+                            loading = busy,
+                            modifier = Modifier.weight(1f),
                         )
-                    }
-                }
-            }
-            if (creatorTags.isNotEmpty()) {
-                SiteChipRow(
-                    options = creatorTags,
-                    selected = "",
-                    label = { "#$it" },
-                    onSelect = { actions.openTag(it) },
-                    key = { it },
+                    },
+                    stats = if (u == null) emptyList() else listOf(
+                        SocialStat(stringResource(R.string.redgifs_followers), u.followers),
+                        SocialStat(stringResource(R.string.site_following), u.following),
+                        SocialStat(stringResource(R.string.redgifs_search_gifs), u.gifs),
+                    ),
+                    extra = if (socials.isEmpty() && creatorTags.isEmpty()) null else {
+                        {
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                SocialLinkFlow(
+                                    socials.take(4).map { url ->
+                                        url.removePrefix("https://").removePrefix("http://")
+                                            .removePrefix("www.").substringBefore('/') to url
+                                    },
+                                )
+                                SocialTagFlow(creatorTags, prefix = "#", onClick = { actions.openTag(it) })
+                            }
+                        }
+                    },
                 )
             }
-            SiteChipRow(
-                options = listOf(false, true),
-                selected = pinned,
-                label = { if (it) pinsLabel else allLabel },
-                onSelect = { pinned = it },
-                key = { it },
+            SocialTabRow(
+                labels = listOf(allLabel, pinsLabel),
+                selectedIndex = if (pinned) 1 else 0,
+                onSelect = { pinned = it == 1 },
             )
             key(pinned) {
                 RedGifsFeedContent(

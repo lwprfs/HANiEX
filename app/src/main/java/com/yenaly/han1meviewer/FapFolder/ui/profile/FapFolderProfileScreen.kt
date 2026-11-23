@@ -1,5 +1,12 @@
 package com.yenaly.han1meviewer.FapFolder.ui.profile
 
+import com.yenaly.han1meviewer.ui.component.social.SocialActionButton
+import com.yenaly.han1meviewer.ui.component.social.SocialButtonStyle
+import com.yenaly.han1meviewer.ui.component.social.SocialChip
+import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
+import com.yenaly.han1meviewer.ui.component.social.SocialStat
+import com.yenaly.han1meviewer.ui.component.social.SocialTabRow
+import com.yenaly.han1meviewer.ui.component.social.SocialTone
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
@@ -738,46 +745,13 @@ private fun ProfileTabRow(
     activeTab: FapFolderProfileTab,
     onSelect: (FapFolderProfileTab) -> Unit,
 ) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(50),
-        color = MaterialTheme.colorScheme.surfaceContainer,
-    ) {
-        Row(
-            modifier = Modifier.padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            FapFolderProfileTab.entries.forEach { tab ->
-                val selected = activeTab == tab
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(50))
-                        .clickable { onSelect(tab) },
-                    shape = RoundedCornerShape(50),
-                    color = if (selected) MaterialTheme.colorScheme.primary
-                    else Color.Transparent,
-                ) {
-                    Box(
-                        modifier = Modifier.padding(vertical = 9.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = tab.label,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (selected) MaterialTheme.colorScheme.onPrimary
-                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-            }
-        }
-    }
+    val tabs = FapFolderProfileTab.entries
+    SocialTabRow(
+        labels = tabs.map { it.label },
+        selectedIndex = tabs.indexOf(activeTab),
+        onSelect = { onSelect(tabs[it]) },
+        showSingle = true,
+    )
 }
 
 @Composable
@@ -789,262 +763,54 @@ private fun ProfileHeader(
     onToggleFollow: () -> Unit,
     onOpenTab: (FapFolderProfileTab) -> Unit,
 ) {
-    val surface = MaterialTheme.colorScheme.surface
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(168.dp)
-                    .background(
-                        Brush.linearGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primaryContainer,
-                                MaterialTheme.colorScheme.tertiaryContainer,
-                            )
-                        )
+    val friendsLabel = stringResource(R.string.fap_friends)
+    val pendingLabel = stringResource(R.string.creator_status_pending)
+    val chips = buildList {
+        if (profile.isFriend) add(SocialChip(friendsLabel, SocialTone.Positive))
+        else if (profile.isFriendPending) add(SocialChip(pendingLabel))
+    }
+    SocialProfileHeader(
+        name = profile.displayName.ifBlank { profile.username },
+        username = profile.username.takeIf { it.isNotBlank() }?.let { "@$it" },
+        coverUrl = profile.coverUrl,
+        avatarUrl = profile.avatarUrl,
+        chips = chips,
+        bio = profile.bio,
+        metaLines = listOfNotNull(
+            profile.joinedLabel?.takeIf { it.isNotBlank() }
+                ?.let { stringResource(R.string.fap_joined_2, it) },
+        ),
+        errorText = followError,
+        actions = if (profile.isSelf) null else {
+            {
+                SocialActionButton(
+                    label = stringResource(
+                        if (following) R.string.site_following else R.string.fap_follow
                     ),
-            ) {
-                profile.coverUrl?.let { cover ->
-                    AsyncImage(
-                        model = cover,
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.verticalGradient(
-                                0.55f to Color.Transparent,
-                                1f to surface.copy(alpha = 0.85f),
-                            )
-                        ),
+                    onClick = onToggleFollow,
+                    style = if (following) SocialButtonStyle.Outlined else SocialButtonStyle.Primary,
+                    loading = followPending,
+                    modifier = Modifier.weight(1f),
                 )
             }
-
-            Box(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 16.dp)
-                    .offset(y = 40.dp)
-                    .size(84.dp)
-                    .clip(CircleShape)
-                    .background(surface)
-                    .padding(4.dp)
-                    .clip(CircleShape),
-            ) {
-                val avatar = profile.avatarUrl
-                if (!avatar.isNullOrBlank()) {
-                    AsyncImage(
-                        model = avatar,
-                        contentDescription = profile.displayName,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                } else {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = profile.displayName.firstOrNull()?.uppercase()
-                                    ?: "?",
-                                style = MaterialTheme.typography.headlineMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                    }
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .padding(top = 48.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = profile.displayName,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = "@${profile.username}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-
-            if (!profile.isSelf) {
-                if (following) {
-                    OutlinedButton(
-                        onClick = onToggleFollow,
-                        enabled = !followPending,
-                        shape = RoundedCornerShape(50),
-                        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp),
-                    ) {
-                        if (followPending) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Text(stringResource(R.string.site_following), fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-                } else {
-                    Button(
-                        onClick = onToggleFollow,
-                        enabled = !followPending,
-                        shape = RoundedCornerShape(50),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                        ),
-                        contentPadding = PaddingValues(horizontal = 22.dp, vertical = 8.dp),
-                    ) {
-                        if (followPending) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                            )
-                        } else {
-                            Text(stringResource(R.string.fap_follow), fontWeight = FontWeight.SemiBold)
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!profile.bio.isNullOrBlank()) {
-            Text(
-                text = profile.bio,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                maxLines = 6,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-
-        if (!profile.joinedLabel.isNullOrBlank()) {
-            Text(
-                text = stringResource(R.string.fap_joined_2, profile.joinedLabel),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp),
-            )
-        }
-
-        if (!followError.isNullOrBlank()) {
-            Text(
-                text = followError,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
-        }
-
-        ProfileCountsRow(
-            profile = profile,
-            onOpenTab = onOpenTab,
-            modifier = Modifier.padding(top = 12.dp),
-        )
-    }
-}
-
-@Composable
-private fun ProfileCountsRow(
-    profile: FapFolderUserProfile,
-    onOpenTab: (FapFolderProfileTab) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val counts = profile.counts()
-    if (counts.isEmpty) return
-
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        ProfileCountItem(
-            label = stringResource(R.string.site_followers),
-            value = counts.followers,
-            modifier = Modifier.weight(1f),
-            onClick = null,
-        )
-        ProfileCountItem(
-            label = stringResource(R.string.fap_tab_posts),
-            value = counts.posts,
-            modifier = Modifier.weight(1f),
-            onClick = { onOpenTab(FapFolderProfileTab.TIMELINE) },
-        )
-        ProfileCountItem(
-            label = stringResource(R.string.fap_tab_photos),
-            value = counts.photos,
-            modifier = Modifier.weight(1f),
-            onClick = { onOpenTab(FapFolderProfileTab.PHOTOS) },
-        )
-        ProfileCountItem(
-            label = stringResource(R.string.fap_tab_videos),
-            value = counts.videos,
-            modifier = Modifier.weight(1f),
-            onClick = { onOpenTab(FapFolderProfileTab.VIDEOS) },
-        )
-    }
-}
-
-@Composable
-private fun ProfileCountItem(
-    label: String,
-    value: Int?,
-    modifier: Modifier = Modifier,
-    onClick: (() -> Unit)?,
-) {
-    val displayValue = value?.let(::formatCount) ?: "—"
-    Surface(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .then(
-                if (onClick != null) Modifier.clickable(onClick = onClick)
-                else Modifier
+        },
+        stats = listOf(
+            SocialStat(stringResource(R.string.site_followers), profile.followerCount?.toLong()),
+            SocialStat(stringResource(R.string.site_following), profile.followingCount?.toLong()),
+            SocialStat(
+                stringResource(R.string.fap_tab_posts), profile.postCount?.toLong(),
+                onClick = { onOpenTab(FapFolderProfileTab.TIMELINE) },
             ),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-        ) {
-            Text(
-                text = displayValue,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
+            SocialStat(
+                stringResource(R.string.fap_tab_photos), profile.photoCount?.toLong(),
+                onClick = { onOpenTab(FapFolderProfileTab.PHOTOS) },
+            ),
+            SocialStat(
+                stringResource(R.string.fap_tab_videos), profile.videoCount?.toLong(),
+                onClick = { onOpenTab(FapFolderProfileTab.VIDEOS) },
+            ),
+        ),
+    )
 }
 
 private fun formatCount(value: Int): String =

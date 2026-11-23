@@ -1,5 +1,17 @@
 package com.yenaly.han1meviewer.XHamster.ui.profile
 
+import com.yenaly.han1meviewer.ui.component.social.SocialActionButton
+import com.yenaly.han1meviewer.ui.component.social.SocialButtonStyle
+import com.yenaly.han1meviewer.ui.component.social.SocialChip
+import com.yenaly.han1meviewer.ui.component.social.SocialDefaults
+import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
+import com.yenaly.han1meviewer.ui.component.social.SocialStat
+import com.yenaly.han1meviewer.ui.component.social.SocialTabRow
+import com.yenaly.han1meviewer.ui.component.social.SocialTagFlow
+import com.yenaly.han1meviewer.ui.component.social.SocialTone
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -209,26 +221,17 @@ private fun ProfileContent(
     }
 
     Column(Modifier.fillMaxSize()) {
-        ProfileHeader(profile, subscribed, busy, canSubscribe, toggleSubscribe, onOpenPath)
-        if (tabs.size > 1) {
-            PrimaryScrollableTabRow(selectedTabIndex = selected, edgePadding = 8.dp) {
-                tabs.forEachIndexed { i, tab ->
-                    val count = if (tab == ProfileTab.VIDEOS) profile.videoCount else profile.shortsCount
-                    Tab(
-                        selected = selected == i,
-                        onClick = { selected = i },
-                        text = {
-                            Text(
-                                stringResource(
-                                    if (tab == ProfileTab.VIDEOS) R.string.xhamster_tab_videos
-                                    else R.string.xhamster_tab_shorts
-                                ) + (XHamsterFormat.count(count)?.let { " $it" } ?: "")
-                            )
-                        },
-                    )
-                }
-            }
+        Box(Modifier.fillMaxWidth().heightIn(max = 380.dp).verticalScroll(rememberScrollState())) {
+            ProfileHeader(profile, subscribed, busy, canSubscribe, toggleSubscribe, onOpenPath)
         }
+        val tabLabels = tabs.map { tab ->
+            val count = if (tab == ProfileTab.VIDEOS) profile.videoCount else profile.shortsCount
+            stringResource(
+                if (tab == ProfileTab.VIDEOS) R.string.xhamster_tab_videos
+                else R.string.xhamster_tab_shorts
+            ) + (XHamsterFormat.count(count)?.let { " $it" } ?: "")
+        }
+        SocialTabRow(labels = tabLabels, selectedIndex = selected, onSelect = { selected = it })
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tabs.getOrElse(selected) { ProfileTab.VIDEOS }) {
                 ProfileTab.VIDEOS -> ProfileVideos(videosPath, profile.tags, profile.sorts, onNavigateToVideo)
@@ -263,46 +266,57 @@ private fun ProfileHeader(
     onOpenPath: (String, String) -> Unit,
 ) {
     val imageLoader = XHamsterImageLoader.get(LocalContext.current)
-
-    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            SiteAvatar(profile.avatarUrl, profile.name, size = 64.dp, imageLoader = imageLoader)
-            Column(Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        profile.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false),
-                    )
-                    if (profile.verified) SiteVerifiedBadge(size = 20.dp)
-                }
-                val stats = listOfNotNull(
-                    profile.country,
-                    XHamsterFormat.count(profile.subscribers)?.let { stringResource(R.string.xhamster_n_subscribers, it) },
-                    XHamsterFormat.count(profile.viewsCount)?.let { stringResource(R.string.xhamster_n_views, it) },
-                    XHamsterFormat.count(profile.videoCount)?.let { stringResource(R.string.xhamster_n_videos, it) },
-                    XHamsterFormat.count(profile.shortsCount)?.let { stringResource(R.string.xhamster_n_shorts, it) },
-                ).joinToString(" · ")
-                if (stats.isNotEmpty()) Text(stats, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            if (canSubscribe) SiteSubscribeButton(subscribed, busy, onToggleSubscribe)
-        }
-        if (!profile.aliases.isNullOrBlank()) {
-            Text(profile.aliases, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-        }
-        if (!profile.isPublic) {
-            Text(stringResource(R.string.xhamster_profile_private), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
-        }
-        if (profile.channels.isNotEmpty()) {
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(profile.channels, key = { it.path }) { ch ->
-                    FilterChip(selected = false, onClick = { onOpenPath(ch.path, ch.name) }, label = { Text(ch.name) })
-                }
-            }
-        }
+    val privateLabel = stringResource(R.string.xhamster_profile_private)
+    val chips = buildList {
+        profile.country?.takeIf { it.isNotBlank() }?.let { add(SocialChip(it)) }
+        if (!profile.isPublic) add(SocialChip(privateLabel, SocialTone.Warning))
     }
+    val extraMeta = listOfNotNull(
+        XHamsterFormat.count(profile.photosCount)?.let { stringResource(R.string.xhamster_n_photos, it) },
+        XHamsterFormat.count(profile.favoritesCount)?.takeIf { profile.favoritesCount != 0L }
+            ?.let { stringResource(R.string.xhamster_n_favorites, it) },
+    ).joinToString(" · ")
+    SocialProfileHeader(
+        name = profile.name,
+        avatarUrl = profile.avatarUrl,
+        avatarShape = if (profile.kind == XHamsterEntityProfile.Kind.CHANNEL)
+            SocialDefaults.CommunityAvatarShape else CircleShape,
+        verified = profile.verified,
+        chips = chips,
+        bio = profile.aliases?.takeIf { it.isNotBlank() },
+        metaLines = listOf(extraMeta),
+        imageLoader = imageLoader,
+        actions = if (canSubscribe) {
+            {
+                SocialActionButton(
+                    label = stringResource(
+                        if (subscribed) R.string.site_subscribed else R.string.site_subscribe
+                    ),
+                    onClick = onToggleSubscribe,
+                    style = if (subscribed) SocialButtonStyle.Tonal else SocialButtonStyle.Primary,
+                    loading = busy,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        } else null,
+        stats = listOf(
+            SocialStat(stringResource(R.string.social_stat_subscribers), profile.subscribers),
+            SocialStat(stringResource(R.string.social_stat_videos), profile.videoCount),
+            SocialStat(stringResource(R.string.social_stat_shorts), profile.shortsCount),
+            SocialStat(stringResource(R.string.social_stat_views), profile.viewsCount),
+        ),
+        extra = if (profile.channels.isEmpty()) null else {
+            {
+                SocialTagFlow(
+                    tags = profile.channels.map { it.name },
+                    onClick = { chName ->
+                        profile.channels.firstOrNull { it.name == chName }
+                            ?.let { onOpenPath(it.path, it.name) }
+                    },
+                )
+            }
+        },
+    )
 }
 
 @Composable

@@ -30,6 +30,7 @@ import com.yenaly.han1meviewer.base.BaseApplication
 import com.yenaly.han1meviewer.logic.network.HDns
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.component.shorts.ShortsSessionCache
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
 import com.yenaly.han1meviewer.util.HAnalytics
@@ -113,6 +114,9 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
         if (!isMainProcess()) return
+
+        // Short-video session cache: wipe leftovers of a previous/killed session, arm exit cleanup.
+        ShortsSessionCache.onAppStart(this)
 
         SingletonImageLoader.setSafe { context -> SupJavImageLoader.buildGlobal(context) }
 

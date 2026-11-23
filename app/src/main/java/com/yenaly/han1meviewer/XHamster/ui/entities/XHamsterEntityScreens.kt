@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.XHamster.ui.entities
 
+import com.yenaly.han1meviewer.ui.component.social.SocialCommunityCard
+import com.yenaly.han1meviewer.ui.component.social.SocialUserCard
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterUserRepo
 import com.yenaly.han1meviewer.XHamster.ui.discover.XHamsterDiscoverActions
@@ -205,47 +207,30 @@ fun XHamsterChannelsScreen(
 
             state.items.isEmpty() -> SiteEmptyContent(hint = stringResource(R.string.xhamster_nothing_here))
             else -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 160.dp),
+                columns = GridCells.Adaptive(minSize = 320.dp),
                 state = gridState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(0.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(state.items, key = { it.path }) { channel ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onOpenChannel(channel.path, channel.name) },
-                    ) {
-                        EntityImage(
-                            channel.logoUrl,
-                            Modifier
-                                .fillMaxWidth()
-                                .size(width = 160.dp, height = 90.dp),
-                        )
-                        Column(Modifier.padding(10.dp)) {
-                            Text(
-                                channel.name,
-                                style = MaterialTheme.typography.titleSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            val meta = listOfNotNull(
-                                formatCount(channel.videoCount)?.let {
-                                    stringResource(R.string.xhamster_n_videos, it)
-                                },
-                                formatCount(channel.subscribers)?.let {
-                                    stringResource(R.string.xhamster_n_subscribers, it)
-                                },
-                            ).joinToString(" · ")
-                            if (meta.isNotEmpty()) Text(
-                                meta,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                    val meta = listOfNotNull(
+                        formatCount(channel.videoCount)?.let {
+                            stringResource(R.string.xhamster_n_videos, it)
+                        },
+                        formatCount(channel.subscribers)?.let {
+                            stringResource(R.string.xhamster_n_subscribers, it)
+                        },
+                    ).joinToString(" · ")
+                    SocialCommunityCard(
+                        name = channel.name,
+                        avatarUrl = channel.logoUrl.takeIf { it.isNotBlank() },
+                        meta = meta.takeIf { it.isNotEmpty() },
+                        onClick = { onOpenChannel(channel.path, channel.name) },
+                        imageLoader = XHamsterImageLoader.get(LocalContext.current),
+                        modifier = Modifier.padding(vertical = 2.dp),
+                    )
                 }
                 if (state.isLoadingMore) item(span = { GridItemSpan(maxLineSpan) }) { LoadingRow() }
             }
@@ -302,37 +287,22 @@ fun XHamsterCreatorsScreen(
                     }
                 }
                 items(state.items, key = { it.path }) { creator ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onOpenCreator(creator.path, creator.name) }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        EntityImage(creator.avatarUrl, Modifier.size(56.dp), circle = true)
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                if (creator.verified) "${creator.name} ✓" else creator.name,
-                                style = MaterialTheme.typography.titleSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            val meta = listOfNotNull(
-                                formatCount(creator.videoCount)?.let {
-                                    stringResource(R.string.xhamster_n_videos, it)
-                                },
-                                formatCount(creator.viewsCount)?.let {
-                                    stringResource(R.string.xhamster_n_views, it)
-                                },
-                            ).joinToString(" · ")
-                            if (meta.isNotEmpty()) Text(
-                                meta,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
+                    val meta = listOfNotNull(
+                        formatCount(creator.videoCount)?.let {
+                            stringResource(R.string.xhamster_n_videos, it)
+                        },
+                        formatCount(creator.viewsCount)?.let {
+                            stringResource(R.string.xhamster_n_views, it)
+                        },
+                    ).joinToString(" · ")
+                    SocialUserCard(
+                        name = creator.name,
+                        avatarUrl = creator.avatarUrl.takeIf { it.isNotBlank() },
+                        meta = meta.takeIf { it.isNotEmpty() },
+                        verified = creator.verified,
+                        onClick = { onOpenCreator(creator.path, creator.name) },
+                        imageLoader = XHamsterImageLoader.get(LocalContext.current),
+                    )
                 }
                 if (state.isLoadingMore) item { LoadingRow() }
             }
@@ -793,30 +763,15 @@ fun XHamsterStarsScreen(
                         SiteEmptyContent(hint = stringResource(R.string.xhamster_nothing_here))
                     }
                     items(state.items, key = { it.path }) { star ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onOpenStar(star.path, star.name) }
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            EntityImage(star.avatarUrl, Modifier.size(56.dp), circle = true)
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    if (star.verified) "${star.name} ✓" else star.name,
-                                    style = MaterialTheme.typography.titleSmall,
-                                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                                )
-                                formatCount(star.videoCount)?.let {
-                                    Text(
-                                        stringResource(R.string.xhamster_n_videos, it),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                        }
+                        SocialUserCard(
+                            name = star.name,
+                            avatarUrl = star.avatarUrl.takeIf { it.isNotBlank() },
+                            meta = formatCount(star.videoCount)
+                                ?.let { stringResource(R.string.xhamster_n_videos, it) },
+                            verified = star.verified,
+                            onClick = { onOpenStar(star.path, star.name) },
+                            imageLoader = XHamsterImageLoader.get(LocalContext.current),
+                        )
                     }
                 }
             }

@@ -1,5 +1,15 @@
 package com.yenaly.han1meviewer.FapFolder.ui.group
 
+import com.yenaly.han1meviewer.ui.component.social.SocialActionButton
+import com.yenaly.han1meviewer.ui.component.social.SocialButtonStyle
+import com.yenaly.han1meviewer.ui.component.social.SocialChip
+import com.yenaly.han1meviewer.ui.component.social.SocialDefaults
+import com.yenaly.han1meviewer.ui.component.social.SocialLinkFlow
+import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
+import com.yenaly.han1meviewer.ui.component.social.SocialStat
+import com.yenaly.han1meviewer.ui.component.social.SocialTabRow
+import com.yenaly.han1meviewer.ui.component.social.SocialTagFlow
+import com.yenaly.han1meviewer.ui.component.social.SocialTone
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.FapFolder.ui.video.FapFolderVideoPlaylist
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
@@ -261,209 +271,68 @@ private fun GroupHeaderBlock(
     onToggleMembership: () -> Unit,
     onSelectTab: (FapFolderGroupTab) -> Unit = {},
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 140.dp, max = 200.dp)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-        ) {
-            group.bannerUrl?.let { banner ->
-                AsyncImage(
-                    model = banner,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop,
-                )
-            }
+    val privateLabel = stringResource(R.string.fap_private)
+    val secretLabel = stringResource(R.string.fap_secret)
+    val chips = buildList {
+        group.category?.name?.takeIf { it.isNotBlank() }
+            ?.let { add(SocialChip(it, SocialTone.Accent)) }
+        when (group.visibility) {
+            GroupVisibility.PRIVATE -> add(SocialChip(privateLabel, SocialTone.Warning))
+            GroupVisibility.SECRET -> add(SocialChip(secretLabel, SocialTone.Warning))
+            else -> Unit
         }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp)
-                .padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(CircleShape),
-            ) {
-                val avatar = group.avatarUrl
-                if (!avatar.isNullOrBlank()) {
-                    AsyncImage(
-                        model = avatar,
-                        contentDescription = group.displayName,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
-                    )
-                } else {
-                    Surface(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Text(
-                                text = group.displayName.firstOrNull()?.uppercase() ?: "?",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                    }
-                }
-            }
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = group.displayName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    if (group.visibility != GroupVisibility.PUBLIC &&
-                        group.visibility != GroupVisibility.UNKNOWN
-                    ) {
-                        Spacer(Modifier.width(6.dp))
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.errorContainer,
-                        ) {
-                            Text(
-                                text = if (group.visibility == GroupVisibility.PRIVATE) stringResource(R.string.fap_private)
-                                else stringResource(R.string.fap_secret),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            )
-                        }
-                    }
-                }
-                val followers = group.followerCount ?: group.memberCount
-                if (followers != null) {
-                    Text(
-                        text = stringResource(R.string.fap_followers, formatCount(followers)),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
+    }
+    val followers = group.followerCount ?: group.memberCount
+    val links = remember(group.externalLinks, group.socialLinks) {
+        val fromExternal = group.externalLinks.map { it.label to it.url }
+        val known = fromExternal.map { it.second }.toSet()
+        fromExternal + group.socialLinks.entries
+            .filter { it.value.isNotBlank() && it.value !in known }
+            .map { it.key to it.value }
+    }
+    val allTags = remember(group.tags, group.bioTags) {
+        (group.tags + group.bioTags).filter { it.isNotBlank() }.distinct()
+    }
+    SocialProfileHeader(
+        name = group.displayName,
+        coverUrl = group.bannerUrl,
+        avatarUrl = group.avatarUrl,
+        avatarShape = SocialDefaults.CommunityAvatarShape,
+        chips = chips,
+        bio = group.bio,
+        errorText = joinError,
+        actions = {
             MembershipButton(
                 membership = group.membership,
                 loading = joining,
                 onClick = onToggleMembership,
+                modifier = Modifier.weight(1f),
             )
-        }
-
-        GroupStatsRow(group = group, onSelectTab = onSelectTab)
-
-        GroupInfoChips(group = group)
-
-        if (!group.bio.isNullOrBlank()) {
-            Text(
-                text = group.bio ,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                maxLines = 6,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-
-        if (!joinError.isNullOrBlank()) {
-            Text(
-                text = joinError,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            )
-        }
-    }
-}
-
-private fun formatCount(value: Int): String =
-    java.text.NumberFormat.getIntegerInstance().format(value)
-
-@Composable
-private fun GroupStatsRow(
-    group: com.yenaly.han1meviewer.FapFolder.data.model.FapFolderGroup,
-    onSelectTab: (FapFolderGroupTab) -> Unit,
-) {
-    val followers = group.followerCount ?: group.memberCount
-    val stats = listOf(
-        Triple(stringResource(R.string.site_followers), followers, null as FapFolderGroupTab?),
-        Triple(stringResource(R.string.fap_tab_posts), group.postCount, FapFolderGroupTab.POSTS),
-        Triple(stringResource(R.string.fap_tab_photos), group.photoCount, FapFolderGroupTab.PHOTOS),
-        Triple(stringResource(R.string.fap_tab_videos), group.videoCount, FapFolderGroupTab.VIDEOS),
-    ).filter { it.second != null }
-    if (stats.isEmpty()) return
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp),
-        ) {
-            stats.forEach { (label, value, tab) ->
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .then(
-                            if (tab != null) Modifier.clickable { onSelectTab(tab) }
-                            else Modifier
-                        ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Text(
-                        text = formatCount(value ?: 0),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+        },
+        stats = listOf(
+            SocialStat(stringResource(R.string.site_followers), followers?.toLong()),
+            SocialStat(
+                stringResource(R.string.fap_tab_posts), group.postCount?.toLong(),
+                onClick = { onSelectTab(FapFolderGroupTab.POSTS) },
+            ),
+            SocialStat(
+                stringResource(R.string.fap_tab_photos), group.photoCount?.toLong(),
+                onClick = { onSelectTab(FapFolderGroupTab.PHOTOS) },
+            ),
+            SocialStat(
+                stringResource(R.string.fap_tab_videos), group.videoCount?.toLong(),
+                onClick = { onSelectTab(FapFolderGroupTab.VIDEOS) },
+            ),
+        ),
+        extra = if (allTags.isEmpty() && links.isEmpty()) null else {
+            {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    SocialTagFlow(allTags, prefix = "#")
+                    SocialLinkFlow(links)
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun GroupInfoChips(
-    group: com.yenaly.han1meviewer.FapFolder.data.model.FapFolderGroup,
-) {
-    val uriHandler = LocalUriHandler.current
-    val categoryName = group.category?.name?.takeIf { it.isNotBlank() }
-    if (categoryName == null && group.externalLinks.isEmpty()) return
-
-    FlowRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        categoryName?.let { name ->
-            AssistChip(onClick = {}, label = { Text(name) })
-        }
-        group.externalLinks.forEach { link ->
-            AssistChip(
-                onClick = { runCatching { uriHandler.openUri(link.url) } },
-                label = { Text(link.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-            )
-        }
-    }
+        },
+    )
 }
 
 @Composable
@@ -471,29 +340,13 @@ private fun GroupTabRow(
     activeTab: FapFolderGroupTab,
     onSelect: (FapFolderGroupTab) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        FapFolderGroupTab.entries.forEach { tab ->
-            FilterChip(
-                selected = activeTab == tab,
-                onClick = { onSelect(tab) },
-                label = {
-                    Text(
-                        tab.label,
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                    selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                ),
-            )
-        }
-    }
+    val tabs = FapFolderGroupTab.entries
+    SocialTabRow(
+        labels = tabs.map { it.label },
+        selectedIndex = tabs.indexOf(activeTab),
+        onSelect = { onSelect(tabs[it]) },
+        showSingle = true,
+    )
 }
 
 private fun LazyListScope.groupHeaderItems(
@@ -1020,6 +873,7 @@ private fun MembershipButton(
     membership: GroupMembership,
     loading: Boolean,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val label = when (membership) {
         GroupMembership.NOT_MEMBER, GroupMembership.UNKNOWN -> stringResource(R.string.fap_join)
@@ -1028,43 +882,20 @@ private fun MembershipButton(
         GroupMembership.ADMIN -> stringResource(R.string.fap_admin)
         GroupMembership.OWNER -> stringResource(R.string.fap_owner)
     }
-    val enabled = !loading && membership != GroupMembership.ADMIN &&
-            membership != GroupMembership.OWNER
-
-    if (membership == GroupMembership.MEMBER || membership == GroupMembership.PENDING) {
-        OutlinedButton(
-            onClick = onClick,
-            enabled = enabled,
-            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(14.dp),
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(label)
-            }
-        }
-    } else {
-        Button(
-            onClick = onClick,
-            enabled = enabled,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-            ),
-            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(14.dp),
-                    strokeWidth = 2.dp,
-                )
-            } else {
-                Text(label)
-            }
-        }
+    val enabled = membership != GroupMembership.ADMIN && membership != GroupMembership.OWNER
+    val style = when (membership) {
+        GroupMembership.MEMBER, GroupMembership.PENDING -> SocialButtonStyle.Outlined
+        GroupMembership.ADMIN, GroupMembership.OWNER -> SocialButtonStyle.Tonal
+        else -> SocialButtonStyle.Primary
     }
+    SocialActionButton(
+        label = label,
+        onClick = onClick,
+        modifier = modifier,
+        style = style,
+        loading = loading,
+        enabled = enabled,
+    )
 }
 
 private fun memberKey(user: FapFolderUserRow): String =

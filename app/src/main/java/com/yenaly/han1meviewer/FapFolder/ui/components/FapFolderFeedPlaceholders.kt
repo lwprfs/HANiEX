@@ -36,176 +36,68 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.FapFolder.data.model.FapFolderGroupRow
 import com.yenaly.han1meviewer.FapFolder.data.model.FapFolderUserRow
 import com.yenaly.han1meviewer.FapFolder.data.model.GroupVisibility
+import com.yenaly.han1meviewer.ui.component.social.SocialChip
+import com.yenaly.han1meviewer.ui.component.social.SocialCommunityCard
+import com.yenaly.han1meviewer.ui.component.social.SocialTone
+import com.yenaly.han1meviewer.ui.component.social.SocialUserCard
+import com.yenaly.han1meviewer.ui.component.social.formatSocialCount
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 
+/** User result card. Built on the shared social kit; shows only what [FapFolderUserRow] provides. */
 @Composable
 fun FapFolderUserRowCard(
     user: FapFolderUserRow,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            UserAvatar(user.avatarUrl, user.name)
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = user.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    if (user.isGold) {
-                        Spacer(Modifier.width(4.dp))
-                        Box(
-                            modifier = Modifier
-                                .size(6.dp)
-                                .background(
-                                    color = androidx.compose.ui.graphics.Color(0xFFE4B036),
-                                    shape = CircleShape,
-                                ),
-                        )
-                    }
-                }
-                if (!user.bio.isNullOrBlank()) {
-                    Text(
-                        text = user.bio,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
-                if (user.isFollowed) {
-                    Text(
-                        text = stringResource(R.string.fap_following),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
-        }
+    val followingLabel = stringResource(R.string.fap_following)
+    val friendsLabel = stringResource(R.string.fap_friends)
+    val pendingLabel = stringResource(R.string.creator_status_pending)
+    val goldLabel = stringResource(R.string.fap_gold)
+    val chips = buildList {
+        if (user.isGold) add(SocialChip(goldLabel, SocialTone.Warning))
+        if (user.isFriend) add(SocialChip(friendsLabel, SocialTone.Positive))
+        else if (user.isFriendPending) add(SocialChip(pendingLabel))
+        if (user.isFollowed) add(SocialChip(followingLabel, SocialTone.Accent))
     }
+    SocialUserCard(
+        name = user.name.ifBlank { user.username },
+        username = user.username.takeIf { it.isNotBlank() && !it.equals(user.name, true) }
+            ?.let { "@$it" },
+        avatarUrl = user.avatarUrl,
+        bio = user.bio,
+        chips = chips,
+        onClick = onClick,
+        modifier = modifier,
+    )
 }
 
+/** Community result card. Built on the shared social kit; shows only what [FapFolderGroupRow] provides. */
 @Composable
 fun FapFolderGroupRowCard(
     group: FapFolderGroupRow,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
 ) {
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 10.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
-        ) {
-            UserAvatar(group.avatarUrl, group.name)
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = group.name,
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    if (group.visibility != GroupVisibility.PUBLIC &&
-                        group.visibility != GroupVisibility.UNKNOWN
-                    ) {
-                        Spacer(Modifier.width(6.dp))
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.errorContainer,
-                        ) {
-                            Text(
-                                text = if (group.visibility == GroupVisibility.PRIVATE) stringResource(R.string.fap_group_private)
-                                else stringResource(R.string.fap_group_secret),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onErrorContainer,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            )
-                        }
-                    }
-                }
-                val meta = buildList {
-                    group.followerCount?.let { add("$it followers") }
-                    if (group.isMember) add("Joined")
-                }.joinToString(" · ")
-                if (meta.isNotBlank()) {
-                    Text(
-                        text = meta,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 2.dp),
-                    )
-                }
-            }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline,
-            )
+    val privateLabel = stringResource(R.string.fap_group_private)
+    val secretLabel = stringResource(R.string.fap_group_secret)
+    val memberLabel = stringResource(R.string.site_following)
+    val chips = buildList {
+        when (group.visibility) {
+            GroupVisibility.PRIVATE -> add(SocialChip(privateLabel, SocialTone.Warning))
+            GroupVisibility.SECRET -> add(SocialChip(secretLabel, SocialTone.Warning))
+            else -> Unit
         }
+        if (group.isMember) add(SocialChip(memberLabel, SocialTone.Positive))
     }
-}
-
-@Composable
-private fun UserAvatar(avatarUrl: String?, fallbackName: String) {
-    val initial = fallbackName.firstOrNull()?.uppercase() ?: "?"
-    if (!avatarUrl.isNullOrBlank()) {
-        AsyncImage(
-            model = avatarUrl,
-            contentDescription = fallbackName,
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop,
-        )
-    } else {
-        Surface(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape),
-            color = MaterialTheme.colorScheme.primaryContainer,
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = initial,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-        }
-    }
+    SocialCommunityCard(
+        name = group.name,
+        avatarUrl = group.avatarUrl,
+        meta = group.followerCount?.let { stringResource(R.string.fap_followers, formatSocialCount(it)) },
+        chips = chips,
+        onClick = onClick,
+        modifier = modifier,
+    )
 }
 
 @Preview(showBackground = true)

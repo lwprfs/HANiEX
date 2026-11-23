@@ -1,5 +1,9 @@
 package com.yenaly.han1meviewer.OnAir.ui.user
 
+import com.yenaly.han1meviewer.ui.component.social.SocialChip
+import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
+import com.yenaly.han1meviewer.ui.component.social.SocialStat
+import com.yenaly.han1meviewer.ui.component.social.SocialTone
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
@@ -236,172 +240,34 @@ fun OnAirUserScreen(
 
 @Composable
 private fun UserHeader(profile: OnAirUserProfile) {
-    val stats = buildList {
-        profile.followerCount?.let { add("$it" to stringResource(R.string.site_followers)) }
-        profile.followingCount?.let { add("$it" to stringResource(R.string.site_following)) }
-        profile.videoCount?.let { add("$it" to stringResource(R.string.fap_tab_videos)) }
-        profile.pictureCount?.let { add("$it" to stringResource(R.string.drawer_pictures)) }
+    val youLabel = stringResource(R.string.onair_you)
+    val followingLabel = stringResource(R.string.site_following)
+    val chips = buildList {
+        if (profile.isCurrentUser) add(SocialChip(youLabel, SocialTone.Accent))
+        if (profile.isFollowing) add(SocialChip(followingLabel, SocialTone.Positive))
     }
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-                                Color.Transparent,
-                            )
-                        )
-                    )
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(76.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(3.dp)
-                            .clip(CircleShape),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        val avatar = profile.avatarUrl
-                        if (!avatar.isNullOrBlank()) {
-                            AsyncImage(
-                                model = avatar,
-                                contentDescription = profile.displayName,
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
-                            )
-                        } else {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                                modifier = Modifier.fillMaxSize(),
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text(
-                                        text = profile.displayName.firstOrNull()?.uppercase()
-                                            ?: "?",
-                                        style = MaterialTheme.typography.headlineMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.Bold,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = profile.displayName,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Text(
-                            text = "@${profile.username}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (profile.isCurrentUser) {
-                            Spacer(Modifier.height(6.dp))
-                            Surface(
-                                shape = RoundedCornerShape(50),
-                                color = MaterialTheme.colorScheme.primaryContainer,
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(
-                                        horizontal = 8.dp,
-                                        vertical = 3.dp,
-                                    ),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.CheckCircle,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        modifier = Modifier.size(14.dp),
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.onair_you),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.SemiBold,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                profile.bio?.let { bio ->
-                    if (bio.isNotBlank()) {
-                        Text(
-                            text = bio,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                }
-
-                if (stats.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        stats.forEach { (value, label) ->
-                            Surface(
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(16.dp),
-                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-                            ) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 10.dp, horizontal = 4.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    Text(
-                                        text = value,
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold,
-                                        maxLines = 1,
-                                    )
-                                    Text(
-                                        text = label,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        SocialProfileHeader(
+            name = profile.displayName.ifBlank { profile.username },
+            username = "@${profile.username}",
+            avatarUrl = profile.avatarUrl,
+            chips = chips,
+            bio = profile.bio,
+            stats = listOf(
+                SocialStat(stringResource(R.string.site_followers), profile.followerCount?.toLong()),
+                SocialStat(stringResource(R.string.site_following), profile.followingCount?.toLong()),
+                SocialStat(stringResource(R.string.fap_tab_videos), profile.videoCount?.toLong()),
+                SocialStat(stringResource(R.string.drawer_pictures), profile.pictureCount?.toLong()),
+            ),
+        )
         Text(
             text = stringResource(R.string.onair_uploads),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(start = 4.dp, top = 4.dp),
+            modifier = Modifier.padding(start = 16.dp, top = 4.dp),
         )
     }
 }

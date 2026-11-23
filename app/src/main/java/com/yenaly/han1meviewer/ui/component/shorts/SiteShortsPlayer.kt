@@ -67,6 +67,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -123,6 +124,7 @@ import com.yenaly.han1meviewer.util.compactCount
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -217,6 +219,9 @@ fun SiteShortsPlayer(
     val retryTokens = remember { mutableStateMapOf<String, Int>() }
     val handledRetries = remember { HashMap<String, Int>() }
     val flags = remember { ShortsSessionFlags() }
+    // Bumped whenever a metadata batch finished so the preloader re-reads the resolved stream urls.
+    var metaTick by remember { mutableIntStateOf(0) }
+    val sessionOwner = remember { Any() }
 
     val activeId = shorts.getOrNull(pagerState.currentPage)?.id
     val itemState = remember(activeId) { ShortItemState(activeId) }
@@ -234,11 +239,16 @@ fun SiteShortsPlayer(
         else DefaultDataSource.Factory(context)
     }
     val mediaSourceFactory = remember(dataSourceFactory) { DefaultMediaSourceFactory(dataSourceFactory) }
+    val cachedMediaSourceFactory = remember(dataSourceFactory) {
+        DefaultMediaSourceFactory(ShortsSessionCache.playerDataSourceFactory(dataSourceFactory))
+    }
     val player = remember(source) {
         ExoPlayer.Builder(context)
             .setMediaSourceFactory(mediaSourceFactory)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
+            // While this player loads, background preloading is held back (current video first).
+            .setPriorityTaskManager(ShortsSessionCache.priorityTaskManager)
             .build().apply {
                 repeatMode = Player.REPEAT_MODE_ONE
                 playWhenReady = false
@@ -340,6 +350,18 @@ fun SiteShortsPlayer(
         }
     }
 
+    // Sliding window around [idx] for the session cache. Upcoming items only get a key once their
+    // metadata was resolved, otherwise the preloader could cache a url that is replaced right after.
+    fun windowEntries(idx: Int): List<ShortsWindowEntry> = (-4..4).mapNotNull { off ->
+        val item = currentItems.getOrNull(idx + off) ?: return@mapNotNull null
+        val resolved = off <= 0 || item.id in metas || item.id in attempted
+        val url = (metas[item.id]?.streamUrl ?: item.videoUrl).trim()
+        val key = if (resolved && ShortsSessionCache.isCacheable(url)) {
+            ShortsSessionCache.cacheKey(source.site.name, item.id, url)
+        } else null
+        ShortsWindowEntry(off, key, if (key != null) url else null)
+    }
+
     fun requestMetas(from: Int) {
         val batch = currentItems.drop(from).take(6)
             .filter { it.id !in metas && it.id !in attempted && it.id !in inflight }
@@ -350,6 +372,7 @@ fun SiteShortsPlayer(
                 source.loadMetas(batch).onSuccess {
                     metas.putAll(it)
                     attempted += batch.map { b -> b.id }
+                    metaTick++
                 }
             } finally {
                 batch.forEach { inflight.remove(it.id) }
@@ -406,6 +429,7 @@ fun SiteShortsPlayer(
                 source.loadMetas(listOf(short)).onSuccess {
                     metas.putAll(it)
                     attempted += id
+                    metaTick++
                 }
             }
         } else {
@@ -421,12 +445,20 @@ fun SiteShortsPlayer(
 
         val meta = metas[id]
         val url = (meta?.streamUrl ?: short.videoUrl).trim()
+
+        // Reserve a slot in the session cache (evicting the farthest entry if all 6 are taken)
+        // before the player starts writing anything.
+        val cacheKey = if (idx >= 0 && ShortsSessionCache.isCacheable(url)) {
+            val key = ShortsSessionCache.cacheKey(source.site.name, id, url)
+            key.takeIf { ShortsSessionCache.beginCurrent(sessionOwner, key, windowEntries(idx)) }
+        } else null
         val mediaItem = if (url.isEmpty()) null else runCatching {
             val track = subtitleLang?.let { lang -> meta?.subtitles?.firstOrNull { it.lang == lang } }
             MediaItem.Builder()
                 .setMediaId(id)
                 .setUri(url)
                 .apply {
+                    if (cacheKey != null) setCustomCacheKey(cacheKey)
                     if (url.contains(".m3u8")) setMimeType(MimeTypes.APPLICATION_M3U8)
                     if (track != null) {
                         setSubtitleConfigurations(
@@ -448,7 +480,11 @@ fun SiteShortsPlayer(
         }
 
         player.volume = if (muted) 0f else 1f
-        player.setMediaItem(mediaItem)
+        if (cacheKey != null) {
+            player.setMediaSource(cachedMediaSourceFactory.createMediaSource(mediaItem))
+        } else {
+            player.setMediaItem(mediaItem)
+        }
         player.playWhenReady = play
         player.prepare()
         if (resumeAt > 0) player.seekTo(resumeAt)
@@ -456,6 +492,28 @@ fun SiteShortsPlayer(
         st.exoState = player.playbackState
         st.isPlaying = player.isPlaying
         st.loaded = true
+    }
+
+    DisposableEffect(sessionOwner) {
+        onDispose { ShortsSessionCache.detach(sessionOwner) }
+    }
+    LaunchedEffect(player, dataSourceFactory) {
+        snapshotFlow {
+            val page = pagerState.currentPage
+            val st = itemStateRef.value
+            val ready = st.id == currentItems.getOrNull(page)?.id &&
+                    (st.failed || (st.loaded && st.exoState == Player.STATE_READY))
+            Triple(page, ready, metaTick)
+        }.distinctUntilChanged().collect { (page, ready, _) ->
+            val entries = windowEntries(page)
+            ShortsSessionCache.update(
+                owner = sessionOwner,
+                activeKey = entries.firstOrNull { it.offset == 0 }?.key,
+                entries = entries,
+                upstream = dataSourceFactory,
+                allowPreload = ready,
+            )
+        }
     }
 
     val coverLoader = remember(imageLoader) { imageLoader ?: SingletonImageLoader.get(context) }

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="social_stat_subscribers">Subscribers</string>
+    <string name="social_stat_views">Views</string>
+    <string name="social_stat_videos">Videos</string>
+    <string name="social_stat_shorts">Shorts</string>
+    <string name="social_stat_photos">Photos</string>
+    <string name="social_stat_likes">Likes</string>
+    <string name="social_stat_gifs">Gifs</string>
+    <string name="social_stat_members">Members</string>
+    <string name="social_stat_favorites">Favorites</string>
+</resources>

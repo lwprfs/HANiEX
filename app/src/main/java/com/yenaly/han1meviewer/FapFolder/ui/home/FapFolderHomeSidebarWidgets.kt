@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.FapFolder.ui.home
 
+import com.yenaly.han1meviewer.ui.component.social.SocialAvatar
+import com.yenaly.han1meviewer.ui.component.social.SocialDefaults
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -96,12 +98,12 @@ fun FapFolderSuggestedCommunitiesCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
         ),
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(14.dp)) {
             Text(
                 text = stringResource(R.string.fap_suggested_communities),
                 style = MaterialTheme.typography.titleSmall,
@@ -118,38 +120,17 @@ fun FapFolderSuggestedCommunitiesCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    val avatar = community.avatarUrl
-                    if (!avatar.isNullOrBlank()) {
-                        AsyncImage(
-                            model = avatar,
-                            contentDescription = community.name,
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop,
-                        )
-                    } else {
-                        Surface(
-                            modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape),
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = community.name.firstOrNull()?.uppercase() ?: "?",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    fontWeight = FontWeight.Bold,
-                                )
-                            }
-                        }
-                    }
+                    SocialAvatar(
+                        url = community.avatarUrl,
+                        name = community.name,
+                        size = 52.dp,
+                        shape = SocialDefaults.CommunityAvatarShape,
+                    )
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = community.name,
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
@@ -160,8 +141,8 @@ fun FapFolderSuggestedCommunitiesCard(
                         if (meta.isNotBlank()) {
                             Text(
                                 text = meta,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.primary,
                             )
                         }
                     }
