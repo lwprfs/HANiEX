@@ -89,6 +89,10 @@ class ExoPlayerKernel(
     @Volatile
     private var pendingSurface: Surface? = null
 
+    /** surface 未就绪时被延迟的播放请求（对齐 MPV 内核的 pendingPath 模式）。 */
+    @Volatile
+    private var pendingPrepare: MediaRequest? = null
+
     @Volatile
     private var _exoPlayer: ExoPlayer? = null
 
@@ -210,6 +214,14 @@ class ExoPlayerKernel(
 
         val surfaceToKeep = pendingSurface
         val listenerToKeep = listener
+        if (surfaceToKeep == null) {
+            // surface 未就绪：延迟到 setSurface 后再构建，避免无 surface 的
+            // 播放器以纯音频起播（对齐 MPV 的 pendingPath 模式）
+            pendingPrepare = request
+            released = false
+            return
+        }
+        pendingPrepare = null
         release()
         pendingSurface = surfaceToKeep
         listener = listenerToKeep
@@ -225,6 +237,12 @@ class ExoPlayerKernel(
                 return@post
             }
             val player = buildPlayer(request)
+            if (released) {
+                // 构建期间页面已释放：自行释放，避免孤儿播放器（纯音频、无人可停）
+                runCatching { player.release() }
+                thread.quitSafely()
+                return@post
+            }
             _exoPlayer = player
             pendingSurface?.let { player.setVideoSurface(it) }
             pendingSurface = null
@@ -269,7 +287,8 @@ class ExoPlayerKernel(
             player.playbackParameters = PlaybackParameters(request.speed, 1.0f)
         }
         player.prepare()
-        player.playWhenReady = true
+        // startPaused（预加载）：就绪后保持暂停，只预缓冲并回报时长
+        player.playWhenReady = !request.startPaused
         Log.i(TAG, "buildPlayer done, pendingSurface=$pendingSurface")
         mainHandler.post { listener?.onPreparing() }
         return player
@@ -318,6 +337,15 @@ class ExoPlayerKernel(
     override fun setSurface(surface: Surface?) {
         Log.i(TAG, "setSurface: $surface")
         pendingSurface = surface
+        if (surface != null) {
+            val deferred = pendingPrepare
+            if (deferred != null) {
+                // surface 迟到：补上被延迟的 prepare（pendingPrepare 非空即未 release）
+                pendingPrepare = null
+                prepare(deferred)
+                return
+            }
+        }
         mediaHandler?.post {
             val player = _exoPlayer ?: return@post
             pendingSurface = null
@@ -328,6 +356,7 @@ class ExoPlayerKernel(
     override fun release() {
         released = true
         pendingSurface = null
+        pendingPrepare = null
         listener = null
         val handler = mediaHandler
         val thread = mediaHandlerThread
@@ -344,10 +373,11 @@ class ExoPlayerKernel(
 
         handler.post {
             try {
-                player?.release()
+                // 执行时兜底读字段：构建块可能刚写入新实例（捕获时为 null）
+                player?.release() ?: _exoPlayer?.release()
             } catch (_: Exception) {
             }
-
+            // media3 的 release 会向本 looper 投递收尾消息，延迟退出避免死线程警告
             handler.postDelayed({
                 handler.removeCallbacksAndMessages(null)
                 thread.quitSafely()

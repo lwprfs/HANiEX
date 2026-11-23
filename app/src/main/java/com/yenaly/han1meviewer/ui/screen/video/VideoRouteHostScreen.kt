@@ -401,7 +401,11 @@ fun VideoRouteHostScreen(
 
     DisposableEffect(activity, pageHost) {
         activity.registerCurrentVideoHost(pageHost)
-        onDispose { activity.unregisterCurrentVideoHost(pageHost) }
+        onDispose {
+            // 条件注销：旧页销毁不能覆盖新页的注册（否则 PiP 事件无人接收）
+            activity.unregisterCurrentVideoHost(pageHost)
+            viewModel.setPipMode(false)
+        }
     }
 
     val currentOnNoVideoUrl by rememberUpdatedState {
@@ -411,6 +415,9 @@ fun VideoRouteHostScreen(
         )
         activity.browse(getHanimeVideoLink(route.videoCode))
     }
+
+    // 被覆盖的页面不预加载（避免其内核抢占全局 mpv、毒化可见页）
+    val currentIsBackStackTop by rememberUpdatedState(isBackStackTop)
 
     LaunchedEffect(route.videoCode, route.localUri, viewModel.fromDownload) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -449,6 +456,9 @@ fun VideoRouteHostScreen(
                         }
                         if (route.autoPlay) {
                             controller.startVideo()
+                        } else if (currentIsBackStackTop) {
+                            // URL 就绪即预加载：预缓冲 + 回填时长，点播放秒开
+                            controller.preload()
                         }
                     }
 

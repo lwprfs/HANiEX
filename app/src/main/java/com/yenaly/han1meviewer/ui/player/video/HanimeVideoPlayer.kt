@@ -73,8 +73,43 @@ import com.yenaly.han1meviewer.ui.player.PlayerState
 import com.yenaly.han1meviewer.ui.player.PlayerUtils
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
 import kotlinx.coroutines.delay
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * keepScreenOn 的最后写入者：多个播放页共享 Activity 根 View，转场期间同时
+ * 组合，只有当前持有者才能把标记清零。
+ */
+private val KeepScreenOnOwner = AtomicReference<Any?>(null)
+
+/**
+ * Compose 视频播放器主组件。
+ *
+ * 取代旧版 `HJzvdStd`（JzvdStd）：渲染 Surface + 手势层 + 控件层 + 弹层全部分层组合。
+ * 页面负责把 [playerSurface]（可移动 Surface）与本组件一起放置到小窗或全屏层。
+ *
+ * ### 分层（自底向上）
+ * 1. 视频渲染层（[playerSurface]，movableContent）
+ * 2. 海报层（准备中显示封面）
+ * 3. 手势层（[Modifier.playerGestures]）
+ * 4. 控件层（顶栏/底栏/中键/锁/倒计时/迷你进度条）
+ * 5. 浮层（手势指示、从头开始、重试）
+ * 6. 侧边弹窗（倍速/清晰度/超分/关键帧）
+ *
+ * @param controller 播放器控制器（唯一状态来源）
+ * @param playerSurface 可移动的视频 Surface（[com.yenaly.han1meviewer.ui.player.surface.rememberMovablePlayerSurface] 的返回值）
+ * @param isFullscreen 是否全屏（顶栏内容、锁按钮、关键帧倒计时随其切换）
+ * @param keyframeEntity 关键 H 帧实体（倒计时与列表弹窗），无则 null
+ * @param onBack 顶栏返回
+ * @param onGoHome 回到首页（普通窗口）
+ * @param onToggleFullscreen 切换全屏
+ * @param videoInfoLoading 页面视频信息仍在加载（此时无可播链接，中键显示
+ *   loading 而非播放键，避免点击触发「跳转浏览器」兜底）
+ * @param onNoVideoUrl 无可播放链接时点击中键
+ * @param onAddHKeyframeAt 长按🥵在当前时刻添加关键帧（页面校验暂停状态）
+ * @param onEditKeyframe 编辑关键帧
+ * @param onDeleteKeyframe 删除关键帧
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun HanimeVideoPlayer(
@@ -137,11 +172,24 @@ fun HanimeVideoPlayer(
 
     var sliderDragValue by remember { mutableFloatStateOf(0f) }
 
-    DisposableEffect(uiState.state) {
-        view.keepScreenOn = uiState.state == PlayerState.PLAYING ||
+    // 播放中（含准备/缓冲）保持屏幕常亮；view 为 Activity 共享根 View，
+    // 用"最后写入者"所有权避免旧页 onDispose 覆盖新页的常亮标记
+    DisposableEffect(controller, uiState.state) {
+        val needKeepOn = uiState.state == PlayerState.PLAYING ||
                 uiState.state == PlayerState.BUFFERING ||
                 uiState.state == PlayerState.PREPARING
-        onDispose { view.keepScreenOn = false }
+        if (needKeepOn) {
+            KeepScreenOnOwner.set(controller)
+            view.keepScreenOn = true
+        } else if (KeepScreenOnOwner.get() === controller) {
+            KeepScreenOnOwner.set(null)
+            view.keepScreenOn = false
+        }
+        onDispose {
+            if (KeepScreenOnOwner.compareAndSet(controller, null)) {
+                view.keepScreenOn = false
+            }
+        }
     }
 
     LaunchedEffect(
@@ -190,7 +238,8 @@ fun HanimeVideoPlayer(
     }
 
     val controlsVisible = showControls && !uiState.isGestureLocked
-    val duration = progress.durationMs
+    // 总时长：起播后走 ticker（progress），起播前回退到预加载回填的 uiState.durationMs
+    val duration = progress.durationMs.takeIf { it > 0 } ?: uiState.durationMs
     val sliderValue = if (duration > 0) {
         progress.positionMs.toFloat() / duration
     } else {
