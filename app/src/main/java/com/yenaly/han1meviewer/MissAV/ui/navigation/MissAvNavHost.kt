@@ -1,9 +1,16 @@
 package com.yenaly.han1meviewer.MissAV.ui.navigation
+
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -18,13 +25,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
@@ -32,7 +34,6 @@ import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
@@ -58,101 +59,94 @@ import com.yenaly.han1meviewer.MissAV.ui.account.MissAvSiteHistoryScreen
 import com.yenaly.han1meviewer.MissAV.ui.home.MissAvHomeViewModel
 import com.yenaly.han1meviewer.MissAV.viewmodel.MissAvViewModel
 @Serializable
-object MissAvHomeRoute
+object MissAvHomeRoute : NavKey
 
 @Serializable
-object MissAvSettingsHubRoute
+object MissAvSettingsHubRoute : NavKey
 
 @Serializable
-object MissAvHomeCategoriesRoute
+object MissAvHomeCategoriesRoute : NavKey
 
 @Serializable
-object MissAvHostSettingsRoute
+object MissAvHostSettingsRoute : NavKey
 
 @Serializable
-object MissAvQualitySettingsRoute
+object MissAvQualitySettingsRoute : NavKey
 
 @Serializable
-object MissAvSubtitleSettingsRoute
+object MissAvSubtitleSettingsRoute : NavKey
 
 @Serializable
-data class MissAvSearchRoute(val query: String? = null)
+data class MissAvSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class MissAvVideoRoute(val videoCode: String, val path: String)
+data class MissAvVideoRoute(val videoCode: String, val path: String) : NavKey
 
 @Serializable
-object MissAvHistoryRoute
+object MissAvHistoryRoute : NavKey
 
 @Serializable
-object MissAvLoginRoute
+object MissAvLoginRoute : NavKey
 
 @Serializable
-object MissAvAccountRoute
+object MissAvAccountRoute : NavKey
 
 @Serializable
-data class MissAvSavedRoute(val tab: Int = 0)
+data class MissAvSavedRoute(val tab: Int = 0) : NavKey
 
 @Serializable
-object MissAvSiteHistoryRoute
+object MissAvSiteHistoryRoute : NavKey
 
 @Serializable
-object MissAvPlaylistsRoute
+object MissAvPlaylistsRoute : NavKey
 
 @Serializable
-data class MissAvPlaylistRoute(val key: String, val name: String)
+data class MissAvPlaylistRoute(val key: String, val name: String) : NavKey
 
 @Serializable
-object MissAvCreatePlaylistRoute
+object MissAvCreatePlaylistRoute : NavKey
 
 @Serializable
-object MissAvActressesRoute
+object MissAvActressesRoute : NavKey
 
 @Serializable
-data class MissAvActressRoute(val path: String, val name: String)
+data class MissAvActressRoute(val path: String, val name: String) : NavKey
 
 @Composable
 fun MissAvNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.MISSAV)
-    }
 
     val sharedMissAvViewModel: MissAvViewModel = viewModel()
     val sharedHomeViewModel: MissAvHomeViewModel = viewModel()
 
-    NavHost(
-        navController = navController,
-        startDestination = MissAvHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<MissAvHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<MissAvHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 MissAvHomeScreen(
                     onNavigateToVideo = { code, path ->
-                        navController.navigateSafely(MissAvVideoRoute(code, path))
+                        navigator.navigateSafely(MissAvVideoRoute(code, path))
                     },
                     onNavigateToSearch = { query ->
                         if (!query.isNullOrBlank()) {
                             sharedMissAvViewModel.setSearchQuery(query)
                         }
-                        navController.navigateSafely(MissAvSearchRoute(query))
+                        navigator.navigateSafely(MissAvSearchRoute(query))
                     },
                     onNavigateToHistory = {
-                        navController.navigateSafely(MissAvHistoryRoute)
+                        navigator.navigateSafely(MissAvHistoryRoute)
                     },
                     viewModel = sharedHomeViewModel,
                 )
             }
         }
 
-        composable<MissAvSettingsHubRoute> {
+        screen<MissAvSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.MISSAV,
                 onResetSite = {
@@ -165,210 +159,217 @@ fun MissAvNavHost(
                         title = stringResource(R.string.drawer_home_categories),
                         subtitle = stringResource(R.string.site_home_categories_subtitle),
                         icon = Icons.Default.Category,
-                        onClick = { navController.navigateSafely(MissAvHomeCategoriesRoute) },
+                        onClick = { navigator.navigateSafely(MissAvHomeCategoriesRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "host",
                         title = stringResource(R.string.drawer_host_mirror),
                         subtitle = stringResource(R.string.missav_host_subtitle),
                         icon = Icons.Default.Dns,
-                        onClick = { navController.navigateSafely(MissAvHostSettingsRoute) },
+                        onClick = { navigator.navigateSafely(MissAvHostSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "video_quality",
                         title = stringResource(R.string.missav_video_resolution),
                         subtitle = stringResource(R.string.missav_choose_auto_or_a_fixed_starting),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(MissAvQualitySettingsRoute) },
+                        onClick = { navigator.navigateSafely(MissAvQualitySettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "video_subtitle",
                         title = stringResource(R.string.missav_subtitle_title),
                         subtitle = stringResource(R.string.missav_subtitle_entry_summary),
                         icon = Icons.Default.Subtitles,
-                        onClick = { navController.navigateSafely(MissAvSubtitleSettingsRoute) },
+                        onClick = { navigator.navigateSafely(MissAvSubtitleSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.missav_history_title),
                         subtitle = stringResource(R.string.missav_history_subtitle),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(MissAvHistoryRoute) },
+                        onClick = { navigator.navigateSafely(MissAvHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.MISSAV.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.MISSAV.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<MissAvHomeCategoriesRoute> {
+        screen<MissAvHomeCategoriesRoute> {
             MissAvHomeSettingsScreen(
                 viewModel = sharedHomeViewModel,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<MissAvHostSettingsRoute> {
+        screen<MissAvHostSettingsRoute> {
             MissAvHostSettingsScreen(
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<MissAvQualitySettingsRoute> {
+        screen<MissAvQualitySettingsRoute> {
             MissAvQualitySettingsScreen(
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<MissAvSubtitleSettingsRoute> {
+        screen<MissAvSubtitleSettingsRoute> {
             MissAvSubtitleSettingsScreen(
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<MissAvSearchRoute> {
-            val route = it.toRoute<MissAvSearchRoute>()
+        screen<MissAvSearchRoute> {
+            val route = it
             MissAvSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code, path ->
-                    navController.navigateSafely(MissAvVideoRoute(code, path))
+                    navigator.navigateSafely(MissAvVideoRoute(code, path))
                 },
                 viewModel = sharedMissAvViewModel,
                 onOpenOtherSite = { request -> activity.confirmCrossSiteOpen(request) },
             )
         }
 
-        composable<MissAvVideoRoute> {
-            val route = it.toRoute<MissAvVideoRoute>()
+        screen<MissAvVideoRoute> {
+            val route = it
             MissAvVideoScreen(
                 videoCode = route.videoCode,
                 path = route.path,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code, path ->
-                    navController.navigateSafely(MissAvVideoRoute(code, "/$code"))
+                    navigator.navigateSafely(MissAvVideoRoute(code, "/$code"))
                 },
                 onNavigateToSearch = { query ->
                     if (!query.isNullOrBlank()) {
                         sharedMissAvViewModel.setSearchQuery(query)
                     }
-                    navController.navigateSafely(MissAvSearchRoute(query))
+                    navigator.navigateSafely(MissAvSearchRoute(query))
                 },
-                onNavigateToLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onNavigateToLogin = { navigator.navigateSafely(MissAvLoginRoute) },
                 onNavigateToActress = { actressPath, actressName ->
-                    navController.navigateSafely(MissAvActressRoute(actressPath, actressName))
+                    navigator.navigateSafely(MissAvActressRoute(actressPath, actressName))
                 },
-                onNavigateToPlaylists = { navController.navigateSafely(MissAvPlaylistsRoute) },
+                onNavigateToPlaylists = { navigator.navigateSafely(MissAvPlaylistsRoute) },
                 viewModel = sharedMissAvViewModel,
             )
         }
 
-        composable<MissAvLoginRoute> {
+        screen<MissAvLoginRoute> {
             MissAvLoginScreen(
-                onBack = { navController.popBackStackSafely() },
-                onLoggedIn = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
+                onLoggedIn = { navigator.goBack() },
             )
         }
 
-        composable<MissAvAccountRoute> {
+        screen<MissAvAccountRoute> {
             MissAvAccountScreen(
-                onBack = { navController.popBackStackSafely() },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
-                onSaved = { navController.navigateSafely(MissAvSavedRoute(0)) },
-                onSavedActresses = { navController.navigateSafely(MissAvSavedRoute(1)) },
-                onPlaylists = { navController.navigateSafely(MissAvPlaylistsRoute) },
-                onSiteHistory = { navController.navigateSafely(MissAvSiteHistoryRoute) },
-                onLocalHistory = { navController.navigateSafely(MissAvHistoryRoute) },
-                onActresses = { navController.navigateSafely(MissAvActressesRoute) },
+                onBack = { navigator.goBack() },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
+                onSaved = { navigator.navigateSafely(MissAvSavedRoute(0)) },
+                onSavedActresses = { navigator.navigateSafely(MissAvSavedRoute(1)) },
+                onPlaylists = { navigator.navigateSafely(MissAvPlaylistsRoute) },
+                onSiteHistory = { navigator.navigateSafely(MissAvSiteHistoryRoute) },
+                onLocalHistory = { navigator.navigateSafely(MissAvHistoryRoute) },
+                onActresses = { navigator.navigateSafely(MissAvActressesRoute) },
             )
         }
 
-        composable<MissAvSavedRoute> {
-            val route = it.toRoute<MissAvSavedRoute>()
+        screen<MissAvSavedRoute> {
+            val route = it
             MissAvSavedScreen(
                 initialTab = route.tab,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
-                onNavigateToActress = { p, n -> navController.navigateSafely(MissAvActressRoute(p, n)) },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { code, path -> navigator.navigateSafely(MissAvVideoRoute(code, path)) },
+                onNavigateToActress = { p, n -> navigator.navigateSafely(MissAvActressRoute(p, n)) },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
             )
         }
 
-        composable<MissAvSiteHistoryRoute> {
+        screen<MissAvSiteHistoryRoute> {
             MissAvSiteHistoryScreen(
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { code, path -> navigator.navigateSafely(MissAvVideoRoute(code, path)) },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
             )
         }
 
-        composable<MissAvPlaylistsRoute> {
+        screen<MissAvPlaylistsRoute> {
             MissAvPlaylistsScreen(
-                onBack = { navController.popBackStackSafely() },
-                onOpenPlaylist = { key, name -> navController.navigateSafely(MissAvPlaylistRoute(key, name)) },
-                onCreate = { navController.navigateSafely(MissAvCreatePlaylistRoute) },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onBack = { navigator.goBack() },
+                onOpenPlaylist = { key, name -> navigator.navigateSafely(MissAvPlaylistRoute(key, name)) },
+                onCreate = { navigator.navigateSafely(MissAvCreatePlaylistRoute) },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
             )
         }
 
-        composable<MissAvPlaylistRoute> {
-            val route = it.toRoute<MissAvPlaylistRoute>()
+        screen<MissAvPlaylistRoute> {
+            val route = it
             MissAvPlaylistScreen(
                 playlistKey = route.key,
                 playlistName = route.name,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { code, path -> navigator.navigateSafely(MissAvVideoRoute(code, path)) },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
             )
         }
 
-        composable<MissAvCreatePlaylistRoute> {
+        screen<MissAvCreatePlaylistRoute> {
             MissAvCreatePlaylistScreen(
-                onBack = { navController.popBackStackSafely() },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onBack = { navigator.goBack() },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
             )
         }
 
-        composable<MissAvActressesRoute> {
+        screen<MissAvActressesRoute> {
             MissAvActressesScreen(
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToActress = { p, n -> navController.navigateSafely(MissAvActressRoute(p, n)) },
+                onBack = { navigator.goBack() },
+                onNavigateToActress = { p, n -> navigator.navigateSafely(MissAvActressRoute(p, n)) },
             )
         }
 
-        composable<MissAvActressRoute> {
-            val route = it.toRoute<MissAvActressRoute>()
+        screen<MissAvActressRoute> {
+            val route = it
             MissAvActressScreen(
                 path = route.path,
                 name = route.name,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { code, path -> navController.navigateSafely(MissAvVideoRoute(code, path)) },
-                onLogin = { navController.navigateSafely(MissAvLoginRoute) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { code, path -> navigator.navigateSafely(MissAvVideoRoute(code, path)) },
+                onLogin = { navigator.navigateSafely(MissAvLoginRoute) },
             )
         }
 
-        composable<MissAvHistoryRoute> {
+        screen<MissAvHistoryRoute> {
             MissAvHistoryScreen(
                 onNavigateToVideo = { code, path ->
-                    navController.navigateSafely(MissAvVideoRoute(code, path))
+                    navigator.navigateSafely(MissAvVideoRoute(code, path))
                 },
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.MISSAV,
-            config = { missAvHubConfig(navController, activity) },
+            config = { missAvHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

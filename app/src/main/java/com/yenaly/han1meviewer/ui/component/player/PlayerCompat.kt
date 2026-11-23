@@ -12,7 +12,6 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import java.util.concurrent.ConcurrentHashMap
 
 @OptIn(UnstableApi::class)
@@ -48,7 +47,7 @@ object StreamFallback {
         val activity = context.findHostActivity() as? MainActivity ?: return false
         mpvUrls += url
         if (!referer.isNullOrBlank()) referers[url] = referer
-        activity.navigateCompat(
+        activity.navigator.navigateSafely(
             VideoRoute(videoCode = "-1", localUri = url, autoPlay = true)
         )
         return true

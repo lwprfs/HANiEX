@@ -108,7 +108,6 @@ import com.yenaly.han1meviewer.ui.component.player.PipSupport
 import com.yenaly.han1meviewer.ui.component.TextInputField
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.player.HanimePlayerController
 import com.yenaly.han1meviewer.ui.player.PlayerState
 import com.yenaly.han1meviewer.ui.player.kernel.KernelType
@@ -196,12 +195,8 @@ fun VideoRouteHostScreen(
     }
     val playerUiState by controller.uiState.collectAsStateWithLifecycle()
 
-    // Nav3 转场期间新旧视频页同时组合且旧页生命周期不降级（不会自动暂停），
-    // 双播放器并存会引发声音重叠与内核竞态：本页一旦不是返回栈顶立即暂停。
-    // 仅 Navigation 3 站点（Hanime/Javchu）适用；其它站点的 NavHost 自带生命周期管理。
-    val isBackStackTop = if (activity.usesNav3) {
-        val st = activity.navigator.state
-        st.backStacks[st.topLevelRoute]?.lastOrNull() == route
+    val isBackStackTop = if (activity.isNavigatorReady) {
+        activity.navigator.state.currentKey == route
     } else {
         true
     }
@@ -417,7 +412,7 @@ fun VideoRouteHostScreen(
     DisposableEffect(activity, pageHost) {
         activity.registerCurrentVideoHost(pageHost)
         onDispose {
-            // 条件注销：旧页销毁不能覆盖新页的注册（否则 PiP 事件无人接收）
+
             activity.unregisterCurrentVideoHost(pageHost)
             viewModel.setPipMode(false)
         }
@@ -431,7 +426,6 @@ fun VideoRouteHostScreen(
         activity.browse(getHanimeVideoLink(route.videoCode))
     }
 
-    // 被覆盖的页面不预加载（避免其内核抢占全局 mpv、毒化可见页）
     val currentIsBackStackTop by rememberUpdatedState(isBackStackTop)
 
     LaunchedEffect(route.videoCode, route.localUri, viewModel.fromDownload) {
@@ -472,7 +466,7 @@ fun VideoRouteHostScreen(
                         if (route.autoPlay) {
                             controller.startVideo()
                         } else if (currentIsBackStackTop) {
-                            // URL 就绪即预加载：预缓冲 + 回填时长，点播放秒开
+
                             controller.preload()
                         }
                     }
@@ -518,7 +512,7 @@ fun VideoRouteHostScreen(
         if (isFullscreen) {
             exitFullscreen()
         }
-        activity.replaceTopCompat(VideoRoute(next.videoCode, autoPlay = true))
+        activity.navigator.replaceTop(VideoRoute(next.videoCode, autoPlay = true))
     }
 
     LaunchedEffect(controller) {
@@ -628,7 +622,7 @@ fun VideoRouteHostScreen(
             onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
             getCheckedQuality = { checkedQuality },
             setCheckedQuality = { checkedQuality = it },
-            onStoragePermissionDenied = { activity.popBackCompat() },
+            onStoragePermissionDenied = { activity.navigator.goBack() },
             onRequestUnsubscribeConfirm = { artist -> unsubscribeArtist = artist },
             onRequestDownloadPermissionSettings = { showDownloadPermissionDialog = true },
         )
@@ -651,7 +645,7 @@ fun VideoRouteHostScreen(
                 if (fullscreen) exitFullscreen()
                 else activity.onBackPressedDispatcher.onBackPressed()
             },
-            onGoHome = { activity.goHomeCompat() },
+            onGoHome = { activity.navigator.goHome() },
             onToggleFullscreen = {
                 if (fullscreen) exitFullscreen() else enterFullscreen()
             },
@@ -1077,7 +1071,7 @@ fun VideoRouteHostScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showDownloadPermissionDialog = false
-                    activity.popBackCompat()
+                    activity.navigator.goBack()
                 }) {
                     Text(activity.getString(R.string.cancel))
                 }

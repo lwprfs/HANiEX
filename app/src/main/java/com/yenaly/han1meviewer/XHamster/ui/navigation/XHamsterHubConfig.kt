@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.XHamster.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Bookmark
@@ -22,7 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.XHamster.common.XHamsterSession
@@ -32,7 +34,6 @@ import com.yenaly.han1meviewer.XHamster.common.rememberXHamsterFlag
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -42,13 +43,13 @@ import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
 
 @Composable
-fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+fun xHamsterHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig {
 
     @Suppress("UNUSED_VARIABLE")
     val sessionEpoch by XHamsterSession.epoch.collectAsState()
     val loggedIn = XHamsterAuth.isLoggedIn
-    val onLogin = { navController.navigateSafely(XHamsterAccountRoute) }
-    fun library(tab: String) = { navController.navigateSafely(XHamsterLibraryRoute(tab)) }
+    val onLogin = { navigator.navigateSafely(XHamsterAccountRoute) }
+    fun library(tab: String) = { navigator.navigateSafely(XHamsterLibraryRoute(tab)) }
 
     val subscription = SiteHubSection(
         title = null,
@@ -63,19 +64,19 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
                 key = "channels",
                 title = stringResource(R.string.xhamster_channels),
                 icon = Icons.Filled.Tv,
-                onClick = { navController.navigateSafely(XHamsterChannelsRoute) },
+                onClick = { navigator.navigateSafely(XHamsterChannelsRoute) },
             ),
             SiteHubEntry(
                 key = "creators",
                 title = stringResource(R.string.xhamster_top_creators),
                 icon = Icons.Filled.Star,
-                onClick = { navController.navigateSafely(XHamsterStarsRoute) },
+                onClick = { navigator.navigateSafely(XHamsterStarsRoute) },
             ),
             SiteHubEntry(
                 key = "categories",
                 title = stringResource(R.string.xhamster_categories),
                 icon = Icons.Filled.Category,
-                onClick = { navController.navigateSafely(XHamsterCategoriesRoute) },
+                onClick = { navigator.navigateSafely(XHamsterCategoriesRoute) },
             ),
         ),
     )
@@ -86,14 +87,14 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
                 key = "photos",
                 title = "Photos",
                 icon = Icons.Filled.PhotoLibrary,
-                onClick = { navController.navigateSafely(XHamsterPhotosRoute) },
+                onClick = { navigator.navigateSafely(XHamsterPhotosRoute) },
             ),
             SiteHubEntry(
                 key = "gifs",
                 title = "GIFs",
                 icon = Icons.Filled.Gif,
                 onClick = {
-                    navController.navigateSafely(XHamsterMomentsRoute(XHamsterMomentsRepo.Feed.GIFS.name, "GIFs"))
+                    navigator.navigateSafely(XHamsterMomentsRoute(XHamsterMomentsRepo.Feed.GIFS.name, "GIFs"))
                 },
             ),
             SiteHubEntry(
@@ -101,14 +102,14 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
                 title = "Short videos",
                 icon = Icons.Filled.SmartDisplay,
                 onClick = {
-                    navController.navigateSafely(XHamsterMomentsRoute(XHamsterMomentsRepo.Feed.SHORTS.name, "Short videos"))
+                    navigator.navigateSafely(XHamsterMomentsRoute(XHamsterMomentsRepo.Feed.SHORTS.name, "Short videos"))
                 },
             ),
             SiteHubEntry(
                 key = "top_creator_videos",
                 title = "Top creator videos",
                 icon = Icons.Filled.EmojiEvents,
-                onClick = { navController.navigateSafely(XHamsterTopCreatorVideosRoute) },
+                onClick = { navigator.navigateSafely(XHamsterTopCreatorVideosRoute) },
             ),
         ),
     )
@@ -124,14 +125,14 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         title = stringResource(R.string.xhamster_account_settings),
         subtitle = stringResource(R.string.xhamster_account_settings_summary),
         icon = Icons.Filled.AccountCircle,
-        onClick = { navController.navigateSafely(XHamsterAccountSettingsRoute) },
+        onClick = { navigator.navigateSafely(XHamsterAccountSettingsRoute) },
     ).gated(loggedIn, onLogin)
     val playback = SiteHubEntry(
         key = "playback",
         title = stringResource(R.string.xhamster_settings_title),
         subtitle = stringResource(R.string.xhamster_settings_summary),
         icon = Icons.Filled.HighQuality,
-        onClick = { navController.navigateSafely(XHamsterSettingsRoute) },
+        onClick = { navigator.navigateSafely(XHamsterSettingsRoute) },
     )
     val showChannels = rememberXHamsterFlag(XHamsterSettings.KEY_SHOW_CHANNELS)
     val showCreators = rememberXHamsterFlag(XHamsterSettings.KEY_SHOW_TOP_CREATORS)
@@ -143,7 +144,7 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
 
     return standardSiteHubConfig(
         site = SiteType.XHAMSTER,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = XHamsterSettingsHubRoute,
         siteLibraryEntries = emptyList(),
@@ -152,7 +153,7 @@ fun xHamsterHubConfig(navController: NavHostController, activity: MainActivity):
         ),
         subscriptionSections = listOf(subscription, more),
         profileExtraQuickActions = listOf(accountSettings),
-        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navController, SiteType.XHAMSTER)),
+        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.XHAMSTER)),
         customizeExtras = {
             item(key = "xh_home_header") { SettingSectionHeader(title = sectionTitle) }
             item(key = "xh_show_channels") {

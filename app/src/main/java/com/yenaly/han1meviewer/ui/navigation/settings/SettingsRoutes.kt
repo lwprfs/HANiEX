@@ -1,10 +1,6 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 import androidx.annotation.StringRes
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
-import androidx.navigation.toRoute
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.R
 import kotlinx.serialization.Serializable
@@ -125,11 +121,6 @@ enum class SettingsDestinationSpec(
             if (key == null) return null
             return entries.firstOrNull { it.routeClass.isInstance(key) }
         }
-
-        fun fromDestination(destination: NavDestination?): SettingsDestinationSpec? {
-            if (destination == null) return null
-            return entries.firstOrNull { destination.hasRoute(it.routeClass) }
-        }
     }
 }
 
@@ -161,22 +152,6 @@ sealed interface SettingsScreenDestination {
     }
 }
 
-fun NavBackStackEntry.resolveSettingsScreenDestination(): SettingsScreenDestination {
-    if (destination.hasRoute<SettingsCategoryRoute>()) {
-        val category = runCatching { toRoute<SettingsCategoryRoute>() }
-            .getOrNull()
-            ?.let { SettingsCategory.fromKey(it.categoryKey) }
-        if (category != null) return SettingsScreenDestination.Category(category)
-    }
-    val spec = SettingsDestinationSpec.fromDestination(destination)
-    return if (spec != null && spec != SettingsDestinationSpec.Home) {
-        SettingsScreenDestination.Sub(spec)
-    } else {
-        SettingsScreenDestination.Home
-    }
-}
-
-/** Navigation 3：由栈顶 key 解析当前设置页。 */
 fun NavKey?.resolveSettingsScreenDestination(): SettingsScreenDestination {
     if (this is SettingsCategoryRoute) {
         val category = SettingsCategory.fromKey(categoryKey)

@@ -90,7 +90,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderFollowedCommunitiesRoute
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderHistoryRoute
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSavedRoute
@@ -115,14 +116,13 @@ import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderImageFolderRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 
 data class SiteLoginStatus(
     val title: String,
     val subtitle: String,
     val avatarUrl: String?,
     val loggedIn: Boolean,
-    val onClick: ((NavHostController) -> Unit)?,
+    val onClick: ((Navigator) -> Unit)?,
 )
 
 private const val ONAIR_COOKIES_KEY = "onair_cookies_raw"

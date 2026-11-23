@@ -28,9 +28,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
@@ -41,8 +40,8 @@ import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import com.yenaly.han1meviewer.ui.navigation.screen
 import com.yenaly.han1meviewer.ui.navigation.settings.GifDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.LocalPlaylistsRoute
@@ -107,10 +106,10 @@ class CommonProfileEntries(
 
 @Composable
 fun rememberCommonProfileEntries(
-    navController: NavHostController,
+    navigator: Navigator,
     activity: MainActivity,
     site: SiteType,
-    siteSettingsRoute: Any,
+    siteSettingsRoute: NavKey,
 ): CommonProfileEntries {
     val label = CrossSiteNavigator.siteLabel(site)
     val settingsTitle = stringResource(R.string.hub_site_settings_title, label)
@@ -139,14 +138,14 @@ fun rememberCommonProfileEntries(
             title = settingsTitle,
             subtitle = settingsDesc,
             icon = Icons.Filled.Settings,
-            onClick = { navController.navigateSafely(siteSettingsRoute) },
+            onClick = { navigator.navigateSafely(siteSettingsRoute) },
         ),
         checkIn = SiteHubEntry(
             key = "check_in",
             title = checkInTitle,
             subtitle = checkInDesc,
             icon = Icons.Filled.CheckCircle,
-            onClick = { navController.navigateSafely(DailyCheckInRoute) },
+            onClick = { navigator.navigateSafely(DailyCheckInRoute) },
         ),
         switchSite = SiteHubEntry(
             key = "switch_site",
@@ -160,60 +159,60 @@ fun rememberCommonProfileEntries(
             title = customizeTitle,
             subtitle = customizeDesc,
             icon = Icons.Filled.Palette,
-            onClick = { navController.navigateSafely(SiteCustomizeRoute) },
+            onClick = { navigator.navigateSafely(SiteCustomizeRoute) },
         ),
         allHistory = SiteHubEntry(
             key = "all_history",
             title = historyTitle,
             subtitle = historyDesc,
             icon = Icons.Filled.History,
-            onClick = { navController.navigateSafely(UnifiedHistoryRoute) },
+            onClick = { navigator.navigateSafely(UnifiedHistoryRoute) },
         ),
         offlinePlaylist = SiteHubEntry(
             key = "offline_playlist",
             title = playlistTitle,
             subtitle = playlistDesc,
             icon = Icons.AutoMirrored.Filled.PlaylistPlay,
-            onClick = { navController.navigateSafely(LocalPlaylistsRoute) },
+            onClick = { navigator.navigateSafely(LocalPlaylistsRoute) },
         ),
         downloads = SiteHubEntry(
             key = "downloads",
             title = downloadsTitle,
             subtitle = downloadsDesc,
             icon = Icons.Filled.Download,
-            onClick = { navController.navigateSafely(DownloadRoute) },
+            onClick = { navigator.navigateSafely(DownloadRoute) },
         ),
         update = SiteHubEntry(
             key = "update",
             title = updateTitle,
             subtitle = updateDesc,
             icon = Icons.Filled.SystemUpdate,
-            onClick = { navController.navigateSafely(UpdateSettingsRoute) },
+            onClick = { navigator.navigateSafely(UpdateSettingsRoute) },
         ),
         imageDownloads = SiteHubEntry(
             key = "image_downloads",
             title = imageDownloadsTitle,
             subtitle = imageDownloadsDesc,
             icon = Icons.Filled.PhotoLibrary,
-            onClick = { navController.navigateSafely(ImageDownloadsRoute) },
+            onClick = { navigator.navigateSafely(ImageDownloadsRoute) },
         ),
         gifDownloads = SiteHubEntry(
             key = "gif_downloads",
             title = gifDownloadsTitle,
             subtitle = gifDownloadsDesc,
             icon = Icons.Filled.PhotoLibrary,
-            onClick = { navController.navigateSafely(GifDownloadsRoute) },
+            onClick = { navigator.navigateSafely(GifDownloadsRoute) },
         ),
     )
 }
 
-fun NavGraphBuilder.registerSiteHubRoutes(
-    navController: NavHostController,
+fun EntryProviderScope<NavKey>.siteHubEntries(
+    navigator: Navigator,
     site: SiteType,
     config: @Composable () -> SiteHubConfig,
 ) {
     if (site.supportsSubscriptions()) {
-        composable<SiteSubscriptionRoute> {
+        screen<SiteSubscriptionRoute> {
             val c = config()
             val custom = c.subscriptionContent
             if (custom != null) {
@@ -227,7 +226,7 @@ fun NavGraphBuilder.registerSiteHubRoutes(
             }
         }
     }
-    composable<SiteLibraryRoute> {
+    screen<SiteLibraryRoute> {
         val c = config()
         SiteHubListScreen(
             title = stringResource(R.string.content_library),
@@ -235,7 +234,7 @@ fun NavGraphBuilder.registerSiteHubRoutes(
             onBack = null,
         )
     }
-    composable<SiteProfileRoute> {
+    screen<SiteProfileRoute> {
         val c = config()
         val context = LocalContext.current
         val status = siteLoginStatus(context, site)
@@ -245,7 +244,7 @@ fun NavGraphBuilder.registerSiteHubRoutes(
             subtitle = status.subtitle,
             avatarUrl = status.avatarUrl,
             loggedIn = status.loggedIn,
-            onClick = status.onClick?.let { handler -> { handler(navController) } },
+            onClick = status.onClick?.let { handler -> { handler(navigator) } },
         )
         SiteProfileScreen(
             account = account,
@@ -253,11 +252,11 @@ fun NavGraphBuilder.registerSiteHubRoutes(
             sections = c.profileSections,
         )
     }
-    composable<SiteCustomizeRoute> {
+    screen<SiteCustomizeRoute> {
         val c = config()
         SiteCustomizeScreen(
             config = c,
-            onBack = { navController.popBackStackSafely() },
+            onBack = { navigator.goBack() },
         )
     }
 }
@@ -388,13 +387,13 @@ fun SiteCustomizeScreen(
 }
 
 @Composable
-fun rememberPlayerSettingsEntry(navController: NavHostController, site: SiteType): SiteHubEntry =
+fun rememberPlayerSettingsEntry(navigator: Navigator, site: SiteType): SiteHubEntry =
     SiteHubEntry(
         key = "player_settings",
         title = stringResource(R.string.player_settings),
         icon = androidx.compose.material.icons.Icons.Filled.PlayCircleOutline,
         onClick = {
-            navController.navigateSafely(
+            navigator.navigateSafely(
                 com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute(site.name),
             )
         },
@@ -403,9 +402,9 @@ fun rememberPlayerSettingsEntry(navController: NavHostController, site: SiteType
 @Composable
 fun standardSiteHubConfig(
     site: SiteType,
-    navController: NavHostController,
+    navigator: Navigator,
     activity: MainActivity,
-    siteSettingsRoute: Any,
+    siteSettingsRoute: NavKey,
     siteLibraryEntries: List<SiteHubEntry>,
     customizeEntries: List<SiteHubEntry>,
     subscriptionSections: List<SiteHubSection> = emptyList(),
@@ -417,7 +416,7 @@ fun standardSiteHubConfig(
     customizeExtras: (LazyListScope.() -> Unit)? = null,
     subscriptionContent: (@Composable () -> Unit)? = null,
 ): SiteHubConfig {
-    val common = rememberCommonProfileEntries(navController, activity, site, siteSettingsRoute)
+    val common = rememberCommonProfileEntries(navigator, activity, site, siteSettingsRoute)
     val label = CrossSiteNavigator.siteLabel(site)
     val onDevice = buildList {
         add(common.offlinePlaylist)

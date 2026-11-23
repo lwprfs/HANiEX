@@ -1,7 +1,15 @@
 package com.yenaly.han1meviewer.FuckingSession.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
@@ -14,10 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.FuckingSession.ui.history.FuckingSessionHistoryScreen
 import com.yenaly.han1meviewer.FuckingSession.ui.home.FuckingSessionHomeScreen
@@ -28,73 +32,63 @@ import com.yenaly.han1meviewer.FuckingSession.ui.video.FuckingSessionVideoScreen
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object FuckingSessionHomeRoute
+object FuckingSessionHomeRoute : NavKey
 
 @Serializable
-object FuckingSessionSettingsHubRoute
+object FuckingSessionSettingsHubRoute : NavKey
 
 @Serializable
-data class FuckingSessionSearchRoute(val query: String? = null)
+data class FuckingSessionSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class FuckingSessionVideoRoute(val videoCode: String, val resumePosition: Long = 0L)
+data class FuckingSessionVideoRoute(val videoCode: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-object FuckingSessionHistoryRoute
+object FuckingSessionHistoryRoute : NavKey
 
 @Serializable
-data class FuckingSessionListRoute(val title: String, val path: String)
+data class FuckingSessionListRoute(val title: String, val path: String) : NavKey
 
 @Serializable
-object FuckingSessionSettingsRoute
+object FuckingSessionSettingsRoute : NavKey
 
 @Composable
 fun FuckingSessionNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.FUCKINGSESSION)
-    }
 
-    NavHost(
-        navController = navController,
-        startDestination = FuckingSessionHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<FuckingSessionHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<FuckingSessionHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 FuckingSessionHomeScreen(
                     onNavigateToVideo = { code ->
-                        navController.navigateSafely(FuckingSessionVideoRoute(code))
+                        navigator.navigateSafely(FuckingSessionVideoRoute(code))
                     },
                     onNavigateToSearch = { query ->
-                        navController.navigateSafely(FuckingSessionSearchRoute(query))
+                        navigator.navigateSafely(FuckingSessionSearchRoute(query))
                     },
-                    onNavigateToHistory = { navController.navigateSafely(FuckingSessionHistoryRoute) },
+                    onNavigateToHistory = { navigator.navigateSafely(FuckingSessionHistoryRoute) },
                 )
             }
         }
 
-        composable<FuckingSessionSettingsHubRoute> {
+        screen<FuckingSessionSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.FUCKINGSESSION,
                 onResetSite = { com.yenaly.han1meviewer.FuckingSession.common.FuckingSessionSettings.resetToDefaults() },
@@ -104,88 +98,95 @@ fun FuckingSessionNavHost(
                         title = stringResource(R.string.fuckingsession_settings_playback_title),
                         subtitle = stringResource(R.string.fuckingsession_settings_playback_summary),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(FuckingSessionSettingsRoute) },
+                        onClick = { navigator.navigateSafely(FuckingSessionSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.fuckingsession_history_title),
                         subtitle = stringResource(R.string.fuckingsession_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(FuckingSessionHistoryRoute) },
+                        onClick = { navigator.navigateSafely(FuckingSessionHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.FUCKINGSESSION.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.FUCKINGSESSION.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<FuckingSessionSettingsRoute> {
-            FuckingSessionSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<FuckingSessionSettingsRoute> {
+            FuckingSessionSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<FuckingSessionSearchRoute> {
-            val route = it.toRoute<FuckingSessionSearchRoute>()
+        screen<FuckingSessionSearchRoute> {
+            val route = it
             FuckingSessionSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(FuckingSessionVideoRoute(code))
+                    navigator.navigateSafely(FuckingSessionVideoRoute(code))
                 },
             )
         }
 
-        composable<FuckingSessionVideoRoute> {
-            val route = it.toRoute<FuckingSessionVideoRoute>()
+        screen<FuckingSessionVideoRoute> {
+            val route = it
             FuckingSessionVideoScreen(
                 videoCode = route.videoCode,
                 resumePosition = route.resumePosition,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(FuckingSessionVideoRoute(code))
+                    navigator.navigateSafely(FuckingSessionVideoRoute(code))
                 },
                 onNavigateToSearch = { query ->
-                    navController.navigateSafely(FuckingSessionSearchRoute(query))
+                    navigator.navigateSafely(FuckingSessionSearchRoute(query))
                 },
                 onNavigateToList = { title, path ->
-                    navController.navigateSafely(FuckingSessionListRoute(title, path))
+                    navigator.navigateSafely(FuckingSessionListRoute(title, path))
                 },
             )
         }
 
-        composable<FuckingSessionListRoute> {
-            val route = it.toRoute<FuckingSessionListRoute>()
+        screen<FuckingSessionListRoute> {
+            val route = it
             FuckingSessionListScreen(
                 title = route.title,
                 path = route.path,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(FuckingSessionVideoRoute(code))
+                    navigator.navigateSafely(FuckingSessionVideoRoute(code))
                 },
             )
         }
 
-        composable<FuckingSessionHistoryRoute> {
+        screen<FuckingSessionHistoryRoute> {
             FuckingSessionHistoryScreen(
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(FuckingSessionVideoRoute(code))
+                    navigator.navigateSafely(FuckingSessionVideoRoute(code))
                 },
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.FUCKINGSESSION,
-            config = { fuckingSessionHubConfig(navController, activity) },
+            config = { fuckingSessionHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

@@ -36,10 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -52,32 +50,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.rememberSettingsSearchResults
 import com.yenaly.han1meviewer.util.findActivityOrNull
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 
-/** Navigation 2 版本（其它站点的 NavHost 使用）。 */
-@Composable
-fun SettingsScaffold(
-    navController: NavController,
-    fallbackDestination: Any,
-    actions: @Composable () -> Unit = {},
-    content: @Composable () -> Unit,
-) {
-    val backStackEntry by navController.currentBackStackEntryAsState()
-    val currentScreen = backStackEntry?.resolveSettingsScreenDestination()
-        ?: SettingsScreenDestination.Home
-
-    SettingsScaffoldCore(
-        currentScreen = currentScreen,
-        onBack = {
-            if (!navController.popBackStack()) {
-                navController.navigate(fallbackDestination)
-            }
-        },
-        onSelectCategory = { navController.navigateSettingsCategoryDestination(it) },
-        actions = actions,
-        content = content,
-    )
-}
-
-/** Navigation 3 版本（Hanime/Javchu 主导航使用）。 */
 @Composable
 fun SettingsScaffold(
     navigator: Navigator,
@@ -90,8 +62,7 @@ fun SettingsScaffold(
     SettingsScaffoldCore(
         currentScreen = currentScreen,
         onBack = {
-            // 返回手势/转场进行中时 pop 失败再走 fallback 会与 NavDisplay 竞态，
-            // goBack 只在确实无可弹出时才返回 false
+
             if (!navigator.goBack()) {
                 navigator.navigate(fallbackDestination)
             }

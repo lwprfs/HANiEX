@@ -1,5 +1,14 @@
 package com.yenaly.han1meviewer.Buondua.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -10,10 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.Buondua.ui.album.BuonduaAlbumScreen
 import com.yenaly.han1meviewer.Buondua.ui.album.BuonduaPhotosScreen
 import com.yenaly.han1meviewer.Buondua.ui.history.BuonduaHistoryScreen
@@ -25,49 +30,45 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object BuonduaHomeRoute
+object BuonduaHomeRoute : NavKey
 
 @Serializable
-object BuonduaSettingsHubRoute
+object BuonduaSettingsHubRoute : NavKey
 
 @Serializable
-data class BuonduaSearchRoute(val query: String? = null)
+data class BuonduaSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class BuonduaAlbumRoute(val videoCode: String, val resumePosition: Long = 0L)
+data class BuonduaAlbumRoute(val videoCode: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-data class BuonduaPhotosRoute(val code: String)
+data class BuonduaPhotosRoute(val code: String) : NavKey
 
 @Serializable
-data class BuonduaTagRoute(val url: String, val title: String)
+data class BuonduaTagRoute(val url: String, val title: String) : NavKey
 
 @Serializable
-object BuonduaHistoryRoute
+object BuonduaHistoryRoute : NavKey
 
 @Composable
-fun buonduaHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
+fun buonduaHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(
         site = SiteType.BUONDUA,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = BuonduaSettingsHubRoute,
         siteLibraryEntries = listOf(
@@ -76,7 +77,7 @@ fun buonduaHubConfig(navController: NavHostController, activity: MainActivity): 
                 title = stringResource(R.string.buondua_history_title),
                 subtitle = stringResource(R.string.buondua_history_summary),
                 icon = Icons.Filled.History,
-                onClick = { navController.navigateSafely(BuonduaHistoryRoute) },
+                onClick = { navigator.navigateSafely(BuonduaHistoryRoute) },
             ),
         ),
         customizeEntries = emptyList(),
@@ -85,32 +86,25 @@ fun buonduaHubConfig(navController: NavHostController, activity: MainActivity): 
 @Composable
 fun BuonduaNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.BUONDUA)
-    }
 
-    NavHost(
-        navController = navController,
-        startDestination = BuonduaHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<BuonduaHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<BuonduaHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 BuonduaHomeScreen(
-                    onNavigateToAlbum = { code -> navController.navigateSafely(BuonduaAlbumRoute(code)) },
-                    onNavigateToSearch = { q -> navController.navigateSafely(BuonduaSearchRoute(q)) },
-                    onNavigateToHistory = { navController.navigateSafely(BuonduaHistoryRoute) },
+                    onNavigateToAlbum = { code -> navigator.navigateSafely(BuonduaAlbumRoute(code)) },
+                    onNavigateToSearch = { q -> navigator.navigateSafely(BuonduaSearchRoute(q)) },
+                    onNavigateToHistory = { navigator.navigateSafely(BuonduaHistoryRoute) },
                 )
             }
         }
 
-        composable<BuonduaSettingsHubRoute> {
+        screen<BuonduaSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.BUONDUA,
                 siteEntries = listOf(
@@ -119,72 +113,79 @@ fun BuonduaNavHost(
                         title = stringResource(R.string.buondua_history_title),
                         subtitle = stringResource(R.string.buondua_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(BuonduaHistoryRoute) },
+                        onClick = { navigator.navigateSafely(BuonduaHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.BUONDUA.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.BUONDUA.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<BuonduaSearchRoute> {
-            val route = it.toRoute<BuonduaSearchRoute>()
+        screen<BuonduaSearchRoute> {
+            val route = it
             BuonduaSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToAlbum = { code -> navController.navigateSafely(BuonduaAlbumRoute(code)) },
+                onBack = { navigator.goBack() },
+                onNavigateToAlbum = { code -> navigator.navigateSafely(BuonduaAlbumRoute(code)) },
             )
         }
 
-        composable<BuonduaTagRoute> {
-            val route = it.toRoute<BuonduaTagRoute>()
+        screen<BuonduaTagRoute> {
+            val route = it
             BuonduaTagScreen(
                 url = route.url,
                 title = route.title,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToAlbum = { code -> navController.navigateSafely(BuonduaAlbumRoute(code)) },
+                onBack = { navigator.goBack() },
+                onNavigateToAlbum = { code -> navigator.navigateSafely(BuonduaAlbumRoute(code)) },
             )
         }
 
-        composable<BuonduaAlbumRoute> {
-            val route = it.toRoute<BuonduaAlbumRoute>()
+        screen<BuonduaAlbumRoute> {
+            val route = it
             BuonduaAlbumScreen(
                 code = route.videoCode,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToAlbum = { code -> navController.navigateSafely(BuonduaAlbumRoute(code)) },
-                onNavigateToTag = { url, title -> navController.navigateSafely(BuonduaTagRoute(url, title)) },
-                onOpenPhotos = { navController.navigateSafely(BuonduaPhotosRoute(route.videoCode)) },
+                onBack = { navigator.goBack() },
+                onNavigateToAlbum = { code -> navigator.navigateSafely(BuonduaAlbumRoute(code)) },
+                onNavigateToTag = { url, title -> navigator.navigateSafely(BuonduaTagRoute(url, title)) },
+                onOpenPhotos = { navigator.navigateSafely(BuonduaPhotosRoute(route.videoCode)) },
             )
         }
 
-        composable<BuonduaPhotosRoute> {
-            val route = it.toRoute<BuonduaPhotosRoute>()
+        screen<BuonduaPhotosRoute> {
+            val route = it
             BuonduaPhotosScreen(
                 code = route.code,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<BuonduaHistoryRoute> {
+        screen<BuonduaHistoryRoute> {
             BuonduaHistoryScreen(
-                onNavigateToAlbum = { code -> navController.navigateSafely(BuonduaAlbumRoute(code)) },
-                onBack = { navController.popBackStackSafely() },
+                onNavigateToAlbum = { code -> navigator.navigateSafely(BuonduaAlbumRoute(code)) },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.BUONDUA,
-            config = { buonduaHubConfig(navController, activity) },
+            config = { buonduaHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

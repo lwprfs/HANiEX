@@ -4,16 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.navigation.Navigator
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsDestination
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import com.yenaly.han1meviewer.ui.navigation.screen
 import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
 import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.SitePlayerSettingsPage
@@ -21,103 +19,105 @@ import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
 
-fun NavGraphBuilder.registerSettingsRoutes(
+fun EntryProviderScope<NavKey>.settingsEntries(
     activity: MainActivity,
-    navController: NavHostController,
-    homeFallback: Any,
+    navigator: Navigator,
+    homeFallback: NavKey,
     onOpenVideo: (String) -> Unit,
 ) {
-    composable<HomeSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = homeFallback) {
+    val onBack: () -> Unit = { navigator.goBack() }
+
+    screen<HomeSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = homeFallback) {
             SettingsHomeRouteScreen(
-                onOpenCategory = { navController.navigateSettingsCategoryDestination(it) },
+                onOpenCategory = { navigator.navigateSettingsCategoryDestination(it) },
             )
         }
     }
-    composable<SettingsCategoryRoute> { entry ->
-        val category = SettingsCategory.fromKey(entry.toRoute<SettingsCategoryRoute>().categoryKey)
+    screen<SettingsCategoryRoute> { key ->
+        val category = SettingsCategory.fromKey(key.categoryKey)
             ?: SettingsCategory.Appearance
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             SettingsCategoryRouteScreen(
                 category = category,
                 activity = activity,
                 onNavigateToPlayerSettings = {
-                    navController.navigateSettingsDestination(PlayerSettingsRoute)
+                    navigator.navigateSettingsDestination(PlayerSettingsRoute)
                 },
                 onNavigateToHKeyframes = {
-                    navController.navigateSettingsDestination(HKeyframesRoute)
+                    navigator.navigateSettingsDestination(HKeyframesRoute)
                 },
                 onNavigateToSharedHKeyframes = {
-                    navController.navigateSettingsDestination(SharedHKeyframesRoute)
+                    navigator.navigateSettingsDestination(SharedHKeyframesRoute)
                 },
                 onNavigateToAboutPage = {
-                    navController.navigateSettingsDestination(AboutAppRoute)
+                    navigator.navigateSettingsDestination(AboutAppRoute)
                 },
-                onNavigateToUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onNavigateToUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
                 onNavigateToTranslationSettings = {
-                    navController.navigateSettingsDestination(TranslationSettingsRoute)
+                    navigator.navigateSettingsDestination(TranslationSettingsRoute)
                 },
             )
         }
     }
-    composable<AboutAppRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+    screen<AboutAppRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             AboutAppScreen()
         }
     }
-    composable<UpdateSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+    screen<UpdateSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             UpdateStatusScreen(activity = activity)
         }
     }
-    composable<PlayerSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+    screen<PlayerSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             PlayerSettingsRouteScreen(
                 onNavigateToMpvSettings = {
-                    navController.navigateSettingsDestination(MpvPlayerSettingsRoute)
+                    navigator.navigateSettingsDestination(MpvPlayerSettingsRoute)
                 },
                 onNavigateToMediaControls = {
-                    navController.navigateSettingsDestination(MediaControlsSettingsRoute)
+                    navigator.navigateSettingsDestination(MediaControlsSettingsRoute)
                 },
             )
         }
     }
-    composable<SitePlayerSettingsRoute> { entry ->
-        val site = runCatching { SiteType.valueOf(entry.toRoute<SitePlayerSettingsRoute>().site) }
+    screen<SitePlayerSettingsRoute> { key ->
+        val site = runCatching { SiteType.valueOf(key.site) }
             .getOrDefault(SiteType.SUPJAV)
-        SitePlayerSettingsPage(site = site, onBack = { navController.popBackStackSafely() })
+        SitePlayerSettingsPage(site = site, onBack = onBack)
     }
-    composable<MediaControlsSettingsRoute> {
-        MediaControlsSettingsScreen(onBack = { navController.popBackStackSafely() })
+    screen<MediaControlsSettingsRoute> {
+        MediaControlsSettingsScreen(onBack = onBack)
     }
-    composable<TranslationSettingsRoute> {
+    screen<TranslationSettingsRoute> {
         TranslationSettingsScreen(
-            onBack = { navController.popBackStackSafely() },
-            onOpenCache = { navController.navigateSafely(TranslationCacheRoute) },
+            onBack = onBack,
+            onOpenCache = { navigator.navigateSafely(TranslationCacheRoute) },
         )
     }
-    composable<TranslationCacheRoute> {
-        TranslationCacheScreen(onBack = { navController.popBackStackSafely() })
+    screen<TranslationCacheRoute> {
+        TranslationCacheScreen(onBack = onBack)
     }
-    composable<NetworkSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+    screen<NetworkSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             NetworkSettingsRouteScreen()
         }
     }
-    composable<DownloadSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+    screen<DownloadSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             DownloadSettingsRouteScreen(activity = activity)
         }
     }
-    composable<MpvPlayerSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = PlayerSettingsRoute) {
+    screen<MpvPlayerSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = PlayerSettingsRoute) {
             MpvPlayerSettingsRouteScreen()
         }
     }
-    composable<HKeyframesRoute> {
+    screen<HKeyframesRoute> {
         var showImportDialog by remember { mutableStateOf(false) }
         SettingsScaffold(
-            navController = navController,
+            navigator = navigator,
             fallbackDestination = HKeyframeSettingsRoute,
             actions = { HKeyframesTopBarActions(onImportClick = { showImportDialog = true }) },
         ) {
@@ -128,22 +128,22 @@ fun NavGraphBuilder.registerSettingsRoutes(
             )
         }
     }
-    composable<SharedHKeyframesRoute> {
+    screen<SharedHKeyframesRoute> {
         SettingsScaffold(
-            navController = navController,
+            navigator = navigator,
             fallbackDestination = HKeyframeSettingsRoute,
         ) {
             SharedHKeyframesRouteScreen(onOpenVideo = onOpenVideo)
         }
     }
-    composable<HKeyframeSettingsRoute> {
-        SettingsScaffold(navController = navController, fallbackDestination = HomeSettingsRoute) {
+    screen<HKeyframeSettingsRoute> {
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
             HKeyframeSettingsRouteScreen(
                 onNavigateToHKeyframes = {
-                    navController.navigateSettingsDestination(HKeyframesRoute)
+                    navigator.navigateSettingsDestination(HKeyframesRoute)
                 },
                 onNavigateToSharedHKeyframes = {
-                    navController.navigateSettingsDestination(SharedHKeyframesRoute)
+                    navigator.navigateSettingsDestination(SharedHKeyframesRoute)
                 },
             )
         }

@@ -132,7 +132,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderFollowedCommunitiesRoute
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderHistoryRoute
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSavedRoute
@@ -157,24 +158,23 @@ import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderImageFolderRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 
 data class SiteDrawerEntry(
     val title: String,
     val iconRes: Int,
     val locked: Boolean = false,
-    val onClick: (NavHostController) -> Unit,
+    val onClick: (Navigator) -> Unit,
 )
 
-private fun entry(title: String, icon: Int, route: Any) =
+private fun entry(title: String, icon: Int, route: NavKey) =
     SiteDrawerEntry(title, icon) { nav -> nav.navigateSafely(route) }
 
 private fun gatedEntry(
     title: String,
     icon: Int,
-    route: Any,
+    route: NavKey,
     loggedIn: Boolean,
-    loginRoute: Any,
+    loginRoute: NavKey,
 ) = SiteDrawerEntry(title, icon, locked = !loggedIn) { nav ->
     nav.navigateSafely(if (loggedIn) route else loginRoute)
 }
@@ -675,7 +675,7 @@ private fun appEntries(context: Context): List<SiteDrawerEntry> = listOf(
 @Composable
 fun SiteDrawerContent(
     site: SiteType,
-    navController: NavHostController,
+    navigator: Navigator,
     onClose: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     refreshKey: Any = Unit,
@@ -699,7 +699,7 @@ fun SiteDrawerContent(
             onStatusClick = status.onClick?.let { click ->
                 {
                     onClose()
-                    click(navController)
+                    click(navigator)
                 }
             },
             onSwitchSiteClick = onSwitchSiteClick,
@@ -709,7 +709,7 @@ fun SiteDrawerContent(
             section.entries.forEach { entry ->
                 DrawerItem(entry) {
                     onClose()
-                    entry.onClick(navController)
+                    entry.onClick(navigator)
                 }
             }
         }

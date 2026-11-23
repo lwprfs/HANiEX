@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.Wumaobi.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
@@ -16,13 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.Wumaobi.common.WumaobiConstants
 import com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -31,14 +32,14 @@ import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
-fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+fun wumaobiHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig {
     val auth by WumaobiAuth.state.collectAsState()
     val loggedIn = auth.loggedIn
-    val onLogin = { navController.navigateSafely(WumaobiAccountRoute) }
+    val onLogin = { navigator.navigateSafely(WumaobiAccountRoute) }
 
     return standardSiteHubConfig(
         site = SiteType.WUMAOBI,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = WumaobiSettingsHubRoute,
         subscriptionSections = listOf(
@@ -50,7 +51,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = "Hottest",
                         icon = Icons.Filled.LocalFireDepartment,
                         onClick = {
-                            navController.navigateSafely(WumaobiListRoute("Hottest", "/"))
+                            navigator.navigateSafely(WumaobiListRoute("Hottest", "/"))
                         },
                     ),
                     SiteHubEntry(
@@ -58,7 +59,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = "Newest",
                         icon = Icons.Filled.NewReleases,
                         onClick = {
-                            navController.navigateSafely(
+                            navigator.navigateSafely(
                                 WumaobiListRoute("Newest", "/", WumaobiConstants.SECTIONS[1].sort)
                             )
                         },
@@ -68,7 +69,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = "Most Faves",
                         icon = Icons.Filled.Star,
                         onClick = {
-                            navController.navigateSafely(
+                            navigator.navigateSafely(
                                 WumaobiListRoute("Most Faves", "/", WumaobiConstants.SECTIONS[2].sort)
                             )
                         },
@@ -78,7 +79,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = "Recommended",
                         icon = Icons.Filled.Recommend,
                         onClick = {
-                            navController.navigateSafely(WumaobiListRoute("Recommended", "/recommend"))
+                            navigator.navigateSafely(WumaobiListRoute("Recommended", "/recommend"))
                         },
                     ),
                     SiteHubEntry(
@@ -86,7 +87,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = stringResource(R.string.wumaobi_tags),
                         icon = Icons.Filled.Category,
                         onClick = {
-                            navController.navigateSafely(WumaobiBrowseRoute(WumaobiConstants.EntityKind.TAGS.key))
+                            navigator.navigateSafely(WumaobiBrowseRoute(WumaobiConstants.EntityKind.TAGS.key))
                         },
                     ),
                     SiteHubEntry(
@@ -94,7 +95,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = stringResource(R.string.wumaobi_models),
                         icon = Icons.Filled.People,
                         onClick = {
-                            navController.navigateSafely(WumaobiBrowseRoute(WumaobiConstants.EntityKind.ACTRESS.key))
+                            navigator.navigateSafely(WumaobiBrowseRoute(WumaobiConstants.EntityKind.ACTRESS.key))
                         },
                     ),
                     SiteHubEntry(
@@ -102,7 +103,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                         title = stringResource(R.string.wumaobi_series),
                         icon = Icons.Filled.Language,
                         onClick = {
-                            navController.navigateSafely(WumaobiBrowseRoute(WumaobiConstants.EntityKind.SERIES.key))
+                            navigator.navigateSafely(WumaobiBrowseRoute(WumaobiConstants.EntityKind.SERIES.key))
                         },
                     ),
                 ),
@@ -114,14 +115,14 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                 title = stringResource(R.string.wumaobi_favorites),
                 subtitle = stringResource(R.string.wumaobi_favorites_summary),
                 icon = Icons.Filled.Favorite,
-                onClick = { navController.navigateSafely(WumaobiFavoritesRoute) },
+                onClick = { navigator.navigateSafely(WumaobiFavoritesRoute) },
             ).gated(loggedIn, onLogin),
             SiteHubEntry(
                 key = "history",
                 title = stringResource(R.string.wumaobi_history_title),
                 subtitle = stringResource(R.string.wumaobi_history_summary),
                 icon = Icons.Filled.History,
-                onClick = { navController.navigateSafely(WumaobiHistoryRoute) },
+                onClick = { navigator.navigateSafely(WumaobiHistoryRoute) },
             ),
         ),
         profileExtraQuickActions = listOf(
@@ -129,7 +130,7 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                 key = "account",
                 title = stringResource(R.string.wumaobi_account_title),
                 icon = Icons.Filled.AccountCircle,
-                onClick = { navController.navigateSafely(WumaobiAccountRoute) },
+                onClick = { navigator.navigateSafely(WumaobiAccountRoute) },
             ),
         ),
         customizeEntries = listOf(
@@ -138,9 +139,9 @@ fun wumaobiHubConfig(navController: NavHostController, activity: MainActivity): 
                 title = stringResource(R.string.wumaobi_settings_playback_title),
                 subtitle = stringResource(R.string.wumaobi_settings_playback_summary),
                 icon = Icons.Filled.HighQuality,
-                onClick = { navController.navigateSafely(WumaobiSettingsRoute) },
+                onClick = { navigator.navigateSafely(WumaobiSettingsRoute) },
             ),
-            rememberPlayerSettingsEntry(navController, SiteType.WUMAOBI),
+            rememberPlayerSettingsEntry(navigator, SiteType.WUMAOBI),
         ),
     )
 }

@@ -1,7 +1,15 @@
 package com.yenaly.han1meviewer.XXXTube.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
@@ -14,10 +22,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.XXXTube.common.XXXTubeConstants
 import com.yenaly.han1meviewer.XXXTube.ui.entities.XXXTubeEntityScreen
@@ -30,79 +34,69 @@ import com.yenaly.han1meviewer.XXXTube.ui.video.XXXTubeVideoScreen
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object XXXTubeHomeRoute
+object XXXTubeHomeRoute : NavKey
 
 @Serializable
-object XXXTubeSettingsHubRoute
+object XXXTubeSettingsHubRoute : NavKey
 
 @Serializable
-data class XXXTubeSearchRoute(val query: String? = null)
+data class XXXTubeSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class XXXTubeVideoRoute(val videoCode: String, val resumePosition: Long = 0L)
+data class XXXTubeVideoRoute(val videoCode: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-object XXXTubeHistoryRoute
+object XXXTubeHistoryRoute : NavKey
 
 @Serializable
-data class XXXTubeListRoute(val title: String, val path: String)
+data class XXXTubeListRoute(val title: String, val path: String) : NavKey
 
 @Serializable
-data class XXXTubeEntityRoute(val kind: String)
+data class XXXTubeEntityRoute(val kind: String) : NavKey
 
 @Serializable
-object XXXTubeSettingsRoute
+object XXXTubeSettingsRoute : NavKey
 
 @Composable
 fun XXXTubeNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.XXXTUBE)
-    }
 
-    NavHost(
-        navController = navController,
-        startDestination = XXXTubeHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<XXXTubeHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<XXXTubeHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 XXXTubeHomeScreen(
                     onNavigateToVideo = { code ->
-                        navController.navigateSafely(XXXTubeVideoRoute(code))
+                        navigator.navigateSafely(XXXTubeVideoRoute(code))
                     },
                     onNavigateToSearch = { query ->
-                        navController.navigateSafely(XXXTubeSearchRoute(query))
+                        navigator.navigateSafely(XXXTubeSearchRoute(query))
                     },
-                    onNavigateToHistory = { navController.navigateSafely(XXXTubeHistoryRoute) },
+                    onNavigateToHistory = { navigator.navigateSafely(XXXTubeHistoryRoute) },
                     onNavigateToEntities = { kind ->
-                        navController.navigateSafely(XXXTubeEntityRoute(kind.key))
+                        navigator.navigateSafely(XXXTubeEntityRoute(kind.key))
                     },
                 )
             }
         }
 
-        composable<XXXTubeSettingsHubRoute> {
+        screen<XXXTubeSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.XXXTUBE,
                 onResetSite = { com.yenaly.han1meviewer.XXXTube.common.XXXTubeSettings.resetToDefaults() },
@@ -112,102 +106,109 @@ fun XXXTubeNavHost(
                         title = stringResource(R.string.xxxtube_settings_playback_title),
                         subtitle = stringResource(R.string.xxxtube_settings_playback_summary),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(XXXTubeSettingsRoute) },
+                        onClick = { navigator.navigateSafely(XXXTubeSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.xxxtube_history_title),
                         subtitle = stringResource(R.string.xxxtube_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(XXXTubeHistoryRoute) },
+                        onClick = { navigator.navigateSafely(XXXTubeHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.XXXTUBE.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.XXXTUBE.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<XXXTubeSettingsRoute> {
-            XXXTubeSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<XXXTubeSettingsRoute> {
+            XXXTubeSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<XXXTubeSearchRoute> {
-            val route = it.toRoute<XXXTubeSearchRoute>()
+        screen<XXXTubeSearchRoute> {
+            val route = it
             XXXTubeSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(XXXTubeVideoRoute(code))
+                    navigator.navigateSafely(XXXTubeVideoRoute(code))
                 },
                 onOpenEntity = { entity ->
-                    navController.navigateSafely(XXXTubeListRoute(entity.title, entity.listingPath))
+                    navigator.navigateSafely(XXXTubeListRoute(entity.title, entity.listingPath))
                 },
             )
         }
 
-        composable<XXXTubeEntityRoute> {
-            val route = it.toRoute<XXXTubeEntityRoute>()
+        screen<XXXTubeEntityRoute> {
+            val route = it
             XXXTubeEntityScreen(
                 kind = XXXTubeConstants.EntityKind.fromKey(route.kind),
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onOpen = { entity ->
-                    navController.navigateSafely(XXXTubeListRoute(entity.title, entity.listingPath))
+                    navigator.navigateSafely(XXXTubeListRoute(entity.title, entity.listingPath))
                 },
             )
         }
 
-        composable<XXXTubeVideoRoute> {
-            val route = it.toRoute<XXXTubeVideoRoute>()
+        screen<XXXTubeVideoRoute> {
+            val route = it
             XXXTubeVideoScreen(
                 videoCode = route.videoCode,
                 resumePosition = route.resumePosition,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(XXXTubeVideoRoute(code))
+                    navigator.navigateSafely(XXXTubeVideoRoute(code))
                 },
                 onNavigateToSearch = { query ->
-                    navController.navigateSafely(XXXTubeSearchRoute(query))
+                    navigator.navigateSafely(XXXTubeSearchRoute(query))
                 },
                 onNavigateToList = { title, path ->
-                    navController.navigateSafely(XXXTubeListRoute(title, path))
+                    navigator.navigateSafely(XXXTubeListRoute(title, path))
                 },
             )
         }
 
-        composable<XXXTubeListRoute> {
-            val route = it.toRoute<XXXTubeListRoute>()
+        screen<XXXTubeListRoute> {
+            val route = it
             XXXTubeListScreen(
                 title = route.title,
                 path = route.path,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(XXXTubeVideoRoute(code))
+                    navigator.navigateSafely(XXXTubeVideoRoute(code))
                 },
             )
         }
 
-        composable<XXXTubeHistoryRoute> {
+        screen<XXXTubeHistoryRoute> {
             XXXTubeHistoryScreen(
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(XXXTubeVideoRoute(code))
+                    navigator.navigateSafely(XXXTubeVideoRoute(code))
                 },
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.XXXTUBE,
-            config = { xxxTubeHubConfig(navController, activity) },
+            config = { xxxTubeHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

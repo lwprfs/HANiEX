@@ -1,12 +1,15 @@
 package com.yenaly.han1meviewer.OnAir.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import kotlinx.serialization.Serializable
 
 @Serializable
-object OnAirGateRoute
+object OnAirGateRoute : NavKey
 
 @Serializable
-object OnAirHomeRoute
+object OnAirHomeRoute : NavKey
 
 @Serializable
 data class OnAirSearchRoute(
@@ -16,50 +19,50 @@ data class OnAirSearchRoute(
     val date: String? = null,
     val sort: String? = null,
     val tag: String? = null,
-)
+) : NavKey
 
 @Serializable
 data class OnAirVideoRoute(
     val videoId: String,
     val preferredQuality: String? = null,
-)
+) : NavKey
 
 @Serializable
 data class OnAirUserRoute(
     val username: String,
-)
+) : NavKey
 
 @Serializable
 data class OnAirTagRoute(
     val tagName: String,
-)
+) : NavKey
 
 @Serializable
-object OnAirTagsIndexRoute
+object OnAirTagsIndexRoute : NavKey
 
 @Serializable
-object OnAirPicturesRoute
+object OnAirPicturesRoute : NavKey
 
 @Serializable
-object OnAirHistoryRoute
+object OnAirHistoryRoute : NavKey
 
 @Serializable
-object OnAirAnnouncementsRoute
+object OnAirAnnouncementsRoute : NavKey
 
 @Serializable
-object OnAirChatRoute
+object OnAirChatRoute : NavKey
 
 @Serializable
-object OnAirSettingsRoute
+object OnAirSettingsRoute : NavKey
 
 @Serializable
-object OnAirAccountSettingsRoute
+object OnAirAccountSettingsRoute : NavKey
 
 @Serializable
-object OnAirCookieRoute
+object OnAirCookieRoute : NavKey
 
 @Serializable
-object OnAirLoginRoute
+object OnAirLoginRoute : NavKey
 
 @Serializable
-object OnAirRegisterRoute
+object OnAirRegisterRoute : NavKey

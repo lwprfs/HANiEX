@@ -54,7 +54,6 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.SiteCheckIn
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.util.DownloadFailure
 import com.yenaly.han1meviewer.util.DownloadFailureStore
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
@@ -323,7 +322,7 @@ private fun DownloadFailurePanel(item: HanimeDownloadEntity) {
                     ) { Text(if (checking) stringResource(R.string.site_checking) else stringResource(R.string.check_tor)) }
                     TextButton(onClick = {
                         runCatching {
-                            NavigationManager.getNavController()?.navigateSafely(OnAirCookieRoute)
+                            NavigationManager.getNavigator()?.navigateSafely(OnAirCookieRoute)
                         }
                     }) { Text(stringResource(R.string.site_cookies)) }
                 }

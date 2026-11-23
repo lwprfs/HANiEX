@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.RedGifs.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
@@ -13,14 +16,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSession
 import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth
 import com.yenaly.han1meviewer.RedGifs.ui.browse.RedGifsUsersMode
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -29,12 +30,12 @@ import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
-fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+fun redGifsHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig {
 
     @Suppress("UNUSED_VARIABLE")
     val sessionEpoch by RedGifsSession.epoch.collectAsState()
     val loggedIn = RedGifsAuth.isLoggedIn
-    val onLogin = { navController.navigateSafely(RedGifsLoginRoute) }
+    val onLogin = { navigator.navigateSafely(RedGifsLoginRoute) }
 
     val likedTitle = stringResource(R.string.redgifs_liked)
     val mineTitle = stringResource(R.string.redgifs_my_uploads)
@@ -46,31 +47,31 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
                 key = "following",
                 title = stringResource(R.string.redgifs_following),
                 icon = Icons.Filled.Groups,
-                onClick = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
+                onClick = { navigator.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
             ).gated(loggedIn, onLogin),
             SiteHubEntry(
                 key = "followed_niches",
                 title = stringResource(R.string.redgifs_followed_niches),
                 icon = Icons.Filled.Subscriptions,
-                onClick = { navController.navigateSafely(RedGifsNichesRoute(following = true)) },
+                onClick = { navigator.navigateSafely(RedGifsNichesRoute(following = true)) },
             ).gated(loggedIn, onLogin),
             SiteHubEntry(
                 key = "niches",
                 title = stringResource(R.string.redgifs_niches),
                 icon = Icons.Filled.Category,
-                onClick = { navController.navigateSafely(RedGifsNichesRoute()) },
+                onClick = { navigator.navigateSafely(RedGifsNichesRoute()) },
             ),
             SiteHubEntry(
                 key = "tags",
                 title = stringResource(R.string.redgifs_tags),
                 icon = Icons.Filled.Category,
-                onClick = { navController.navigateSafely(RedGifsTagsRoute) },
+                onClick = { navigator.navigateSafely(RedGifsTagsRoute) },
             ),
             SiteHubEntry(
                 key = "creators",
                 title = stringResource(R.string.redgifs_creators),
                 icon = Icons.Filled.Star,
-                onClick = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.CREATORS.name)) },
+                onClick = { navigator.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.CREATORS.name)) },
             ),
         ),
     )
@@ -80,25 +81,25 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
             key = "liked",
             title = likedTitle,
             icon = Icons.Filled.ThumbUp,
-            onClick = { navController.navigateSafely(RedGifsFeedRoute("liked", "", likedTitle)) },
+            onClick = { navigator.navigateSafely(RedGifsFeedRoute("liked", "", likedTitle)) },
         ).gated(loggedIn, onLogin),
         SiteHubEntry(
             key = "mine",
             title = mineTitle,
             icon = Icons.Filled.PhotoLibrary,
-            onClick = { navController.navigateSafely(RedGifsFeedRoute("mine", "", mineTitle)) },
+            onClick = { navigator.navigateSafely(RedGifsFeedRoute("mine", "", mineTitle)) },
         ).gated(loggedIn, onLogin),
         SiteHubEntry(
             key = "collections",
             title = stringResource(R.string.redgifs_collections),
             icon = Icons.Filled.PhotoLibrary,
-            onClick = { navController.navigateSafely(RedGifsCollectionsRoute) },
+            onClick = { navigator.navigateSafely(RedGifsCollectionsRoute) },
         ).gated(loggedIn, onLogin),
         SiteHubEntry(
             key = "dashboard",
             title = stringResource(R.string.redgifs_dashboard),
             icon = Icons.Filled.AccountCircle,
-            onClick = { navController.navigateSafely(RedGifsDashboardRoute) },
+            onClick = { navigator.navigateSafely(RedGifsDashboardRoute) },
         ).gated(loggedIn, onLogin),
     )
 
@@ -107,19 +108,19 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
         title = stringResource(R.string.redgifs_account),
         subtitle = stringResource(R.string.redgifs_account_summary),
         icon = Icons.Filled.AccountCircle,
-        onClick = { navController.navigateSafely(RedGifsAccountRoute) },
+        onClick = { navigator.navigateSafely(RedGifsAccountRoute) },
     )
     val playback = SiteHubEntry(
         key = "playback",
         title = stringResource(R.string.redgifs_settings_title),
         subtitle = stringResource(R.string.redgifs_settings_summary),
         icon = Icons.Filled.HighQuality,
-        onClick = { navController.navigateSafely(RedGifsSettingsRoute) },
+        onClick = { navigator.navigateSafely(RedGifsSettingsRoute) },
     )
 
     return standardSiteHubConfig(
         site = SiteType.REDGIFS,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = RedGifsSettingsHubRoute,
         siteLibraryEntries = emptyList(),
@@ -128,6 +129,6 @@ fun redGifsHubConfig(navController: NavHostController, activity: MainActivity): 
         ),
         subscriptionSections = listOf(subscription),
         profileExtraQuickActions = listOf(account),
-        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navController, SiteType.REDGIFS)),
+        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.REDGIFS)),
     )
 }

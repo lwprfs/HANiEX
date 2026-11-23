@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.OnAir.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -11,11 +14,9 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
@@ -24,11 +25,11 @@ import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
-fun onAirHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig {
+fun onAirHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig {
     val loggedIn = siteLoginStatus(LocalContext.current, SiteType.ONAIR).loggedIn
     return standardSiteHubConfig(
         site = SiteType.ONAIR,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = OnAirSettingsRoute,
         siteLibraryEntries = listOf(
@@ -37,34 +38,34 @@ fun onAirHubConfig(navController: NavHostController, activity: MainActivity): Si
                 title = stringResource(R.string.onair_history_title),
                 subtitle = stringResource(R.string.onair_history_subtitle),
                 icon = Icons.Filled.History,
-                onClick = { navController.navigateSafely(OnAirHistoryRoute) },
+                onClick = { navigator.navigateSafely(OnAirHistoryRoute) },
             ),
             SiteHubEntry(
                 key = "tags",
                 title = stringResource(R.string.drawer_tags),
                 subtitle = stringResource(R.string.onair_tags_subtitle),
                 icon = Icons.AutoMirrored.Filled.Label,
-                onClick = { navController.navigateSafely(OnAirTagsIndexRoute) },
+                onClick = { navigator.navigateSafely(OnAirTagsIndexRoute) },
             ),
             SiteHubEntry(
                 key = "pictures",
                 title = stringResource(R.string.drawer_pictures),
                 icon = Icons.Filled.Image,
-                onClick = { navController.navigateSafely(OnAirPicturesRoute) },
+                onClick = { navigator.navigateSafely(OnAirPicturesRoute) },
             ),
             SiteHubEntry(
                 key = "announcements",
                 title = stringResource(R.string.onair_announcements_title),
                 subtitle = stringResource(R.string.onair_announcements_subtitle),
                 icon = Icons.Filled.Campaign,
-                onClick = { navController.navigateSafely(OnAirAnnouncementsRoute) },
+                onClick = { navigator.navigateSafely(OnAirAnnouncementsRoute) },
             ),
             SiteHubEntry(
                 key = "chat",
                 title = stringResource(R.string.drawer_chat),
                 subtitle = stringResource(R.string.onair_chat_subtitle),
                 icon = Icons.AutoMirrored.Filled.Chat,
-                onClick = { navController.navigateSafely(OnAirChatRoute) },
+                onClick = { navigator.navigateSafely(OnAirChatRoute) },
             ),
         ),
         profileExtraQuickActions = listOf(
@@ -73,16 +74,16 @@ fun onAirHubConfig(navController: NavHostController, activity: MainActivity): Si
                 title = stringResource(R.string.drawer_account_session),
                 subtitle = stringResource(R.string.onair_account_subtitle),
                 icon = Icons.Filled.AccountCircle,
-                onClick = { navController.navigateSafely(OnAirAccountSettingsRoute) },
-            ).gated(loggedIn) { navController.navigateSafely(OnAirCookieRoute) },
+                onClick = { navigator.navigateSafely(OnAirAccountSettingsRoute) },
+            ).gated(loggedIn) { navigator.navigateSafely(OnAirCookieRoute) },
             SiteHubEntry(
                 key = "cookies",
                 title = stringResource(R.string.drawer_cookies_sign_in),
                 subtitle = stringResource(R.string.onair_cookies_subtitle),
                 icon = Icons.Filled.Lock,
-                onClick = { navController.navigateSafely(OnAirCookieRoute) },
+                onClick = { navigator.navigateSafely(OnAirCookieRoute) },
             ),
         ),
-        customizeEntries = listOf(rememberPlayerSettingsEntry(navController, SiteType.ONAIR)),
+        customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.ONAIR)),
     )
 }

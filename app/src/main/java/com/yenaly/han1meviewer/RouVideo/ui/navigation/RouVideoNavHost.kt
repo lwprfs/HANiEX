@@ -1,7 +1,15 @@
 package com.yenaly.han1meviewer.RouVideo.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -18,10 +26,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
@@ -41,85 +45,75 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object RouVideoHomeRoute
+object RouVideoHomeRoute : NavKey
 
 @Serializable
-object RouVideoSettingsHubRoute
+object RouVideoSettingsHubRoute : NavKey
 
 @Serializable
-data class RouVideoSearchRoute(val query: String? = null, val tag: String? = null)
+data class RouVideoSearchRoute(val query: String? = null, val tag: String? = null) : NavKey
 
 @Serializable
-data class RouVideoVideoRoute(val videoCode: String, val resumePosition: Long = 0L)
+data class RouVideoVideoRoute(val videoCode: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-data class RouVideoTagRoute(val tag: String)
+data class RouVideoTagRoute(val tag: String) : NavKey
 
 @Serializable
-object RouVideoCategoriesRoute
+object RouVideoCategoriesRoute : NavKey
 
 @Serializable
-object RouVideoHistoryRoute
+object RouVideoHistoryRoute : NavKey
 
 @Serializable
-object RouVideoSettingsRoute
+object RouVideoSettingsRoute : NavKey
 
 @Serializable
-object RouVideoAccountRoute
+object RouVideoAccountRoute : NavKey
 
 @Serializable
-object RouVideoProfileEditRoute
+object RouVideoProfileEditRoute : NavKey
 
 @Serializable
-data class RouVideoLibraryRoute(val tab: String = RouVideoLibraryTab.FOLLOWS.name)
+data class RouVideoLibraryRoute(val tab: String = RouVideoLibraryTab.FOLLOWS.name) : NavKey
 
 @Serializable
-object RouVideoHostSettingsRoute
+object RouVideoHostSettingsRoute : NavKey
 
 @Composable
 fun RouVideoNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.ROUVIDEO)
-    }
 
-    NavHost(
-        navController = navController,
-        startDestination = RouVideoHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<RouVideoHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<RouVideoHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 RouVideoHomeScreen(
-                    onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
+                    onNavigateToVideo = { id -> navigator.navigateSafely(RouVideoVideoRoute(id)) },
                     onNavigateToSearch = { query ->
-                        navController.navigateSafely(RouVideoSearchRoute(query))
+                        navigator.navigateSafely(RouVideoSearchRoute(query))
                     },
-                    onNavigateToCategories = { navController.navigateSafely(RouVideoCategoriesRoute) },
+                    onNavigateToCategories = { navigator.navigateSafely(RouVideoCategoriesRoute) },
                 )
             }
         }
 
-        composable<RouVideoSettingsHubRoute> {
+        screen<RouVideoSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.ROUVIDEO,
                 onResetSite = { com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings.resetToDefaults() },
@@ -129,148 +123,155 @@ fun RouVideoNavHost(
                         title = stringResource(R.string.rouvideo_account_title),
                         subtitle = stringResource(R.string.rouvideo_account_summary),
                         icon = Icons.Default.AccountCircle,
-                        onClick = { navController.navigateSafely(RouVideoAccountRoute) },
+                        onClick = { navigator.navigateSafely(RouVideoAccountRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "library",
                         title = stringResource(R.string.rouvideo_my_library),
                         subtitle = stringResource(R.string.rouvideo_library_summary),
                         icon = Icons.Default.VideoLibrary,
-                        onClick = { navController.navigateSafely(RouVideoLibraryRoute()) },
+                        onClick = { navigator.navigateSafely(RouVideoLibraryRoute()) },
                     ),
                     SiteSettingsEntry(
                         key = "host",
                         title = stringResource(R.string.drawer_host_mirror),
                         subtitle = stringResource(R.string.rouvideo_host_subtitle),
                         icon = Icons.Default.Dns,
-                        onClick = { navController.navigateSafely(RouVideoHostSettingsRoute) },
+                        onClick = { navigator.navigateSafely(RouVideoHostSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "site_settings",
                         title = stringResource(R.string.rouvideo_settings_title),
                         subtitle = stringResource(R.string.rouvideo_settings_summary),
                         icon = Icons.Default.Tune,
-                        onClick = { navController.navigateSafely(RouVideoSettingsRoute) },
+                        onClick = { navigator.navigateSafely(RouVideoSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "translation",
                         title = stringResource(R.string.rouvideo_tr_title),
                         subtitle = stringResource(R.string.rouvideo_tr_privacy),
                         icon = Icons.Default.Translate,
-                        onClick = { navController.navigateSafely(TranslationSettingsRoute) },
+                        onClick = { navigator.navigateSafely(TranslationSettingsRoute) },
                     ).takeIf { AppTranslation.available },
                     SiteSettingsEntry(
                         key = "categories",
                         title = stringResource(R.string.rouvideo_categories),
                         subtitle = stringResource(R.string.rouvideo_categories_summary),
                         icon = Icons.Default.Category,
-                        onClick = { navController.navigateSafely(RouVideoCategoriesRoute) },
+                        onClick = { navigator.navigateSafely(RouVideoCategoriesRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.rouvideo_history_title),
                         subtitle = stringResource(R.string.rouvideo_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(RouVideoHistoryRoute) },
+                        onClick = { navigator.navigateSafely(RouVideoHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
                 onOpenPlayerSettings = {
-                    navController.navigateSafely(SitePlayerSettingsRoute(SiteType.ROUVIDEO.name))
+                    navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.ROUVIDEO.name))
                 },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<RouVideoSettingsRoute> {
-            RouVideoSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<RouVideoSettingsRoute> {
+            RouVideoSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<RouVideoHostSettingsRoute> {
-            RouVideoHostSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<RouVideoHostSettingsRoute> {
+            RouVideoHostSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<RouVideoSearchRoute> {
-            val route = it.toRoute<RouVideoSearchRoute>()
+        screen<RouVideoSearchRoute> {
+            val route = it
             RouVideoSearchScreen(
                 initialQuery = route.query,
                 initialTag = route.tag,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { id -> navigator.navigateSafely(RouVideoVideoRoute(id)) },
             )
         }
 
-        composable<RouVideoVideoRoute> {
-            val route = it.toRoute<RouVideoVideoRoute>()
+        screen<RouVideoVideoRoute> {
+            val route = it
             RouVideoVideoScreen(
                 videoId = route.videoCode,
                 resumePosition = route.resumePosition,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
-                onNavigateToTag = { tag -> navController.navigateSafely(RouVideoTagRoute(tag)) },
-                onOpenAccount = { navController.navigateSafely(RouVideoAccountRoute) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { id -> navigator.navigateSafely(RouVideoVideoRoute(id)) },
+                onNavigateToTag = { tag -> navigator.navigateSafely(RouVideoTagRoute(tag)) },
+                onOpenAccount = { navigator.navigateSafely(RouVideoAccountRoute) },
             )
         }
 
-        composable<RouVideoTagRoute> {
-            val route = it.toRoute<RouVideoTagRoute>()
+        screen<RouVideoTagRoute> {
+            val route = it
             RouVideoTagScreen(
                 tag = route.tag,
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
-                onNavigateToTag = { tag -> navController.navigateSafely(RouVideoTagRoute(tag)) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { id -> navigator.navigateSafely(RouVideoVideoRoute(id)) },
+                onNavigateToTag = { tag -> navigator.navigateSafely(RouVideoTagRoute(tag)) },
             )
         }
 
-        composable<RouVideoCategoriesRoute> {
+        screen<RouVideoCategoriesRoute> {
             RouVideoCategoriesScreen(
-                onBack = { navController.popBackStackSafely() },
-                onOpenTag = { tag -> navController.navigateSafely(RouVideoTagRoute(tag)) },
-                onSearch = { text -> navController.navigateSafely(RouVideoSearchRoute(text)) },
+                onBack = { navigator.goBack() },
+                onOpenTag = { tag -> navigator.navigateSafely(RouVideoTagRoute(tag)) },
+                onSearch = { text -> navigator.navigateSafely(RouVideoSearchRoute(text)) },
             )
         }
 
-        composable<RouVideoHistoryRoute> {
+        screen<RouVideoHistoryRoute> {
             RouVideoHistoryScreen(
-                onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
-                onBack = { navController.popBackStackSafely() },
+                onNavigateToVideo = { id -> navigator.navigateSafely(RouVideoVideoRoute(id)) },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.ROUVIDEO,
-            config = { rouVideoHubConfig(navController, activity) },
+            config = { rouVideoHubConfig(navigator, activity) },
         )
 
-        composable<RouVideoAccountRoute> {
+        screen<RouVideoAccountRoute> {
             RouVideoAccountScreen(
-                onBack = { navController.popBackStackSafely() },
-                onOpenLibrary = { tab -> navController.navigateSafely(RouVideoLibraryRoute(tab.name)) },
-                onEditProfile = { navController.navigateSafely(RouVideoProfileEditRoute) },
+                onBack = { navigator.goBack() },
+                onOpenLibrary = { tab -> navigator.navigateSafely(RouVideoLibraryRoute(tab.name)) },
+                onEditProfile = { navigator.navigateSafely(RouVideoProfileEditRoute) },
             )
         }
 
-        composable<RouVideoProfileEditRoute> {
-            RouVideoProfileEditScreen(onBack = { navController.popBackStackSafely() })
+        screen<RouVideoProfileEditRoute> {
+            RouVideoProfileEditScreen(onBack = { navigator.goBack() })
         }
 
-        composable<RouVideoLibraryRoute> {
-            val route = it.toRoute<RouVideoLibraryRoute>()
+        screen<RouVideoLibraryRoute> {
+            val route = it
             RouVideoLibraryScreen(
                 initialTab = runCatching { RouVideoLibraryTab.valueOf(route.tab) }
                     .getOrDefault(RouVideoLibraryTab.FOLLOWS),
-                onBack = { navController.popBackStackSafely() },
-                onNavigateToVideo = { id -> navController.navigateSafely(RouVideoVideoRoute(id)) },
+                onBack = { navigator.goBack() },
+                onNavigateToVideo = { id -> navigator.navigateSafely(RouVideoVideoRoute(id)) },
             )
         }
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

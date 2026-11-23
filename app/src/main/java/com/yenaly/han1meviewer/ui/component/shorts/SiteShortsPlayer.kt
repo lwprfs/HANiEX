@@ -129,23 +129,16 @@ import kotlinx.coroutines.withTimeoutOrNull
 
 private var rememberedMuted = false
 
-/** Longest the player waits for metadata (stream URL) of the active short before using the raw URL. */
 private const val META_WAIT_MS = 8_000L
 private const val FIRST_FRAME_FADE_MS = 180
 private const val PROGRESS_TICK_MS = 100L
 
-/**
- * Everything that belongs to exactly one short. A fresh instance is created *during composition*
- * whenever the active short id changes, so cover/progress/subtitle/error/loading state of the
- * previous item can never be shown for the new one.
- */
 @Stable
 private class ShortItemState(val id: String?) {
-    /** The player really holds media for this short (prepare() has been called). */
+
     var loaded by mutableStateOf(false)
     var failed by mutableStateOf(false)
 
-    /** First video frame of this short was rendered. */
     var rendered by mutableStateOf(false)
     var videoRatio by mutableFloatStateOf(0f)
     var progress by mutableFloatStateOf(0f)
@@ -153,7 +146,6 @@ private class ShortItemState(val id: String?) {
     var exoState by mutableIntStateOf(Player.STATE_IDLE)
     var isPlaying by mutableStateOf(false)
 
-    /** User tapped pause while the stream was still being resolved. */
     var userPaused = false
 }
 
@@ -226,7 +218,6 @@ fun SiteShortsPlayer(
     val handledRetries = remember { HashMap<String, Int>() }
     val flags = remember { ShortsSessionFlags() }
 
-    // Identity of the active short. All per-item state hangs off this and resets synchronously.
     val activeId = shorts.getOrNull(pagerState.currentPage)?.id
     val itemState = remember(activeId) { ShortItemState(activeId) }
     val itemStateRef = rememberUpdatedState(itemState)
@@ -256,8 +247,7 @@ fun SiteShortsPlayer(
     }
 
     DisposableEffect(player) {
-        // Events are only applied while the active item owns the player (loaded == true), so
-        // callbacks that belong to a previous item cannot touch the new item's state.
+
         val listener = object : Player.Listener {
             private fun active(): ShortItemState? = itemStateRef.value.takeIf { it.loaded }
 
@@ -335,7 +325,6 @@ fun SiteShortsPlayer(
         player.volume = if (muted) 0f else 1f
     }
 
-    // Progress ticker: only runs while the active item is really playing.
     LaunchedEffect(itemState, itemState.isPlaying, itemState.loaded) {
         val st = itemState
         fun update() {
@@ -355,7 +344,7 @@ fun SiteShortsPlayer(
         val batch = currentItems.drop(from).take(6)
             .filter { it.id !in metas && it.id !in attempted && it.id !in inflight }
         if (batch.isEmpty()) return
-        // Not tied to the page effect, so a quick swipe does not cancel it and strand the ids.
+
         val job = scope.launch(start = CoroutineStart.LAZY) {
             try {
                 source.loadMetas(batch).onSuccess {
@@ -370,7 +359,6 @@ fun SiteShortsPlayer(
         job.start()
     }
 
-    // Load / (re)prepare the active short. Keyed by identity, subtitle choice and per-item retry.
     val retryNonce = activeId?.let { retryTokens[it] } ?: 0
     LaunchedEffect(activeId, subtitleLang, retryNonce) {
         val id = activeId ?: return@LaunchedEffect
@@ -383,11 +371,11 @@ fun SiteShortsPlayer(
         val resumeAt: Long
         var play: Boolean
         if (sameMedia) {
-            // Subtitle change: keep position and the user's play/pause intent.
+
             resumeAt = player.currentPosition
             play = player.playWhenReady
         } else {
-            // New item or retry: detach the old media synchronously, before any async work.
+
             player.pause()
             player.stop()
             player.clearMediaItems()
@@ -411,7 +399,7 @@ fun SiteShortsPlayer(
 
         val idx = currentItems.indexOfFirst { it.id == id }
         if (retryNonce > (handledRetries[id] ?: 0)) {
-            // Manual retry: also refresh metadata once, the stream URL may have expired.
+
             handledRetries[id] = retryNonce
             attempted.remove(id)
             withTimeoutOrNull(META_WAIT_MS) {
@@ -464,13 +452,12 @@ fun SiteShortsPlayer(
         player.playWhenReady = play
         player.prepare()
         if (resumeAt > 0) player.seekTo(resumeAt)
-        // Events fired synchronously by the calls above were ignored (loaded == false); sync now.
+
         st.exoState = player.playbackState
         st.isPlaying = player.isPlaying
         st.loaded = true
     }
 
-    // Warm the cover cache for neighbours only; bounded to +1, -1 and +2.
     val coverLoader = remember(imageLoader) { imageLoader ?: SingletonImageLoader.get(context) }
     val prefetchedCovers = remember { HashSet<String>() }
     LaunchedEffect(activeId) {
@@ -714,7 +701,6 @@ fun SiteShortsPlayer(
         val dialogView = LocalView.current
         val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
 
-        // Make the dialog window cover the whole display so every page gets the full viewport.
         DisposableEffect(dialogWindow) {
             dialogWindow?.let { w ->
                 w.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
@@ -767,8 +753,7 @@ fun SiteShortsPlayer(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize(),
                 pageSize = PageSize.Fill,
-                // Neighbour pages compose only their cover and chrome (never a video surface), so
-                // the incoming cover is already on screen when the swipe starts.
+
                 beyondViewportPageCount = 1,
                 key = { index -> shorts.getOrNull(index)?.id ?: index },
                 flingBehavior = fling,
@@ -788,7 +773,7 @@ fun SiteShortsPlayer(
                     Modifier.fillMaxSize().background(Color.Black),
                     contentAlignment = Alignment.Center,
                 ) {
-                    // Every page owns its cover; it stays until its own first frame is rendered.
+
                     if (short.coverUrl.isNotBlank()) {
                         RetryableImage(
                             model = short.coverUrl,
@@ -843,8 +828,7 @@ fun SiteShortsPlayer(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            // The surface is attached only while the player holds THIS item's media,
-                            // so a previous video's last frame can never be drawn into this page.
+
                             if (st.loaded) {
                                 AndroidView(
                                     modifier = (if (st.videoRatio > 0f) {
@@ -1123,7 +1107,7 @@ fun SiteShortsPlayer(
                     .navigationBarsPadding().height(2.dp)
                     .background(Color.White.copy(alpha = 0.18f)),
             ) {
-                // Read inside graphicsLayer so ticks invalidate only this layer, not composition.
+
                 Box(
                     Modifier.fillMaxHeight().fillMaxWidth()
                         .graphicsLayer {

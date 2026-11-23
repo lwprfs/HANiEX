@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.FullVideos.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HighQuality
@@ -11,12 +14,10 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.FullVideos.common.FullVideosConstants
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -24,10 +25,10 @@ import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
-fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
+fun fullVideosHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(
         site = SiteType.FULLVIDEOS,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = FullVideosSettingsHubRoute,
         subscriptionSections = listOf(
@@ -39,7 +40,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                         title = "Latest",
                         icon = Icons.Filled.NewReleases,
                         onClick = {
-                            navController.navigateSafely(FullVideosListRoute("Latest", "/latest-updates"))
+                            navigator.navigateSafely(FullVideosListRoute("Latest", "/latest-updates"))
                         },
                     ),
                     SiteHubEntry(
@@ -47,7 +48,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                         title = "Top Rated",
                         icon = Icons.Filled.Star,
                         onClick = {
-                            navController.navigateSafely(FullVideosListRoute("Top Rated", "/top-rated"))
+                            navigator.navigateSafely(FullVideosListRoute("Top Rated", "/top-rated"))
                         },
                     ),
                     SiteHubEntry(
@@ -55,7 +56,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                         title = "Most Viewed",
                         icon = Icons.Filled.Visibility,
                         onClick = {
-                            navController.navigateSafely(FullVideosListRoute("Most Viewed", "/most-popular"))
+                            navigator.navigateSafely(FullVideosListRoute("Most Viewed", "/most-popular"))
                         },
                     ),
                     SiteHubEntry(
@@ -63,7 +64,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                         title = stringResource(R.string.fullvideos_categories),
                         icon = Icons.Filled.Category,
                         onClick = {
-                            navController.navigateSafely(FullVideosBrowseRoute(FullVideosConstants.EntityKind.CATEGORIES.key))
+                            navigator.navigateSafely(FullVideosBrowseRoute(FullVideosConstants.EntityKind.CATEGORIES.key))
                         },
                     ),
                     SiteHubEntry(
@@ -71,7 +72,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                         title = stringResource(R.string.fullvideos_models),
                         icon = Icons.Filled.People,
                         onClick = {
-                            navController.navigateSafely(FullVideosBrowseRoute(FullVideosConstants.EntityKind.MODELS.key))
+                            navigator.navigateSafely(FullVideosBrowseRoute(FullVideosConstants.EntityKind.MODELS.key))
                         },
                     ),
                     SiteHubEntry(
@@ -79,7 +80,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                         title = stringResource(R.string.fullvideos_sites),
                         icon = Icons.Filled.Language,
                         onClick = {
-                            navController.navigateSafely(FullVideosBrowseRoute(FullVideosConstants.EntityKind.SITES.key))
+                            navigator.navigateSafely(FullVideosBrowseRoute(FullVideosConstants.EntityKind.SITES.key))
                         },
                     ),
                 ),
@@ -91,7 +92,7 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                 title = stringResource(R.string.fullvideos_history_title),
                 subtitle = stringResource(R.string.fullvideos_history_summary),
                 icon = Icons.Filled.History,
-                onClick = { navController.navigateSafely(FullVideosHistoryRoute) },
+                onClick = { navigator.navigateSafely(FullVideosHistoryRoute) },
             ),
         ),
         customizeEntries = listOf(
@@ -100,8 +101,8 @@ fun fullVideosHubConfig(navController: NavHostController, activity: MainActivity
                 title = stringResource(R.string.fullvideos_settings_playback_title),
                 subtitle = stringResource(R.string.fullvideos_settings_playback_summary),
                 icon = Icons.Filled.HighQuality,
-                onClick = { navController.navigateSafely(FullVideosSettingsRoute) },
+                onClick = { navigator.navigateSafely(FullVideosSettingsRoute) },
             ),
-            rememberPlayerSettingsEntry(navController, SiteType.FULLVIDEOS),
+            rememberPlayerSettingsEntry(navigator, SiteType.FULLVIDEOS),
         ),
     )

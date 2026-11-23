@@ -2,13 +2,9 @@ package com.yenaly.han1meviewer.ui.screen.main
 
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Subscriptions
-import com.yenaly.han1meviewer.ui.navigation.site.SITE_LIBRARY_ROUTE_NAME
-import com.yenaly.han1meviewer.ui.navigation.site.SITE_PROFILE_ROUTE_NAME
-import com.yenaly.han1meviewer.ui.navigation.site.SITE_SUBSCRIPTION_ROUTE_NAME
 import com.yenaly.han1meviewer.ui.navigation.site.SiteLibraryRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteSubscriptionRoute
-import com.yenaly.han1meviewer.ui.navigation.site.navigateSiteTopLevel
 import com.yenaly.han1meviewer.ui.screen.site.subscriptionTabIcon
 import com.yenaly.han1meviewer.ui.screen.site.subscriptionTabTitle
 import com.yenaly.han1meviewer.ui.screen.site.supportsSubscriptions
@@ -28,6 +24,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,17 +35,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.NavDestination.Companion.hasRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderHomeRoute
-import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavHomeRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHomeRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaHomeRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvHomeRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirHomeRoute
 import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
@@ -67,11 +53,10 @@ import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.Navigator
-import com.yenaly.han1meviewer.ui.navigation.rememberNavigationState
-import com.yenaly.han1meviewer.ui.navigation.main.ContentLibraryRoute
-import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
-import com.yenaly.han1meviewer.ui.navigation.main.ProfileRoute
-import com.yenaly.han1meviewer.ui.navigation.main.SubscriptionRoute
+import com.yenaly.han1meviewer.ui.navigation.SiteChromeVisibility
+import com.yenaly.han1meviewer.ui.navigation.isHanimeFamily
+import com.yenaly.han1meviewer.ui.navigation.rememberSiteNavigationState
+import com.yenaly.han1meviewer.ui.navigation.siteHomeKey
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.UnifiedMainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
@@ -85,7 +70,6 @@ import com.yenaly.han1meviewer.util.getUpdateIfExists
 import com.yenaly.han1meviewer.util.installApkPackage
 import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.logic.update.UpdateManager
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.UpdateSettingsRoute
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -102,7 +86,6 @@ fun MainActivityContent(
     onLogoutClick: () -> Unit,
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
-    onNavigateControllerReady: (NavHostController) -> Unit,
     onNavigatorReady: (Navigator) -> Unit,
     siteChangeKey: Long = 0L,
 ) {
@@ -112,26 +95,14 @@ fun MainActivityContent(
             activity.window.setBackgroundDrawable(windowBackground.toArgb().toDrawable())
         }
 
-        val composeNavController = rememberNavController()
-
-        // Navigation 3：Hanime / Javchu 主导航使用；其它站点仍使用上面的 NavController。
-        val navigationState = rememberNavigationState(
-            topLevelRoutes = setOf(
-                HomeRoute,
-                SubscriptionRoute,
-                ContentLibraryRoute,
-                ProfileRoute,
-            )
-        )
-        val appNavigator = remember { Navigator(navigationState) }
+        val activeSite = Preferences.siteType
+        val navigationState = key(activeSite, siteChangeKey) {
+            rememberSiteNavigationState(activeSite)
+        }
+        val appNavigator = remember(navigationState) { Navigator(navigationState) }
         LaunchedEffect(appNavigator) {
             onNavigatorReady(appNavigator)
-            NavigationManager.initializeNavigator(appNavigator)
-        }
-
-        LaunchedEffect(siteChangeKey) {
-            onNavigateControllerReady(composeNavController)
-            NavigationManager.initialize(composeNavController, Preferences.siteType)
+            NavigationManager.initializeNavigator(appNavigator, activeSite)
         }
 
         val scope = rememberCoroutineScope()
@@ -154,41 +125,14 @@ fun MainActivityContent(
         }
         val selectedTopLevelDestination = currentMainDestination.topLevelDestination
 
-        val isHanimeFamilySite = Preferences.siteType == SiteType.HANIME ||
-                Preferences.siteType == SiteType.JAVCHU
+        val isHanimeFamilySite = Preferences.siteType.isHanimeFamily()
 
-        val backStackEntry by composeNavController.currentBackStackEntryAsState()
         val currentSite = Preferences.siteType
-        val isAtSiteHome = remember(backStackEntry, currentSite) {
-            val d = backStackEntry?.destination
-            when (currentSite) {
-                SiteType.MISSAV -> d.isRoute("com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvHomeRoute")
-                SiteType.HENTAIMAMA -> d.isRoute("com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaHomeRoute")
-                SiteType.ONAIR -> d.isRoute("com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirHomeRoute")
-                SiteType.FAPFOLDER -> d.isRoute("com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderHomeRoute")
-                SiteType.SUPJAV -> d.isRoute("com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavHomeRoute")
-                SiteType.ROUVIDEO -> d.isRoute("com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHomeRoute")
-                SiteType.XHAMSTER -> d.isRoute("com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHomeRoute")
-                SiteType.BUONDUA -> d.isRoute("com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute")
-                SiteType.COSPLAYTELE -> d.isRoute("com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHomeRoute")
-                SiteType.COSER -> d.isRoute("com.yenaly.han1meviewer.Coser.ui.navigation.CoserHomeRoute")
-                SiteType.FULLVIDEOS -> d.isRoute("com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosHomeRoute")
-                SiteType.FUCKINGSESSION -> d.isRoute("com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionHomeRoute")
-                SiteType.REDGIFS -> d.isRoute("com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsHomeRoute")
-                SiteType.XXXTUBE -> d.isRoute("com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeHomeRoute")
-                SiteType.WUMAOBI -> d.isRoute("com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiHomeRoute")
-                else -> false
-            }
-        }
-        val atSubscription = remember(backStackEntry) {
-            backStackEntry?.destination.isRoute(SITE_SUBSCRIPTION_ROUTE_NAME)
-        }
-        val atLibrary = remember(backStackEntry) {
-            backStackEntry?.destination.isRoute(SITE_LIBRARY_ROUTE_NAME)
-        }
-        val atProfile = remember(backStackEntry) {
-            backStackEntry?.destination.isRoute(SITE_PROFILE_ROUTE_NAME)
-        }
+        val currentKey = navigationState.currentKey
+        val isAtSiteHome = !isHanimeFamilySite && currentKey == siteHomeKey(currentSite)
+        val atSubscription = currentKey == SiteSubscriptionRoute
+        val atLibrary = currentKey == SiteLibraryRoute
+        val atProfile = currentKey == SiteProfileRoute
 
         val siteNavItems: List<SiteNavItem>? = if (isHanimeFamilySite) null else buildList<SiteNavItem> {
             add(
@@ -207,7 +151,7 @@ fun MainActivityContent(
                         icon = currentSite.subscriptionTabIcon(),
                         title = currentSite.subscriptionTabTitle(),
                         selected = atSubscription,
-                        onClick = { composeNavController.navigateSiteTopLevel(SiteSubscriptionRoute) },
+                        onClick = { appNavigator.navigate(SiteSubscriptionRoute) },
                     ),
                 )
             }
@@ -217,7 +161,7 @@ fun MainActivityContent(
                     icon = Icons.Filled.VideoLibrary,
                     title = stringResource(R.string.content_library),
                     selected = atLibrary,
-                    onClick = { composeNavController.navigateSiteTopLevel(SiteLibraryRoute) },
+                    onClick = { appNavigator.navigate(SiteLibraryRoute) },
                 ),
             )
             add(
@@ -226,21 +170,14 @@ fun MainActivityContent(
                     icon = Icons.Filled.Person,
                     title = stringResource(R.string.my_account),
                     selected = atProfile,
-                    onClick = { composeNavController.navigateSiteTopLevel(SiteProfileRoute) },
+                    onClick = { appNavigator.navigate(SiteProfileRoute) },
                 ),
             )
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(appNavigator) {
             pendingNavigationRequests.collect { intent ->
-                // 在收集时读取当前站点（切站后不能沿用旧值）
-                val family = Preferences.siteType == SiteType.HANIME ||
-                        Preferences.siteType == SiteType.JAVCHU
-                if (family) {
-                    appNavigator.handleMainIntent(intent)
-                } else {
-                    composeNavController.handleMainIntent(intent)
-                }
+                appNavigator.handleMainIntent(intent)
             }
         }
 
@@ -275,18 +212,13 @@ fun MainActivityContent(
         MainActivityScaffold(
             selectedDestination = selectedTopLevelDestination,
             showNavigationSuite = if (isHanimeFamilySite) currentMainDestination.showNavigationSuite
-            else (isAtSiteHome || atSubscription || atLibrary || atProfile),
+            else (!SiteChromeVisibility.navigationSuiteSuppressed &&
+                    (isAtSiteHome || atSubscription || atLibrary || atProfile)),
             siteItems = siteNavItems,
             snackbarHostState = snackbarHostState,
             onDestinationSelected = { destination ->
                 if (isHanimeFamilySite) {
                     appNavigator.navigateTopLevelDestination(
-                        destination = destination,
-                        isLoggedIn = isLoggedIn,
-                        onRequireLogin = onRequireLogin,
-                    )
-                } else {
-                    composeNavController.navigateTopLevelDestination(
                         destination = destination,
                         isLoggedIn = isLoggedIn,
                         onRequireLogin = onRequireLogin,
@@ -297,7 +229,6 @@ fun MainActivityContent(
             Box(modifier = Modifier.fillMaxSize()) {
                 UnifiedMainNavHost(
                     activity = activity,
-                    navController = composeNavController,
                     navigator = appNavigator,
                     navigationState = navigationState,
                     isLoggedIn = isLoggedIn,
@@ -343,11 +274,7 @@ fun MainActivityContent(
                                     activity.requestPostNotificationPermission()
                                     UpdateManager.start(activity.applicationContext, latest)
                                 }
-                                if (isHanimeFamilySite) {
-                                    appNavigator.navigateSafely(UpdateSettingsRoute)
-                                } else {
-                                    composeNavController.navigateSafely(UpdateSettingsRoute)
-                                }
+                                appNavigator.navigateSafely(UpdateSettingsRoute)
                             }
                         },
                     )
@@ -402,9 +329,4 @@ fun MainActivityContent(
         GlobalDialogHost()
         GlobalToastHost()
     }
-}
-
-private fun androidx.navigation.NavDestination?.isRoute(serialName: String): Boolean {
-    val route = this?.route ?: return false
-    return route.substringBefore('/').substringBefore('?') == serialName
 }

@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.FuckingSession.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.HighQuality
@@ -8,11 +11,9 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -20,10 +21,10 @@ import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
-fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActivity): SiteHubConfig =
+fun fuckingSessionHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig =
     standardSiteHubConfig(
         site = SiteType.FUCKINGSESSION,
-        navController = navController,
+        navigator = navigator,
         activity = activity,
         siteSettingsRoute = FuckingSessionSettingsHubRoute,
         subscriptionSections = listOf(
@@ -35,7 +36,7 @@ fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActi
                         title = "HD Porn",
                         icon = Icons.Filled.HighQuality,
                         onClick = {
-                            navController.navigateSafely(FuckingSessionListRoute("HD Porn", "/category/hd-porn"))
+                            navigator.navigateSafely(FuckingSessionListRoute("HD Porn", "/category/hd-porn"))
                         },
                     ),
                     SiteHubEntry(
@@ -43,7 +44,7 @@ fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActi
                         title = "Anal",
                         icon = Icons.Filled.Category,
                         onClick = {
-                            navController.navigateSafely(FuckingSessionListRoute("Anal", "/category/anal"))
+                            navigator.navigateSafely(FuckingSessionListRoute("Anal", "/category/anal"))
                         },
                     ),
                     SiteHubEntry(
@@ -51,7 +52,7 @@ fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActi
                         title = "MILF",
                         icon = Icons.Filled.Star,
                         onClick = {
-                            navController.navigateSafely(FuckingSessionListRoute("MILF", "/category/milf"))
+                            navigator.navigateSafely(FuckingSessionListRoute("MILF", "/category/milf"))
                         },
                     ),
                     SiteHubEntry(
@@ -59,7 +60,7 @@ fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActi
                         title = "Asian Uncensored",
                         icon = Icons.Filled.Language,
                         onClick = {
-                            navController.navigateSafely(
+                            navigator.navigateSafely(
                                 FuckingSessionListRoute("Asian Uncensored", "/category/asian-uncensored")
                             )
                         },
@@ -73,7 +74,7 @@ fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActi
                 title = stringResource(R.string.fuckingsession_history_title),
                 subtitle = stringResource(R.string.fuckingsession_history_summary),
                 icon = Icons.Filled.History,
-                onClick = { navController.navigateSafely(FuckingSessionHistoryRoute) },
+                onClick = { navigator.navigateSafely(FuckingSessionHistoryRoute) },
             ),
         ),
         customizeEntries = listOf(
@@ -82,8 +83,8 @@ fun fuckingSessionHubConfig(navController: NavHostController, activity: MainActi
                 title = stringResource(R.string.fuckingsession_settings_playback_title),
                 subtitle = stringResource(R.string.fuckingsession_settings_playback_summary),
                 icon = Icons.Filled.HighQuality,
-                onClick = { navController.navigateSafely(FuckingSessionSettingsRoute) },
+                onClick = { navigator.navigateSafely(FuckingSessionSettingsRoute) },
             ),
-            rememberPlayerSettingsEntry(navController, SiteType.FUCKINGSESSION),
+            rememberPlayerSettingsEntry(navigator, SiteType.FUCKINGSESSION),
         ),
     )

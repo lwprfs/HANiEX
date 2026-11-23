@@ -43,12 +43,6 @@ data class PlayerUiState(
 
     val hasMedia: Boolean = false,
 
-    /**
-     * 总时长（ms），未知为 0。
-     *
-     * 由预加载在起播前回填，供底栏时长/进度条分母在起播前展示；
-     * 起播后以 [PlayerProgress.durationMs] 为准。
-     */
     val durationMs: Long = 0L,
 )
 

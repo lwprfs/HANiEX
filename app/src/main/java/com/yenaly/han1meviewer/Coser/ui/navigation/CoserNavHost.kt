@@ -1,5 +1,14 @@
 package com.yenaly.han1meviewer.Coser.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -11,10 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.Coser.data.model.CoserTerm
 import com.yenaly.han1meviewer.Coser.ui.history.CoserHistoryScreen
 import com.yenaly.han1meviewer.Coser.ui.home.CoserHomeScreen
@@ -28,83 +33,72 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object CoserHomeRoute
+object CoserHomeRoute : NavKey
 
 @Serializable
-object CoserSettingsHubRoute
+object CoserSettingsHubRoute : NavKey
 
 @Serializable
-data class CoserSearchRoute(val query: String? = null)
+data class CoserSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class CoserPostRoute(val slug: String, val resumePosition: Long = 0L)
+data class CoserPostRoute(val slug: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-data class CoserPhotosRoute(val slug: String)
+data class CoserPhotosRoute(val slug: String) : NavKey
 
 @Serializable
 data class CoserListRoute(
     val path: String,
     val title: String,
     val collectTerms: Boolean = false,
-)
+) : NavKey
 
 @Serializable
-object CoserHistoryRoute
+object CoserHistoryRoute : NavKey
 
 @Serializable
-object CoserSettingsRoute
+object CoserSettingsRoute : NavKey
 
 fun CoserTerm.toListRoute() = CoserListRoute(path = path, title = name)
 
 @Composable
 fun CoserNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.COSER)
-    }
 
-    val openPost: (String) -> Unit = { navController.navigateSafely(CoserPostRoute(it)) }
-    val openTerm: (CoserTerm) -> Unit = { navController.navigateSafely(it.toListRoute()) }
+    val openPost: (String) -> Unit = { navigator.navigateSafely(CoserPostRoute(it)) }
+    val openTerm: (CoserTerm) -> Unit = { navigator.navigateSafely(it.toListRoute()) }
 
-    NavHost(
-        navController = navController,
-        startDestination = CoserHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<CoserHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<CoserHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 CoserHomeScreen(
                     onNavigateToPost = openPost,
-                    onNavigateToSearch = { navController.navigateSafely(CoserSearchRoute(it)) },
-                    onNavigateToHistory = { navController.navigateSafely(CoserHistoryRoute) },
+                    onNavigateToSearch = { navigator.navigateSafely(CoserSearchRoute(it)) },
+                    onNavigateToHistory = { navigator.navigateSafely(CoserHistoryRoute) },
                     onNavigateToTerm = openTerm,
                 )
             }
         }
 
-        composable<CoserSettingsHubRoute> {
+        screen<CoserSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.COSER,
                 onResetSite = { com.yenaly.han1meviewer.Coser.common.CoserSettings.resetToDefaults() },
@@ -114,87 +108,94 @@ fun CoserNavHost(
                         title = stringResource(R.string.coser_settings_title),
                         subtitle = stringResource(R.string.coser_settings_summary),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(CoserSettingsRoute) },
+                        onClick = { navigator.navigateSafely(CoserSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.coser_history_title),
                         subtitle = stringResource(R.string.coser_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(CoserHistoryRoute) },
+                        onClick = { navigator.navigateSafely(CoserHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.COSER.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.COSER.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<CoserSettingsRoute> {
-            CoserSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<CoserSettingsRoute> {
+            CoserSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<CoserSearchRoute> {
-            val route = it.toRoute<CoserSearchRoute>()
+        screen<CoserSearchRoute> {
+            val route = it
             CoserSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
             )
         }
 
-        composable<CoserListRoute> {
-            val route = it.toRoute<CoserListRoute>()
+        screen<CoserListRoute> {
+            val route = it
             CoserListScreen(
                 path = route.path,
                 title = route.title,
                 collectTerms = route.collectTerms,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
             )
         }
 
-        composable<CoserPostRoute> {
-            val route = it.toRoute<CoserPostRoute>()
+        screen<CoserPostRoute> {
+            val route = it
             CoserPostScreen(
                 slug = route.slug,
                 resumePosition = route.resumePosition,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
-                onOpenPhotos = { navController.navigateSafely(CoserPhotosRoute(route.slug)) },
+                onOpenPhotos = { navigator.navigateSafely(CoserPhotosRoute(route.slug)) },
             )
         }
 
-        composable<CoserPhotosRoute> {
-            val route = it.toRoute<CoserPhotosRoute>()
+        screen<CoserPhotosRoute> {
+            val route = it
             CoserPhotosScreen(
                 slug = route.slug,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<CoserHistoryRoute> {
+        screen<CoserHistoryRoute> {
             CoserHistoryScreen(
                 onNavigateToPost = openPost,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.COSER,
-            config = { coserHubConfig(navController, activity) },
+            config = { coserHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

@@ -15,7 +15,6 @@ import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterCategoryRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterProfileRoute
 import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterTagShortsRoute
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterMomentsRepo
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterRepo
@@ -178,7 +177,7 @@ fun XHamsterShortsPlayer(
 
     val openTag: (SiteShortTag) -> Unit = { tag ->
         onDismiss()
-        NavigationManager.getNavController()?.let { nav ->
+        NavigationManager.getNavigator()?.let { nav ->
             when (tag.kind) {
                 SiteShortTag.Kind.PERSON, SiteShortTag.Kind.CHANNEL ->
                     nav.navigateSafely(XHamsterProfileRoute(tag.path, tag.name))
@@ -191,7 +190,7 @@ fun XHamsterShortsPlayer(
         val path = owner.path
         if (path != null) {
             onDismiss()
-            NavigationManager.getNavController()?.let { nav ->
+            NavigationManager.getNavigator()?.let { nav ->
                 val isProfile = path.startsWith("/users/") || path.startsWith("/creators/") ||
                         path.startsWith("/pornstars/") || path.startsWith("/channels/")
                 if (isProfile) nav.navigateSafely(XHamsterProfileRoute(path, owner.name))

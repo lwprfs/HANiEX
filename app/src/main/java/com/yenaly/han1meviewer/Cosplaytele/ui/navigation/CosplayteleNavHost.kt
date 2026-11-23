@@ -1,5 +1,14 @@
 package com.yenaly.han1meviewer.Cosplaytele.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -11,10 +20,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.Cosplaytele.data.model.CosplayteleTerm
 import com.yenaly.han1meviewer.Cosplaytele.ui.history.CosplayteleHistoryScreen
 import com.yenaly.han1meviewer.Cosplaytele.ui.home.CosplayteleHomeScreen
@@ -28,83 +33,72 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object CosplayteleHomeRoute
+object CosplayteleHomeRoute : NavKey
 
 @Serializable
-object CosplayteleSettingsHubRoute
+object CosplayteleSettingsHubRoute : NavKey
 
 @Serializable
-data class CosplayteleSearchRoute(val query: String? = null)
+data class CosplayteleSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class CosplaytelePostRoute(val slug: String, val resumePosition: Long = 0L)
+data class CosplaytelePostRoute(val slug: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-data class CosplaytelePhotosRoute(val slug: String)
+data class CosplaytelePhotosRoute(val slug: String) : NavKey
 
 @Serializable
 data class CosplayteleListRoute(
     val path: String,
     val title: String,
     val collectTerms: Boolean = false,
-)
+) : NavKey
 
 @Serializable
-object CosplayteleHistoryRoute
+object CosplayteleHistoryRoute : NavKey
 
 @Serializable
-object CosplayteleSettingsRoute
+object CosplayteleSettingsRoute : NavKey
 
 fun CosplayteleTerm.toListRoute() = CosplayteleListRoute(path = path, title = name)
 
 @Composable
 fun CosplayteleNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.COSPLAYTELE)
-    }
 
-    val openPost: (String) -> Unit = { navController.navigateSafely(CosplaytelePostRoute(it)) }
-    val openTerm: (CosplayteleTerm) -> Unit = { navController.navigateSafely(it.toListRoute()) }
+    val openPost: (String) -> Unit = { navigator.navigateSafely(CosplaytelePostRoute(it)) }
+    val openTerm: (CosplayteleTerm) -> Unit = { navigator.navigateSafely(it.toListRoute()) }
 
-    NavHost(
-        navController = navController,
-        startDestination = CosplayteleHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<CosplayteleHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<CosplayteleHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 CosplayteleHomeScreen(
                     onNavigateToPost = openPost,
-                    onNavigateToSearch = { navController.navigateSafely(CosplayteleSearchRoute(it)) },
-                    onNavigateToHistory = { navController.navigateSafely(CosplayteleHistoryRoute) },
+                    onNavigateToSearch = { navigator.navigateSafely(CosplayteleSearchRoute(it)) },
+                    onNavigateToHistory = { navigator.navigateSafely(CosplayteleHistoryRoute) },
                     onNavigateToTerm = openTerm,
                 )
             }
         }
 
-        composable<CosplayteleSettingsHubRoute> {
+        screen<CosplayteleSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.COSPLAYTELE,
                 onResetSite = { com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleSettings.resetToDefaults() },
@@ -114,87 +108,94 @@ fun CosplayteleNavHost(
                         title = stringResource(R.string.cosplaytele_settings_title),
                         subtitle = stringResource(R.string.cosplaytele_settings_summary),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(CosplayteleSettingsRoute) },
+                        onClick = { navigator.navigateSafely(CosplayteleSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.cosplaytele_history_title),
                         subtitle = stringResource(R.string.cosplaytele_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(CosplayteleHistoryRoute) },
+                        onClick = { navigator.navigateSafely(CosplayteleHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.COSPLAYTELE.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.COSPLAYTELE.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<CosplayteleSettingsRoute> {
-            CosplayteleSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<CosplayteleSettingsRoute> {
+            CosplayteleSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<CosplayteleSearchRoute> {
-            val route = it.toRoute<CosplayteleSearchRoute>()
+        screen<CosplayteleSearchRoute> {
+            val route = it
             CosplayteleSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
             )
         }
 
-        composable<CosplayteleListRoute> {
-            val route = it.toRoute<CosplayteleListRoute>()
+        screen<CosplayteleListRoute> {
+            val route = it
             CosplayteleListScreen(
                 path = route.path,
                 title = route.title,
                 collectTerms = route.collectTerms,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
             )
         }
 
-        composable<CosplaytelePostRoute> {
-            val route = it.toRoute<CosplaytelePostRoute>()
+        screen<CosplaytelePostRoute> {
+            val route = it
             CosplaytellePostScreen(
                 slug = route.slug,
                 resumePosition = route.resumePosition,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
-                onOpenPhotos = { navController.navigateSafely(CosplaytelePhotosRoute(route.slug)) },
+                onOpenPhotos = { navigator.navigateSafely(CosplaytelePhotosRoute(route.slug)) },
             )
         }
 
-        composable<CosplaytelePhotosRoute> {
-            val route = it.toRoute<CosplaytelePhotosRoute>()
+        screen<CosplaytelePhotosRoute> {
+            val route = it
             CosplaytellePhotosScreen(
                 slug = route.slug,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        composable<CosplayteleHistoryRoute> {
+        screen<CosplayteleHistoryRoute> {
             CosplayteleHistoryScreen(
                 onNavigateToPost = openPost,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.COSPLAYTELE,
-            config = { cosplayteleHubConfig(navController, activity) },
+            config = { cosplayteleHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

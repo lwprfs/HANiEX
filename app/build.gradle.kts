@@ -179,14 +179,13 @@ dependencies {
     implementation(libs.androidx.ui)
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.compose.ui.ui.tooling)
-    implementation(libs.androidx.navigation.compose)
-    // Navigation 3: Hanime/Javchu main graph (other sites stay on Navigation 2)
+    // Navigation 3: every site (Hanime/Javchu and all other sites)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     // PredictiveBackSanitizer overrides NavigationEventInput.onHasEnabledBackHandlersChanged and
     // uses LocalNavigationEventDispatcherOwner; both need navigationevent >= 1.2.0-alpha04, newer
-    // than the version navigation-compose pulls in transitively.
+    // than the version older navigation artifacts pulled in transitively.
     implementation("androidx.navigationevent:navigationevent-compose:1.2.0")
     implementation(libs.androidx.material.icons.core)
     implementation(libs.coil.compose)

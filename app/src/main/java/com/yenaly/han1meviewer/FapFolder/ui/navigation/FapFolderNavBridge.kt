@@ -1,8 +1,9 @@
 package com.yenaly.han1meviewer.FapFolder.ui.navigation
 
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+
 import android.util.Log
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.FapFolder.FapFolderSiteType
 
 object FapFolderNavBridge {
@@ -10,154 +11,146 @@ object FapFolderNavBridge {
     private const val TAG = "FapFolderNavBridge"
 
     @Volatile
-    private var currentNavController: NavHostController? = null
+    private var currentNavigator: Navigator? = null
 
     @Volatile
     private var isActive: Boolean = false
 
-    fun attach(navController: NavHostController) {
-        currentNavController = navController
+    fun attach(navigator: Navigator) {
+        currentNavigator = navigator
         isActive = true
-        Log.d(TAG, "attach: navController bound")
+        Log.d(TAG, "attach: navigator bound")
     }
 
     fun detach() {
-        currentNavController = null
+        currentNavigator = null
         isActive = false
-        Log.d(TAG, "detach: navController released")
+        Log.d(TAG, "detach: navigator released")
     }
 
-    fun isActive(): Boolean = isActive && currentNavController != null
+    fun isActive(): Boolean = isActive && currentNavigator != null
 
     fun navigateToHome() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderHomeRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderHomeRoute)
         }.onFailure { Log.w(TAG, "navigateToHome failed: ${it.message}") }
     }
 
     fun navigateToPost(slugOrId: String, autoPlay: Boolean = false) {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         if (slugOrId.isBlank()) return
         runCatching {
-            nav.navigate(FapFolderPostRoute(slugOrId = slugOrId, autoPlay = autoPlay)) {
-                launchSingleTop = true
-            }
+            nav.navigateSingleTop(FapFolderPostRoute(slugOrId = slugOrId, autoPlay = autoPlay))
         }.onFailure { Log.w(TAG, "navigateToPost failed: ${it.message}") }
     }
 
     fun navigateToSearch(query: String?, isHashtag: Boolean = false) {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(
+            nav.navigateSingleTop(
                 FapFolderSearchRoute(
                     query = query,
                     isHashtag = isHashtag,
                 )
-            ) { launchSingleTop = true }
+            )
         }.onFailure { Log.w(TAG, "navigateToSearch failed: ${it.message}") }
     }
 
     fun navigateToSearchHistory() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderSearchHistoryRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderSearchHistoryRoute)
         }.onFailure { Log.w(TAG, "navigateToSearchHistory failed: ${it.message}") }
     }
 
     fun navigateToHashtag(tag: String) {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         if (tag.isBlank()) return
         runCatching {
-            nav.navigate(FapFolderHashtagRoute(tag = tag.removePrefix("#"))) {
-                launchSingleTop = true
-            }
+            nav.navigateSingleTop(FapFolderHashtagRoute(tag = tag.removePrefix("#")))
         }.onFailure { Log.w(TAG, "navigateToHashtag failed: ${it.message}") }
     }
 
     fun navigateToGroup(slug: String, tab: String = "posts") {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         if (slug.isBlank()) return
         runCatching {
-            nav.navigate(FapFolderGroupRoute(slug = slug, tab = tab)) {
-                launchSingleTop = true
-            }
+            nav.navigateSingleTop(FapFolderGroupRoute(slug = slug, tab = tab))
         }.onFailure { Log.w(TAG, "navigateToGroup failed: ${it.message}") }
     }
 
     fun navigateToProfile(username: String, tab: String = "posts") {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         if (username.isBlank()) return
         runCatching {
-            nav.navigate(FapFolderProfileRoute(username = username, tab = tab)) {
-                launchSingleTop = true
-            }
+            nav.navigateSingleTop(FapFolderProfileRoute(username = username, tab = tab))
         }.onFailure { Log.w(TAG, "navigateToProfile failed: ${it.message}") }
     }
 
     fun navigateToAlbum(albumId: String) {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         if (albumId.isBlank()) return
         runCatching {
-            nav.navigate(FapFolderAlbumRoute(albumId = albumId)) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderAlbumRoute(albumId = albumId))
         }.onFailure { Log.w(TAG, "navigateToAlbum failed: ${it.message}") }
     }
 
     fun navigateToSettings() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderSettingsRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderSettingsRoute)
         }.onFailure { Log.w(TAG, "navigateToSettings failed: ${it.message}") }
     }
 
     fun navigateToHistory() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderHistoryRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderHistoryRoute)
         }.onFailure { Log.w(TAG, "navigateToHistory failed: ${it.message}") }
     }
 
     fun navigateToSaved() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderSavedRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderSavedRoute)
         }.onFailure { Log.w(TAG, "navigateToSaved failed: ${it.message}") }
     }
 
     fun navigateToFollowedCommunities() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderFollowedCommunitiesRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderFollowedCommunitiesRoute)
         }.onFailure { Log.w(TAG, "navigateToFollowedCommunities failed: ${it.message}") }
     }
 
     fun navigateToCookies() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderCookiesRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderCookiesRoute)
         }.onFailure { Log.w(TAG, "navigateToCookies failed: ${it.message}") }
     }
 
     fun navigateToLogin() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderLoginRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderLoginRoute)
         }.onFailure { Log.w(TAG, "navigateToLogin failed: ${it.message}") }
     }
 
     fun navigateToGate() {
-        val nav = currentNavController ?: return
+        val nav = currentNavigator ?: return
         runCatching {
-            nav.navigate(FapFolderGateRoute) { launchSingleTop = true }
+            nav.navigateSingleTop(FapFolderGateRoute)
         }.onFailure { Log.w(TAG, "navigateToGate failed: ${it.message}") }
     }
 
     fun popBackStack(): Boolean {
-        val nav = currentNavController ?: return false
-        return runCatching { nav.popBackStackSafely() }.getOrDefault(false)
+        val nav = currentNavigator ?: return false
+        return runCatching { nav.goBack() }.getOrDefault(false)
     }
 
-    fun isOnAnyRoute(): Boolean = currentNavController?.currentBackStackEntry != null
+    fun isOnAnyRoute(): Boolean = currentNavigator != null
 
     val siteHostname: String get() = FapFolderSiteType.defaultHostname()
     val siteBaseUrl: String get() = FapFolderSiteType.baseUrl()

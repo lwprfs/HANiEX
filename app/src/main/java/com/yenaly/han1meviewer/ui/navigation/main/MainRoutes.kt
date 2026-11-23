@@ -1,7 +1,5 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
-import androidx.navigation.NavDestination
-import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
@@ -239,12 +237,6 @@ enum class MainDestinationSpec(
     );
 
     companion object {
-        /** Navigation 2 路径（其它站点的 NavHost 仍在使用）。 */
-        fun fromDestination(destination: NavDestination?): MainDestinationSpec? {
-            if (destination == null) return null
-            return entries.firstOrNull { destination.hasRoute(it.routeClass) }
-        }
-
         fun fromKey(key: Any?): MainDestinationSpec? {
             if (key == null) return null
             return entries.firstOrNull { it.routeClass.isInstance(key) }

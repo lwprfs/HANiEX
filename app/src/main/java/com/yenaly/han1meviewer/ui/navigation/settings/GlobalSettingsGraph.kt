@@ -1,12 +1,10 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
+import com.yenaly.han1meviewer.ui.navigation.Navigator
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRouteScreen
@@ -14,8 +12,7 @@ import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRouteScreen
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
+import com.yenaly.han1meviewer.ui.navigation.screen
 import com.yenaly.han1meviewer.ui.screen.history.UnifiedHistoryScreen
 import com.yenaly.han1meviewer.ui.screen.library.GifDownloadsScreen
 import com.yenaly.han1meviewer.ui.screen.library.ImageDownloadsScreen
@@ -34,73 +31,73 @@ object ImageDownloadsRoute : NavKey
 @Serializable
 object GifDownloadsRoute : NavKey
 
-fun NavGraphBuilder.registerGlobalSettingsRoutes(
+fun EntryProviderScope<NavKey>.globalSettingsEntries(
     activity: MainActivity,
-    navController: NavHostController,
-    homeFallback: Any,
+    navigator: Navigator,
+    homeFallback: NavKey,
 ) {
     val openHanimeVideo: (String) -> Unit = { code ->
         activity.requestCrossSiteOpen(PendingVideoOpen(site = SiteType.HANIME, videoCode = code))
     }
 
-    registerSettingsRoutes(
+    settingsEntries(
         activity = activity,
-        navController = navController,
+        navigator = navigator,
         homeFallback = homeFallback,
         onOpenVideo = openHanimeVideo,
     )
-    registerUnifiedHistoryRoute(activity, navController)
+    unifiedHistoryEntries(activity, navigator)
 
-    composable<DailyCheckInRoute> {
+    screen<DailyCheckInRoute> {
         DailyCheckInRouteScreen(
             activity = activity,
-            onBack = { navController.popBackStackSafely() },
+            onBack = { navigator.goBack() },
             onNavigateToVideo = openHanimeVideo,
         )
     }
 
-    composable<GifDownloadsRoute> {
-        GifDownloadsScreen(onBack = { navController.popBackStackSafely() })
+    screen<GifDownloadsRoute> {
+        GifDownloadsScreen(onBack = { navigator.goBack() })
     }
 
-    composable<ImageDownloadsRoute> {
+    screen<ImageDownloadsRoute> {
         ImageDownloadsScreen(
-            onBack = { navController.popBackStackSafely() },
+            onBack = { navigator.goBack() },
         )
     }
 
-    composable<DownloadRoute> {
+    screen<DownloadRoute> {
         DownloadRouteScreen(
-            onBack = { navController.popBackStackSafely() },
+            onBack = { navigator.goBack() },
             onNavigateToVideo = openHanimeVideo,
             onNavigateToLocalVideo = { code, uri ->
-                navController.navigateSafely(VideoRoute(code, uri))
+                navigator.navigateSafely(VideoRoute(code, uri))
             },
         )
     }
 
-    composable<VideoRoute> {
+    screen<VideoRoute> { key ->
         VideoRouteScreen(
             activity = activity,
-            route = it.toRoute(),
+            route = key,
         )
     }
 }
 
-fun NavGraphBuilder.registerUnifiedHistoryRoute(
+fun EntryProviderScope<NavKey>.unifiedHistoryEntries(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
 ) {
-    composable<UnifiedHistoryRoute> {
+    screen<UnifiedHistoryRoute> {
         UnifiedHistoryScreen(
             activity = activity,
-            onBack = { navController.popBackStackSafely() },
+            onBack = { navigator.goBack() },
         )
     }
-    composable<LocalPlaylistsRoute> {
+    screen<LocalPlaylistsRoute> {
         LocalPlaylistsScreen(
             activity = activity,
-            onBack = { navController.popBackStackSafely() },
+            onBack = { navigator.goBack() },
         )
     }
 }

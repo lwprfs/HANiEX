@@ -1,5 +1,14 @@
 package com.yenaly.han1meviewer.RedGifs.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -15,10 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSession
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSettings
@@ -44,127 +49,116 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.content.LoginGate
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object RedGifsHomeRoute
+object RedGifsHomeRoute : NavKey
 
 @Serializable
-object RedGifsSettingsHubRoute
+object RedGifsSettingsHubRoute : NavKey
 
 @Serializable
-object RedGifsSettingsRoute
+object RedGifsSettingsRoute : NavKey
 
 @Serializable
-data class RedGifsSearchRoute(val query: String? = null)
+data class RedGifsSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class RedGifsGifRoute(val id: String)
+data class RedGifsGifRoute(val id: String) : NavKey
 
 @Serializable
-data class RedGifsFeedRoute(val kind: String, val arg: String = "", val title: String = "")
+data class RedGifsFeedRoute(val kind: String, val arg: String = "", val title: String = "") : NavKey
 
 @Serializable
-data class RedGifsCreatorRoute(val name: String)
+data class RedGifsCreatorRoute(val name: String) : NavKey
 
 @Serializable
-data class RedGifsNichesRoute(val following: Boolean = false)
+data class RedGifsNichesRoute(val following: Boolean = false) : NavKey
 
 @Serializable
-data class RedGifsUsersRoute(val mode: String)
+data class RedGifsUsersRoute(val mode: String) : NavKey
 
 @Serializable
-object RedGifsAccountRoute
+object RedGifsAccountRoute : NavKey
 
 @Serializable
-object RedGifsLoginRoute
+object RedGifsLoginRoute : NavKey
 
 @Serializable
-object RedGifsEditProfileRoute
+object RedGifsEditProfileRoute : NavKey
 
 @Serializable
-object RedGifsCollectionsRoute
+object RedGifsCollectionsRoute : NavKey
 
 @Serializable
-object RedGifsTagsRoute
+object RedGifsTagsRoute : NavKey
 
 @Serializable
-object RedGifsDashboardRoute
+object RedGifsDashboardRoute : NavKey
 
 @Composable
 fun RedGifsNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.REDGIFS)
-    }
 
-    val goLogin = { navController.navigateSafely(RedGifsLoginRoute) }
-    val back = { navController.popBackStackSafely() }
+    val goLogin = { navigator.navigateSafely(RedGifsLoginRoute) }
+    val back = { navigator.goBack() }
 
     val sessionEpoch by RedGifsSession.epoch.collectAsState()
     val loggedIn = remember(sessionEpoch) { RedGifsAuth.isLoggedIn }
 
-    val actions = remember(navController) {
+    val actions = remember(navigator) {
         RedGifsActions(
-            openCreator = { name -> navController.navigateSafely(RedGifsCreatorRoute(name)) },
-            openTag = { tag -> navController.navigateSafely(RedGifsFeedRoute("search", tag, "#$tag")) },
+            openCreator = { name -> navigator.navigateSafely(RedGifsCreatorRoute(name)) },
+            openTag = { tag -> navigator.navigateSafely(RedGifsFeedRoute("search", tag, "#$tag")) },
         )
     }
 
     CompositionLocalProvider(LocalRedGifsActions provides actions) {
-    NavHost(
-        navController = navController,
-        startDestination = RedGifsHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<RedGifsHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<RedGifsHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 RedGifsHomeScreen(
-                    onSearch = { navController.navigateSafely(RedGifsSearchRoute()) },
+                    onSearch = { navigator.navigateSafely(RedGifsSearchRoute()) },
                     onLogin = { goLogin() },
-                    onOpenSettings = { navController.navigateSafely(RedGifsSettingsRoute) },
+                    onOpenSettings = { navigator.navigateSafely(RedGifsSettingsRoute) },
                 )
             }
         }
 
-        composable<RedGifsSearchRoute> {
-            val route = it.toRoute<RedGifsSearchRoute>()
+        screen<RedGifsSearchRoute> {
+            val route = it
             RedGifsSearchScreen(
                 initialQuery = route.query,
                 onBack = { back() },
                 onLogin = { goLogin() },
-                onOpenCreator = { user -> navController.navigateSafely(RedGifsCreatorRoute(user.username)) },
+                onOpenCreator = { user -> navigator.navigateSafely(RedGifsCreatorRoute(user.username)) },
                 onOpenNiche = { niche ->
-                    navController.navigateSafely(RedGifsFeedRoute("niche", niche.id, niche.name))
+                    navigator.navigateSafely(RedGifsFeedRoute("niche", niche.id, niche.name))
                 },
             )
         }
 
-        composable<RedGifsGifRoute> {
-            val route = it.toRoute<RedGifsGifRoute>()
+        screen<RedGifsGifRoute> {
+            val route = it
             RedGifsGifScreen(id = route.id, onBack = { back() })
         }
 
-        composable<RedGifsFeedRoute> {
-            val route = it.toRoute<RedGifsFeedRoute>()
+        screen<RedGifsFeedRoute> {
+            val route = it
             RedGifsFeedScreen(
                 source = RedGifsFeedSource.from(route.kind, route.arg),
                 title = route.title.ifBlank { route.arg },
@@ -173,13 +167,13 @@ fun RedGifsNavHost(
             )
         }
 
-        composable<RedGifsCreatorRoute> {
-            val route = it.toRoute<RedGifsCreatorRoute>()
+        screen<RedGifsCreatorRoute> {
+            val route = it
             RedGifsCreatorScreen(name = route.name, onBack = { back() }, onLogin = { goLogin() })
         }
 
-        composable<RedGifsNichesRoute> {
-            val route = it.toRoute<RedGifsNichesRoute>()
+        screen<RedGifsNichesRoute> {
+            val route = it
             LoginGate(
                 loggedIn = loggedIn || !route.following,
                 title = stringResource(R.string.redgifs_followed_niches),
@@ -190,14 +184,14 @@ fun RedGifsNavHost(
                     following = route.following,
                     onBack = { back() },
                     onOpenNiche = { niche ->
-                        navController.navigateSafely(RedGifsFeedRoute("niche", niche.id, niche.name))
+                        navigator.navigateSafely(RedGifsFeedRoute("niche", niche.id, niche.name))
                     },
                 )
             }
         }
 
-        composable<RedGifsUsersRoute> {
-            val route = it.toRoute<RedGifsUsersRoute>()
+        screen<RedGifsUsersRoute> {
+            val route = it
             val mode = RedGifsUsersMode.entries.firstOrNull { m -> m.name == route.mode } ?: RedGifsUsersMode.CREATORS
             LoginGate(
                 loggedIn = loggedIn || mode == RedGifsUsersMode.CREATORS,
@@ -210,36 +204,36 @@ fun RedGifsNavHost(
                 RedGifsUsersScreen(
                     mode = mode,
                     onBack = { back() },
-                    onOpenUser = { user -> navController.navigateSafely(RedGifsCreatorRoute(user.username)) },
+                    onOpenUser = { user -> navigator.navigateSafely(RedGifsCreatorRoute(user.username)) },
                 )
             }
         }
 
-        composable<RedGifsAccountRoute> {
+        screen<RedGifsAccountRoute> {
             RedGifsAccountScreen(
                 onBack = { back() },
                 onLogin = { goLogin() },
-                onOpenFollowing = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
-                onOpenFollowers = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
-                onOpenFollowedNiches = { navController.navigateSafely(RedGifsNichesRoute(following = true)) },
+                onOpenFollowing = { navigator.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
+                onOpenFollowers = { navigator.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
+                onOpenFollowedNiches = { navigator.navigateSafely(RedGifsNichesRoute(following = true)) },
                 onOpenLiked = {
-                    navController.navigateSafely(
+                    navigator.navigateSafely(
                         RedGifsFeedRoute("liked", "", activity.getString(R.string.redgifs_liked)),
                     )
                 },
                 onOpenMine = {
-                    navController.navigateSafely(
+                    navigator.navigateSafely(
                         RedGifsFeedRoute("mine", "", activity.getString(R.string.redgifs_my_uploads)),
                     )
                 },
-                onOpenSettings = { navController.navigateSafely(RedGifsSettingsRoute) },
-                onOpenDashboard = { navController.navigateSafely(RedGifsDashboardRoute) },
-                onOpenEditProfile = { navController.navigateSafely(RedGifsEditProfileRoute) },
-                onOpenCollections = { navController.navigateSafely(RedGifsCollectionsRoute) },
+                onOpenSettings = { navigator.navigateSafely(RedGifsSettingsRoute) },
+                onOpenDashboard = { navigator.navigateSafely(RedGifsDashboardRoute) },
+                onOpenEditProfile = { navigator.navigateSafely(RedGifsEditProfileRoute) },
+                onOpenCollections = { navigator.navigateSafely(RedGifsCollectionsRoute) },
             )
         }
 
-        composable<RedGifsEditProfileRoute> {
+        screen<RedGifsEditProfileRoute> {
             LoginGate(
                 loggedIn = loggedIn,
                 title = stringResource(R.string.redgifs_edit_profile),
@@ -248,7 +242,7 @@ fun RedGifsNavHost(
             ) { RedGifsEditProfileScreen(onBack = { back() }) }
         }
 
-        composable<RedGifsCollectionsRoute> {
+        screen<RedGifsCollectionsRoute> {
             LoginGate(
                 loggedIn = loggedIn,
                 title = stringResource(R.string.redgifs_collections),
@@ -257,14 +251,14 @@ fun RedGifsNavHost(
             ) { RedGifsCollectionsScreen(onBack = { back() }) }
         }
 
-        composable<RedGifsTagsRoute> {
+        screen<RedGifsTagsRoute> {
             RedGifsTagsScreen(
                 onBack = { back() },
-                onOpenTag = { tag -> navController.navigateSafely(RedGifsFeedRoute("search", tag, "#$tag")) },
+                onOpenTag = { tag -> navigator.navigateSafely(RedGifsFeedRoute("search", tag, "#$tag")) },
             )
         }
 
-        composable<RedGifsDashboardRoute> {
+        screen<RedGifsDashboardRoute> {
             LoginGate(
                 loggedIn = loggedIn,
                 title = stringResource(R.string.redgifs_dashboard),
@@ -273,36 +267,36 @@ fun RedGifsNavHost(
             ) {
                 RedGifsDashboardScreen(
                     onBack = { back() },
-                    onEditProfile = { navController.navigateSafely(RedGifsEditProfileRoute) },
-                    onCollections = { navController.navigateSafely(RedGifsCollectionsRoute) },
+                    onEditProfile = { navigator.navigateSafely(RedGifsEditProfileRoute) },
+                    onCollections = { navigator.navigateSafely(RedGifsCollectionsRoute) },
                     onMine = {
-                        navController.navigateSafely(
+                        navigator.navigateSafely(
                             RedGifsFeedRoute("mine", "", activity.getString(R.string.redgifs_my_uploads)),
                         )
                     },
                     onLiked = {
-                        navController.navigateSafely(
+                        navigator.navigateSafely(
                             RedGifsFeedRoute("liked", "", activity.getString(R.string.redgifs_liked)),
                         )
                     },
-                    onFollowers = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
-                    onFollowing = { navController.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
+                    onFollowers = { navigator.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWERS.name)) },
+                    onFollowing = { navigator.navigateSafely(RedGifsUsersRoute(RedGifsUsersMode.FOLLOWING.name)) },
                 )
             }
         }
 
-        composable<RedGifsLoginRoute> {
+        screen<RedGifsLoginRoute> {
             RedGifsLoginScreen(
                 onBack = { back() },
                 onLoggedIn = { back() },
             )
         }
 
-        composable<RedGifsSettingsRoute> {
+        screen<RedGifsSettingsRoute> {
             RedGifsSettingsScreen(onBack = { back() })
         }
 
-        composable<RedGifsSettingsHubRoute> {
+        screen<RedGifsSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.REDGIFS,
                 onResetSite = { RedGifsSettings.resetToDefaults() },
@@ -312,35 +306,42 @@ fun RedGifsNavHost(
                         title = stringResource(R.string.redgifs_settings_title),
                         subtitle = stringResource(R.string.redgifs_settings_summary),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(RedGifsSettingsRoute) },
+                        onClick = { navigator.navigateSafely(RedGifsSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "account",
                         title = stringResource(R.string.redgifs_account),
                         subtitle = stringResource(R.string.redgifs_account_summary),
                         icon = Icons.Default.Person,
-                        onClick = { navController.navigateSafely(RedGifsAccountRoute) },
+                        onClick = { navigator.navigateSafely(RedGifsAccountRoute) },
                     ),
                 ),
                 onBack = { back() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.REDGIFS.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.REDGIFS.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.REDGIFS,
-            config = { redGifsHubConfig(navController, activity) },
+            config = { redGifsHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
     }
 }

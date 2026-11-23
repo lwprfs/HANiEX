@@ -1,10 +1,8 @@
 package com.yenaly.han1meviewer.ui.navigation.main
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.key
 import android.util.Log
-import androidx.navigation.NavHostController
 import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderNavHost
 import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavNavHost
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoNavHost
@@ -22,15 +20,12 @@ import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirNavHost
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.NavigationState
 import com.yenaly.han1meviewer.ui.navigation.Navigator
-import kotlinx.coroutines.delay
 
 @Composable
 fun UnifiedMainNavHost(
     activity: MainActivity,
-    navController: NavHostController,
     navigator: Navigator,
     navigationState: NavigationState,
     isLoggedIn: Boolean,
@@ -49,12 +44,6 @@ fun UnifiedMainNavHost(
     Log.d("UnifiedMainNavHost", "Current siteType: $siteType, baseUrl: ${Preferences.baseUrl}")
 
     key(siteChangeKey) {
-        LaunchedEffect(siteType, siteChangeKey) {
-            Log.d("UnifiedMainNavHost", "Initializing for site: $siteType, key: $siteChangeKey")
-            NavigationManager.initialize(navController, siteType)
-            delay(50)
-        }
-
         when (siteType) {
             SiteType.HANIME, SiteType.JAVCHU -> {
                 MainNavHost(
@@ -74,105 +63,120 @@ fun UnifiedMainNavHost(
             SiteType.MISSAV -> {
                 MissAvNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.HENTAIMAMA -> {
                 HentaiMamaNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.ONAIR -> {
                 OnAirNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.FAPFOLDER -> {
                 FapFolderNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.SUPJAV -> {
                 SupJavNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.ROUVIDEO -> {
                 RouVideoNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.XHAMSTER -> {
                 XHamsterNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.BUONDUA -> {
                 BuonduaNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.COSPLAYTELE -> {
                 CosplayteleNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.COSER -> {
                 CoserNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.FULLVIDEOS -> {
                 FullVideosNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.FUCKINGSESSION -> {
                 FuckingSessionNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.REDGIFS -> {
                 RedGifsNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.XXXTUBE -> {
                 XXXTubeNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }
             SiteType.WUMAOBI -> {
                 com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     onDestinationChanged = onDestinationChanged,
                 )
             }

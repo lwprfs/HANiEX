@@ -1,7 +1,15 @@
 package com.yenaly.han1meviewer.Wumaobi.ui.navigation
 
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import androidx.navigation3.runtime.entryProvider
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.SiteNavDisplay
+import com.yenaly.han1meviewer.ui.navigation.screen
+import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
+import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
+
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.site.registerSiteHubRoutes
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
@@ -18,10 +26,6 @@ import com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth
 import com.yenaly.han1meviewer.ui.component.content.LoginGate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.Wumaobi.ui.account.WumaobiAccountScreen
 import com.yenaly.han1meviewer.Wumaobi.ui.favorites.WumaobiFavFolderScreen
@@ -36,86 +40,76 @@ import com.yenaly.han1meviewer.Wumaobi.ui.video.WumaobiVideoScreen
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
-import com.yenaly.han1meviewer.ui.navigation.popBackStackSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.registerGlobalSettingsRoutes
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
 @Serializable
-object WumaobiHomeRoute
+object WumaobiHomeRoute : NavKey
 
 @Serializable
-object WumaobiSettingsHubRoute
+object WumaobiSettingsHubRoute : NavKey
 
 @Serializable
-data class WumaobiSearchRoute(val query: String? = null)
+data class WumaobiSearchRoute(val query: String? = null) : NavKey
 
 @Serializable
-data class WumaobiVideoRoute(val videoCode: String, val resumePosition: Long = 0L)
+data class WumaobiVideoRoute(val videoCode: String, val resumePosition: Long = 0L) : NavKey
 
 @Serializable
-object WumaobiHistoryRoute
+object WumaobiHistoryRoute : NavKey
 
 @Serializable
-data class WumaobiBrowseRoute(val kind: String)
+data class WumaobiBrowseRoute(val kind: String) : NavKey
 
 @Serializable
-data class WumaobiListRoute(val title: String, val path: String, val sort: String? = null)
+data class WumaobiListRoute(val title: String, val path: String, val sort: String? = null) : NavKey
 
 @Serializable
-object WumaobiAccountRoute
+object WumaobiAccountRoute : NavKey
 
 @Serializable
-object WumaobiFavoritesRoute
+object WumaobiFavoritesRoute : NavKey
 
 @Serializable
-data class WumaobiFavFolderRoute(val name: String)
+data class WumaobiFavFolderRoute(val name: String) : NavKey
 
 @Serializable
-object WumaobiSettingsRoute
+object WumaobiSettingsRoute : NavKey
 
 @Composable
 fun WumaobiNavHost(
     activity: MainActivity,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     onDestinationChanged: (MainDestinationSpec) -> Unit,
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    LaunchedEffect(Unit) {
-        delay(50)
-        NavigationManager.initialize(navController, SiteType.WUMAOBI)
-    }
 
-    NavHost(
-        navController = navController,
-        startDestination = WumaobiHomeRoute,
-        modifier = modifier,
-    ) {
-        composable<WumaobiHomeRoute> {
+    val entryProvider = entryProvider<NavKey> {
+        screen<WumaobiHomeRoute> {
             Box(modifier = Modifier.padding(contentPadding)) {
                 WumaobiHomeScreen(
                     onNavigateToVideo = { code ->
-                        navController.navigateSafely(WumaobiVideoRoute(code))
+                        navigator.navigateSafely(WumaobiVideoRoute(code))
                     },
                     onNavigateToSearch = { query ->
-                        navController.navigateSafely(WumaobiSearchRoute(query))
+                        navigator.navigateSafely(WumaobiSearchRoute(query))
                     },
-                    onNavigateToHistory = { navController.navigateSafely(WumaobiHistoryRoute) },
-                    onNavigateToAccount = { navController.navigateSafely(WumaobiAccountRoute) },
+                    onNavigateToHistory = { navigator.navigateSafely(WumaobiHistoryRoute) },
+                    onNavigateToAccount = { navigator.navigateSafely(WumaobiAccountRoute) },
                 )
             }
         }
 
-        composable<WumaobiSettingsHubRoute> {
+        screen<WumaobiSettingsHubRoute> {
             SiteSettingsHubScreen(
                 site = SiteType.WUMAOBI,
                 onResetSite = { com.yenaly.han1meviewer.Wumaobi.common.WumaobiSettings.resetToDefaults() },
@@ -125,142 +119,149 @@ fun WumaobiNavHost(
                         title = stringResource(R.string.wumaobi_settings_playback_title),
                         subtitle = stringResource(R.string.wumaobi_settings_playback_summary),
                         icon = Icons.Default.HighQuality,
-                        onClick = { navController.navigateSafely(WumaobiSettingsRoute) },
+                        onClick = { navigator.navigateSafely(WumaobiSettingsRoute) },
                     ),
                     SiteSettingsEntry(
                         key = "history",
                         title = stringResource(R.string.wumaobi_history_title),
                         subtitle = stringResource(R.string.wumaobi_history_summary),
                         icon = Icons.Default.History,
-                        onClick = { navController.navigateSafely(WumaobiHistoryRoute) },
+                        onClick = { navigator.navigateSafely(WumaobiHistoryRoute) },
                     ),
                 ),
-                onBack = { navController.popBackStackSafely() },
-                onOpenAppSettings = { navController.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navController.navigateSafely(SitePlayerSettingsRoute(SiteType.WUMAOBI.name)) },
-                onOpenNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navController.navigateSafely(UnifiedHistoryRoute) },
+                onBack = { navigator.goBack() },
+                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
+                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.WUMAOBI.name)) },
+                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
+                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
             )
         }
 
-        composable<WumaobiSettingsRoute> {
-            WumaobiSettingsScreen(onBack = { navController.popBackStackSafely() })
+        screen<WumaobiSettingsRoute> {
+            WumaobiSettingsScreen(onBack = { navigator.goBack() })
         }
 
-        composable<WumaobiSearchRoute> {
-            val route = it.toRoute<WumaobiSearchRoute>()
+        screen<WumaobiSearchRoute> {
+            val route = it
             WumaobiSearchScreen(
                 initialQuery = route.query,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(WumaobiVideoRoute(code))
+                    navigator.navigateSafely(WumaobiVideoRoute(code))
                 },
             )
         }
 
-        composable<WumaobiVideoRoute> {
-            val route = it.toRoute<WumaobiVideoRoute>()
+        screen<WumaobiVideoRoute> {
+            val route = it
             WumaobiVideoScreen(
                 videoCode = route.videoCode,
                 resumePosition = route.resumePosition,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(WumaobiVideoRoute(code))
+                    navigator.navigateSafely(WumaobiVideoRoute(code))
                 },
                 onNavigateToSearch = { query ->
-                    navController.navigateSafely(WumaobiSearchRoute(query))
+                    navigator.navigateSafely(WumaobiSearchRoute(query))
                 },
                 onNavigateToList = { title, path ->
-                    navController.navigateSafely(WumaobiListRoute(title, path))
+                    navigator.navigateSafely(WumaobiListRoute(title, path))
                 },
-                onNavigateToAccount = { navController.navigateSafely(WumaobiAccountRoute) },
+                onNavigateToAccount = { navigator.navigateSafely(WumaobiAccountRoute) },
             )
         }
 
-        composable<WumaobiAccountRoute> {
+        screen<WumaobiAccountRoute> {
             WumaobiAccountScreen(
-                onBack = { navController.popBackStackSafely() },
-                onOpenFavorites = { navController.navigateSafely(WumaobiFavoritesRoute) },
+                onBack = { navigator.goBack() },
+                onOpenFavorites = { navigator.navigateSafely(WumaobiFavoritesRoute) },
             )
         }
 
-        composable<WumaobiFavoritesRoute> {
+        screen<WumaobiFavoritesRoute> {
             val auth by WumaobiAuth.state.collectAsStateWithLifecycle()
             LoginGate(
                 loggedIn = auth.loggedIn,
                 title = stringResource(R.string.wumaobi_favorites),
-                onBack = { navController.popBackStackSafely() },
-                onSignIn = { navController.navigateSafely(WumaobiAccountRoute) },
+                onBack = { navigator.goBack() },
+                onSignIn = { navigator.navigateSafely(WumaobiAccountRoute) },
             ) {
                 WumaobiFavoritesScreen(
-                    onBack = { navController.popBackStackSafely() },
-                    onOpenFolder = { name -> navController.navigateSafely(WumaobiFavFolderRoute(name)) },
+                    onBack = { navigator.goBack() },
+                    onOpenFolder = { name -> navigator.navigateSafely(WumaobiFavFolderRoute(name)) },
                 )
             }
         }
 
-        composable<WumaobiFavFolderRoute> {
-            val route = it.toRoute<WumaobiFavFolderRoute>()
+        screen<WumaobiFavFolderRoute> {
+            val route = it
             val auth by WumaobiAuth.state.collectAsStateWithLifecycle()
             LoginGate(
                 loggedIn = auth.loggedIn,
                 title = route.name,
-                onBack = { navController.popBackStackSafely() },
-                onSignIn = { navController.navigateSafely(WumaobiAccountRoute) },
+                onBack = { navigator.goBack() },
+                onSignIn = { navigator.navigateSafely(WumaobiAccountRoute) },
             ) {
                 WumaobiFavFolderScreen(
                     name = route.name,
-                    onBack = { navController.popBackStackSafely() },
+                    onBack = { navigator.goBack() },
                     onNavigateToVideo = { code ->
-                        navController.navigateSafely(WumaobiVideoRoute(code))
+                        navigator.navigateSafely(WumaobiVideoRoute(code))
                     },
                 )
             }
         }
 
-        composable<WumaobiBrowseRoute> {
-            val route = it.toRoute<WumaobiBrowseRoute>()
+        screen<WumaobiBrowseRoute> {
+            val route = it
             WumaobiBrowseScreen(
                 kindKey = route.kind,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onOpenEntity = { title, path ->
-                    navController.navigateSafely(WumaobiListRoute(title, path))
+                    navigator.navigateSafely(WumaobiListRoute(title, path))
                 },
             )
         }
 
-        composable<WumaobiListRoute> {
-            val route = it.toRoute<WumaobiListRoute>()
+        screen<WumaobiListRoute> {
+            val route = it
             WumaobiListScreen(
                 title = route.title,
                 path = route.path,
                 initialSort = route.sort,
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(WumaobiVideoRoute(code))
+                    navigator.navigateSafely(WumaobiVideoRoute(code))
                 },
             )
         }
 
-        composable<WumaobiHistoryRoute> {
+        screen<WumaobiHistoryRoute> {
             WumaobiHistoryScreen(
                 onNavigateToVideo = { code ->
-                    navController.navigateSafely(WumaobiVideoRoute(code))
+                    navigator.navigateSafely(WumaobiVideoRoute(code))
                 },
-                onBack = { navController.popBackStackSafely() },
+                onBack = { navigator.goBack() },
             )
         }
 
-        registerSiteHubRoutes(
-            navController = navController,
+        siteHubEntries(
+            navigator = navigator,
             site = SiteType.WUMAOBI,
-            config = { wumaobiHubConfig(navController, activity) },
+            config = { wumaobiHubConfig(navigator, activity) },
         )
 
-        registerGlobalSettingsRoutes(
+        globalSettingsEntries(
             activity = activity,
-            navController = navController,
+            navigator = navigator,
             homeFallback = SiteProfileRoute,
         )
     }
+
+    SiteNavDisplay(
+        navigator = navigator,
+        navigationState = navigationState,
+        entryProvider = entryProvider,
+        modifier = modifier,
+    )
 }

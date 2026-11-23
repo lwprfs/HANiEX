@@ -77,7 +77,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
-import androidx.navigation.NavHostController
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
@@ -112,7 +111,6 @@ import com.yenaly.han1meviewer.ui.navigation.main.UnifiedMainNavHost
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
-import com.yenaly.han1meviewer.ui.navigation.navigateSafely
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
@@ -136,18 +134,13 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     val viewModel: HomePageViewModel by viewModels()
 
-    /** Navigation 2：其它站点（MissAV、XHamster…）使用。 */
-    lateinit var navController: NavHostController
-
-    /** Navigation 3：Hanime / Javchu 主导航使用。 */
     lateinit var navigator: com.yenaly.han1meviewer.ui.navigation.Navigator
 
     private val isHanimeFamilySite: Boolean
         get() = Preferences.siteType == SiteType.HANIME || Preferences.siteType == SiteType.JAVCHU
 
-    /** 当前页面是否由 Navigation 3 驱动（Hanime / Javchu 且 Navigator 已就绪）。 */
-    val usesNav3: Boolean
-        get() = isHanimeFamilySite && ::navigator.isInitialized
+    val isNavigatorReady: Boolean
+        get() = ::navigator.isInitialized
     val snackbarHostState = SnackbarHostState()
     private var showAuthGuard by mutableStateOf(true)
 
@@ -233,12 +226,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
                 onLogoutClick = { requestLogout(false) },
                 onRequireLogin = { gotoLoginActivity() },
                 onSwitchSiteClick = { requestSiteSwitch() },
-                onNavigateControllerReady = { controller ->
-                    navController = controller
-                    NavigationManager.initialize(controller, Preferences.siteType)
-                    Log.d(TAG, "NavController initialized with site: ${Preferences.siteType}")
+                onNavigatorReady = {
+                    navigator = it
+                    Log.d(TAG, "Navigator ready for site: ${Preferences.siteType}")
                 },
-                onNavigatorReady = { navigator = it },
                 siteChangeKey = _siteChanged.value,
             )
 
@@ -370,11 +361,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
         HAnalytics.logEvent(FirebaseConstants.EVENT_LOGOUT)
         if (logoutCloseCurrentPage) {
-            if (isHanimeFamilySite && ::navigator.isInitialized) {
-                navigator.goBack()
-            } else {
-                navController.popBackStack()
-            }
+            if (::navigator.isInitialized) navigator.goBack()
         }
         logoutWithRefresh()
     }
@@ -498,56 +485,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
     fun showVideoDetailFragment(videoCode: String, fileUri: String? = null) {
         if (isHanimeFamilySite && ::navigator.isInitialized) {
-            // 走节流 + 去重的安全导航：连点系列列表会叠加压栈并制造多页并存窗口
+
             navigator.navigateSafely(VideoRoute(videoCode, fileUri))
         } else {
             NavigationManager.navigateToVideo(videoCode)
-        }
-    }
-
-    /** 按当前站点所用的导航栈（Nav3 / Nav2）安全跳转。 */
-    fun navigateCompat(route: androidx.navigation3.runtime.NavKey) {
-        if (usesNav3) {
-            navigator.navigateSafely(route)
-        } else {
-            navController.navigateSafely(route)
-        }
-    }
-
-    /** 弹出当前页面。 */
-    fun popBackCompat() {
-        if (usesNav3) {
-            navigator.goBack()
-        } else {
-            navController.popBackStack()
-        }
-    }
-
-    /** 替换栈顶为 [route]（自动连播：弹掉当前视频页、压入下一集）。 */
-    fun replaceTopCompat(route: VideoRoute) {
-        if (usesNav3) {
-            navigator.replaceTop(route)
-        } else {
-            val currentId = navController.currentBackStackEntry?.destination?.id
-            navController.navigateSafely(route) {
-                if (currentId != null) {
-                    popUpTo(currentId) { inclusive = true }
-                }
-            }
-        }
-    }
-
-    /** 回到主页。 */
-    fun goHomeCompat() {
-        if (usesNav3) {
-            navigator.goHome()
-        } else {
-            if (!navController.popBackStack(HomeRoute, false)) {
-                navController.navigate(HomeRoute) {
-                    popUpTo(navController.graph.id) { inclusive = true }
-                    launchSingleTop = true
-                }
-            }
         }
     }
 
