@@ -37,6 +37,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.window.core.layout.WindowSizeClass
 import com.yenaly.han1meviewer.R
@@ -50,7 +52,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.rememberSettingsSearchResults
 import com.yenaly.han1meviewer.util.findActivityOrNull
 import com.yenaly.han1meviewer.util.logScreenViewEvent
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+/** Navigation 2 版本（其它站点的 NavHost 使用）。 */
 @Composable
 fun SettingsScaffold(
     navController: NavController,
@@ -58,18 +60,60 @@ fun SettingsScaffold(
     actions: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    val context = LocalContext.current
-    val activity = context.findActivityOrNull<MainActivity>()
-        ?: error("No MainActivity found")
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentScreen = backStackEntry?.resolveSettingsScreenDestination()
         ?: SettingsScreenDestination.Home
 
-    fun navigateBack() {
-        if (!navController.popBackStack()) {
-            navController.navigate(fallbackDestination)
-        }
-    }
+    SettingsScaffoldCore(
+        currentScreen = currentScreen,
+        onBack = {
+            if (!navController.popBackStack()) {
+                navController.navigate(fallbackDestination)
+            }
+        },
+        onSelectCategory = { navController.navigateSettingsCategoryDestination(it) },
+        actions = actions,
+        content = content,
+    )
+}
+
+/** Navigation 3 版本（Hanime/Javchu 主导航使用）。 */
+@Composable
+fun SettingsScaffold(
+    navigator: Navigator,
+    fallbackDestination: NavKey,
+    actions: @Composable () -> Unit = {},
+    content: @Composable () -> Unit,
+) {
+    val currentScreen = navigator.state.currentKey.resolveSettingsScreenDestination()
+
+    SettingsScaffoldCore(
+        currentScreen = currentScreen,
+        onBack = {
+            // 返回手势/转场进行中时 pop 失败再走 fallback 会与 NavDisplay 竞态，
+            // goBack 只在确实无可弹出时才返回 false
+            if (!navigator.goBack()) {
+                navigator.navigate(fallbackDestination)
+            }
+        },
+        onSelectCategory = { navigator.navigateSettingsCategoryDestination(it) },
+        actions = actions,
+        content = content,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun SettingsScaffoldCore(
+    currentScreen: SettingsScreenDestination,
+    onBack: () -> Unit,
+    onSelectCategory: (SettingsCategory) -> Unit,
+    actions: @Composable () -> Unit,
+    content: @Composable () -> Unit,
+) {
+    val context = LocalContext.current
+    val activity = context.findActivityOrNull<MainActivity>()
+        ?: error("No MainActivity found")
 
     LaunchedEffect(currentScreen) {
         activity.logScreenViewEvent(currentScreen.screenClassName)
@@ -81,17 +125,17 @@ fun SettingsScaffold(
 
     if (useTwoPane) {
         SettingsTwoPaneScaffold(
-            navController = navController,
+            onSelectCategory = onSelectCategory,
             currentScreen = currentScreen,
             actions = actions,
-            onBack = ::navigateBack,
+            onBack = onBack,
             content = content,
         )
     } else {
         SettingsSinglePaneScaffold(
             currentScreen = currentScreen,
             actions = actions,
-            onBack = ::navigateBack,
+            onBack = onBack,
             content = content,
         )
     }
@@ -137,7 +181,7 @@ private fun SettingsSinglePaneScaffold(
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun SettingsTwoPaneScaffold(
-    navController: NavController,
+    onSelectCategory: (SettingsCategory) -> Unit,
     currentScreen: SettingsScreenDestination,
     actions: @Composable () -> Unit,
     onBack: () -> Unit,
@@ -160,9 +204,7 @@ private fun SettingsTwoPaneScaffold(
             AnimatedPane {
                 SettingsListPane(
                     selectedCategory = currentScreen.category,
-                    onSelect = { category ->
-                        navController.navigateSettingsCategoryDestination(category)
-                    },
+                    onSelect = onSelectCategory,
                 )
             }
         },

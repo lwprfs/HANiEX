@@ -196,6 +196,21 @@ fun VideoRouteHostScreen(
     }
     val playerUiState by controller.uiState.collectAsStateWithLifecycle()
 
+    // Nav3 转场期间新旧视频页同时组合且旧页生命周期不降级（不会自动暂停），
+    // 双播放器并存会引发声音重叠与内核竞态：本页一旦不是返回栈顶立即暂停。
+    // 仅 Navigation 3 站点（Hanime/Javchu）适用；其它站点的 NavHost 自带生命周期管理。
+    val isBackStackTop = if (activity.usesNav3) {
+        val st = activity.navigator.state
+        st.backStacks[st.topLevelRoute]?.lastOrNull() == route
+    } else {
+        true
+    }
+    LaunchedEffect(isBackStackTop, playerUiState.state) {
+        if (!isBackStackTop && playerUiState.state == PlayerState.PLAYING) {
+            controller.pause()
+        }
+    }
+
     DisposableEffect(controller) {
         onDispose { controller.release() }
     }
@@ -503,13 +518,7 @@ fun VideoRouteHostScreen(
         if (isFullscreen) {
             exitFullscreen()
         }
-        val navController = activity.navController
-        val currentId = navController.currentBackStackEntry?.destination?.id
-        navController.navigateSafely(VideoRoute(next.videoCode, autoPlay = true)) {
-            if (currentId != null) {
-                popUpTo(currentId) { inclusive = true }
-            }
-        }
+        activity.replaceTopCompat(VideoRoute(next.videoCode, autoPlay = true))
     }
 
     LaunchedEffect(controller) {
@@ -619,7 +628,7 @@ fun VideoRouteHostScreen(
             onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
             getCheckedQuality = { checkedQuality },
             setCheckedQuality = { checkedQuality = it },
-            onStoragePermissionDenied = { activity.navController.popBackStack() },
+            onStoragePermissionDenied = { activity.popBackCompat() },
             onRequestUnsubscribeConfirm = { artist -> unsubscribeArtist = artist },
             onRequestDownloadPermissionSettings = { showDownloadPermissionDialog = true },
         )
@@ -642,17 +651,7 @@ fun VideoRouteHostScreen(
                 if (fullscreen) exitFullscreen()
                 else activity.onBackPressedDispatcher.onBackPressed()
             },
-            onGoHome = {
-
-                val navController = activity.navController
-                if (!navController.popBackStack(HomeRoute, false)) {
-
-                    navController.navigate(HomeRoute) {
-                        popUpTo(navController.graph.id) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
-            },
+            onGoHome = { activity.goHomeCompat() },
             onToggleFullscreen = {
                 if (fullscreen) exitFullscreen() else enterFullscreen()
             },
@@ -1078,7 +1077,7 @@ fun VideoRouteHostScreen(
             dismissButton = {
                 TextButton(onClick = {
                     showDownloadPermissionDialog = false
-                    activity.navController.popBackStack()
+                    activity.popBackCompat()
                 }) {
                     Text(activity.getString(R.string.cancel))
                 }

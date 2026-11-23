@@ -66,6 +66,12 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
+import com.yenaly.han1meviewer.ui.navigation.Navigator
+import com.yenaly.han1meviewer.ui.navigation.rememberNavigationState
+import com.yenaly.han1meviewer.ui.navigation.main.ContentLibraryRoute
+import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
+import com.yenaly.han1meviewer.ui.navigation.main.ProfileRoute
+import com.yenaly.han1meviewer.ui.navigation.main.SubscriptionRoute
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.UnifiedMainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
@@ -97,6 +103,7 @@ fun MainActivityContent(
     onRequireLogin: () -> Unit,
     onSwitchSiteClick: () -> Unit,
     onNavigateControllerReady: (NavHostController) -> Unit,
+    onNavigatorReady: (Navigator) -> Unit,
     siteChangeKey: Long = 0L,
 ) {
     HanimeTheme {
@@ -106,6 +113,21 @@ fun MainActivityContent(
         }
 
         val composeNavController = rememberNavController()
+
+        // Navigation 3：Hanime / Javchu 主导航使用；其它站点仍使用上面的 NavController。
+        val navigationState = rememberNavigationState(
+            topLevelRoutes = setOf(
+                HomeRoute,
+                SubscriptionRoute,
+                ContentLibraryRoute,
+                ProfileRoute,
+            )
+        )
+        val appNavigator = remember { Navigator(navigationState) }
+        LaunchedEffect(appNavigator) {
+            onNavigatorReady(appNavigator)
+            NavigationManager.initializeNavigator(appNavigator)
+        }
 
         LaunchedEffect(siteChangeKey) {
             onNavigateControllerReady(composeNavController)
@@ -211,7 +233,14 @@ fun MainActivityContent(
 
         LaunchedEffect(Unit) {
             pendingNavigationRequests.collect { intent ->
-                composeNavController.handleMainIntent(intent)
+                // 在收集时读取当前站点（切站后不能沿用旧值）
+                val family = Preferences.siteType == SiteType.HANIME ||
+                        Preferences.siteType == SiteType.JAVCHU
+                if (family) {
+                    appNavigator.handleMainIntent(intent)
+                } else {
+                    composeNavController.handleMainIntent(intent)
+                }
             }
         }
 
@@ -250,17 +279,27 @@ fun MainActivityContent(
             siteItems = siteNavItems,
             snackbarHostState = snackbarHostState,
             onDestinationSelected = { destination ->
-                composeNavController.navigateTopLevelDestination(
-                    destination = destination,
-                    isLoggedIn = isLoggedIn,
-                    onRequireLogin = onRequireLogin,
-                )
+                if (isHanimeFamilySite) {
+                    appNavigator.navigateTopLevelDestination(
+                        destination = destination,
+                        isLoggedIn = isLoggedIn,
+                        onRequireLogin = onRequireLogin,
+                    )
+                } else {
+                    composeNavController.navigateTopLevelDestination(
+                        destination = destination,
+                        isLoggedIn = isLoggedIn,
+                        onRequireLogin = onRequireLogin,
+                    )
+                }
             },
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 UnifiedMainNavHost(
                     activity = activity,
                     navController = composeNavController,
+                    navigator = appNavigator,
+                    navigationState = navigationState,
                     isLoggedIn = isLoggedIn,
                     avatarUrl = headerAvatarUrl,
                     username = headerUsername,
@@ -304,7 +343,11 @@ fun MainActivityContent(
                                     activity.requestPostNotificationPermission()
                                     UpdateManager.start(activity.applicationContext, latest)
                                 }
-                                composeNavController.navigateSafely(UpdateSettingsRoute)
+                                if (isHanimeFamilySite) {
+                                    appNavigator.navigateSafely(UpdateSettingsRoute)
+                                } else {
+                                    composeNavController.navigateSafely(UpdateSettingsRoute)
+                                }
                             }
                         },
                     )

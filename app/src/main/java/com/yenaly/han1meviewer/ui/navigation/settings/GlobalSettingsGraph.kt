@@ -4,6 +4,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
@@ -22,16 +23,16 @@ import com.yenaly.han1meviewer.ui.screen.library.LocalPlaylistsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-object UnifiedHistoryRoute
+object UnifiedHistoryRoute : NavKey
 
 @Serializable
-object LocalPlaylistsRoute
+object LocalPlaylistsRoute : NavKey
 
 @Serializable
-object ImageDownloadsRoute
+object ImageDownloadsRoute : NavKey
 
 @Serializable
-object GifDownloadsRoute
+object GifDownloadsRoute : NavKey
 
 fun NavGraphBuilder.registerGlobalSettingsRoutes(
     activity: MainActivity,

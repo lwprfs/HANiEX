@@ -23,12 +23,16 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
+import com.yenaly.han1meviewer.ui.navigation.NavigationState
+import com.yenaly.han1meviewer.ui.navigation.Navigator
 import kotlinx.coroutines.delay
 
 @Composable
 fun UnifiedMainNavHost(
     activity: MainActivity,
     navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     isLoggedIn: Boolean,
     avatarUrl: String?,
     username: String?,
@@ -55,7 +59,8 @@ fun UnifiedMainNavHost(
             SiteType.HANIME, SiteType.JAVCHU -> {
                 MainNavHost(
                     activity = activity,
-                    navController = navController,
+                    navigator = navigator,
+                    navigationState = navigationState,
                     isLoggedIn = isLoggedIn,
                     avatarUrl = avatarUrl,
                     username = username,

@@ -5,54 +5,55 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.toRoute
+import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.R
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
 @Serializable
-object HomeSettingsRoute
+object HomeSettingsRoute : NavKey
 
 @Serializable
-data class SettingsCategoryRoute(val categoryKey: String)
+data class SettingsCategoryRoute(val categoryKey: String) : NavKey
 
 @Serializable
-object PlayerSettingsRoute
+object PlayerSettingsRoute : NavKey
 
 @Serializable
-data class SitePlayerSettingsRoute(val site: String)
+data class SitePlayerSettingsRoute(val site: String) : NavKey
 
 @Serializable
-object NetworkSettingsRoute
+object NetworkSettingsRoute : NavKey
 
 @Serializable
-object DownloadSettingsRoute
+object DownloadSettingsRoute : NavKey
 
 @Serializable
-object MpvPlayerSettingsRoute
+object MpvPlayerSettingsRoute : NavKey
 
 @Serializable
-object HKeyframesRoute
+object HKeyframesRoute : NavKey
 
 @Serializable
-object SharedHKeyframesRoute
+object SharedHKeyframesRoute : NavKey
 
 @Serializable
-object HKeyframeSettingsRoute
+object HKeyframeSettingsRoute : NavKey
 
 @Serializable
-object UpdateSettingsRoute
+object UpdateSettingsRoute : NavKey
 
 @Serializable
-object TranslationSettingsRoute
+object TranslationSettingsRoute : NavKey
 
 @Serializable
-object MediaControlsSettingsRoute
+object MediaControlsSettingsRoute : NavKey
 
 @Serializable
-object TranslationCacheRoute
+object TranslationCacheRoute : NavKey
 
 @Serializable
-object AboutAppRoute
+object AboutAppRoute : NavKey
 
 enum class SettingsDestinationSpec(
     @param:StringRes val titleRes: Int,
@@ -120,6 +121,11 @@ enum class SettingsDestinationSpec(
     );
 
     companion object {
+        fun fromKey(key: Any?): SettingsDestinationSpec? {
+            if (key == null) return null
+            return entries.firstOrNull { it.routeClass.isInstance(key) }
+        }
+
         fun fromDestination(destination: NavDestination?): SettingsDestinationSpec? {
             if (destination == null) return null
             return entries.firstOrNull { destination.hasRoute(it.routeClass) }
@@ -163,6 +169,20 @@ fun NavBackStackEntry.resolveSettingsScreenDestination(): SettingsScreenDestinat
         if (category != null) return SettingsScreenDestination.Category(category)
     }
     val spec = SettingsDestinationSpec.fromDestination(destination)
+    return if (spec != null && spec != SettingsDestinationSpec.Home) {
+        SettingsScreenDestination.Sub(spec)
+    } else {
+        SettingsScreenDestination.Home
+    }
+}
+
+/** Navigation 3：由栈顶 key 解析当前设置页。 */
+fun NavKey?.resolveSettingsScreenDestination(): SettingsScreenDestination {
+    if (this is SettingsCategoryRoute) {
+        val category = SettingsCategory.fromKey(categoryKey)
+        if (category != null) return SettingsScreenDestination.Category(category)
+    }
+    val spec = SettingsDestinationSpec.fromKey(this)
     return if (spec != null && spec != SettingsDestinationSpec.Home) {
         SettingsScreenDestination.Sub(spec)
     } else {

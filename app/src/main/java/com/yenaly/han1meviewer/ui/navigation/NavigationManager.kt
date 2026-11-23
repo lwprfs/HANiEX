@@ -68,6 +68,9 @@ object NavigationManager {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private var currentNavController: NavHostController? = null
+
+    /** Navigation 3 导航器：Hanime / Javchu 使用。 */
+    private var currentNavigator: Navigator? = null
     private var currentSiteType: SiteType? = null
 
     private var pendingToken = 0L
@@ -77,6 +80,13 @@ object NavigationManager {
         currentSiteType = siteType
         Log.d(TAG, "Initialized with site: $siteType")
     }
+
+    fun initializeNavigator(navigator: Navigator) {
+        currentNavigator = navigator
+    }
+
+    private fun isNav3Site(site: SiteType = getCurrentSiteType()): Boolean =
+        site == SiteType.HANIME || site == SiteType.JAVCHU
 
     fun getCurrentSiteType(): SiteType = currentSiteType ?: Preferences.siteType
 
@@ -88,6 +98,10 @@ object NavigationManager {
         resumePosition: Long = 0L,
         autoPlay: Boolean = false,
     ) {
+        if (isNav3Site()) {
+            currentNavigator?.navigateSafely(VideoRoute(videoCode))
+            return
+        }
         currentNavController?.let { navController ->
             try {
                 when (getCurrentSiteType()) {
@@ -173,6 +187,10 @@ object NavigationManager {
     }
 
     fun navigateToSearch(query: String? = null) {
+        if (isNav3Site()) {
+            currentNavigator?.navigateSafely(SearchRoute(query))
+            return
+        }
         currentNavController?.let { navController ->
             try {
                 when (getCurrentSiteType()) {
@@ -232,6 +250,11 @@ object NavigationManager {
     }
 
     fun navigateToHome() {
+        if (isNav3Site()) {
+            val navigator = currentNavigator ?: return
+            if (!isAtHome(getCurrentSiteType())) navigator.goHome()
+            return
+        }
         currentNavController?.let { navController ->
             try {
                 val site = getCurrentSiteType()
@@ -312,10 +335,18 @@ object NavigationManager {
     }
 
     fun navigateBack() {
+        if (isNav3Site()) {
+            currentNavigator?.goBack()
+            return
+        }
         currentNavController?.popBackStackSafely()
     }
 
     fun clearBackStack() {
+        if (isNav3Site()) {
+            currentNavigator?.goHome()
+            return
+        }
         currentNavController?.popToRootSafely()
     }
 
@@ -325,6 +356,7 @@ object NavigationManager {
         Preferences.siteType = newSiteType
         pendingToken++
         currentNavController?.popToRootSafely()
+        currentNavigator?.goHome()
         mainHandler.postDelayed({
             navigateToHome()
             if (thenOpen != null) schedulePendingOpen(thenOpen)
@@ -362,11 +394,15 @@ object NavigationManager {
     }
 
     private fun isNavigationReady(): Boolean {
+        if (isNav3Site()) return currentNavigator != null
         val entry = currentNavController?.currentBackStackEntry ?: return false
         return entry.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
     }
 
     private fun isAtHome(site: SiteType): Boolean {
+        if (isNav3Site(site)) {
+            return currentNavigator?.state?.currentKey == HomeRoute
+        }
         val destination = currentNavController?.currentDestination ?: return false
         return try {
             when (site) {

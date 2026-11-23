@@ -48,7 +48,7 @@ object StreamFallback {
         val activity = context.findHostActivity() as? MainActivity ?: return false
         mpvUrls += url
         if (!referer.isNullOrBlank()) referers[url] = referer
-        activity.navController.navigateSafely(
+        activity.navigateCompat(
             VideoRoute(videoCode = "-1", localUri = url, autoPlay = true)
         )
         return true
