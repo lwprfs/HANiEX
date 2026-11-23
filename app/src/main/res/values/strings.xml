@@ -1107,4 +1107,6 @@
     <string name="hub_pages_title">頁面</string>
     <string name="cosplaytele_badge_posts">%d 篇</string>
     <string name="rouvideo_online_watch_history">線上觀看紀錄</string>
+    <string name="disable_predictive_back_title">關閉預測性返回動畫</string>
+    <string name="disable_predictive_back_summary">關閉後，返回手勢拖動過程中不再播放頁面預覽動畫，放開後仍會正常返回</string>
 </resources>

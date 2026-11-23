@@ -38,6 +38,7 @@ internal fun AnimatedLazyListScope.appearanceSettings(
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onSearchPaginationChange: (Boolean) -> Unit,
     onShowExitConfirmChange: (Boolean) -> Unit,
+    onDisablePredictiveBackChange: (Boolean) -> Unit,
 ) {
         item { SettingsGroupTitle(stringResource(R.string.theme)) }
         item {
@@ -161,6 +162,15 @@ internal fun AnimatedLazyListScope.appearanceSettings(
                 checked = state.showExitConfirm,
                 iconRes = R.drawable.ic_baseline_close_24,
                 onCheckedChange = onShowExitConfirmChange,
+            )
+        }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.disable_predictive_back_title),
+                summary = stringResource(R.string.disable_predictive_back_summary),
+                checked = state.disablePredictiveBack,
+                iconRes = R.drawable.ic_baseline_arrow_back_24,
+                onCheckedChange = onDisablePredictiveBackChange,
             )
         }
 

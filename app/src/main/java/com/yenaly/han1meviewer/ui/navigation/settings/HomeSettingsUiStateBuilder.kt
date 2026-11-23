@@ -67,6 +67,7 @@ internal fun buildHomeSettingsUiState(
         searchArtistIgnoreVideoType = Preferences.searchArtistIgnoreVideoType,
         disableMobileDataWarning = Preferences.disableMobileDataWarning,
         showExitConfirm = Preferences.showExitConfirm,
+        disablePredictiveBack = Preferences.disablePredictiveBack,
         disableComments = Preferences.preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_COMMENTS, false),
         useCIUpdateChannel = Preferences.useCIUpdateChannel,
         updateInstaller = Preferences.updateInstaller,

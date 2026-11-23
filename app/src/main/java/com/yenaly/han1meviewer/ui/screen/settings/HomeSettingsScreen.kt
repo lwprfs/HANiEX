@@ -40,6 +40,7 @@ fun HomeSettingsScreen(
     onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
     onShowExitConfirmChange: (Boolean) -> Unit,
+    onDisablePredictiveBackChange: (Boolean) -> Unit,
     onDisableCommentsChange: (Boolean) -> Unit,
     onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
     onVideoGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
@@ -225,6 +226,7 @@ fun HomeSettingsScreen(
                     onSearchArtistIgnoreVideoTypeChange = onSearchArtistIgnoreVideoTypeChange,
                     onSearchPaginationChange = onSearchPaginationChange,
                     onShowExitConfirmChange = onShowExitConfirmChange,
+                    onDisablePredictiveBackChange = onDisablePredictiveBackChange,
                 )
             }
 

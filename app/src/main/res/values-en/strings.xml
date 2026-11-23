@@ -1066,4 +1066,6 @@ Recommendations are as follows:\n
     <string name="hub_pages_title">Pages</string>
     <string name="cosplaytele_badge_posts">%d posts</string>
     <string name="rouvideo_online_watch_history">Online watch history</string>
+    <string name="disable_predictive_back_title">Disable Predictive Back Animation</string>
+    <string name="disable_predictive_back_summary">When disabled, dragging the back gesture no longer previews pages; releasing still navigates back normally</string>
 </resources>

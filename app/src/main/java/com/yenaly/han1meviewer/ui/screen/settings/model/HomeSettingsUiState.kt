@@ -21,6 +21,7 @@ data class HomeSettingsUiState(
     val searchArtistIgnoreVideoType: Boolean,
     val disableMobileDataWarning: Boolean,
     val showExitConfirm: Boolean,
+    val disablePredictiveBack: Boolean,
     val disableComments: Boolean,
     val useCIUpdateChannel: Boolean,
     val updateInstaller: String,

@@ -52,6 +52,7 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.app_lang, R.string.app_lang_sum),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.rouvideo_tr_title, R.string.rouvideo_tr_privacy) { AppTranslation.available },
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.show_exit_confirm, R.string.show_exit_confirm_summary),
+    SettingsSearchEntry(SettingsCategory.Appearance, R.string.disable_predictive_back_title, R.string.disable_predictive_back_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.site_visibility_title, R.string.site_visibility_summary),
 
     SettingsSearchEntry(SettingsCategory.Playback, R.string.video_language),

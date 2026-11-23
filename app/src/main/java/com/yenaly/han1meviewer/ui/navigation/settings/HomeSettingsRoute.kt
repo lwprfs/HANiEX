@@ -264,6 +264,10 @@ fun SettingsCategoryRouteScreen(
             saveBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, it)
             refreshKey++
         },
+        onDisablePredictiveBackChange = {
+            saveBoolean(SettingsPreferenceKeys.DISABLE_PREDICTIVE_BACK, it)
+            refreshKey++
+        },
         onDisableCommentsChange = {
             saveBoolean(SettingsPreferenceKeys.DISABLE_COMMENTS, it)
             refreshKey++

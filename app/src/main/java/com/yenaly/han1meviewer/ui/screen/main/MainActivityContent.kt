@@ -223,6 +223,8 @@ fun MainActivityContent(
                         isLoggedIn = isLoggedIn,
                         onRequireLogin = onRequireLogin,
                     )
+                } else {
+                    false
                 }
             },
         ) {

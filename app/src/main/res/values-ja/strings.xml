@@ -1068,4 +1068,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="hub_pages_title">ページ</string>
     <string name="cosplaytele_badge_posts">%d 件</string>
     <string name="rouvideo_online_watch_history">オンライン視聴履歴</string>
+    <string name="disable_predictive_back_title">予測型バックアニメーションを無効化</string>
+    <string name="disable_predictive_back_summary">無効にすると、バックジェスチャーのドラッグ中にページプレビューが表示されなくなります（指を離すと通常どおり戻ります）</string>
 </resources>
