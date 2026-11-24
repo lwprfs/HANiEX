@@ -32,6 +32,7 @@ import com.yenaly.han1meviewer.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingRadioItem
@@ -57,26 +58,32 @@ fun CosplayteleSettingsScreen(onBack: () -> Unit) {
         },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding)) {
-            item { Header(stringResource(R.string.cosplaytele_pref_quality)) }
-            item { Hint(stringResource(R.string.cosplaytele_pref_quality_hint)) }
-            CosplayteleConstants.QUALITIES.forEach { option ->
-                item(key = "q_$option") {
-                    RadioRow(option, quality == option) {
-                        quality = option
-                        CosplayteleSettings.preferredQuality = option
-                    }
-                }
+            item {
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.cosplaytele_pref_quality),
+                    dialogMessage = stringResource(R.string.cosplaytele_pref_quality_hint),
+                    options = CosplayteleConstants.QUALITIES.map { it to it },
+                    selectedValue = quality,
+                    onSelect = {
+                        quality = it
+                        CosplayteleSettings.preferredQuality = it
+                    },
+                )
             }
 
-            item { Header(stringResource(R.string.cosplaytele_photo_columns)) }
-            item { Hint(stringResource(R.string.cosplaytele_photo_columns_hint)) }
-            CosplayteleConstants.PHOTO_COLUMN_OPTIONS.forEach { n ->
-                item(key = "c_$n") {
-                    RadioRow(n.toString(), columns == n) {
-                        columns = n
-                        CosplayteleSettings.photoColumns = n
-                    }
-                }
+            item {
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.cosplaytele_photo_columns),
+                    dialogMessage = stringResource(R.string.cosplaytele_photo_columns_hint),
+                    options = CosplayteleConstants.PHOTO_COLUMN_OPTIONS.map { it.toString() to it.toString() },
+                    selectedValue = columns.toString(),
+                    onSelect = { picked ->
+                        picked.toIntOrNull()?.let {
+                            columns = it
+                            CosplayteleSettings.photoColumns = it
+                        }
+                    },
+                )
             }
             item {
                 SwitchRow(

@@ -34,6 +34,7 @@ import com.yenaly.han1meviewer.RouVideo.common.RouVideoSettings
 import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.SettingActionItem
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
@@ -92,25 +93,18 @@ fun RouVideoSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { SectionHeader(stringResource(R.string.rouvideo_title_language)) }
-            item { HintText(stringResource(R.string.rouvideo_title_language_hint)) }
             item {
-                RadioRow(
-                    title = stringResource(R.string.rouvideo_lang_traditional),
-                    selected = language == RouVideoSettings.LANG_TRADITIONAL,
-                    onClick = {
-                        language = RouVideoSettings.LANG_TRADITIONAL
-                        RouVideoSettings.titleLanguage = language
-                    },
-                )
-            }
-            item {
-                RadioRow(
-                    title = stringResource(R.string.rouvideo_lang_simplified),
-                    selected = language == RouVideoSettings.LANG_SIMPLIFIED,
-                    onClick = {
-                        language = RouVideoSettings.LANG_SIMPLIFIED
-                        RouVideoSettings.titleLanguage = language
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.rouvideo_title_language),
+                    dialogMessage = stringResource(R.string.rouvideo_title_language_hint),
+                    options = listOf(
+                        stringResource(R.string.rouvideo_lang_traditional) to RouVideoSettings.LANG_TRADITIONAL,
+                        stringResource(R.string.rouvideo_lang_simplified) to RouVideoSettings.LANG_SIMPLIFIED,
+                    ),
+                    selectedValue = language,
+                    onSelect = {
+                        language = it
+                        RouVideoSettings.titleLanguage = it
                     },
                 )
             }

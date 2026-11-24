@@ -39,6 +39,7 @@ import com.yenaly.han1meviewer.SupJav.common.SupJavSettings
 import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.SettingActionItem
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
@@ -101,23 +102,17 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            item { SectionHeader(stringResource(R.string.supjav_pref_quality)) }
             item {
-                HintText(
-                    stringResource(R.string.supjav_pref_quality_hint)
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.supjav_pref_quality),
+                    dialogMessage = stringResource(R.string.supjav_pref_quality_hint),
+                    options = SupJavConstants.QUALITIES.map { it to it },
+                    selectedValue = quality,
+                    onSelect = {
+                        quality = it
+                        SupJavSettings.preferredQuality = it
+                    },
                 )
-            }
-            SupJavConstants.QUALITIES.forEach { option ->
-                item(key = "quality_$option") {
-                    RadioRow(
-                        title = option,
-                        selected = quality == option,
-                        onClick = {
-                            quality = option
-                            SupJavSettings.preferredQuality = option
-                        },
-                    )
-                }
             }
 
             item { SectionHeader(stringResource(R.string.supjav_servers)) }
@@ -166,21 +161,17 @@ fun SupJavSettingsScreen(onBack: () -> Unit) {
                 )
             }
 
-            item { SectionHeader(stringResource(R.string.supjav_site_language)) }
             item {
-                HintText(stringResource(R.string.supjav_site_language_hint))
-            }
-            SupJavConstants.LANGUAGES.forEach { (code, title) ->
-                item(key = "lang_$code") {
-                    RadioRow(
-                        title = title,
-                        selected = language == code,
-                        onClick = {
-                            language = code
-                            SupJavSettings.language = code
-                        },
-                    )
-                }
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.supjav_site_language),
+                    dialogMessage = stringResource(R.string.supjav_site_language_hint),
+                    options = SupJavConstants.LANGUAGES.map { (code, title) -> title to code },
+                    selectedValue = language,
+                    onSelect = {
+                        language = it
+                        SupJavSettings.language = it
+                    },
+                )
             }
 
             item { SectionHeader(stringResource(R.string.supjav_subtitles)) }

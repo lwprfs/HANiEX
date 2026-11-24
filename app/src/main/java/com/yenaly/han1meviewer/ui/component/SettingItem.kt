@@ -285,18 +285,17 @@ fun SettingNavigationItem(
         ) {
             iconRes?.let { SettingIconBadge(it, enabled = enabled) }
                 ?: icon?.let { SettingIconBadge(it, enabled = enabled) }
-            Column(modifier = Modifier.weight(1f)) {
-                SettingTexts(title, summary, enabled = enabled)
-                if (!valueText.isNullOrBlank()) {
-                    Text(
-                        text = valueText,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = if (enabled) 1f else 0.38f),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp),
-                    )
-                }
+            SettingTexts(title, summary, Modifier.weight(1f), enabled = enabled)
+            if (!valueText.isNullOrBlank()) {
+                Text(
+                    text = valueText,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = if (enabled) 1f else 0.38f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                    modifier = Modifier.widthIn(max = 160.dp),
+                )
             }
             Icon(
                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -304,6 +303,49 @@ fun SettingNavigationItem(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+/**
+ * A navigation-style row that shows the current value on the right (before the arrow) and opens a
+ * [ChoiceDialog] when tapped, instead of changing the value in place.
+ */
+@Composable
+fun SettingChoiceDialogItem(
+    title: String,
+    options: List<Pair<String, String>>,
+    selectedValue: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    summary: String? = null,
+    iconRes: Int? = null,
+    icon: ImageVector? = null,
+    enabled: Boolean = true,
+    dialogMessage: String? = null,
+) {
+    var show by remember { mutableStateOf(false) }
+    SettingNavigationItem(
+        title = title,
+        onClick = { show = true },
+        modifier = modifier,
+        summary = summary,
+        valueText = options.firstOrNull { it.second == selectedValue }?.first ?: selectedValue,
+        iconRes = iconRes,
+        icon = icon,
+        enabled = enabled,
+    )
+    if (show) {
+        ChoiceDialog(
+            title = title,
+            options = options,
+            selectedValue = selectedValue,
+            message = dialogMessage,
+            onDismiss = { show = false },
+            onSelect = {
+                show = false
+                onSelect(it)
+            },
+        )
     }
 }
 

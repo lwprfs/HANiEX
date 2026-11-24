@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.XHamster.common.XHamsterConstants
 import com.yenaly.han1meviewer.XHamster.common.XHamsterSettings
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingRadioItem
@@ -52,20 +53,17 @@ fun XHamsterSettingsScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            SettingSectionHeader(stringResource(R.string.xhamster_pref_quality))
-            SettingHintText(stringResource(R.string.xhamster_pref_quality_summary))
-            XHamsterConstants.QUALITIES.forEach { quality ->
-                SettingRadioItem(
-                    title = if (quality == "auto") {
-                        stringResource(R.string.xhamster_quality_auto)
-                    } else quality,
-                    selected = selected == quality,
-                    onClick = {
-                        selected = quality
-                        XHamsterSettings.preferredQuality = quality
-                    },
-                )
-            }
+            val autoLabel = stringResource(R.string.xhamster_quality_auto)
+            SettingChoiceDialogItem(
+                title = stringResource(R.string.xhamster_pref_quality),
+                dialogMessage = stringResource(R.string.xhamster_pref_quality_summary),
+                options = XHamsterConstants.QUALITIES.map { (if (it == "auto") autoLabel else it) to it },
+                selectedValue = selected,
+                onSelect = {
+                    selected = it
+                    XHamsterSettings.preferredQuality = it
+                },
+            )
         }
     }
 }

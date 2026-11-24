@@ -87,6 +87,16 @@ object CoomerConstants {
         return segments[1].takeIf { id -> id.isNotEmpty() && id.all { it.isDigit() } }
     }
 
+    /** `/p/{postId}/{creatorId}/{service}` -> `{creatorId}` (null for `/p/{postId}`). */
+    fun creatorIdFromPostPath(path: String): String? {
+        val segments = path.split('/').filter { it.isNotBlank() }
+        if (segments.size < 3 || segments[0] != "p") return null
+        return segments[2].takeIf { id -> id.isNotEmpty() && id.all { it.isDigit() } }
+    }
+
+    /** Creator avatars are served by the site itself, so they stay reachable when post media 404s. */
+    fun avatarUrl(creatorId: String): String = "$BASE_URL/istorage/$creatorId.jpg"
+
     /** `/u/{service}/{id}[/{name}]` -> `service/id[/name]`. */
     fun creatorSlugFromPath(path: String): String? {
         val segments = path.split('/').filter { it.isNotBlank() }

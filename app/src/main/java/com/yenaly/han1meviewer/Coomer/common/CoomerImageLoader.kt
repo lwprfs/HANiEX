@@ -24,9 +24,18 @@ object CoomerImageLoader {
         if (chain.request().header("Referer") == null) {
             builder.header("Referer", "${CoomerConstants.BASE_URL}/")
         }
+        if (chain.request().header("Origin") == null) {
+            builder.header("Origin", CoomerConstants.BASE_URL)
+        }
         builder.header("User-Agent", USER_AGENT)
             .header("Accept", "image/webp,image/apng,image/jpeg,image/png,*/*;q=0.8")
-        chain.proceed(builder.build())
+        val request = builder.build()
+        val response = chain.proceed(request)
+        if (response.isSuccessful) return@Interceptor response
+        val fallback = CoomerThumbFallback.get(request.url.toString())
+            ?: return@Interceptor response
+        response.close()
+        chain.proceed(request.newBuilder().url(fallback).build())
     }
 
     private val siteClient: OkHttpClient by lazy {

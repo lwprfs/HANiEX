@@ -28,6 +28,7 @@ import com.yenaly.han1meviewer.RedGifs.common.RedGifsSession
 import com.yenaly.han1meviewer.RedGifs.common.RedGifsSettings
 import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth
 import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsRepo
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingRadioItem
@@ -70,22 +71,17 @@ fun RedGifsSettingsScreen(onBack: () -> Unit) {
         },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
-            SettingSectionHeader(stringResource(R.string.redgifs_pref_quality))
-            SettingHintText(stringResource(R.string.redgifs_pref_quality_summary))
-            SettingRadioItem(
-                title = stringResource(R.string.redgifs_quality_hd),
-                selected = quality == RedGifsSettings.QUALITY_HD,
-                onClick = {
-                    quality = RedGifsSettings.QUALITY_HD
-                    RedGifsSettings.quality = RedGifsSettings.QUALITY_HD
-                },
-            )
-            SettingRadioItem(
-                title = stringResource(R.string.redgifs_quality_sd),
-                selected = quality == RedGifsSettings.QUALITY_SD,
-                onClick = {
-                    quality = RedGifsSettings.QUALITY_SD
-                    RedGifsSettings.quality = RedGifsSettings.QUALITY_SD
+            SettingChoiceDialogItem(
+                title = stringResource(R.string.redgifs_pref_quality),
+                dialogMessage = stringResource(R.string.redgifs_pref_quality_summary),
+                options = listOf(
+                    stringResource(R.string.redgifs_quality_hd) to RedGifsSettings.QUALITY_HD,
+                    stringResource(R.string.redgifs_quality_sd) to RedGifsSettings.QUALITY_SD,
+                ),
+                selectedValue = quality,
+                onSelect = {
+                    quality = it
+                    RedGifsSettings.quality = it
                 },
             )
             SettingSwitchItem(

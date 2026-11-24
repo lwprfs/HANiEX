@@ -32,6 +32,7 @@ import com.yenaly.han1meviewer.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Restore
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingRadioItem
@@ -57,26 +58,32 @@ fun CoserSettingsScreen(onBack: () -> Unit) {
         },
     ) { padding ->
         LazyColumn(Modifier.fillMaxSize().padding(padding)) {
-            item { Header(stringResource(R.string.coser_pref_quality)) }
-            item { Hint(stringResource(R.string.coser_pref_quality_hint)) }
-            CoserConstants.QUALITIES.forEach { option ->
-                item(key = "q_$option") {
-                    RadioRow(option, quality == option) {
-                        quality = option
-                        CoserSettings.preferredQuality = option
-                    }
-                }
+            item {
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.coser_pref_quality),
+                    dialogMessage = stringResource(R.string.coser_pref_quality_hint),
+                    options = CoserConstants.QUALITIES.map { it to it },
+                    selectedValue = quality,
+                    onSelect = {
+                        quality = it
+                        CoserSettings.preferredQuality = it
+                    },
+                )
             }
 
-            item { Header(stringResource(R.string.coser_photo_columns)) }
-            item { Hint(stringResource(R.string.coser_photo_columns_hint)) }
-            CoserConstants.PHOTO_COLUMN_OPTIONS.forEach { n ->
-                item(key = "c_$n") {
-                    RadioRow(n.toString(), columns == n) {
-                        columns = n
-                        CoserSettings.photoColumns = n
-                    }
-                }
+            item {
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.coser_photo_columns),
+                    dialogMessage = stringResource(R.string.coser_photo_columns_hint),
+                    options = CoserConstants.PHOTO_COLUMN_OPTIONS.map { it.toString() to it.toString() },
+                    selectedValue = columns.toString(),
+                    onSelect = { picked ->
+                        picked.toIntOrNull()?.let {
+                            columns = it
+                            CoserSettings.photoColumns = it
+                        }
+                    },
+                )
             }
             item {
                 SwitchRow(

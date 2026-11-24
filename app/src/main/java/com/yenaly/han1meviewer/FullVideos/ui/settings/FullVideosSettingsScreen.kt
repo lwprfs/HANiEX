@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.ui.component.SettingChoiceDialogItem
 import com.yenaly.han1meviewer.ui.component.SettingActionItem
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.Restore
@@ -88,19 +89,17 @@ fun FullVideosSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            item { SettingSectionHeader(stringResource(R.string.fullvideos_pref_quality)) }
-            item { SettingHintText(stringResource(R.string.fullvideos_pref_quality_hint)) }
-            FullVideosConstants.QUALITIES.forEach { option ->
-                item(key = "quality_$option") {
-                    SettingRadioItem(
-                        title = option,
-                        selected = quality == option,
-                        onClick = {
-                            quality = option
-                            FullVideosSettings.preferredQuality = option
-                        },
-                    )
-                }
+            item {
+                SettingChoiceDialogItem(
+                    title = stringResource(R.string.fullvideos_pref_quality),
+                    dialogMessage = stringResource(R.string.fullvideos_pref_quality_hint),
+                    options = FullVideosConstants.QUALITIES.map { it to it },
+                    selectedValue = quality,
+                    onSelect = {
+                        quality = it
+                        FullVideosSettings.preferredQuality = it
+                    },
+                )
             }
 
             item { SettingSectionHeader(stringResource(R.string.fullvideos_troubleshooting)) }

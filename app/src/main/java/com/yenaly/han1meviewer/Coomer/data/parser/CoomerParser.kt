@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.Coomer.data.parser
 
 import com.yenaly.han1meviewer.Coomer.common.CoomerConstants
+import com.yenaly.han1meviewer.Coomer.common.CoomerThumbFallback
 import com.yenaly.han1meviewer.Coomer.data.model.CoomerCard
 import com.yenaly.han1meviewer.Coomer.data.model.CoomerDetail
 import com.yenaly.han1meviewer.Coomer.data.model.CoomerListPage
@@ -33,6 +34,18 @@ object CoomerParser {
         return if (url.contains(BLANK_POST)) "" else url
     }
 
+    /**
+     * Post thumbnail, falling back to the creator avatar when the post has no image. When the image
+     * exists but its host answers 404, the loader swaps in the same avatar (see [CoomerThumbFallback]).
+     */
+    private fun postCover(thumb: String, postPath: String): String {
+        val creatorId = CoomerConstants.creatorIdFromPostPath(postPath)
+        val avatar = creatorId?.let { CoomerConstants.avatarUrl(it) }.orEmpty()
+        if (thumb.isBlank()) return avatar
+        if (avatar.isNotBlank()) CoomerThumbFallback.register(thumb, avatar)
+        return thumb
+    }
+
     private fun parseCreatorTile(tile: Element): CoomerTerm? {
         val a = tile.selectFirst("a[href^=/u/], a[href*=/u/]") ?: return null
         val slug = CoomerConstants.creatorSlugFromPath(pathOf(a.attr("href"))) ?: return null
@@ -57,7 +70,11 @@ object CoomerParser {
             val slug = CoomerConstants.slugFromPath(pathOf(a.attr("href"))) ?: return@mapNotNull null
             val title = clean(tile.selectFirst("span")?.text()).ifBlank { clean(a.attr("title")) }
                 .ifBlank { "Post $slug" }
-            CoomerCard(slug = slug, title = title, coverUrl = imgUrl(tile))
+            CoomerCard(
+                slug = slug,
+                title = title,
+                coverUrl = postCover(imgUrl(tile), pathOf(a.attr("href"))),
+            )
         }.distinctBy { it.slug }
 
     /** `.post` blocks on a creator page. */
@@ -71,7 +88,7 @@ object CoomerParser {
             CoomerCard(
                 slug = slug,
                 title = title,
-                coverUrl = imgUrl(block.selectFirst(".post-thumbs")),
+                coverUrl = postCover(imgUrl(block.selectFirst(".post-thumbs")), pathOf(a.attr("href"))),
                 creatorName = creatorName,
                 date = dateOf(block.selectFirst(".post-date")?.text().orEmpty()),
             )
@@ -135,6 +152,7 @@ object CoomerParser {
             .filter { it.slug != creator?.slug }
 
         val cover = photos.firstOrNull().orEmpty().ifBlank { creator?.thumbUrl.orEmpty() }
+        if (photos.isNotEmpty() && creator != null) CoomerThumbFallback.register(cover, creator.thumbUrl)
 
         return CoomerDetail(
             slug = slug,
