@@ -1448,4 +1448,13 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="coomer_pages_creators_desc">すべてのクリエイターを新着順に閲覧</string>
     <string name="coomer_pages_favorited_desc">サイトが選んだクリエイター</string>
     <string name="coomer_pages_posts_desc">全クリエイターの最新投稿</string>
+    <string name="onair_page_only">%1$d ページ</string>
+    <string name="onair_page_of">%1$d / %2$d ページ</string>
+    <string name="onair_go_to_page">ページへ移動</string>
+    <string name="onair_page_number">ページ番号</string>
+    <string name="onair_page_hint">1 から %1$d までのページ番号を入力</string>
+    <string name="onair_page_invalid">ページ番号は 1 から %1$d の間で指定してください</string>
+    <string name="onair_page_invalid_any">有効なページ番号を入力してください</string>
+    <string name="onair_go">移動</string>
+    <string name="onair_page_empty">%1$d ページには動画がありません</string>
 </resources>

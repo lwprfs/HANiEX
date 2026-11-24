@@ -3180,4 +3180,13 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="coomer_pages_creators_desc">Browse every creator, newest first</string>
     <string name="coomer_pages_favorited_desc">Creators curated by the site</string>
     <string name="coomer_pages_posts_desc">Latest posts from all creators</string>
+    <string name="onair_page_only">Page %1$d</string>
+    <string name="onair_page_of">Page %1$d / %2$d</string>
+    <string name="onair_go_to_page">Go to page</string>
+    <string name="onair_page_number">Page number</string>
+    <string name="onair_page_hint">Enter a page from 1 to %1$d</string>
+    <string name="onair_page_invalid">Page must be between 1 and %1$d</string>
+    <string name="onair_page_invalid_any">Enter a valid page number</string>
+    <string name="onair_go">Go</string>
+    <string name="onair_page_empty">Page %1$d has no videos</string>
 </resources>

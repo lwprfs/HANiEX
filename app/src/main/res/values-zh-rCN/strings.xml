@@ -1448,4 +1448,13 @@
     <string name="coomer_pages_creators_desc">按最新顺序浏览所有创作者</string>
     <string name="coomer_pages_favorited_desc">网站精选的创作者</string>
     <string name="coomer_pages_posts_desc">所有创作者的最新帖子</string>
+    <string name="onair_page_only">第 %1$d 页</string>
+    <string name="onair_page_of">第 %1$d / %2$d 页</string>
+    <string name="onair_go_to_page">跳转到页面</string>
+    <string name="onair_page_number">页码</string>
+    <string name="onair_page_hint">输入 1 到 %1$d 之间的页码</string>
+    <string name="onair_page_invalid">页码必须介于 1 到 %1$d 之间</string>
+    <string name="onair_page_invalid_any">请输入有效的页码</string>
+    <string name="onair_go">前往</string>
+    <string name="onair_page_empty">第 %1$d 页没有视频</string>
 </resources>

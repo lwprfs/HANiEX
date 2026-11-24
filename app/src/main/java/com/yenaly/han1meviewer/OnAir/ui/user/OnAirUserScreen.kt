@@ -61,6 +61,7 @@ import com.yenaly.han1meviewer.OnAir.data.model.OnAirUserProfile
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetworkRepo
 import com.yenaly.han1meviewer.OnAir.ui.components.OnAirVideoCardItem
+import com.yenaly.han1meviewer.OnAir.ui.components.rememberOnAirWatched
 import com.yenaly.han1meviewer.OnAir.ui.home.InfiniteScrollFooter
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -88,6 +89,7 @@ fun OnAirUserScreen(
     var pendingPage by remember { mutableIntStateOf(0) }
     var reloadTick by remember { mutableIntStateOf(0) }
     val gridState = rememberLazyGridState()
+    val watchedIds = rememberOnAirWatched()
     val columns = rememberVideoGridColumns()
 
     LaunchedEffect(username, reloadTick) {
@@ -202,6 +204,7 @@ fun OnAirUserScreen(
                             OnAirVideoCardItem(
                                 card = card,
                                 onClick = { onOpenVideo(card.videoId) },
+                                isWatched = card.videoId in watchedIds,
                             )
                         }
                         if (videos.isEmpty()) {

@@ -13,6 +13,7 @@ import com.yenaly.han1meviewer.OnAir.data.model.OnAirPageInfo
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirSearchResult
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetworkRepo
+import com.yenaly.han1meviewer.OnAir.ui.home.OnAirPageStart
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,6 +64,14 @@ class OnAirSearchViewModel(
 
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore = _isLoadingMore.asStateFlow()
+
+    /** Where each loaded site page begins inside [results]; drives the live page number. */
+    private val _pageStarts = MutableStateFlow<List<OnAirPageStart>>(emptyList())
+    val pageStarts = _pageStarts.asStateFlow()
+
+    /** Session-only first page of the current result list (never persisted). */
+    private val _startPage = MutableStateFlow(1)
+    val startPage = _startPage.asStateFlow()
 
     private var searchJob: Job? = null
 
@@ -116,6 +125,8 @@ class OnAirSearchViewModel(
         _state.value = null
         _hasSearched.value = false
         _currentPage.value = 1
+        _startPage.value = 1
+        _pageStarts.value = emptyList()
         _pageInfo.value = null
         _isLoadingMore.value = false
         savedStateHandle["q"] = ""
@@ -127,38 +138,56 @@ class OnAirSearchViewModel(
     }
 
     fun performSearch() {
+        startSearch(page = 1, saveToHistory = true)
+    }
+
+    /**
+     * Re-run the current search starting at [page]. Returns false (and does nothing) if the page is
+     * out of range. The chosen page only lives for this session.
+     */
+    fun jumpToPage(page: Int): Boolean {
+        if (!_hasSearched.value) return false
+        val total = _pageInfo.value?.total
+        if (page < 1 || (total != null && page > total)) return false
+        startSearch(page = page, saveToHistory = false, keepPageInfo = true)
+        return true
+    }
+
+    private fun startSearch(page: Int, saveToHistory: Boolean, keepPageInfo: Boolean = false) {
         searchJob?.cancel()
-        _currentPage.value = 1
+        _startPage.value = page
+        _currentPage.value = page
+        _pageStarts.value = listOf(OnAirPageStart(page, 0))
         _hasSearched.value = true
         _results.value = emptyList()
         _state.value = PageLoadingState.Loading
         _isLoadingMore.value = false
-        _pageInfo.value = null
+        if (!keepPageInfo) _pageInfo.value = null
 
         val q = _query.value
         val tag = _tagFilter.value
-        persistHistory(q, tag)
+        if (saveToHistory) persistHistory(q, tag)
 
         searchJob = viewModelScope.launch {
             if (!tag.isNullOrBlank()) {
                 OnAirNetworkRepo.getTagPage(
                     tagName = tag,
-                    page = 1,
+                    page = page,
                     query = q.takeIf { it.isNotBlank() },
                     field = _field.value,
                     length = _length.value,
                     date = _date.value,
                     sort = _sort.value,
-                ).collect { s -> handleState(s, 1) }
+                ).collect { s -> handleState(s, page) }
             } else {
                 OnAirNetworkRepo.searchVideos(
-                    page = 1,
+                    page = page,
                     query = q,
                     field = _field.value,
                     length = _length.value,
                     date = _date.value,
                     sort = _sort.value,
-                ).collect { s -> handleState(s, 1) }
+                ).collect { s -> handleState(s, page) }
             }
         }
     }
@@ -197,45 +226,19 @@ class OnAirSearchViewModel(
         }
     }
 
-    fun goToPage(page: Int) {
-        if (_isLoadingMore.value) return
-        val q = _query.value
-        val tag = _tagFilter.value
-        searchJob?.cancel()
-        _isLoadingMore.value = true
-        _state.value = PageLoadingState.Loading
-        searchJob = viewModelScope.launch {
-            if (!tag.isNullOrBlank()) {
-                OnAirNetworkRepo.getTagPage(
-                    tagName = tag,
-                    page = page,
-                    query = q.takeIf { it.isNotBlank() },
-                    field = _field.value,
-                    length = _length.value,
-                    date = _date.value,
-                    sort = _sort.value,
-                ).collect { s -> handleState(s, page) }
-            } else {
-                OnAirNetworkRepo.searchVideos(
-                    page = page,
-                    query = q,
-                    field = _field.value,
-                    length = _length.value,
-                    date = _date.value,
-                    sort = _sort.value,
-                ).collect { s -> handleState(s, page) }
-            }
-        }
-    }
-
     private fun handleState(s: PageLoadingState<OnAirSearchResult>, page: Int) {
         if (!viewModelScope.isActive) return
         _state.value = s
         when (s) {
             is PageLoadingState.Success -> {
                 val incoming = s.info.cards
+                val isFirst = page == _startPage.value
+                val prevSize = _results.value.size
+                if (!isFirst && incoming.isNotEmpty()) {
+                    _pageStarts.update { it + OnAirPageStart(page, prevSize) }
+                }
                 _results.update { prev ->
-                    if (page == 1) incoming else (prev + incoming).distinctBy { it.videoId }
+                    if (isFirst) incoming else (prev + incoming).distinctBy { it.videoId }
                 }
                 _pageInfo.value = s.info.pageInfo
                 _currentPage.value = page

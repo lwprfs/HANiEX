@@ -40,6 +40,7 @@ import com.yenaly.han1meviewer.OnAir.data.model.OnAirPageInfo
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetworkRepo
 import com.yenaly.han1meviewer.OnAir.ui.components.OnAirVideoCardItem
+import com.yenaly.han1meviewer.OnAir.ui.components.rememberOnAirWatched
 import com.yenaly.han1meviewer.OnAir.ui.home.InfiniteScrollFooter
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -58,6 +59,7 @@ fun OnAirTagScreen(
     onLoadFailure: (String) -> Unit = {},
 ) {
     val gridState = rememberLazyGridState()
+    val watchedIds = rememberOnAirWatched()
     val scope = rememberCoroutineScope()
     val columns = rememberVideoGridColumns()
     var cards by remember { mutableStateOf<List<OnAirVideoCard>>(emptyList()) }
@@ -165,7 +167,7 @@ fun OnAirTagScreen(
                         enableItemAnimation = false,
                     ) {
                         items(cards, key = { it.videoId }) { card ->
-                            OnAirVideoCardItem(card = card, onClick = { onOpenVideo(card.videoId) })
+                            OnAirVideoCardItem(card = card, onClick = { onOpenVideo(card.videoId) }, isWatched = card.videoId in watchedIds)
                         }
                         if (cards.isNotEmpty()) {
                             item(span = { GridItemSpan(maxLineSpan) }) {

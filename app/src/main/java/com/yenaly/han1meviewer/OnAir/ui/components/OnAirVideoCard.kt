@@ -54,6 +54,7 @@ fun OnAirVideoCardItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: ((OnAirVideoCard) -> Unit)? = null,
+    isWatched: Boolean = false,
 ) {
     val clipboard = LocalClipboard.current
     val clipboardScope = rememberCoroutineScope()
@@ -83,5 +84,6 @@ fun OnAirVideoCardItem(
         subtitle = card.uploaderName,
         onClick = onClick,
         onLongClick = { longClickHandler(card) },
+        isWatched = isWatched,
     )
 }

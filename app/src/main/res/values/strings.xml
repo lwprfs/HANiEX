@@ -3221,4 +3221,13 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="coomer_pages_creators_desc">依最新順序瀏覽所有創作者</string>
     <string name="coomer_pages_favorited_desc">網站精選的創作者</string>
     <string name="coomer_pages_posts_desc">所有創作者的最新貼文</string>
+    <string name="onair_page_only">第 %1$d 頁</string>
+    <string name="onair_page_of">第 %1$d / %2$d 頁</string>
+    <string name="onair_go_to_page">跳轉到頁面</string>
+    <string name="onair_page_number">頁碼</string>
+    <string name="onair_page_hint">輸入 1 到 %1$d 之間的頁碼</string>
+    <string name="onair_page_invalid">頁碼必須介於 1 到 %1$d 之間</string>
+    <string name="onair_page_invalid_any">請輸入有效的頁碼</string>
+    <string name="onair_go">前往</string>
+    <string name="onair_page_empty">第 %1$d 頁沒有影片</string>
 </resources>

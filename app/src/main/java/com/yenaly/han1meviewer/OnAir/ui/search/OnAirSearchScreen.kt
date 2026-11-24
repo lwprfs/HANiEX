@@ -47,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +74,9 @@ import com.yenaly.han1meviewer.OnAir.data.local.OnAirSearchHistoryRepo
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirOptions
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirSelectOption
 import com.yenaly.han1meviewer.OnAir.ui.components.OnAirVideoCardItem
+import com.yenaly.han1meviewer.OnAir.ui.components.rememberOnAirWatched
+import com.yenaly.han1meviewer.OnAir.ui.home.OnAirPageChip
+import com.yenaly.han1meviewer.OnAir.ui.home.pageAt
 import com.yenaly.han1meviewer.OnAir.ui.home.InfiniteScrollFooter
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
@@ -104,6 +108,9 @@ fun OnAirSearchScreen(
     val pageInfo by viewModel.pageInfo.collectAsStateWithLifecycle()
     val currentPage by viewModel.currentPage.collectAsStateWithLifecycle()
     val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
+    val pageStarts by viewModel.pageStarts.collectAsStateWithLifecycle()
+    val startPage by viewModel.startPage.collectAsStateWithLifecycle()
+    val watched = rememberOnAirWatched()
 
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
@@ -111,6 +118,11 @@ fun OnAirSearchScreen(
     val gridState = rememberLazyGridState()
     val scope = rememberCoroutineScope()
     val columns = rememberSearchGridColumns()
+
+    // Live page number: follows the first visible result card.
+    val displayPage by remember(pageStarts, startPage) {
+        derivedStateOf { pageStarts.pageAt(gridState.firstVisibleItemIndex, startPage) }
+    }
 
     var showFilterSheet by rememberSaveable { mutableStateOf(false) }
     var showHistorySheet by rememberSaveable { mutableStateOf(false) }
@@ -285,6 +297,27 @@ fun OnAirSearchScreen(
             }
         }
 
+        if (hasSearched && pageInfo != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                OnAirPageChip(
+                    page = displayPage,
+                    total = pageInfo?.total,
+                    showTotal = true,
+                    onJump = { target ->
+                        val ok = viewModel.jumpToPage(target)
+                        if (ok) scope.launch { gridState.scrollToItem(0) }
+                        ok
+                    },
+                )
+            }
+        }
+
         when {
             !hasSearched -> {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -332,6 +365,7 @@ fun OnAirSearchScreen(
                         OnAirVideoCardItem(
                             card = card,
                             onClick = { onOpenVideo(card.videoId) },
+                            isWatched = card.videoId in watched,
                         )
                     }
                     if (results.isNotEmpty()) {

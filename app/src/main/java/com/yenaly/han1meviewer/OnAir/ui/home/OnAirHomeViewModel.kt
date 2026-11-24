@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.OnAir.data.model.OnAirPageInfo
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirUserProfile
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetworkRepo
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -41,6 +42,14 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore = _isLoadingMore.asStateFlow()
 
+    /** Where each loaded site page begins inside [cards]; drives the live page number. */
+    private val _pageStarts = MutableStateFlow<List<OnAirPageStart>>(listOf(OnAirPageStart(1, 0)))
+    val pageStarts = _pageStarts.asStateFlow()
+
+    /** Session-only page to start from (never persisted, so a restart goes back to page 1). */
+    private val _startPage = MutableStateFlow(1)
+    val startPage = _startPage.asStateFlow()
+
     private val _currentUser = MutableStateFlow<OnAirUserProfile?>(null)
     val currentUser = _currentUser.asStateFlow()
 
@@ -55,16 +64,24 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
     private var currentSort: String? = null
 
     private var profileJob: Job? = null
+    private var homeJob: Job? = null
+    private var moreJob: Job? = null
 
     fun loadHomePage(force: Boolean = false) {
         val now = System.currentTimeMillis()
         if (!force && now - lastFetchAt < CACHE_TTL_MS &&
             _homeState.value is WebsiteState.Success
         ) return
+        launchLoad(_startPage.value)
+    }
 
-        viewModelScope.launch {
+    private fun launchLoad(page: Int) {
+        homeJob?.cancel()
+        moreJob?.cancel()
+        _isLoadingMore.value = false
+        homeJob = viewModelScope.launch {
             OnAirNetworkRepo.getHomePage(
-                page = 1,
+                page = page,
                 query = currentQuery,
                 field = currentField,
                 length = currentLength,
@@ -78,18 +95,30 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
                     }
 
                     is WebsiteState.Success -> {
+                        val info = state.info
+                        if (page > 1 && info.videos.isEmpty()) {
+                            // Page does not exist on the site: fall back to page 1 for the retry.
+                            _startPage.value = 1
+                            _homeState.value = WebsiteState.Error(
+                                IllegalStateException(
+                                    getApplication<Application>()
+                                        .getString(R.string.onair_page_empty, page)
+                                )
+                            )
+                            return@collect
+                        }
                         lastFetchAt = System.currentTimeMillis()
-                        currentPage = 1
+                        currentPage = page
                         hasMore = true
-                        _loadedPage.value = 1
-                        val page = state.info
-                        _cards.value = page.videos
-                        _pageInfo.value = page.pageInfo
-                        if (page.pageInfo == null) {
-                            hasMore = page.videos.isNotEmpty()
+                        _loadedPage.value = page
+                        _pageStarts.value = listOf(OnAirPageStart(page, 0))
+                        _cards.value = info.videos
+                        _pageInfo.value = info.pageInfo
+                        if (info.pageInfo == null) {
+                            hasMore = info.videos.isNotEmpty()
                         }
 
-                        page.currentUsername?.let { name ->
+                        info.currentUsername?.let { name ->
                             OnAirProfileCache.setCurrentUsername(name)
                             val cached = OnAirProfileCache.get(name)
                             if (cached != null) {
@@ -101,12 +130,12 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
 
                         _homeState.value = WebsiteState.Success(
                             OnAirHomeUiData(
-                                videos = page.videos,
-                                totalVideos = page.totalVideos,
-                                totalPictures = page.totalPictures,
-                                totalMembers = page.totalMembers,
-                                announcementTitle = page.announcement?.title,
-                                announcementUrl = page.announcement?.url,
+                                videos = info.videos,
+                                totalVideos = info.totalVideos,
+                                totalPictures = info.totalPictures,
+                                totalMembers = info.totalMembers,
+                                announcementTitle = info.announcement?.title,
+                                announcementUrl = info.announcement?.url,
                             )
                         )
                     }
@@ -118,6 +147,25 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
                 }
             }
         }
+    }
+
+    /**
+     * Restart the feed from [page]. Returns false (and does nothing) if the page is out of range.
+     * The choice only lives for this session; it is not saved as the home start page.
+     */
+    fun jumpToPage(page: Int): Boolean {
+        val total = _pageInfo.value?.total
+        if (page < 1 || (total != null && page > total)) return false
+        _startPage.value = page
+        lastFetchAt = 0L
+        _cards.value = emptyList()
+        _pageStarts.value = listOf(OnAirPageStart(page, 0))
+        _loadedPage.value = page
+        currentPage = page
+        hasMore = true
+        _homeState.value = WebsiteState.Loading
+        launchLoad(page)
+        return true
     }
 
     fun refresh() {
@@ -135,7 +183,7 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
         }
         val nextPage = currentPage + 1
 
-        viewModelScope.launch {
+        moreJob = viewModelScope.launch {
             _isLoadingMore.value = true
             OnAirNetworkRepo.getHomePagePaged(
                 page = nextPage,
@@ -150,6 +198,10 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
                     is PageLoadingState.Success -> {
                         val pair = state.info
                         val newCards = pair.first
+                        val prevSize = _cards.value.size
+                        if (newCards.isNotEmpty()) {
+                            _pageStarts.update { it + OnAirPageStart(nextPage, prevSize) }
+                        }
                         _cards.update { prev ->
                             (prev + newCards).distinctBy { it.videoId }
                         }
@@ -195,9 +247,11 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
         currentPage = 1
         hasMore = true
         lastFetchAt = 0L
+        _startPage.value = 1
         _cards.value = emptyList()
         _pageInfo.value = null
         _loadedPage.value = 1
+        _pageStarts.value = listOf(OnAirPageStart(1, 0))
         loadHomePage(force = true)
     }
 
@@ -236,6 +290,8 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
     override fun onCleared() {
         super.onCleared()
         profileJob?.cancel()
+        homeJob?.cancel()
+        moreJob?.cancel()
     }
 }
 

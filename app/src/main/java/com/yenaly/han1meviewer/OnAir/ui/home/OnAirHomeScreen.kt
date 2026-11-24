@@ -41,6 +41,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,6 +64,7 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirUserProfile
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.OnAir.ui.components.OnAirVideoCardItem
+import com.yenaly.han1meviewer.OnAir.ui.components.rememberOnAirWatched
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.SiteBarIconButton
 import com.yenaly.han1meviewer.ui.component.SiteOverflowMenu
@@ -95,12 +97,23 @@ fun OnAirHomeScreen(
     val cards by viewModel.cards.collectAsStateWithLifecycle()
     val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUser.collectAsStateWithLifecycle()
+    val pageInfo by viewModel.pageInfo.collectAsStateWithLifecycle()
+    val pageStarts by viewModel.pageStarts.collectAsStateWithLifecycle()
+    val startPage by viewModel.startPage.collectAsStateWithLifecycle()
 
     val gridState = rememberLazyGridState()
     val refreshState = rememberPullToRefreshState()
     var isRefreshing by remember { mutableStateOf(false) }
     val columns = rememberVideoGridColumns()
     val scope = rememberCoroutineScope()
+
+    // Live page number: follows the first visible card (item 0 is the header, so subtract 1).
+    val displayPage by remember(pageStarts, startPage) {
+        derivedStateOf {
+            val cardIndex = (gridState.firstVisibleItemIndex - 1).coerceAtLeast(0)
+            pageStarts.pageAt(cardIndex, startPage)
+        }
+    }
 
     LaunchedEffect(Unit) { viewModel.loadHomePage() }
 
@@ -136,10 +149,14 @@ fun OnAirHomeScreen(
                 hint = applicationContext.getString(R.string.onair_search_onair),
                 onSearchClick = { onOpenSearch(null) },
                 action = {
-                    SiteBarIconButton(
-                        imageVector = Icons.Default.History,
-                        contentDescription = applicationContext.getString(R.string.site_history),
-                        onClick = onOpenHistory,
+                    OnAirPageChip(
+                        page = displayPage,
+                        total = pageInfo?.total,
+                        onJump = { target ->
+                            val ok = viewModel.jumpToPage(target)
+                            if (ok) scope.launch { gridState.scrollToItem(0) }
+                            ok
+                        },
                     )
                 },
             )
@@ -253,6 +270,7 @@ private fun HomeGrid(
     onOpenVideo: (String) -> Unit,
     header: @Composable (() -> Unit)? = null,
 ) {
+    val watched = rememberOnAirWatched()
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
         state = gridState,
@@ -266,7 +284,11 @@ private fun HomeGrid(
             item(span = { GridItemSpan(maxLineSpan) }) { header() }
         }
         items(cards, key = { it.videoId }) { card ->
-            OnAirVideoCardItem(card = card, onClick = { onOpenVideo(card.videoId) })
+            OnAirVideoCardItem(
+                card = card,
+                onClick = { onOpenVideo(card.videoId) },
+                isWatched = card.videoId in watched,
+            )
         }
         if (cards.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
