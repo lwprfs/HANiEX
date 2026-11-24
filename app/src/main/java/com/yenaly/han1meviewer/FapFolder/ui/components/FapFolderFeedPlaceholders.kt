@@ -92,6 +92,7 @@ fun FapFolderGroupRowCard(
         name = group.name,
         avatarUrl = group.avatarUrl,
         meta = group.followerCount?.let { stringResource(R.string.fap_followers, formatSocialCount(it)) },
+        metaIcon = androidx.compose.material.icons.Icons.Filled.Groups,
         chips = chips,
         onClick = onClick,
         modifier = modifier,

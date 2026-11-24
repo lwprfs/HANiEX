@@ -427,6 +427,7 @@ fun OnAirNavHost(
         navigationState = navigationState,
         entryProvider = entryProvider,
         modifier = modifier,
+        socialSite = com.yenaly.han1meviewer.SiteType.ONAIR,
     )
 }
 

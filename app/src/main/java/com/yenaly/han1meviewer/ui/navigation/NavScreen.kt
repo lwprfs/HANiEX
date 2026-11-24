@@ -12,6 +12,8 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
@@ -20,6 +22,10 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.component.social.LocalSocialStyle
+import com.yenaly.han1meviewer.ui.component.social.SiteSocialStyle
+import com.yenaly.han1meviewer.ui.component.social.SocialStyleConfig
 
 const val NAV_KEY_METADATA = "com.yenaly.han1meviewer.NAV_KEY"
 
@@ -38,21 +44,29 @@ fun SiteNavDisplay(
     navigationState: NavigationState,
     entryProvider: (NavKey) -> NavEntry<NavKey>,
     modifier: Modifier = Modifier,
+
+    socialSite: SiteType? = null,
 ) {
-    SanitizedPredictiveBackOwner {
-        NavDisplay(
-            backStack = navigationState.entriesInUse,
-            onBack = { navigator.goBack() },
-            modifier = modifier,
-            entryDecorators = listOf(
-                rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
-                rememberViewModelStoreNavEntryDecorator<NavKey>(),
-            ),
-            transitionSpec = { siteForwardTransform() },
-            popTransitionSpec = { siteBackTransform() },
-            predictivePopTransitionSpec = { _ -> siteBackTransform() },
-            entryProvider = entryProvider,
-        )
+    @Suppress("UNUSED_VARIABLE") val socialRevision = SiteSocialStyle.revision
+    val socialStyle = remember(socialSite, socialRevision) {
+        socialSite?.let { SiteSocialStyle.config(it) } ?: SocialStyleConfig.Default
+    }
+    CompositionLocalProvider(LocalSocialStyle provides socialStyle) {
+        SanitizedPredictiveBackOwner {
+            NavDisplay(
+                backStack = navigationState.entriesInUse,
+                onBack = { navigator.goBack() },
+                modifier = modifier,
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator<NavKey>(),
+                    rememberViewModelStoreNavEntryDecorator<NavKey>(),
+                ),
+                transitionSpec = { siteForwardTransform() },
+                popTransitionSpec = { siteBackTransform() },
+                predictivePopTransitionSpec = { _ -> siteBackTransform() },
+                entryProvider = entryProvider,
+            )
+        }
     }
 }
 

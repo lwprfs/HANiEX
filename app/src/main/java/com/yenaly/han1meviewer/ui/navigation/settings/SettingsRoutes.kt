@@ -19,6 +19,9 @@ object PlayerSettingsRoute : NavKey
 data class SitePlayerSettingsRoute(val site: String) : NavKey
 
 @Serializable
+data class SiteSocialStyleRoute(val site: String) : NavKey
+
+@Serializable
 object NetworkSettingsRoute : NavKey
 
 @Serializable

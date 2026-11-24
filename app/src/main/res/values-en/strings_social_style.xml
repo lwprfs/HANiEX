@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="social_style_title">Profile & community style</string>
+    <string name="social_style_subtitle">Change the layout of search results, profile pages and community pages</string>
+    <string name="social_style_search_section">Search results</string>
+    <string name="social_style_profile_section">Profile page</string>
+    <string name="social_style_community_section">Community page</string>
+    <string name="social_style_classic">Classic (default)</string>
+    <string name="social_style_centered">Centered</string>
+    <string name="social_style_compact">Compact</string>
+    <string name="social_list_showcase">Showcase card</string>
+    <string name="social_list_flat">Flat list</string>
+    <string name="social_profile_immersive">Immersive</string>
+    <string name="social_style_preview_note">Preview (sample data, for layout only)</string>
+    <string name="social_style_sample_name">Sample name</string>
+    <string name="social_style_sample_bio">This is a sample bio.</string>
+    <string name="social_style_sample_community">Sample community</string>
+    <string name="social_style_reset">Reset to default</string>
+    <string name="social_view_profile">View profile</string>
+    <string name="social_view_community">View community</string>
+</resources>

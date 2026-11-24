@@ -27,6 +27,7 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -129,6 +130,7 @@ fun redGifsHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfi
         ),
         subscriptionSections = listOf(subscription),
         profileExtraQuickActions = listOf(account),
-        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.REDGIFS)),
+        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.REDGIFS),
+            rememberSocialStyleEntry(navigator, SiteType.REDGIFS)),
     )
 }

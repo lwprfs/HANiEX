@@ -15,6 +15,7 @@ import com.yenaly.han1meviewer.ui.navigation.screen
 import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
 import com.yenaly.han1meviewer.ui.screen.settings.MediaControlsSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.SitePlayerSettingsPage
+import com.yenaly.han1meviewer.ui.screen.settings.SiteSocialStylePage
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
@@ -86,6 +87,11 @@ fun EntryProviderScope<NavKey>.settingsEntries(
         val site = runCatching { SiteType.valueOf(key.site) }
             .getOrDefault(SiteType.SUPJAV)
         SitePlayerSettingsPage(site = site, onBack = onBack)
+    }
+    screen<SiteSocialStyleRoute> { key ->
+        val site = runCatching { SiteType.valueOf(key.site) }
+            .getOrDefault(SiteType.FAPFOLDER)
+        SiteSocialStylePage(site = site, onBack = onBack)
     }
     screen<MediaControlsSettingsRoute> {
         MediaControlsSettingsScreen(onBack = onBack)

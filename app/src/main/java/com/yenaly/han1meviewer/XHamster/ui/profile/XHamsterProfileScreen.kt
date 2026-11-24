@@ -231,7 +231,12 @@ private fun ProfileContent(
                 else R.string.xhamster_tab_shorts
             ) + (XHamsterFormat.count(count)?.let { " $it" } ?: "")
         }
-        SocialTabRow(labels = tabLabels, selectedIndex = selected, onSelect = { selected = it })
+        SocialTabRow(
+            labels = tabLabels,
+            selectedIndex = selected,
+            onSelect = { selected = it },
+            community = profile.kind == XHamsterEntityProfile.Kind.CHANNEL,
+        )
         Box(Modifier.weight(1f).fillMaxWidth()) {
             when (tabs.getOrElse(selected) { ProfileTab.VIDEOS }) {
                 ProfileTab.VIDEOS -> ProfileVideos(videosPath, profile.tags, profile.sorts, onNavigateToVideo)
@@ -281,6 +286,7 @@ private fun ProfileHeader(
         avatarUrl = profile.avatarUrl,
         avatarShape = if (profile.kind == XHamsterEntityProfile.Kind.CHANNEL)
             SocialDefaults.CommunityAvatarShape else CircleShape,
+        isCommunity = profile.kind == XHamsterEntityProfile.Kind.CHANNEL,
         verified = profile.verified,
         chips = chips,
         bio = profile.aliases?.takeIf { it.isNotBlank() },

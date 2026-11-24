@@ -298,6 +298,7 @@ private fun GroupHeaderBlock(
         coverUrl = group.bannerUrl,
         avatarUrl = group.avatarUrl,
         avatarShape = SocialDefaults.CommunityAvatarShape,
+        isCommunity = true,
         chips = chips,
         bio = group.bio,
         errorText = joinError,
@@ -346,6 +347,7 @@ private fun GroupTabRow(
         selectedIndex = tabs.indexOf(activeTab),
         onSelect = { onSelect(tabs[it]) },
         showSingle = true,
+        community = true,
     )
 }
 

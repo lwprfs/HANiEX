@@ -53,11 +53,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -355,8 +357,15 @@ fun SocialTabRow(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
     showSingle: Boolean = false,
+    community: Boolean = false,
 ) {
     if (labels.size < 2 && !showSingle) return
+    val cfg = LocalSocialStyle.current
+    val headerStyle = if (community) cfg.community else cfg.profile
+    if (headerStyle == SocialProfileStyle.CENTERED || headerStyle == SocialProfileStyle.IMMERSIVE) {
+        SocialUnderlineTabs(labels, selectedIndex, onSelect, modifier)
+        return
+    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -412,7 +421,30 @@ fun SocialEntityCard(
     trailing: (@Composable () -> Unit)? = null,
     showChevron: Boolean = false,
     imageLoader: ImageLoader? = null,
+    metaIcon: ImageVector? = null,
+    isCommunity: Boolean = false,
 ) {
+    val listStyle = LocalSocialStyle.current.list
+    if (listStyle != SocialListStyle.CLASSIC) {
+        SocialEntityVariant(
+            style = listStyle,
+            name = name,
+            onClick = onClick,
+            modifier = modifier,
+            avatarUrl = avatarUrl,
+            avatarShape = avatarShape,
+            username = username,
+            description = description,
+            meta = meta,
+            metaIcon = metaIcon,
+            verified = verified,
+            chips = chips,
+            trailing = trailing,
+            imageLoader = imageLoader,
+            isCommunity = isCommunity,
+        )
+        return
+    }
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -511,10 +543,12 @@ fun SocialUserCard(
     chips: List<SocialChip> = emptyList(),
     trailing: (@Composable () -> Unit)? = null,
     imageLoader: ImageLoader? = null,
+    metaIcon: ImageVector? = null,
 ) = SocialEntityCard(
     name = name, onClick = onClick, modifier = modifier, avatarUrl = avatarUrl,
     avatarShape = CircleShape, username = username, description = bio, meta = meta,
     verified = verified, chips = chips, trailing = trailing, imageLoader = imageLoader,
+    metaIcon = metaIcon,
 )
 
 @Composable
@@ -530,11 +564,12 @@ fun SocialCommunityCard(
     trailing: (@Composable () -> Unit)? = null,
     showChevron: Boolean = true,
     imageLoader: ImageLoader? = null,
+    metaIcon: ImageVector? = null,
 ) = SocialEntityCard(
     name = name, onClick = onClick, modifier = modifier, avatarUrl = avatarUrl,
     avatarShape = SocialDefaults.CommunityAvatarShape, description = description, meta = meta,
     verified = verified, chips = chips, trailing = trailing, showChevron = showChevron,
-    imageLoader = imageLoader,
+    imageLoader = imageLoader, metaIcon = metaIcon, isCommunity = true,
 )
 
 @Composable
@@ -554,7 +589,31 @@ fun SocialProfileHeader(
     errorText: String? = null,
     extra: (@Composable () -> Unit)? = null,
     imageLoader: ImageLoader? = null,
+    isCommunity: Boolean = false,
 ) {
+    val cfg = LocalSocialStyle.current
+    val headerStyle = if (isCommunity) cfg.community else cfg.profile
+    if (headerStyle != SocialProfileStyle.CLASSIC) {
+        SocialProfileVariant(
+            style = headerStyle,
+            name = name,
+            modifier = modifier,
+            coverUrl = coverUrl,
+            avatarUrl = avatarUrl,
+            avatarShape = avatarShape,
+            username = username,
+            verified = verified,
+            chips = chips,
+            bio = bio,
+            metaLines = metaLines,
+            actions = actions,
+            stats = stats,
+            errorText = errorText,
+            extra = extra,
+            imageLoader = imageLoader,
+        )
+        return
+    }
     val hasCover = !coverUrl.isNullOrBlank()
     val avatarSize = SocialDefaults.ProfileAvatar
     val pad = SocialDefaults.ScreenPadding
@@ -686,6 +745,7 @@ fun SocialExpandableText(
     text: String?,
     modifier: Modifier = Modifier,
     collapsedLines: Int = 3,
+    textAlign: TextAlign = TextAlign.Unspecified,
 ) {
     if (text.isNullOrBlank()) return
     var expanded by remember(text) { mutableStateOf(false) }
@@ -695,6 +755,7 @@ fun SocialExpandableText(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
+            textAlign = textAlign,
             maxLines = if (expanded) Int.MAX_VALUE else collapsedLines,
             overflow = TextOverflow.Ellipsis,
             onTextLayout = { if (!expanded) overflows = it.hasVisualOverflow },

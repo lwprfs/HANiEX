@@ -20,6 +20,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.main.siteLoginStatus
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
@@ -84,6 +85,7 @@ fun onAirHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig 
                 onClick = { navigator.navigateSafely(OnAirCookieRoute) },
             ),
         ),
-        customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.ONAIR)),
+        customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.ONAIR),
+            rememberSocialStyleEntry(navigator, SiteType.ONAIR)),
     )
 }

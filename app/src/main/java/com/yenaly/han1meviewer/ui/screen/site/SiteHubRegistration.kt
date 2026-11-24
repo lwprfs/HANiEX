@@ -400,6 +400,20 @@ fun rememberPlayerSettingsEntry(navigator: Navigator, site: SiteType): SiteHubEn
     )
 
 @Composable
+fun rememberSocialStyleEntry(navigator: Navigator, site: SiteType): SiteHubEntry =
+    SiteHubEntry(
+        key = "social_style",
+        title = stringResource(R.string.social_style_title),
+        subtitle = stringResource(R.string.social_style_subtitle),
+        icon = androidx.compose.material.icons.Icons.Filled.ViewAgenda,
+        onClick = {
+            navigator.navigateSafely(
+                com.yenaly.han1meviewer.ui.navigation.settings.SiteSocialStyleRoute(site.name),
+            )
+        },
+    )
+
+@Composable
 fun standardSiteHubConfig(
     site: SiteType,
     navigator: Navigator,

@@ -23,6 +23,7 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
@@ -104,6 +105,7 @@ fun fapFolderHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCon
         ),
         extraLibrarySections = emptyList(),
         profileExtraQuickActions = authEntries,
-        customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.FAPFOLDER)),
+        customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.FAPFOLDER),
+            rememberSocialStyleEntry(navigator, SiteType.FAPFOLDER)),
     )
 }

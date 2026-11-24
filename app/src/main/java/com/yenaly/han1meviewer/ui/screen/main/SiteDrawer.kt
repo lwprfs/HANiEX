@@ -662,6 +662,23 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
     }
 }
 
+private fun withSocialStyleEntry(
+    context: Context,
+    site: SiteType,
+    sections: List<SiteDrawerSection>,
+): List<SiteDrawerSection> {
+    if (!com.yenaly.han1meviewer.ui.component.social.SiteSocialStyle.isSupported(site)) return sections
+    val customizeTitle = context.getString(R.string.site_drawer_section_customize)
+    val styleEntry = entry(
+        context.getString(R.string.social_style_title),
+        R.drawable.ic_settings_tune_24,
+        com.yenaly.han1meviewer.ui.navigation.settings.SiteSocialStyleRoute(site.name),
+    )
+    return sections.map {
+        if (it.title == customizeTitle) it.copy(entries = it.entries + styleEntry) else it
+    }
+}
+
 private fun appEntries(context: Context): List<SiteDrawerEntry> = listOf(
     entry(context.getString(R.string.download), R.drawable.ic_baseline_download_24, DownloadRoute),
     entry(context.getString(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
@@ -682,7 +699,7 @@ fun SiteDrawerContent(
 ) {
     val context = LocalContext.current
     val status = androidx.compose.runtime.remember(site, refreshKey) { siteLoginStatus(context, site) }
-    val sections = siteDrawerSections(context, site, status.loggedIn) +
+    val sections = withSocialStyleEntry(context, site, siteDrawerSections(context, site, status.loggedIn)) +
             SiteDrawerSection(
                 context.getString(R.string.site_drawer_section_app),
                 appEntries(context),

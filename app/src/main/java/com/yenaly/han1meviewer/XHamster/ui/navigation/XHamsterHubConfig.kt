@@ -38,6 +38,7 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
+import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
@@ -153,7 +154,8 @@ fun xHamsterHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConf
         ),
         subscriptionSections = listOf(subscription, more),
         profileExtraQuickActions = listOf(accountSettings),
-        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.XHAMSTER)),
+        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.XHAMSTER),
+            rememberSocialStyleEntry(navigator, SiteType.XHAMSTER)),
         customizeExtras = {
             item(key = "xh_home_header") { SettingSectionHeader(title = sectionTitle) }
             item(key = "xh_show_channels") {
