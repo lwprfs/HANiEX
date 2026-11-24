@@ -3148,4 +3148,36 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="xxxtube_home_sections_hint">Reorder the home sections or hide the ones you do not want.</string>
     <string name="xxxtube_views">%1$s views</string>
 
+    <!-- Coomer -->
+    <string name="site_coomer_description">Creator photos and videos from OnlyFans, Fansly and more</string>
+    <string name="backup_section_coomer_history">Coomer history</string>
+    <string name="coomer_search_hint">Search Coomer</string>
+    <string name="coomer_search_prompt">Enter a creator name or post text, or paste a coomerfans.com post link</string>
+    <string name="coomer_search_creators">Creators</string>
+    <string name="coomer_search_posts">Posts</string>
+    <string name="coomer_no_results">No results</string>
+    <string name="coomer_no_history">No history yet</string>
+    <string name="coomer_nothing_here">Nothing here</string>
+    <string name="coomer_section_video">Videos (%1$d)</string>
+    <string name="coomer_section_photos">Photos (%1$d)</string>
+    <string name="coomer_video_n">Video %1$d</string>
+    <string name="coomer_related">More creators</string>
+    <string name="coomer_history_title">History</string>
+    <string name="coomer_history_summary">Posts you opened on Coomer</string>
+    <string name="coomer_settings_title">Photos</string>
+    <string name="coomer_settings_summary">Photo grid and viewer</string>
+    <string name="coomer_photo_columns">Photo grid columns</string>
+    <string name="coomer_photo_columns_hint">Number of columns used in a post\'s photo section.</string>
+    <string name="coomer_viewer_tap">Tap edges to flip</string>
+    <string name="coomer_viewer_tap_summary">Tap the left or right edge of a photo to go to the previous or next one</string>
+    <string name="coomer_troubleshooting">Troubleshooting</string>
+    <string name="coomer_cookies_clear">Clear cookies</string>
+    <string name="coomer_cookies_cleared">Cookies cleared</string>
+    <string name="coomer_reset_defaults">Reset to defaults</string>
+    <string name="coomer_drawer_creators">Creators</string>
+    <string name="coomer_drawer_favorited">Favorited</string>
+    <string name="coomer_drawer_posts">Posts</string>
+    <string name="coomer_pages_creators_desc">Browse every creator, newest first</string>
+    <string name="coomer_pages_favorited_desc">Creators curated by the site</string>
+    <string name="coomer_pages_posts_desc">Latest posts from all creators</string>
 </resources>

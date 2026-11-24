@@ -8,6 +8,7 @@ import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavNavHost
 import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoNavHost
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaNavHost
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleNavHost
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerNavHost
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserNavHost
 import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosNavHost
 import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionNavHost
@@ -126,6 +127,14 @@ fun UnifiedMainNavHost(
             }
             SiteType.COSPLAYTELE -> {
                 CosplayteleNavHost(
+                    activity = activity,
+                    navigator = navigator,
+                    navigationState = navigationState,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+            SiteType.COOMER -> {
+                CoomerNavHost(
                     activity = activity,
                     navigator = navigator,
                     navigationState = navigationState,

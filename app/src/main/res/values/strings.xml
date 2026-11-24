@@ -3189,4 +3189,36 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="xxxtube_home_sections_hint">調整首頁分頁順序，或隱藏不需要的分頁。</string>
     <string name="xxxtube_views">%1$s 次觀看</string>
 
+    <!-- Coomer -->
+    <string name="site_coomer_description">OnlyFans、Fansly 等創作者的照片與影片</string>
+    <string name="backup_section_coomer_history">Coomer 瀏覽歷史</string>
+    <string name="coomer_search_hint">搜尋 Coomer</string>
+    <string name="coomer_search_prompt">輸入創作者名稱或貼文內容，或貼上 coomerfans.com 貼文連結</string>
+    <string name="coomer_search_creators">創作者</string>
+    <string name="coomer_search_posts">貼文</string>
+    <string name="coomer_no_results">沒有結果</string>
+    <string name="coomer_no_history">尚無觀看紀錄</string>
+    <string name="coomer_nothing_here">這裡沒有內容</string>
+    <string name="coomer_section_video">影片（%1$d）</string>
+    <string name="coomer_section_photos">照片（%1$d）</string>
+    <string name="coomer_video_n">影片 %1$d</string>
+    <string name="coomer_related">更多創作者</string>
+    <string name="coomer_history_title">瀏覽紀錄</string>
+    <string name="coomer_history_summary">你在 Coomer 開啟過的貼文</string>
+    <string name="coomer_settings_title">照片</string>
+    <string name="coomer_settings_summary">照片網格與檢視器</string>
+    <string name="coomer_photo_columns">照片網格欄數</string>
+    <string name="coomer_photo_columns_hint">貼文照片區使用的欄數。</string>
+    <string name="coomer_viewer_tap">點擊邊緣翻頁</string>
+    <string name="coomer_viewer_tap_summary">點擊照片左側或右側邊緣即可切換上一張或下一張</string>
+    <string name="coomer_troubleshooting">疑難排解</string>
+    <string name="coomer_cookies_clear">清除 Cookies</string>
+    <string name="coomer_cookies_cleared">已清除 Cookies</string>
+    <string name="coomer_reset_defaults">還原為預設值</string>
+    <string name="coomer_drawer_creators">創作者</string>
+    <string name="coomer_drawer_favorited">精選</string>
+    <string name="coomer_drawer_posts">貼文</string>
+    <string name="coomer_pages_creators_desc">依最新順序瀏覽所有創作者</string>
+    <string name="coomer_pages_favorited_desc">網站精選的創作者</string>
+    <string name="coomer_pages_posts_desc">所有創作者的最新貼文</string>
 </resources>

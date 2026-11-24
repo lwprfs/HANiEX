@@ -1416,4 +1416,36 @@
     <string name="xxxtube_home_sections_hint">调整首页分页顺序，或隐藏不需要的分页。</string>
     <string name="xxxtube_views">%1$s 次观看</string>
 
+    <!-- Coomer -->
+    <string name="site_coomer_description">OnlyFans、Fansly 等创作者的照片与视频</string>
+    <string name="backup_section_coomer_history">Coomer 浏览历史</string>
+    <string name="coomer_search_hint">搜索 Coomer</string>
+    <string name="coomer_search_prompt">输入创作者名称或帖子内容，或粘贴 coomerfans.com 帖子链接</string>
+    <string name="coomer_search_creators">创作者</string>
+    <string name="coomer_search_posts">帖子</string>
+    <string name="coomer_no_results">没有结果</string>
+    <string name="coomer_no_history">暂无观看记录</string>
+    <string name="coomer_nothing_here">这里没有内容</string>
+    <string name="coomer_section_video">视频（%1$d）</string>
+    <string name="coomer_section_photos">照片（%1$d）</string>
+    <string name="coomer_video_n">视频 %1$d</string>
+    <string name="coomer_related">更多创作者</string>
+    <string name="coomer_history_title">浏览记录</string>
+    <string name="coomer_history_summary">你在 Coomer 打开过的帖子</string>
+    <string name="coomer_settings_title">照片</string>
+    <string name="coomer_settings_summary">照片网格与查看器</string>
+    <string name="coomer_photo_columns">照片网格列数</string>
+    <string name="coomer_photo_columns_hint">帖子照片区使用的列数。</string>
+    <string name="coomer_viewer_tap">点击边缘翻页</string>
+    <string name="coomer_viewer_tap_summary">点击照片左侧或右侧边缘即可切换上一张或下一张</string>
+    <string name="coomer_troubleshooting">疑难解答</string>
+    <string name="coomer_cookies_clear">清除 Cookies</string>
+    <string name="coomer_cookies_cleared">已清除 Cookies</string>
+    <string name="coomer_reset_defaults">恢复默认值</string>
+    <string name="coomer_drawer_creators">创作者</string>
+    <string name="coomer_drawer_favorited">精选</string>
+    <string name="coomer_drawer_posts">帖子</string>
+    <string name="coomer_pages_creators_desc">按最新顺序浏览所有创作者</string>
+    <string name="coomer_pages_favorited_desc">网站精选的创作者</string>
+    <string name="coomer_pages_posts_desc">所有创作者的最新帖子</string>
 </resources>

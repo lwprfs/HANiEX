@@ -5,6 +5,9 @@ import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaAlbumRoute
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaHomeRoute
 import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaSearchRoute
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerHomeRoute
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerPostRoute
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerSearchRoute
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserHomeRoute
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserPostRoute
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserSearchRoute
@@ -72,6 +75,7 @@ fun siteHomeKey(site: SiteType): NavKey = when (site) {
     SiteType.FUCKINGSESSION -> FuckingSessionHomeRoute
     SiteType.REDGIFS -> RedGifsHomeRoute
     SiteType.XXXTUBE -> XXXTubeHomeRoute
+    SiteType.COOMER -> CoomerHomeRoute
     SiteType.WUMAOBI -> WumaobiHomeRoute
 }
 
@@ -128,6 +132,7 @@ fun siteVideoKey(
     SiteType.FUCKINGSESSION -> FuckingSessionVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
     SiteType.REDGIFS -> RedGifsGifRoute(id = videoCode)
     SiteType.XXXTUBE -> XXXTubeVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
+    SiteType.COOMER -> CoomerPostRoute(slug = videoCode, resumePosition = resumePosition)
     SiteType.WUMAOBI -> WumaobiVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
 }
 
@@ -147,5 +152,6 @@ fun siteSearchKey(site: SiteType, query: String?): NavKey = when (site) {
     SiteType.FUCKINGSESSION -> FuckingSessionSearchRoute(query = query)
     SiteType.REDGIFS -> RedGifsSearchRoute(query = query)
     SiteType.XXXTUBE -> XXXTubeSearchRoute(query = query)
+    SiteType.COOMER -> CoomerSearchRoute(query = query)
     SiteType.WUMAOBI -> WumaobiSearchRoute(query = query)
 }

@@ -81,6 +81,7 @@ import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
+import com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork
 import com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork
 import com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
 import com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
@@ -420,6 +421,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.COSPLAYTELE -> {
                 CosplayteleNetwork.rebuildNetwork()
+            }
+
+            SiteType.COOMER -> {
+                CoomerNetwork.rebuildNetwork()
             }
 
             SiteType.COSER -> {

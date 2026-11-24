@@ -4,6 +4,7 @@ import android.content.Context
 import coil3.ImageLoader
 import com.yenaly.han1meviewer.Buondua.common.BuonduaImageLoader
 import com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleImageLoader
+import com.yenaly.han1meviewer.Coomer.common.CoomerImageLoader
 import com.yenaly.han1meviewer.Coser.common.CoserImageLoader
 import com.yenaly.han1meviewer.HentaiMama.common.HentaiMamaImageLoader
 import com.yenaly.han1meviewer.RouVideo.common.RouVideoImageLoader
@@ -20,6 +21,7 @@ object SiteImageLoaders {
         SiteType.BUONDUA -> BuonduaImageLoader.get(context)
         SiteType.COSPLAYTELE -> CosplayteleImageLoader.get(context)
         SiteType.COSER -> CoserImageLoader.get(context)
+        SiteType.COOMER -> CoomerImageLoader.get(context)
         SiteType.XHAMSTER -> XHamsterImageLoader.get(context)
         SiteType.HENTAIMAMA -> HentaiMamaImageLoader.get(context)
         SiteType.ROUVIDEO -> RouVideoImageLoader.get(context)

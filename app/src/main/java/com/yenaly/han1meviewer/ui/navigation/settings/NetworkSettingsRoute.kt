@@ -89,6 +89,7 @@ private fun rebuildAllNetworks() {
     runCatching { BuonduaNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork() }

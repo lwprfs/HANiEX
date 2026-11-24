@@ -160,6 +160,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         accentColor = Color(0xFFE91E63),
     ),
     SiteSwitchOption(
+        name = "Coomer",
+        description = applicationContext.getString(R.string.site_coomer_description),
+        siteType = SiteType.COOMER,
+        logoRes = R.drawable.s_switch_coomer,
+        accentColor = Color(0xFFFF4081),
+    ),
+    SiteSwitchOption(
         name = "Coser",
         description = applicationContext.getString(R.string.site_coser_description),
         siteType = SiteType.COSER,

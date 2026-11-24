@@ -27,6 +27,7 @@ object SitePlayerSettings {
         SiteType.REDGIFS,
         SiteType.XXXTUBE,
         SiteType.WUMAOBI,
+        SiteType.COOMER,
     )
 
     fun label(site: SiteType): String = when (site) {
@@ -47,6 +48,7 @@ object SitePlayerSettings {
         SiteType.REDGIFS -> "RedGifs"
         SiteType.XXXTUBE -> "X-X-X.tube"
         SiteType.WUMAOBI -> "Wumaobi"
+        SiteType.COOMER -> "Coomer"
     }
 
     sealed class Spec(val id: String, val title: String, val summary: String?) {

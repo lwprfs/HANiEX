@@ -95,6 +95,11 @@ import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleHistoryRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleListRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSearchRoute
 import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleSettingsRoute
+import com.yenaly.han1meviewer.Coomer.common.CoomerConstants
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerHistoryRoute
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerListRoute
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerSearchRoute
+import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerSettingsRoute
 import com.yenaly.han1meviewer.Coser.common.CoserConstants
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserHistoryRoute
 import com.yenaly.han1meviewer.Coser.ui.navigation.CoserListRoute
@@ -653,6 +658,42 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 customize,
                 listOf(
                     entry(str(R.string.coser_settings_title), R.drawable.ic_video_quilty, CoserSettingsRoute),
+                    playerSettings,
+                ),
+            ),
+        )
+
+        SiteType.COOMER -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, CoomerSearchRoute()),
+                    entry(
+                        str(R.string.coomer_drawer_creators), R.drawable.ic_drawer_creator,
+                        CoomerListRoute(CoomerConstants.SECTION_CREATORS.path, CoomerConstants.SECTION_CREATORS.title),
+                    ),
+                    entry(
+                        str(R.string.coomer_drawer_favorited), R.drawable.ic_drawer_category,
+                        CoomerListRoute(CoomerConstants.SECTION_FAVORITED.path, CoomerConstants.SECTION_FAVORITED.title),
+                    ),
+                    entry(
+                        str(R.string.coomer_drawer_posts), R.drawable.ic_drawer_photos,
+                        CoomerListRoute(CoomerConstants.SECTION_POSTS.path, CoomerConstants.SECTION_POSTS.title),
+                    ),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(
+                    entry(str(R.string.watch_history), history, CoomerHistoryRoute),
+                ),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(
+                    entry(str(R.string.coomer_settings_title), R.drawable.ic_video_quilty, CoomerSettingsRoute),
                     playerSettings,
                 ),
             ),

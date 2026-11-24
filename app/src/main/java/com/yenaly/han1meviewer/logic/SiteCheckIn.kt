@@ -36,6 +36,7 @@ object SiteCheckIn {
         SiteType.FUCKINGSESSION -> "fuckingsession"
         SiteType.REDGIFS -> "redgifs"
         SiteType.XXXTUBE -> "xxxtube"
+        SiteType.COOMER -> "coomer"
         SiteType.WUMAOBI -> "wumaobi"
     }
 
@@ -62,6 +63,7 @@ object SiteCheckIn {
             "fuckingsession" -> SiteType.FUCKINGSESSION
             "redgifs" -> SiteType.REDGIFS
             "xxxtube" -> SiteType.XXXTUBE
+            "coomer" -> SiteType.COOMER
             "wumaobi" -> SiteType.WUMAOBI
             else -> null
         }
@@ -209,6 +211,18 @@ object SiteCheckIn {
                         releaseDate = 0L,
                         watchDate = it.watchDate,
                         videoCode = dishCode(SiteType.COSPLAYTELE, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
+            com.yenaly.han1meviewer.Coomer.data.local.CoomerDatabase.getInstance(context)
+                .coomerHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.COOMER, it.videoCode),
                     )
                 }
         }

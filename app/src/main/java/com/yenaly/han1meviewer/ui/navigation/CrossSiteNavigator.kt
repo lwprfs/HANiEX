@@ -77,6 +77,7 @@ object CrossSiteNavigator {
         SiteType.FUCKINGSESSION -> "FuckingSession"
         SiteType.REDGIFS -> "RedGifs"
         SiteType.XXXTUBE -> "X-X-X.tube"
+        SiteType.COOMER -> "Coomer"
         SiteType.WUMAOBI -> "Wumaobi"
     }
 

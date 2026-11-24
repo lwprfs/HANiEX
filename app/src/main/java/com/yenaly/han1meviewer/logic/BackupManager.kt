@@ -28,6 +28,8 @@ import com.yenaly.han1meviewer.Buondua.data.local.BuonduaDatabase
 import com.yenaly.han1meviewer.Buondua.data.local.BuonduaHistoryEntity
 import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleDatabase
 import com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleHistoryEntity
+import com.yenaly.han1meviewer.Coomer.data.local.CoomerDatabase
+import com.yenaly.han1meviewer.Coomer.data.local.CoomerHistoryEntity
 import com.yenaly.han1meviewer.Coser.data.local.CoserDatabase
 import com.yenaly.han1meviewer.Coser.data.local.CoserHistoryEntity
 import com.yenaly.han1meviewer.FullVideos.data.local.FullVideosDatabase
@@ -85,6 +87,7 @@ object BackupManager {
         FUCKINGSESSION_HISTORY(R.string.backup_section_fuckingsession_history, Group.DATA),
         WUMAOBI_HISTORY(R.string.backup_section_wumaobi_history, Group.DATA),
         XXXTUBE_HISTORY(R.string.backup_section_xxxtube_history, Group.DATA),
+        COOMER_HISTORY(R.string.backup_section_coomer_history, Group.DATA),
         LOCAL_PLAYLISTS(R.string.backup_section_local_playlists, Group.DATA),
         COOKIES_HANIME(R.string.backup_section_cookies_hanime, Group.COOKIES),
         COOKIES_MISSAV(R.string.backup_section_cookies_missav, Group.COOKIES),
@@ -141,6 +144,7 @@ object BackupManager {
         val fuckingSessionHistories: List<FuckingSessionHistoryEntity>? = null,
         val wumaobiHistories: List<WumaobiHistoryEntity>? = null,
         val xxxTubeHistories: List<XXXTubeHistoryEntity>? = null,
+        val coomerHistories: List<CoomerHistoryEntity>? = null,
         val localPlaylists: List<LocalPlaylist>? = null,
     )
 
@@ -312,6 +316,11 @@ object BackupManager {
                 deleteAll(); insertAll(it)
             }
         }
+        backup.coomerHistories?.takeIf { Section.COOMER_HISTORY in sections }?.let {
+            CoomerDatabase.getInstance(context).coomerHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
         backup.xxxTubeHistories?.takeIf { Section.XXXTUBE_HISTORY in sections }?.let {
             XXXTubeDatabase.getInstance(context).xxxTubeHistoryDao().apply {
                 deleteAll(); insertAll(it)
@@ -422,6 +431,8 @@ object BackupManager {
                 FuckingSessionDatabase.getInstance(context).fuckingSessionHistoryDao().getAllHistorySync() else null,
             wumaobiHistories = if (Section.WUMAOBI_HISTORY in sections)
                 WumaobiDatabase.getInstance(context).wumaobiHistoryDao().getAllHistorySync() else null,
+            coomerHistories = if (Section.COOMER_HISTORY in sections)
+                CoomerDatabase.getInstance(context).coomerHistoryDao().getAllHistorySync() else null,
             xxxTubeHistories = if (Section.XXXTUBE_HISTORY in sections)
                 XXXTubeDatabase.getInstance(context).xxxTubeHistoryDao().getAllHistorySync() else null,
             localPlaylists = if (Section.LOCAL_PLAYLISTS in sections)

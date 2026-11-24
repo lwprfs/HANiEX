@@ -226,6 +226,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = true,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.COOMER,
+            displayName = "Coomer",
+            catalogKey = null,
+            defaultUrls = { listOf("https://coomerfans.com") },
+            trailingSlash = false,
+            cloudflareFronted = false,
+        ),
     )
 
     val hubSites: List<HubSite>

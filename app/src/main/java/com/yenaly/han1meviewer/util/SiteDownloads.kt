@@ -62,6 +62,7 @@ object DownloadLayout {
         SiteType.FUCKINGSESSION -> "FuckingSession"
         SiteType.REDGIFS -> "RedGifs"
         SiteType.XXXTUBE -> "XXXTube"
+        SiteType.COOMER -> "Coomer"
         SiteType.WUMAOBI -> "Wumaobi"
     }
 
@@ -274,6 +275,8 @@ object SiteDownloadClients {
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.COSPLAYTELE -> runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.COOMER -> runCatching { com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
             SiteType.COSER -> runCatching { com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
@@ -362,6 +365,14 @@ object SiteDownloadClients {
                 mapOf(
                     "Referer" to referer,
                     "Origin" to com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleConstants.STREAM_ORIGIN,
+                )
+            }
+            SiteType.COOMER -> {
+                val referer = com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf(
+                    "Referer" to referer,
+                    "Origin" to com.yenaly.han1meviewer.Coomer.common.CoomerConstants.BASE_URL,
                 )
             }
             SiteType.COSER -> {
