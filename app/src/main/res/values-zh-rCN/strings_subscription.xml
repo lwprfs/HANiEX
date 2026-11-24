@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="subscription_login_required">登录已失效，请重新登录后查看订阅</string>
-    <string name="subscription_empty">你还没有订阅任何作者</string>
-    <string name="subscription_empty_hint">在视频页订阅作者后，他们的新作品会出现在这里</string>
-    <string name="login_status_no_account">无需登录</string>
-</resources>

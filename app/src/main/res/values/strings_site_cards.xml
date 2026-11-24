@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="site_shorts_cards_section">GIF／短影片卡片</string>
-    <string name="site_shorts_card_gif_badge">GIF 標籤</string>
-    <string name="site_card_show_title">標題</string>
-    <string name="site_image_cards_section">圖片卡片</string>
-    <string name="site_image_card_show_badges">圖片數量標籤</string>
-    <string name="site_image_card_show_subtitle">作者／附加資訊</string>
-</resources>

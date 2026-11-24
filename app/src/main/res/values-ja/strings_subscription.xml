@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="subscription_login_required">ログインの有効期限が切れました。再ログインして購読を確認してください</string>
-    <string name="subscription_empty">まだ購読しているアーティストがいません</string>
-    <string name="subscription_empty_hint">動画ページでアーティストを購読すると、新作がここに表示されます</string>
-    <string name="login_status_no_account">ログイン不要</string>
-</resources>

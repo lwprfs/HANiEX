@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="subscription_login_required">登入已失效，請重新登入後查看訂閱</string>
-    <string name="subscription_empty">你還沒有訂閱任何作者</string>
-    <string name="subscription_empty_hint">在影片頁訂閱作者後，他們的新作品會出現在這裡</string>
-    <string name="login_status_no_account">無需登入</string>
-</resources>

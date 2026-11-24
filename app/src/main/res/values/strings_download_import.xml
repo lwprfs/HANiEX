@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="import_none_found">沒有找到新的影片（已掃描 %1$d 個資料夾）</string>
-    <string name="import_root_missing">下載資料夾尚不存在</string>
-    <string name="import_fail_reason_unrecognized">無法辨識的資料夾</string>
-    <string name="import_fail_reason_bad_info">info.json 無法讀取</string>
-</resources>

@@ -1070,4 +1070,350 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="rouvideo_online_watch_history">オンライン視聴履歴</string>
     <string name="disable_predictive_back_title">予測型バックアニメーションを無効化</string>
     <string name="disable_predictive_back_summary">無効にすると、バックジェスチャーのドラッグ中にページプレビューが表示されなくなります（指を離すと通常どおり戻ります）</string>
+
+    <!-- ===== download_import ===== -->
+    <string name="import_none_found">新しい動画は見つかりませんでした（%1$d フォルダをスキャン）</string>
+    <string name="import_root_missing">ダウンロードフォルダがまだありません</string>
+    <string name="import_fail_reason_unrecognized">認識できないフォルダ</string>
+    <string name="import_fail_reason_bad_info">info.json を読み取れません</string>
+
+    <!-- ===== gif_downloads ===== -->
+    <string name="site_shorts_download">ダウンロード</string>
+    <string name="site_shorts_download_saved">保存しました</string>
+    <string name="hub_gif_downloads">GIF／ショート動画のダウンロード</string>
+    <string name="hub_gif_downloads_desc">サイトとクリエイター別の保存済み GIF とショート動画</string>
+    <string name="gif_downloads_title">GIF／ショート動画</string>
+    <string name="gif_downloads_empty">ダウンロードした GIF やショート動画はまだありません</string>
+    <string name="gif_downloads_choose_folder">先に画像のダウンロードフォルダを選択してください。GIF も同じ場所に保存されます。</string>
+    <string name="gif_downloads_pick_folder">フォルダを選択</string>
+
+    <!-- ===== home_extras ===== -->
+    <string name="home_greeting_morning">おはようございます</string>
+    <string name="home_greeting_afternoon">こんにちは</string>
+    <string name="home_greeting_evening">こんばんは</string>
+    <string name="home_greeting_night">夜更かしですね</string>
+    <string name="home_welcome_subtitle">今日は %1$s で何を観ますか？</string>
+
+    <!-- ===== offline_downloads ===== -->
+    <string name="offline_pick_download_folder">先にダウンロード設定でダウンロード先フォルダを選んでください。</string>
+    <string name="offl_photos_title">写真</string>
+    <string name="offl_shorts_title">ショート / GIF</string>
+    <string name="offl_empty_photos">ダウンロード済みの写真はありません</string>
+    <string name="offl_empty_shorts">ダウンロード済みのショート / GIF はありません</string>
+    <string name="offl_empty_downloading">ダウンロード中のものはありません</string>
+    <string name="offl_selected_fmt">%1$d / %2$d 件選択中</string>
+    <string name="offl_items_fmt">%d 件</string>
+    <string name="offl_photos_fmt">%d 枚</string>
+    <string name="offl_play">再生</string>
+    <string name="offl_view_photos">写真を見る</string>
+    <string name="offl_details">詳細</string>
+    <string name="offl_detail_site">サイト</string>
+    <string name="offl_detail_channel">チャンネル</string>
+    <string name="offl_detail_size">サイズ</string>
+    <string name="offl_detail_added">ダウンロード日</string>
+    <string name="offl_detail_duration">長さ</string>
+    <string name="offl_detail_views">再生回数</string>
+    <string name="offl_detail_likes">いいね</string>
+    <string name="offl_detail_tags">タグ</string>
+    <string name="offl_detail_source">ソース</string>
+    <string name="offl_detail_quality">画質</string>
+    <string name="offl_detail_code">コード</string>
+    <string name="offl_detail_group">グループ</string>
+    <string name="offl_group_name_hint">グループ名</string>
+    <string name="offl_new_group">新しいグループ</string>
+    <string name="offl_rename_group">グループ名を変更</string>
+    <string name="offl_delete_group">グループを削除</string>
+    <string name="offl_move_to_group">グループへ移動</string>
+    <string name="offl_confirm_delete_items">%d 件を端末から削除しますか?</string>
+    <string name="offl_confirm_cancel_task">このダウンロードをキャンセルし、保存済みの分を削除しますか?</string>
+    <string name="offl_task_queued">待機中</string>
+    <string name="offl_task_failed">失敗しました。タップで再試行</string>
+    <string name="offl_task_done">完了</string>
+    <string name="offl_task_progress_photos">%1$d / %2$d 枚</string>
+    <string name="offl_search_hint">ダウンロードを検索…</string>
+    <string name="offl_refresh">更新</string>
+    <string name="offl_photo_counter">%1$d / %2$d</string>
+    <string name="offl_delete_photo">この写真を削除</string>
+    <string name="offl_not_found">ファイルが見つかりません</string>
+    <string name="offl_migrate_title">ダウンロードフォルダを更新</string>
+    <string name="offl_migrate_message">古いフォルダ構成でダウンロードされています。問題を避けるため、新しい構成(Videos / Photos / Shorts → サイト → タイトル)へ移動しますか?
+
+検出: 動画フォルダ %1$d、写真アルバム %2$d、ショートフォルダ %3$d。</string>
+    <string name="offl_migrate_action">移行する</string>
+    <string name="offl_migrate_later">あとで</string>
+    <string name="offl_migrating">ダウンロードを移動中…アプリを閉じないでください。</string>
+    <string name="offl_migrate_done">%d 個のフォルダを新しい構成へ移動しました。</string>
+    <string name="offl_migrate_partial">%1$d 個を移動、%2$d 個は移動できませんでした。後でもう一度お試しください。</string>
+    <string name="offl_video_popup_title">動画の詳細</string>
+
+    <!-- ===== player_extras ===== -->
+    <string name="site_player_pin_video_title">動画をフローティング表示</string>
+    <string name="site_player_pin_video_summary">再生中に動画ページを下へスクロールすると、閉じるボタン付きの小さなフローティングプレーヤーになります。一時停止中は動作しません。初期設定はオフ</string>
+    <string name="site_player_auto_pip_title">自動ピクチャインピクチャ</string>
+    <string name="site_player_auto_pip_summary">再生中の動画ページからホームに戻るとピクチャインピクチャに切り替えます（ピクチャインピクチャ権限が必要）。初期設定はオフ</string>
+    <string name="site_player_pinch_zoom_title">ピンチでズーム</string>
+    <string name="site_player_pinch_zoom_summary">全画面で動画をピンチ操作で拡大できます。拡大位置は記憶されません。初期設定はオフ</string>
+    <string name="player_pin_close">フローティングプレーヤーを閉じる</string>
+    <string name="pip_permission_revoked_title">ピクチャインピクチャをオフにしました</string>
+    <string name="pip_permission_revoked_message">システム設定でピクチャインピクチャの権限が削除されたため、自動ピクチャインピクチャを無効にしました。権限を再度許可してから、プレーヤー設定で有効にしてください。</string>
+    <string name="pip_permission_needed">ピクチャインピクチャの権限が必要です。開いた設定画面で許可してから、このオプションをもう一度オンにしてください。</string>
+
+    <!-- ===== restored ===== -->
+    <string name="open_menu">メニューを開く</string>
+    <string name="refresh_page_or_login_expired">ページを再読み込みしてみて\nログイン期限切れの可能性も</string>
+
+    <!-- ===== site_drawer ===== -->
+    <string name="site_drawer_section_browse">閲覧</string>
+    <string name="site_drawer_section_library">ライブラリ</string>
+    <string name="site_drawer_section_account">アカウント</string>
+    <string name="site_drawer_section_customize">カスタマイズ</string>
+    <string name="site_drawer_section_app">アプリ</string>
+
+    <!-- ===== site_extras ===== -->
+    <string name="site_switch_hold_hint">タップで切替・長押しで固定または非表示</string>
+    <string name="site_switch_pin">先頭に固定</string>
+    <string name="site_switch_unpin">固定を解除</string>
+    <string name="site_switch_hide">切替メニューから非表示</string>
+    <string name="hub_update_desc">アプリの更新を確認してインストール</string>
+    <string name="hub_image_downloads">画像ダウンロード</string>
+    <string name="hub_image_downloads_desc">アルバムや投稿から保存した画像</string>
+    <string name="image_dl_title">画像ダウンロード</string>
+    <string name="image_dl_active">ダウンロード中</string>
+    <string name="image_dl_location">保存先</string>
+    <string name="backup_section_supjav_history">SupJav 視聴履歴</string>
+    <string name="backup_section_rouvideo_history">RouVideo 視聴履歴</string>
+    <string name="backup_section_xhamster_history">xHamster 視聴履歴</string>
+    <string name="backup_section_buondua_history">Buondua 閲覧履歴</string>
+    <string name="backup_section_local_playlists">ローカルプレイリスト</string>
+    <string name="backup_section_cookies_rouvideo">RouVideo ログイン情報</string>
+    <string name="backup_section_cookies_xhamster">xHamster ログイン情報</string>
+    <string name="backup_section_cosplaytele_history">Cosplaytele 閲覧履歴</string>
+    <string name="backup_section_coser_history">Coser 閲覧履歴</string>
+    <string name="backup_section_fullvideos_history">FullVideos 視聴履歴</string>
+    <string name="backup_section_fuckingsession_history">FuckingSession 視聴履歴</string>
+
+    <!-- ===== site_hub ===== -->
+    <string name="hub_section_quick_actions">クイック操作</string>
+    <string name="hub_site_settings_title">%1$s の設定</string>
+    <string name="hub_site_settings_desc">このサイト専用の設定</string>
+    <string name="hub_check_in_desc">毎日のチェックイン</string>
+    <string name="hub_switch_site_desc">別のサイトに切り替える</string>
+    <string name="hub_customize_title">カスタマイズ</string>
+    <string name="hub_customize_desc">ホーム、レイアウト、プレーヤー</string>
+    <string name="hub_all_history_desc">すべてのサイトの視聴履歴</string>
+    <string name="hub_offline_playlist">オフラインプレイリスト</string>
+    <string name="hub_offline_playlist_desc">この端末に保存されたプレイリスト</string>
+    <string name="hub_downloads">ダウンロード</string>
+    <string name="hub_downloads_desc">ダウンロード済みの動画</string>
+    <string name="hub_section_on_device">この端末</string>
+    <string name="hub_section_history">履歴</string>
+    <string name="hub_horizontal_cards_title">横スクロールのカード数</string>
+    <string name="hub_video_grid_columns_desc">ホームや一覧の縦型動画グリッドの列数</string>
+    <string name="hub_search_grid_columns_title">検索グリッドの列数</string>
+    <string name="hub_search_grid_columns_desc">検索結果グリッドの列数</string>
+    <string name="hub_scroll_to_top">先頭へ戻る</string>
+    <string name="hub_xhamster_home_sections">ホームのセクション</string>
+    <string name="hub_xhamster_show_channels">チャンネルを表示</string>
+    <string name="hub_xhamster_show_channels_desc">ホームにチャンネル欄を表示</string>
+    <string name="hub_xhamster_show_top_creators">人気クリエイターを表示</string>
+    <string name="hub_xhamster_show_top_creators_desc">ホームに人気クリエイター欄を表示</string>
+
+    <!-- ===== site_shorts ===== -->
+    <string name="site_shorts_play_failed">この動画を再生できません</string>
+    <string name="site_shorts_login_required">続行するにはログインしてください</string>
+    <string name="site_shorts_action_failed">操作に失敗しました</string>
+    <string name="site_subscribe">登録</string>
+    <string name="site_subscribed">登録済み</string>
+    <string name="site_n_subscribers">登録者 %1$s 人</string>
+    <string name="site_shorts_n_views">%1$s 回視聴</string>
+    <string name="site_uploader">投稿者</string>
+    <string name="site_channel">チャンネル</string>
+    <string name="site_shorts_gif_badge">GIF</string>
+    <string name="site_shorts_like">高評価</string>
+    <string name="site_shorts_dislike">低評価</string>
+    <string name="site_shorts_favorite">お気に入り</string>
+    <string name="site_shorts_mute">ミュート</string>
+    <string name="site_shorts_unmute">ミュート解除</string>
+    <string name="site_shorts_subtitles">字幕</string>
+    <string name="site_shorts_subtitles_off">オフ</string>
+    <string name="site_shorts_report_title">この動画を報告</string>
+    <string name="site_shorts_report_message">サイトの報告フォームがブラウザで開き、この動画が入力済みになります。</string>
+    <string name="site_shorts_report_open">報告フォームを開く</string>
+    <string name="site_shorts_loading">読み込み中</string>
+    <string name="site_shorts_play">再生</string>
+    <string name="site_shorts_pause">一時停止</string>
+
+    <!-- ===== site_visibility ===== -->
+    <string name="site_visibility_title">利用可能なサイト</string>
+    <string name="site_visibility_summary">サイト切り替えメニューに表示するサイトを選択します。いつでも再び有効にできます。</string>
+    <string name="site_visibility_hidden">サイト切り替えで非表示</string>
+    <string name="site_visibility_current_site">現在使用中のサイトは無効にできません。先に別のサイトへ切り替えてください。</string>
+
+    <!-- ===== social ===== -->
+    <string name="social_stat_subscribers">登録者</string>
+    <string name="social_stat_views">再生</string>
+    <string name="social_stat_videos">動画</string>
+    <string name="social_stat_shorts">ショート</string>
+    <string name="social_stat_photos">写真</string>
+    <string name="social_stat_likes">いいね</string>
+    <string name="social_stat_gifs">GIF</string>
+    <string name="social_stat_members">メンバー</string>
+    <string name="social_stat_favorites">お気に入り</string>
+
+    <!-- ===== social_style ===== -->
+    <string name="social_style_title">プロフィールとコミュニティのスタイル</string>
+    <string name="social_style_subtitle">検索結果・プロフィールページ・コミュニティページのレイアウトを変更します</string>
+    <string name="social_style_search_section">検索結果</string>
+    <string name="social_style_profile_section">プロフィールページ</string>
+    <string name="social_style_community_section">コミュニティページ</string>
+    <string name="social_style_classic">クラシック（既定）</string>
+    <string name="social_style_centered">中央揃え</string>
+    <string name="social_style_compact">コンパクト</string>
+    <string name="social_list_showcase">ショーケースカード</string>
+    <string name="social_list_flat">フラットリスト</string>
+    <string name="social_profile_immersive">没入型</string>
+    <string name="social_style_preview_note">プレビュー（サンプルデータ・レイアウト確認用）</string>
+    <string name="social_style_sample_name">サンプル名</string>
+    <string name="social_style_sample_bio">これはサンプルの自己紹介です。</string>
+    <string name="social_style_sample_community">サンプルコミュニティ</string>
+    <string name="social_style_reset">既定に戻す</string>
+    <string name="social_view_profile">プロフィールを見る</string>
+    <string name="social_view_community">コミュニティを見る</string>
+
+    <!-- ===== subscription ===== -->
+    <string name="subscription_login_required">ログインの有効期限が切れました。再ログインして購読を確認してください</string>
+    <string name="subscription_empty">まだ購読しているアーティストがいません</string>
+    <string name="subscription_empty_hint">動画ページでアーティストを購読すると、新作がここに表示されます</string>
+    <string name="login_status_no_account">ログイン不要</string>
+
+    <!-- ===== update ===== -->
+    <string name="upd_screen_title">アップデートの状況</string>
+    <string name="upd_status_up_to_date">最新バージョンです</string>
+    <string name="upd_status_up_to_date_sub">%2$s チャンネルの最新バージョンは %1$s です</string>
+    <string name="upd_status_checking">アップデートを確認中…</string>
+    <string name="upd_status_check_failed">アップデートを確認できませんでした</string>
+    <string name="upd_status_available">アップデートがあります</string>
+    <string name="upd_status_available_sub">%1$s をダウンロードできます</string>
+    <string name="upd_status_downloading">アップデートをダウンロード中</string>
+    <string name="upd_status_downloaded">インストールの準備ができました</string>
+    <string name="upd_status_downloaded_sub">%1$s のダウンロードと検証が完了しました</string>
+    <string name="upd_status_installing">インストーラーに引き継いでいます…</string>
+    <string name="upd_status_failed">アップデートに失敗しました</string>
+    <string name="upd_status_cancelled">アップデートをキャンセルしました</string>
+    <string name="upd_status_cancelled_sub">何もインストールされていません。いつでも再ダウンロードできます。</string>
+    <string name="upd_btn_check">アップデートを確認</string>
+    <string name="upd_btn_download">ダウンロード</string>
+    <string name="upd_btn_cancel_download">ダウンロードをキャンセル</string>
+    <string name="upd_btn_install">今すぐインストール</string>
+    <string name="upd_btn_discard">破棄</string>
+    <string name="upd_btn_retry">再試行</string>
+    <string name="upd_btn_dismiss">閉じる</string>
+    <string name="upd_btn_stop_waiting">待機をやめる</string>
+    <string name="upd_btn_copy_details">詳細をコピー</string>
+    <string name="upd_details_copied">詳細をコピーしました</string>
+    <string name="upd_stage_preparing">準備中…</string>
+    <string name="upd_stage_checking_delta">差分パッチを使えるか確認中…</string>
+    <string name="upd_stage_downloading_delta">差分パッチをダウンロード中</string>
+    <string name="upd_stage_applying_patch">端末上で新しい APK を再構築中…</string>
+    <string name="upd_stage_verifying">チェックサムと署名を検証中…</string>
+    <string name="upd_stage_downloading_full">完全版の APK をダウンロード中</string>
+    <string name="upd_progress_bytes">%1$s / %2$s</string>
+    <string name="upd_speed">%1$s/秒</string>
+    <string name="upd_installing_hint">Android が更新を適用するとアプリは自動的に終了します。それまでは通常どおり使えます。止まっているわけではありません。</string>
+    <string name="upd_install_no_response">インストーラーが応答しませんでした。もう一度「今すぐインストール」を押してください。</string>
+    <string name="upd_install_permission_denied">システム設定でこのアプリのインストールを許可してから、もう一度「今すぐインストール」を押してください。</string>
+    <string name="upd_file_missing">ダウンロード済みの更新ファイルが見つかりません。もう一度ダウンロードしてください。</string>
+    <string name="upd_discard_title">ダウンロード済みのアップデートを破棄しますか？</string>
+    <string name="upd_discard_message">ファイルは削除され、何もインストールされません。後で再ダウンロードできます。</string>
+    <string name="upd_plan_title">ダウンロード内容</string>
+    <string name="upd_plan_method">方法</string>
+    <string name="upd_method_delta">差分パッチ（ダウンロードが小さい）</string>
+    <string name="upd_method_full">完全版 APK</string>
+    <string name="upd_method_undecided">判定中…</string>
+    <string name="upd_plan_file">ファイル</string>
+    <string name="upd_plan_size">ダウンロードサイズ</string>
+    <string name="upd_plan_full_size">アプリ全体のサイズ</string>
+    <string name="upd_plan_saving">ダウンロードが約 %1$s 少なくなります（%2$d%% 削減）</string>
+    <string name="upd_plan_base">パッチの対象ビルド</string>
+    <string name="upd_plan_installed_build">現在インストール中のビルド</string>
+    <string name="upd_plan_unknown">不明</string>
+    <string name="upd_plan_why_full">なぜ完全版 APK なのか？</string>
+    <string name="upd_plan_smaller_hint">ダウンロードがアプリより小さい？それは正常です。下の「差分アップデートの仕組み」をご覧ください。</string>
+    <string name="upd_reason_no_delta_title">このバージョンには差分パッチが公開されていません</string>
+    <string name="upd_reason_no_delta_body">開発者が完全版 APK のみを公開したため、完全版をダウンロードします。</string>
+    <string name="upd_reason_split_title">インストールが分割 APK です</string>
+    <string name="upd_reason_split_body">差分パッチは単一ファイルの APK にのみ適用できます。分割インストールのため完全版 APK を使います。</string>
+    <string name="upd_reason_unreadable_title">インストール済み APK を読み取れません</string>
+    <string name="upd_reason_unreadable_body">パッチには現在の APK が必要ですが、読み取れないため完全版 APK を使います。</string>
+    <string name="upd_reason_base_title">インストール済みのビルドがパッチの対象と異なります</string>
+    <string name="upd_reason_base_body">パッチは特定の旧ビルドから作られています。バージョンを飛ばした、チャンネルを切り替えた、別の入手元からインストールした場合は一致しないため、完全版 APK を使います。</string>
+    <string name="upd_reason_metadata_title">差分パッケージが無効でした</string>
+    <string name="upd_reason_metadata_body">パッチに想定した情報が含まれていないため無視し、完全版 APK を使います。</string>
+    <string name="upd_reason_download_title">差分パッチをダウンロードできませんでした</string>
+    <string name="upd_reason_download_body">小さなパッチのダウンロードに失敗したため（ネットワークまたは GitHub の問題）、完全版 APK に切り替えます。</string>
+    <string name="upd_reason_patch_title">パッチからの APK 再構築に失敗しました</string>
+    <string name="upd_reason_patch_body">端末でのパッチ適用に失敗したため、完全版 APK に切り替えます。</string>
+    <string name="upd_reason_verify_title">再構築した APK が整合性チェックに失敗しました</string>
+    <string name="upd_reason_verify_body">再構築したファイルが想定した SHA-256 と一致しなかったため破棄し、完全版 APK を使います。破損や改ざんから保護するための動作です。</string>
+    <string name="upd_reason_signer_title">再構築した APK の署名が異なります</string>
+    <string name="upd_reason_signer_body">Android は同じ鍵で署名されたファイルでしか更新できません。署名が一致しないため、完全版 APK を使います。</string>
+    <string name="upd_how_title">差分アップデートの仕組み</string>
+    <string name="upd_how_body">差分アップデートはアプリ全体を再ダウンロードせず、現在のバージョンと新しいバージョンの「変更された部分」だけの小さなパッチファイルをダウンロードします。その後、端末上で現在の APK とパッチから新しい完全な APK を再構築します。そのため、ダウンロードがアプリ本体よりずっと小さくなることがあり、ダウンロード後に短い「再構築中…」の手順が表示されることもあります。\n\n何らかの理由でパッチを使えない場合は、自動的に完全版 APK をダウンロードします。理由は上に必ず表示されるので、サイズが大きくなっても戸惑うことはありません。</string>
+    <string name="upd_how_safe">安全設計：再構築したファイルは SHA-256 チェックサムで検証され、インストール済みアプリと同じ署名でなければ破棄されます。</string>
+    <string name="upd_info_title">バージョン情報</string>
+    <string name="upd_info_current">現在のバージョン</string>
+    <string name="upd_info_target">新しいバージョン</string>
+    <string name="upd_info_channel">アップデートチャンネル</string>
+    <string name="upd_channel_ci">CI ビルド（GitHub Actions）</string>
+    <string name="upd_channel_release">リリース（GitHub Releases）</string>
+    <string name="upd_info_installer">インストーラー</string>
+    <string name="upd_changelog_title">更新内容</string>
+    <string name="upd_show_more">もっと見る</string>
+    <string name="upd_show_less">閉じる</string>
+    <string name="upd_notif_cancel">キャンセル</string>
+    <string name="upd_notif_discard">破棄</string>
+    <string name="upd_notif_details">詳細</string>
+    <string name="upd_notif_delta_text">差分パッチ · %1$s</string>
+    <string name="upd_notif_full_text">完全版 APK · %1$s</string>
+    <string name="upd_home_open_hint">タップして詳細の確認・キャンセル・インストール</string>
+    <string name="upd_home_channel_ci_summary">GitHub Actions のすべての新ビルドを取得</string>
+    <string name="hist_all_sites_title">視聴履歴・すべてのサイト</string>
+    <string name="hist_all_sites_summary">%1$s の履歴を一つのリストに。項目をタップするとサイトを切り替えて続きから再生します。</string>
+    <string name="settings_group_links">リンクと共有</string>
+    <string name="settings_group_site_history">視聴履歴</string>
+
+    <!-- ===== wumaobi ===== -->
+    <string name="backup_section_wumaobi_history">Wumaobi 視聴履歴</string>
+
+    <!-- ===== xxxtube ===== -->
+    <string name="site_xxxtube_description">多数のモデルとカテゴリを揃えた無料の成人向け動画サイト。直接ストリーミング再生</string>
+    <string name="backup_section_xxxtube_history">X-X-X.tube 視聴履歴</string>
+    <string name="xxxtube_settings_playback_title">サイトオプション</string>
+    <string name="xxxtube_settings_playback_summary">ホームのタブとトラブルシューティング</string>
+    <string name="xxxtube_history_title">視聴履歴</string>
+    <string name="xxxtube_history_summary">X-X-X.tube で視聴した動画</string>
+    <string name="xxxtube_search_hint">X-X-X.tube を検索</string>
+    <string name="xxxtube_search_prompt">キーワードを入力、または X-X-X.tube の動画リンクを貼り付け</string>
+    <string name="xxxtube_search_videos">動画</string>
+    <string name="xxxtube_models">モデル</string>
+    <string name="xxxtube_categories">カテゴリ</string>
+    <string name="xxxtube_no_results">結果なし</string>
+    <string name="xxxtube_no_history">視聴履歴はまだありません</string>
+    <string name="xxxtube_nothing_here">ここには何もありません</string>
+    <string name="xxxtube_troubleshooting">トラブルシューティング</string>
+    <string name="xxxtube_cf_cleared">Cloudflare の Cookie を消去しました</string>
+    <string name="xxxtube_cf_clear">Cloudflare の Cookie を消去</string>
+    <string name="xxxtube_reset_defaults">初期設定に戻す</string>
+    <string name="xxxtube_quality_header">画質</string>
+    <string name="xxxtube_related">関連動画</string>
+    <string name="xxxtube_tags">タグ</string>
+    <string name="xxxtube_subtitles">字幕</string>
+    <string name="xxxtube_subtitle_show">表示（%1$d 行）</string>
+    <string name="xxxtube_subtitle_none">字幕が読み込まれていません</string>
+    <string name="xxxtube_subtitle_load_srt">.srt ファイルを読み込む</string>
+    <string name="xxxtube_err_no_link">再生可能なリンクが見つかりません。後でもう一度お試しください。</string>
+    <string name="xxxtube_home_sections">ホームのタブ</string>
+    <string name="xxxtube_home_sections_hint">ホームのタブの順序を変更、または不要なタブを非表示にします。</string>
+    <string name="xxxtube_views">%1$s 回視聴</string>
+
 </resources>
