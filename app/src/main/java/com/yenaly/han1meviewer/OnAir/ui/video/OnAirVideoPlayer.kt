@@ -97,6 +97,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.OnAir.common.OnAirQuality
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirCookieManager
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
@@ -450,8 +451,7 @@ fun OnAirVideoPlayer(
                 state.playbackIntent != PlaybackIntent.NotStarted
             ) {
                 val orderedQualities = remember(state.streamsByQuality) {
-                    QUALITY_ORDER.filter { it in state.streamsByQuality } +
-                            state.streamsByQuality.keys.filter { it !in QUALITY_ORDER }
+                    OnAirQuality.order(state.streamsByQuality.keys)
                 }
                 com.yenaly.han1meviewer.ui.component.player.SitePlayerOverlay(
                     config = playerConfig,
@@ -591,10 +591,7 @@ fun OnAirVideoPlayer(
 
 private const val SKIP_MS = 10_000L
 
-private val QUALITY_ORDER = listOf("original", "720", "480", "360", "240", "144")
-
-private fun qualityLabel(quality: String): String =
-    if (quality == "original") applicationContext.getString(R.string.site_quality_original) else "${quality}p"
+private fun qualityLabel(quality: String): String = OnAirQuality.label(quality)
 
 private fun formatTime(ms: Long): String {
     val total = (ms / 1000).coerceAtLeast(0)

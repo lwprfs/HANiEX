@@ -19,6 +19,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.filled.HighQuality
+import com.yenaly.han1meviewer.OnAir.common.OnAirQuality
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -96,6 +100,8 @@ fun OnAirSettingsScreen(
 ) {
     val scope = rememberCoroutineScope()
     var showHostDialog by remember { mutableStateOf(false) }
+    var showQualityDialog by remember { mutableStateOf(false) }
+    var preferredQuality by remember { mutableStateOf(OnAirSitePreferences.preferredQuality) }
     var showClearHistoryDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var loggingOut by remember { mutableStateOf(false) }
@@ -324,6 +330,17 @@ fun OnAirSettingsScreen(
                 )
             }
 
+            item { SettingSectionHeader(stringResource(R.string.onair_stream_section)) }
+            item { SettingHintText(stringResource(R.string.onair_stream_preference_hint)) }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.onair_stream_preference),
+                    summary = OnAirQuality.label(preferredQuality),
+                    icon = Icons.Default.HighQuality,
+                    onClick = { showQualityDialog = true },
+                )
+            }
+
             item { SettingSectionHeader(stringResource(R.string.onair_mirror_host)) }
             item { SettingHintText(stringResource(R.string.onair_onair_is_a_tor_only_site)) }
             item {
@@ -372,6 +389,31 @@ fun OnAirSettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showHostDialog = false }) { Text(stringResource(R.string.close)) }
+            },
+        )
+    }
+
+    if (showQualityDialog) {
+        AlertDialog(
+            onDismissRequest = { showQualityDialog = false },
+            title = { Text(stringResource(R.string.onair_stream_preference)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    OnAirQuality.CHOICES.forEach { q ->
+                        SettingRadioItem(
+                            title = OnAirQuality.label(q),
+                            selected = preferredQuality == q,
+                            onClick = {
+                                OnAirSitePreferences.preferredQuality = q
+                                preferredQuality = q
+                                showQualityDialog = false
+                            },
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showQualityDialog = false }) { Text(stringResource(R.string.close)) }
             },
         )
     }

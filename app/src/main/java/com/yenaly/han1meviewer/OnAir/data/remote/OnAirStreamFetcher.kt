@@ -4,6 +4,7 @@ import com.yenaly.han1meviewer.util.logId
 import com.yenaly.han1meviewer.util.logHost
 
 import android.util.Log
+import com.yenaly.han1meviewer.OnAir.common.OnAirQuality
 import com.yenaly.han1meviewer.OnAir.data.model.StreamResult
 import com.yenaly.han1meviewer.OnAir.data.parser.OnAirWatchParser
 import kotlinx.coroutines.Dispatchers
@@ -30,9 +31,10 @@ object OnAirStreamFetcher {
 
     private suspend fun fetchOnce(videoId: String, quality: String): StreamResult? {
         return try {
+            val pageQuality = OnAirQuality.pageQuality(quality)
             val response = OnAirNetwork.service.getWatchPage(
                 videoId = videoId,
-                quality = quality,
+                quality = pageQuality,
             )
             if (response.code() == 404) return null
             val html = response.body()?.string().orEmpty()
@@ -40,9 +42,16 @@ object OnAirStreamFetcher {
 
             val base = OnAirNetwork.baseUrl
             val watchUrl = base.trimEnd('/') + "/watch/" + videoId +
-                    "?quality=" + quality
+                    "?quality=" + pageQuality
 
             val doc = Jsoup.parse(html, watchUrl)
+
+            if (quality == OnAirQuality.HLS) {
+                val hls = OnAirWatchParser.parseHlsFromDoc(doc, watchUrl)
+                if (hls != null && probeMediaUrl(hls.url)) return hls
+                Log.w(TAG, "no usable HLS master for ${videoId.logId()}")
+                return null
+            }
             val videoEl = doc.selectFirst("video#watch-video")
                 ?: doc.selectFirst("video#watch-video-fallback")
                 ?: doc.selectFirst("video")

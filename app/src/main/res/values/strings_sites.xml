@@ -1185,4 +1185,8 @@
     <string name="fuckingsession_home_sections">首頁分頁</string>
     <string name="fuckingsession_home_sections_hint">調整首頁分頁順序，或隱藏不需要的分頁。</string>
     <string name="mpv_fallback_unsupported">此影片格式（如 VP9 / AV1 / WebM）不受內建備用播放器支援，請改用其他播放器開啟。</string>
+    <string name="onair_quality_auto_hls">自動 (HLS)</string>
+    <string name="onair_stream_section">串流來源</string>
+    <string name="onair_stream_preference">優先載入的串流</string>
+    <string name="onair_stream_preference_hint">影片頁面開啟時優先載入的串流。若該影片沒有此選項，會使用最接近的畫質；影片頁面中仍可隨時切換。預設為原畫。</string>
 </resources>

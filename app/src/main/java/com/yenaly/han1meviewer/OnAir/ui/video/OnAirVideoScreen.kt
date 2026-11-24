@@ -420,7 +420,7 @@ fun OnAirVideoScreen(
                         downloadUrl = playerState.activeUrl,
                         downloadQuality = playerState.currentQuality,
                         resolveDownloadUrl = {
-                            val quality = playerState.currentQuality.ifBlank { onAirConfig.defaultQuality }
+                            val quality = playerState.currentQuality.ifBlank { com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences.preferredQuality }
                             com.yenaly.han1meviewer.OnAir.data.remote.OnAirStreamFetcher
                                 .fetch(videoId, quality)?.url
                         },

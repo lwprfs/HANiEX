@@ -148,7 +148,7 @@ object SitePlayerSettings {
             applicationContext.getString(R.string.site_default_resolution),
             applicationContext.getString(R.string.site_default_resolution_summary),
             qualityOptions,
-            onlySites = setOf(SiteType.ONAIR),
+            onlySites = emptySet(),
         ) { "original" },
         Spec.Switch(
             ID_KEEP_SCREEN_ON, applicationContext.getString(R.string.site_player_keep_screen_on_title), applicationContext.getString(R.string.site_player_keep_screen_on_summary),
@@ -383,7 +383,9 @@ object SitePlayerSettings {
             resumePlayback = bool(site, ID_RESUME),
             autoPlay = bool(site, ID_AUTO_PLAY),
             stretchFullscreen = getString(site, ID_STRETCH).toBooleanStrictOrNull() ?: false,
-            defaultQuality = getString(site, ID_DEFAULT_QUALITY).ifBlank { "original" },
+            defaultQuality = if (site == SiteType.ONAIR) {
+                com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences.preferredQuality
+            } else getString(site, ID_DEFAULT_QUALITY).ifBlank { "original" },
             keepScreenOn = bool(site, ID_KEEP_SCREEN_ON),
             gestureSeek = bool(site, ID_GESTURE_SEEK),
             gestureBrightness = bool(site, ID_GESTURE_BRIGHTNESS),

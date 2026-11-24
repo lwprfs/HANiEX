@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.OnAir.data.parser
 import com.yenaly.han1meviewer.util.logId
 
 import android.util.Log
+import com.yenaly.han1meviewer.OnAir.common.OnAirQuality
 import com.yenaly.han1meviewer.OnAir.common.OnAirThumbCache
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirQualityLink
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoCard
@@ -57,10 +58,10 @@ object OnAirWatchParser {
         val currentQuality = detectServedQuality(doc, baseUrl, qualityLinks)
         val qualityLinksByQuality = qualityLinks.associate { it.quality to it.url }
         val currentStream = parseCurrentStreamFromDoc(doc, baseUrl, currentQuality)
-        val streamUrlByQuality = if (currentStream != null) {
-            linkedMapOf(currentQuality to currentStream.url)
-        } else {
-            linkedMapOf()
+        val streamUrlByQuality = linkedMapOf<String, String>()
+        if (currentStream != null) streamUrlByQuality[currentQuality] = currentStream.url
+        collectAllStreams(doc, baseUrl).forEach { (q, url) ->
+            streamUrlByQuality.putIfAbsent(q, url)
         }
         val currentMediaType = currentStream?.mediaType
 
@@ -126,6 +127,7 @@ object OnAirWatchParser {
         quality: String,
     ): StreamResult? {
         val doc = Jsoup.parse(html, baseUrl)
+        if (quality == OnAirQuality.HLS) return parseHlsFromDoc(doc, baseUrl)
         return parseCurrentStreamFromDoc(doc, baseUrl, quality)
     }
 
@@ -171,6 +173,44 @@ object OnAirWatchParser {
         }
 
         return null
+    }
+
+    private fun mainVideo(doc: Document): Element? =
+        doc.selectFirst("video#watch-video")
+            ?: doc.selectFirst("video#watch-video-fallback")
+            ?: doc.selectFirst("video")
+
+    fun parseHlsFromDoc(doc: Document, baseUrl: String): StreamResult? {
+        val videoEl = mainVideo(doc) ?: return null
+        val raw = videoEl.attr("data-hls-src").takeIf { it.isNotBlank() }
+            ?: videoEl.select("source").firstNotNullOfOrNull { s ->
+                (s.attr("src").takeIf { it.isNotBlank() }
+                    ?: s.attr("data-savepage-src").takeIf { it.isNotBlank() })
+                    ?.takeIf { it.contains(".m3u8", true) || it.contains("/hls/", true) }
+            } ?: return null
+        val abs = resolveUrl(raw, baseUrl) ?: return null
+        return StreamResult(
+            quality = OnAirQuality.HLS,
+            url = abs,
+            mediaType = "application/vnd.apple.mpegurl",
+            isHls = true,
+        )
+    }
+
+    private fun collectAllStreams(doc: Document, baseUrl: String): Map<String, String> {
+        val out = linkedMapOf<String, String>()
+        val videoEl = mainVideo(doc) ?: return out
+        for (source in videoEl.select("source")) {
+            val raw = source.attr("src").takeIf { it.isNotBlank() }
+                ?: source.attr("data-savepage-src").takeIf { it.isNotBlank() }
+                ?: continue
+            val abs = resolveUrl(raw, baseUrl) ?: continue
+            if (abs.contains(".m3u8", true) || abs.contains("/hls/", true)) continue
+            val q = qualityOfStreamUrl(abs) ?: OnAirQuality.ORIGINAL
+            out.putIfAbsent(q, abs)
+        }
+        parseHlsFromDoc(doc, baseUrl)?.let { out[OnAirQuality.HLS] = it.url }
+        return out
     }
 
     private fun detectServedQuality(

@@ -8,6 +8,17 @@ object OnAirSitePreferences {
     private const val PREF_ONAIR_HOST = "onair_host"
     private const val PREF_ONAIR_MIRROR_INDEX = "onair_mirror_index"
 
+    private const val PREF_ONAIR_QUALITY = "onair_preferred_quality"
+
+    var preferredQuality: String
+        get() = Preferences.preferenceSp.getString(PREF_ONAIR_QUALITY, null)
+            ?.takeIf(OnAirQuality::isKnownChoice) ?: OnAirQuality.ORIGINAL
+        set(value) {
+            Preferences.preferenceSp.edit {
+                putString(PREF_ONAIR_QUALITY, value.takeIf(OnAirQuality::isKnownChoice) ?: OnAirQuality.ORIGINAL)
+            }
+        }
+
     val selectedMirrorIndex: Int
         get() = Preferences.preferenceSp.getInt(PREF_ONAIR_MIRROR_INDEX, 0)
             .coerceIn(0, OnAirConstants.ONAIR_URL.lastIndex)

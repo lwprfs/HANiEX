@@ -1185,4 +1185,8 @@
     <string name="fuckingsession_home_sections">Home sections</string>
     <string name="fuckingsession_home_sections_hint">Reorder the home sections or hide the ones you do not want.</string>
     <string name="mpv_fallback_unsupported">This video format (e.g. VP9 / AV1 / WebM) is not supported by the built-in fallback player. Try opening it in another player.</string>
+    <string name="onair_quality_auto_hls">Auto (HLS)</string>
+    <string name="onair_stream_section">Stream</string>
+    <string name="onair_stream_preference">Preferred stream</string>
+    <string name="onair_stream_preference_hint">Stream loaded first when a video opens. If a video does not offer it, the closest available one is used. You can still switch streams on the video page. Default: Original.</string>
 </resources>

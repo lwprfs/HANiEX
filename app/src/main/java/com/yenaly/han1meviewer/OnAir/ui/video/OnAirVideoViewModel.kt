@@ -4,15 +4,15 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.OnAir.common.OnAirQuality
+import com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences
 import com.yenaly.han1meviewer.OnAir.data.local.OnAirHistoryRepo
 import com.yenaly.han1meviewer.OnAir.data.model.OnAirVideoDetail
 import com.yenaly.han1meviewer.OnAir.data.model.StreamResult
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetworkRepo
 import com.yenaly.han1meviewer.OnAir.data.remote.OnAirStreamFetcher
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
-import com.yenaly.han1meviewer.ui.component.player.SitePlayerSettings
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
@@ -70,25 +70,10 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
         private const val COMPLETE_GRACE_MS = 3_000L
         private const val QUALITY_FETCH_TIMEOUT_MS = 45_000L
 
-        private val FALLBACK_QUALITIES = listOf("original", "480", "360", "240", "144")
+        fun orderQualities(keys: Collection<String>): List<String> = OnAirQuality.order(keys)
 
-        private fun qualityHeight(q: String): Int =
-            if (q == "original") Int.MAX_VALUE else q.toIntOrNull() ?: 0
-
-        fun orderQualities(keys: Collection<String>): List<String> =
-            keys.distinct().sortedByDescending(::qualityHeight)
-
-        fun resolveQuality(wanted: String, available: List<String>): String {
-            if (available.isEmpty()) return wanted
-            if (wanted in available) return wanted
-            val numeric = available.filter { it != "original" }.mapNotNull { q ->
-                q.toIntOrNull()?.let { q to it }
-            }
-            val h = qualityHeight(wanted)
-            numeric.filter { it.second <= h }.maxByOrNull { it.second }?.let { return it.first }
-            numeric.filter { it.second > h }.minByOrNull { it.second }?.let { return it.first }
-            return if ("original" in available) "original" else available.first()
-        }
+        fun resolveQuality(wanted: String, available: List<String>): String =
+            OnAirQuality.resolve(wanted, available)
     }
 
     private val _pageState =
@@ -136,9 +121,12 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
             _resumePosition.value = 0L
 
             val wanted = preferredQuality?.takeIf { it.isNotBlank() }
-                ?: SitePlayerSettings.config(SiteType.ONAIR).defaultQuality
+                ?: OnAirSitePreferences.preferredQuality
 
-            var first = OnAirNetworkRepo.getVideoDetail(videoId, quality = wanted)
+            var first = OnAirNetworkRepo.getVideoDetail(
+                videoId,
+                quality = OnAirQuality.pageQuality(wanted),
+            )
                 .first { it !is VideoLoadingState.Loading }
             if (first is VideoLoadingState.NoContent) {
                 first = OnAirNetworkRepo.getVideoDetail(videoId, quality = null)
@@ -182,9 +170,10 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
     }
 
     private fun availableQualities(detail: OnAirVideoDetail): List<String> {
+
         val advertised = detail.qualityLinks.map { it.quality }
-            .ifEmpty { FALLBACK_QUALITIES }
-        return orderQualities(advertised + detail.currentQuality)
+        val found = detail.streamUrlByQuality.keys
+        return orderQualities(advertised + found + detail.currentQuality)
     }
 
     private fun applyInitialDetail(detail: OnAirVideoDetail, wantedQuality: String) {
@@ -195,20 +184,25 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
         available.forEach { q -> map[q] = QualityStream(quality = q, state = StreamState.Loading) }
 
         val pageQuality = detail.currentQuality
-        val pageUrl = detail.streamUrlByQuality[pageQuality]?.takeIf { it.isNotBlank() }
-        val pageStream = pageUrl?.let {
-            QualityStream(
-                quality = pageQuality,
-                url = it,
-                mediaType = detail.currentMediaType,
-                isHls = it.contains(".m3u8", ignoreCase = true),
+        detail.streamUrlByQuality.forEach { (q, url) ->
+            if (url.isBlank()) return@forEach
+            val isHls = url.contains(".m3u8", ignoreCase = true) ||
+                    url.contains("/hls/", ignoreCase = true)
+            val ready = QualityStream(
+                quality = q,
+                url = url,
+                mediaType = when {
+                    isHls -> "application/vnd.apple.mpegurl"
+                    q == pageQuality -> detail.currentMediaType
+                    else -> null
+                },
+                isHls = isHls,
                 state = StreamState.Ready,
             )
+            map[q] = ready
+            qualityCache[q] = ready
         }
-        if (pageStream != null) {
-            map[pageQuality] = pageStream
-            qualityCache[pageQuality] = pageStream
-        }
+        val pageStream = map[pageQuality]?.takeIf { it.state == StreamState.Ready }
 
         val targetReady = map[target]?.state == StreamState.Ready
         _playerState.update {
@@ -471,7 +465,7 @@ class OnAirVideoViewModel(application: Application) : AndroidViewModel(applicati
 
     fun markStreamUnavailable(quality: String, reason: String? = null) {
         if (quality.isBlank()) return
-        val isOriginal = quality == "original"
+        val isOriginal = quality == OnAirQuality.ORIGINAL || quality == OnAirQuality.HLS
         val maxAttempts = if (isOriginal) 2 else 1
         val attempts = (recoverAttempts[quality] ?: 0) + 1
         recoverAttempts[quality] = attempts
