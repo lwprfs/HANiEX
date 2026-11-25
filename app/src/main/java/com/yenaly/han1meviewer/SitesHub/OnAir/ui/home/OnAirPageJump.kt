@@ -25,17 +25,11 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 
-/** Marks the index (inside the loaded card list) at which a given site page starts. */
 data class OnAirPageStart(val page: Int, val startIndex: Int)
 
-/** Page that the card at [cardIndex] belongs to. */
 fun List<OnAirPageStart>.pageAt(cardIndex: Int, fallback: Int): Int =
     lastOrNull { it.startIndex <= cardIndex }?.page ?: fallback
 
-/**
- * Pill showing the page currently being viewed. Tapping it lets the user type any valid page
- * number to restart loading from there. The chosen page is session-only (never persisted).
- */
 @Composable
 fun OnAirPageChip(
     page: Int,

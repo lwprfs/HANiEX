@@ -96,7 +96,7 @@ object DownloadLayout {
         return listOf(siteFolder) + rest.ifEmpty { listOf(FALLBACK) }
     }
 
-    val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm", "ts", "m4v", "mpeg", "mpg")
+    val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm", "ts", "m2ts", "mts", "m4v", "mpeg", "mpg")
 
     fun isVideoFileName(name: String?): Boolean =
         name?.substringAfterLast('.', "")?.lowercase() in VIDEO_EXTENSIONS

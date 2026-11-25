@@ -18,7 +18,6 @@ sealed interface CoomerSource {
 
     data class Page(val path: String) : CoomerSource
 
-    /** [posts] = false searches creators, true searches posts. */
     data class Search(val query: String, val posts: Boolean = false) : CoomerSource
 }
 

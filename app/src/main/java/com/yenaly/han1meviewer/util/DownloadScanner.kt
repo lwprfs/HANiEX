@@ -158,11 +158,24 @@ object DownloadScanner {
 
     private class Leaf(val segments: List<String>, val node: DownloadTreeNode, val children: List<DownloadTreeNode>)
 
+    private val dupSuffixRegex = Regex("""\s*\(\d+\)$""")
+
+    internal fun normalizeQuality(raw: String): String {
+        var q = raw.replace(dupSuffixRegex, "").trim()
+        while (true) {
+            val dot = q.lastIndexOf('.')
+            if (dot <= 0) break
+            if (q.substring(dot + 1).lowercase() !in DownloadLayout.VIDEO_EXTENSIONS) break
+            q = q.substring(0, dot).trim()
+        }
+        return q.ifBlank { "default" }
+    }
+
     fun parseVideoFileName(fileName: String): Pair<String, String> {
         val base = fileName.substringBeforeLast('.', fileName)
         val i = base.lastIndexOf('_')
         return if (i <= 0 || i == base.length - 1) base to "default"
-        else base.substring(0, i) to base.substring(i + 1)
+        else base.substring(0, i) to normalizeQuality(base.substring(i + 1))
     }
 
     internal fun parseInfo(text: String): DownloadInfo? = runCatching {
@@ -235,14 +248,25 @@ object DownloadScanner {
                     if (code == null) {
                         failures += ImportFailure(leaf.segments.joinToString("/"), ImportFailureReason.UNRECOGNIZED_FOLDER)
                     } else {
-                        val videos = leaf.children
+                        val allVideos = leaf.children
                             .filter { !it.isDirectory && DownloadLayout.isVideoFileName(it.name) }
                             .sortedBy { it.name.lowercase() }
                         val images = leaf.children.filter { !it.isDirectory && ext(it.name) in IMAGE_EXTENSIONS }
-                        for (video in videos) {
-                            val (parsedTitle, parsedQuality) = parseVideoFileName(video.name)
-                            val fromInfo = info?.takeIf { it.videoFile.equals(video.name, true) }
-                            val quality = fromInfo?.quality ?: parsedQuality
+
+                        val byQuality = LinkedHashMap<String, MutableList<DownloadTreeNode>>()
+                        for (video in allVideos) {
+                            val fromInfoQ = info?.takeIf { it.videoFile.equals(video.name, true) }?.quality
+                            val q = fromInfoQ?.let(::normalizeQuality) ?: parseVideoFileName(video.name).second
+                            byQuality.getOrPut(q) { mutableListOf() } += video
+                        }
+                        val videos = byQuality.map { (q, group) ->
+                            val declared = group.firstOrNull { info?.videoFile.equals(it.name, true) && it.length > 0 }
+                            q to (declared?.takeIf { d -> d.length >= (group.maxOf { it.length }) }
+                                ?: group.maxByOrNull { it.length } ?: group.first())
+                        }
+                        for ((quality, video) in videos) {
+                            val (parsedTitle, _) = parseVideoFileName(video.name)
+                            val fromInfo = info?.takeIf { f -> allVideos.any { v -> f.videoFile.equals(v.name, true) } }
                             val title = fromInfo?.title ?: info?.title?.takeIf { videos.size == 1 } ?: parsedTitle
                             if (!seen.add("$code|$quality")) {
                                 skipped++
@@ -258,10 +282,16 @@ object DownloadScanner {
                                 if (existing.state == DownloadState.Queued || existing.state == DownloadState.Downloading) {
                                     skipped++
                                 } else {
+
+                                    val newCover = cover?.uriString
                                     dao.update(
                                         existing.copy(
                                             videoUri = video.uriString,
-                                            coverUri = cover?.uriString ?: existing.coverUri,
+                                            coverUri = newCover ?: existing.coverUri,
+                                            coverUrl = info?.coverUrl?.takeIf { it.isNotBlank() } ?: existing.coverUrl,
+                                            title = fromInfo?.title ?: existing.title.ifBlank { title },
+                                            videoUrl = info?.videoUrls?.get(quality)?.takeIf { it.isNotBlank() }
+                                                ?: existing.videoUrl,
                                             length = video.length,
                                             downloadedLength = video.length,
                                             state = DownloadState.Finished,

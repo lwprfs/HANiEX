@@ -107,7 +107,6 @@ fun OnAirHomeScreen(
     val columns = rememberVideoGridColumns()
     val scope = rememberCoroutineScope()
 
-    // Live page number: follows the first visible card (item 0 is the header, so subtract 1).
     val displayPage by remember(pageStarts, startPage) {
         derivedStateOf {
             val cardIndex = (gridState.firstVisibleItemIndex - 1).coerceAtLeast(0)

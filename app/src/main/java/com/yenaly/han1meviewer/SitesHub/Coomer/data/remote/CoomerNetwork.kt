@@ -53,7 +53,6 @@ object CoomerNetwork {
             .create(CoomerService::class.java)
     }
 
-    /** Media is served from `img*.coomerfans.com`; the site expects its own pages as Referer. */
     fun streamRefererFor(@Suppress("UNUSED_PARAMETER") slug: String): String =
         "${CoomerConstants.BASE_URL}/"
 

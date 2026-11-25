@@ -119,7 +119,6 @@ fun OnAirSearchScreen(
     val scope = rememberCoroutineScope()
     val columns = rememberSearchGridColumns()
 
-    // Live page number: follows the first visible result card.
     val displayPage by remember(pageStarts, startPage) {
         derivedStateOf { pageStarts.pageAt(gridState.firstVisibleItemIndex, startPage) }
     }

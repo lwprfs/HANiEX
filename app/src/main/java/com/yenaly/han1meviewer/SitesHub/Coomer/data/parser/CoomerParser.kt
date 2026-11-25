@@ -24,7 +24,6 @@ object CoomerParser {
         } else noQuery
     }
 
-    /** `2025-03-03 16:49:28 +0000 UTC` -> `2025-03-03`. */
     private fun dateOf(raw: String): String =
         clean(raw).removePrefix("Added").trim().take(10)
 
@@ -34,10 +33,6 @@ object CoomerParser {
         return if (url.contains(BLANK_POST)) "" else url
     }
 
-    /**
-     * Post thumbnail, falling back to the creator avatar when the post has no image. When the image
-     * exists but its host answers 404, the loader swaps in the same avatar (see [CoomerThumbFallback]).
-     */
     private fun postCover(thumb: String, postPath: String): String {
         val creatorId = CoomerConstants.creatorIdFromPostPath(postPath)
         val avatar = creatorId?.let { CoomerConstants.avatarUrl(it) }.orEmpty()
@@ -63,7 +58,6 @@ object CoomerParser {
     private fun parseCreatorTiles(root: Element): List<CoomerTerm> =
         root.select(".thumb").mapNotNull { parseCreatorTile(it) }.distinctBy { it.slug }
 
-    /** `.thumb` tiles that link to `/p/...` (post search). */
     private fun parsePostTiles(root: Element): List<CoomerCard> =
         root.select(".thumb").mapNotNull { tile ->
             val a = tile.selectFirst("a[href*=/p/]") ?: return@mapNotNull null
@@ -77,7 +71,6 @@ object CoomerParser {
             )
         }.distinctBy { it.slug }
 
-    /** `.post` blocks on a creator page. */
     private fun parsePostBlocks(root: Element, creatorName: String): List<CoomerCard> =
         root.select(".posts-list .post").mapNotNull { block ->
             val a = block.selectFirst("a[href*=/p/]") ?: return@mapNotNull null

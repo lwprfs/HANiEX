@@ -34,6 +34,7 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.DownloadScreen
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadEvent
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.DownloadViewModel
+import com.yenaly.han1meviewer.util.DownloadRepair
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.ImportFailureReason
 import com.yenaly.han1meviewer.util.ImportResult
@@ -94,14 +95,20 @@ fun DownloadRouteScreen(
                 val code = event.video.video.videoCode
 
                 if (SiteCheckIn.siteOfDishCode(code) == null) onNavigateToVideo(code)
-                else onNavigateToLocalVideo(code, event.video.video.videoUri)
+                else scope.launch {
+                    onNavigateToLocalVideo(code, DownloadRepair.usableVideoUri(context, event.video.video))
+                }
             }
-            is DownloadEvent.OnLocalPlayback -> onNavigateToLocalVideo(
-                event.video.video.videoCode, event.video.video.videoUri
-            )
+            is DownloadEvent.OnLocalPlayback -> scope.launch {
+                onNavigateToLocalVideo(
+                    event.video.video.videoCode,
+                    DownloadRepair.usableVideoUri(context, event.video.video),
+                )
+            }
 
-            is DownloadEvent.OnExternalPlayback -> {
-                context.openDownloadedHanimeVideoLocally(event.video.video.videoUri) {
+            is DownloadEvent.OnExternalPlayback -> scope.launch {
+                val uri = DownloadRepair.usableVideoUri(context, event.video.video)
+                context.openDownloadedHanimeVideoLocally(uri) {
                     showVideoNotExistConfirm = event.video
                 }
             }

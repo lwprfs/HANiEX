@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.player.kernel
 
 import com.yenaly.han1meviewer.util.logHost
+import com.yenaly.han1meviewer.worker.PlaybackPriority
 
 import android.content.Context
 import android.net.Uri
@@ -483,6 +484,7 @@ class MpvKernel(
     }
 
     override fun release() {
+        PlaybackPriority.onStopped()
         stopStallWatchdog()
         cancelPrepareTimeout()
         fileActive = false
@@ -535,6 +537,7 @@ class MpvKernel(
                 "pause" -> corePaused = value
 
                 "paused-for-cache" -> mainHandler.post {
+                    if (value) PlaybackPriority.onBuffering() else PlaybackPriority.onStable()
                     if (value) {
                         listener?.onBuffering()
                     } else if (!corePaused) {

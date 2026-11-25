@@ -22,13 +22,10 @@ object CoomerConstants {
         val path: String,
     )
 
-    /** Creator grid (the site's front page, newest creators first). */
     val SECTION_CREATORS = Section("creators", "Creators", "/")
 
-    /** Creators curated by the site. */
     val SECTION_FAVORITED = Section("favorited", "Favorited", "/favorited")
 
-    /** Latest posts from every creator. */
     val SECTION_POSTS = Section("posts", "Posts", "/post-search")
 
     val HOME_SECTIONS: List<Section> = listOf(
@@ -43,7 +40,6 @@ object CoomerConstants {
     private fun encode(value: String): String =
         URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 
-    /** [path] may already contain a query string. Page 1 carries no `page` parameter. */
     fun pagedUrl(path: String, page: Int): String {
         val raw = path.trim()
         if (raw.startsWith("http://") || raw.startsWith("https://")) return raw
@@ -56,14 +52,12 @@ object CoomerConstants {
 
     fun pageUrl(path: String): String = pagedUrl(path, 1)
 
-    /** Creator search (`/?q=`) or post search (`/post-search?q=`). */
     fun searchPath(query: String, posts: Boolean): String =
         (if (posts) SEARCH_PATH_POSTS else SEARCH_PATH_CREATORS) + "?q=" + encode(query)
 
     fun searchUrl(query: String, posts: Boolean, page: Int = 1): String =
         pagedUrl(searchPath(query, posts), page)
 
-    /** [slug] is `service/id/name` (name optional). */
     fun creatorPath(slug: String): String {
         val parts = slug.trim('/').split('/')
         return "/u/" + parts.joinToString("/") { encode(it) } + "/"
@@ -80,24 +74,20 @@ object CoomerConstants {
         return slugFromPath(uri.path.orEmpty())
     }
 
-    /** `/p/{postId}` or `/p/{postId}/{creatorId}/{service}` -> `{postId}`. */
     fun slugFromPath(path: String): String? {
         val segments = path.split('/').filter { it.isNotBlank() }
         if (segments.size < 2 || segments[0] != "p") return null
         return segments[1].takeIf { id -> id.isNotEmpty() && id.all { it.isDigit() } }
     }
 
-    /** `/p/{postId}/{creatorId}/{service}` -> `{creatorId}` (null for `/p/{postId}`). */
     fun creatorIdFromPostPath(path: String): String? {
         val segments = path.split('/').filter { it.isNotBlank() }
         if (segments.size < 3 || segments[0] != "p") return null
         return segments[2].takeIf { id -> id.isNotEmpty() && id.all { it.isDigit() } }
     }
 
-    /** Creator avatars are served by the site itself, so they stay reachable when post media 404s. */
     fun avatarUrl(creatorId: String): String = "$BASE_URL/istorage/$creatorId.jpg"
 
-    /** `/u/{service}/{id}[/{name}]` -> `service/id[/name]`. */
     fun creatorSlugFromPath(path: String): String? {
         val segments = path.split('/').filter { it.isNotBlank() }
         if (segments.size < 3 || segments[0] != "u") return null

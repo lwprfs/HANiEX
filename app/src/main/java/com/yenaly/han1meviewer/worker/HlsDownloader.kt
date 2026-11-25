@@ -1,16 +1,25 @@
 package com.yenaly.han1meviewer.worker
 
+import android.util.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.IOException
 import java.io.OutputStream
 import java.net.URI
+import java.security.GeneralSecurityException
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicLong
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -204,66 +213,323 @@ class HlsDownloader(
             synchronized(keyCache) { keyCache[uri] = it }
         }
 
-    private fun downloadSegment(segment: Segment): ByteArray {
+    /** A downloaded (and decrypted) segment. Only the first [length] bytes of [data] are valid. */
+    private class Chunk(val data: ByteArray, val length: Int)
+
+    private class Completion(val index: Int, val chunk: Chunk?, val error: Throwable?)
+
+    private val activeCancels = ConcurrentHashMap<Any, () -> Unit>()
+    private val errorSignals = AtomicInteger(0)
+
+    private fun cancelActiveRequests() {
+        activeCancels.values.forEach { runCatching { it() } }
+        activeCancels.clear()
+    }
+
+    private fun fetchSegmentBytes(url: String): Chunk {
+        if (!urlConnectionFallback) return fetchSegmentOkHttp(url)
+        return try {
+            fetchSegmentOkHttp(url)
+        } catch (e: HlsHttpException) {
+            if (e.code == 404 || e.code == 410) throw e
+            val bytes = fetchBytesUrlConnection(url, e)
+            Chunk(bytes, bytes.size)
+        } catch (e: IOException) {
+            val bytes = fetchBytesUrlConnection(url, e)
+            Chunk(bytes, bytes.size)
+        }
+    }
+
+    private fun fetchSegmentOkHttp(url: String): Chunk {
+        val call = client.newCall(request(url))
+        val token = Any()
+        activeCancels[token] = { call.cancel() }
+        try {
+            call.execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw HlsHttpException(response.code, "HTTP ${response.code} for $url")
+                }
+                val finalPath = response.request.url.encodedPath.lowercase()
+                if (finalPath.contains("/login")) {
+                    throw HlsHttpException(401, "Redirected to login for $url")
+                }
+                val body = response.body
+                val len = body.contentLength()
+                // Known size: read straight into an exact-size array (no growth copies).
+                return if (len in 1..MAX_EXACT_READ_BYTES) {
+                    val buf = ByteArray(len.toInt())
+                    body.source().readFully(buf)
+                    Chunk(buf, buf.size)
+                } else {
+                    val bytes = body.bytes()
+                    Chunk(bytes, bytes.size)
+                }
+            }
+        } finally {
+            activeCancels.remove(token)
+        }
+    }
+
+    private fun decrypt(chunk: Chunk, segment: Segment, key: Key): Chunk {
+        try {
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            cipher.init(
+                Cipher.DECRYPT_MODE,
+                SecretKeySpec(keyBytes(key.uri), "AES"),
+                IvParameterSpec(key.iv ?: sequenceIv(segment.sequence)),
+            )
+            val plain = cipher.doFinal(chunk.data, 0, chunk.length)
+            return Chunk(plain, plain.size)
+        } catch (e: GeneralSecurityException) {
+            throw IOException("Segment decrypt failed: ${e.message}", e)
+        }
+    }
+
+    private suspend fun downloadSegment(segment: Segment): Chunk {
         var lastError: Exception? = null
-        repeat(3) { attempt ->
+        repeat(MAX_SEGMENT_ATTEMPTS) { attempt ->
+            currentCoroutineContext().ensureActive()
             try {
-                val data = fetchBytes(segment.url)
-                val key = segment.key ?: return data
-                val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-                cipher.init(
-                    Cipher.DECRYPT_MODE,
-                    SecretKeySpec(keyBytes(key.uri), "AES"),
-                    IvParameterSpec(key.iv ?: sequenceIv(segment.sequence)),
-                )
-                return cipher.doFinal(data)
+                val chunk = fetchSegmentBytes(segment.url)
+                val key = segment.key ?: return chunk
+                return decrypt(chunk, segment, key)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: HlsHttpException) {
                 if (e.code == 401 || e.code == 403 || e.code == 404 || e.code == 410) throw e
+                errorSignals.incrementAndGet()
                 lastError = e
             } catch (e: IOException) {
+                // A call cancelled by our own watchdog must not be retried.
+                currentCoroutineContext().ensureActive()
+                errorSignals.incrementAndGet()
                 lastError = e
             }
-            if (attempt < 2) Thread.sleep(600L * (attempt + 1))
+            if (attempt < MAX_SEGMENT_ATTEMPTS - 1) delay(600L * (attempt + 1))
         }
         throw lastError ?: IOException("Segment download failed")
     }
 
+    private suspend fun fetchInitSegment(url: String): ByteArray {
+        var lastError: Exception? = null
+        repeat(MAX_SEGMENT_ATTEMPTS) { attempt ->
+            currentCoroutineContext().ensureActive()
+            try {
+                return fetchBytes(url)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HlsHttpException) {
+                if (e.code == 401 || e.code == 403 || e.code == 404 || e.code == 410) throw e
+                lastError = e
+            } catch (e: IOException) {
+                currentCoroutineContext().ensureActive()
+                lastError = e
+            }
+            if (attempt < MAX_SEGMENT_ATTEMPTS - 1) delay(600L * (attempt + 1))
+        }
+        throw lastError ?: IOException("Init segment download failed")
+    }
+
     /**
-     * Writes the playlist into [out]. [onProgress] gets (finished segments, total segments,
-     * bytes written so far) after every batch. Returns the number of bytes written.
+     * Adaptive request concurrency (hill climbing on measured throughput).
+     * Only touched from the scheduler coroutine, so it needs no locking.
+     */
+    private class ConcurrencyController(
+        private val min: Int,
+        private val max: Int,
+        start: Int,
+    ) {
+        var limit = start.coerceIn(min, max)
+            private set
+        var peak = limit
+            private set
+
+        private var windowStartNs = System.nanoTime()
+        private var windowBytes = 0L
+        private var lastRate = 0.0
+        private var lastAction = 0
+        private var hold = 0
+
+        fun addBytes(n: Long) {
+            windowBytes += n
+        }
+
+        fun tick(errors: Int) {
+            val elapsed = (System.nanoTime() - windowStartNs) / 1e9
+            if (elapsed < WINDOW_SECONDS) return
+            val rate = windowBytes / elapsed
+            if (errors > 0) {
+                // Server/network pushed back: back off and hold for a while.
+                limit = (limit - 1).coerceAtLeast(min)
+                lastAction = -1
+                hold = 2
+            } else if (hold > 0) {
+                hold--
+            } else if (lastAction == 1 && rate < lastRate * MIN_GAIN) {
+                // The last increase didn't buy any throughput: step back.
+                limit = (limit - 1).coerceAtLeast(min)
+                lastAction = -1
+                hold = 3
+            } else if (limit < max && windowBytes > 0) {
+                limit++
+                lastAction = 1
+            } else {
+                lastAction = 0
+            }
+            if (limit > peak) peak = limit
+            lastRate = rate
+            windowStartNs = System.nanoTime()
+            windowBytes = 0L
+        }
+
+        companion object {
+            private const val WINDOW_SECONDS = 3.0
+            private const val MIN_GAIN = 1.05
+        }
+    }
+
+    /**
+     * Writes the playlist into [out], in playlist order, using a sliding window of concurrent
+     * segment requests: a new request starts the moment another finishes, never waiting for a
+     * whole batch. Completed-but-not-yet-writable segments are held in a small reorder buffer
+     * whose size is bounded in bytes.
+     *
+     * [parallelism] is the upper bound (clamped to 1..8); the effective number of simultaneous
+     * requests adapts between 4 and that bound to the measured throughput, and is lowered
+     * temporarily by [PlaybackPriority] while the player is buffering.
+     *
+     * To resume, pass the number of segments already written ([startSegment]) and the byte
+     * count they occupy ([startBytes]); [out] must already be positioned at [startBytes].
+     * [onProgress] gets (finished segments, total segments, bytes written so far) after every
+     * segment. Returns the total number of bytes in the file.
      */
     suspend fun download(
         playlist: MediaPlaylist,
         out: OutputStream,
-        parallelism: Int = 4,
+        parallelism: Int = MAX_PARALLELISM,
+        startSegment: Int = 0,
+        startBytes: Long = 0L,
         onProgress: suspend (done: Int, total: Int, bytes: Long) -> Unit,
     ): Long = withContext(Dispatchers.IO) {
-        var bytes = 0L
-        playlist.initSegmentUrl?.let { initUrl ->
-            val data = fetchBytes(initUrl)
-            out.write(data)
-            bytes += data.size
-        }
         val total = playlist.segments.size
-        var done = 0
-        playlist.segments.chunked(parallelism.coerceAtLeast(1)).forEach { batch ->
-            currentCoroutineContext().ensureActive()
-            val parts = coroutineScope {
-                batch.map { seg -> async(Dispatchers.IO) { downloadSegment(seg) } }
-                    .map { it.await() }
+        val begin = startSegment.coerceIn(0, total)
+        var bytes = if (begin > 0) startBytes.coerceAtLeast(0L) else 0L
+        val maxPar = parallelism.coerceIn(1, MAX_PARALLELISM)
+        val minPar = minOf(MIN_PARALLELISM, maxPar)
+
+        if (begin == 0) {
+            playlist.initSegmentUrl?.let { initUrl ->
+                val data = fetchInitSegment(initUrl)
+                out.write(data)
+                bytes += data.size
             }
-            parts.forEach { part ->
-                out.write(part)
-                bytes += part.size
-            }
-            done += batch.size
-            onProgress(done, total, bytes)
         }
-        out.flush()
+
+        val controller = ConcurrencyController(minPar, maxPar, minOf(START_PARALLELISM, maxPar))
+        val pendingBudget = pendingBudgetBytes()
+        val maxAhead = maxPar * 3
+        val completions = Channel<Completion>(Channel.UNLIMITED)
+        val pending = HashMap<Int, Chunk>()
+        var pendingBytes = 0L
+        var nextLaunch = begin
+        var nextWrite = begin
+        var inFlight = 0
+        var completed = 0
+        var completedBytes = 0L
+        val startedAt = System.nanoTime()
+        val sessionBytes = AtomicLong(0)
+
+        try {
+            coroutineScope {
+                val watchdog = launch {
+                    try {
+                        awaitCancellation()
+                    } finally {
+                        cancelActiveRequests()
+                    }
+                }
+                try {
+                    while (nextWrite < total) {
+                        ensureActive()
+                        val cap = minOf(controller.limit, PlaybackPriority.concurrencyCap(maxPar))
+                            .coerceAtLeast(1)
+                        val avg = if (completed > 0) completedBytes / completed else 0L
+                        while (inFlight < cap && nextLaunch < total && nextLaunch - nextWrite < maxAhead) {
+                            // The head-of-line segment is always allowed; later ones only while
+                            // the reorder buffer (plus what is already on the wire) fits the budget.
+                            if (nextLaunch != nextWrite &&
+                                pendingBytes + (inFlight + 1) * avg > pendingBudget
+                            ) break
+                            val idx = nextLaunch++
+                            inFlight++
+                            val segment = playlist.segments[idx]
+                            launch(Dispatchers.IO) {
+                                val completion = try {
+                                    Completion(idx, downloadSegment(segment), null)
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Throwable) {
+                                    Completion(idx, null, e)
+                                }
+                                completions.trySend(completion)
+                            }
+                        }
+
+                        val completion = completions.receive()
+                        inFlight--
+                        completion.error?.let { throw it }
+                        val chunk = completion.chunk ?: throw IOException("Empty segment result")
+                        pending[completion.index] = chunk
+                        pendingBytes += chunk.length
+                        completed++
+                        completedBytes += chunk.length
+                        sessionBytes.addAndGet(chunk.length.toLong())
+                        controller.addBytes(chunk.length.toLong())
+                        controller.tick(errorSignals.getAndSet(0))
+
+                        while (true) {
+                            val ready = pending.remove(nextWrite) ?: break
+                            out.write(ready.data, 0, ready.length)
+                            bytes += ready.length
+                            pendingBytes -= ready.length
+                            nextWrite++
+                            onProgress(nextWrite, total, bytes)
+                        }
+                    }
+                } finally {
+                    watchdog.cancel()
+                }
+            }
+            out.flush()
+        } finally {
+            completions.close()
+            pending.clear()
+            val seconds = (System.nanoTime() - startedAt) / 1e9
+            if (seconds > 0.5) {
+                Log.i(
+                    TAG,
+                    "hls session: segments=$completed, bytes=${sessionBytes.get()}, " +
+                            "avg=${(sessionBytes.get() / seconds / 1024).toLong()}KiB/s, " +
+                            "peakConcurrency=${controller.peak}, finalConcurrency=${controller.limit}"
+                )
+            }
+        }
         bytes
     }
 
+    private fun pendingBudgetBytes(): Long {
+        val heap = Runtime.getRuntime().maxMemory()
+        return (heap / 16).coerceIn(8L * 1024 * 1024, 48L * 1024 * 1024)
+    }
+
     companion object {
+        private const val TAG = "HlsDownloader"
+        const val MAX_PARALLELISM = 8
+        private const val MIN_PARALLELISM = 4
+        private const val START_PARALLELISM = 6
+        private const val MAX_SEGMENT_ATTEMPTS = 3
+        private const val MAX_EXACT_READ_BYTES = 128L * 1024 * 1024
+
         fun isHls(url: String?): Boolean {
             if (url.isNullOrBlank()) return false
             val clean = url.substringBefore('#').lowercase()

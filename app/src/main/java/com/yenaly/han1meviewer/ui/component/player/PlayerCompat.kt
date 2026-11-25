@@ -12,6 +12,7 @@ import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
+import com.yenaly.han1meviewer.ui.player.kernel.PlayerTuning
 import java.util.concurrent.ConcurrentHashMap
 
 @OptIn(UnstableApi::class)
@@ -20,7 +21,11 @@ fun createSitePlayer(context: Context): ExoPlayer {
 
         .setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_PREFER)
         .setEnableDecoderFallback(true)
-    return ExoPlayer.Builder(context, renderers).build()
+    return ExoPlayer.Builder(context, renderers)
+        .setLoadControl(PlayerTuning.createLoadControl(context))
+        .setBandwidthMeter(PlayerTuning.bandwidthMeter(context))
+        .build()
+        .also { PlayerTuning.attachPlaybackPriority(it) }
 }
 
 fun PlaybackException.isDecoderProblem(): Boolean = when (errorCode) {

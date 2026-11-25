@@ -2,11 +2,11 @@ package com.yenaly.han1meviewer.ui.player.kernel
 
 import com.yenaly.han1meviewer.util.logHost
 
-import android.app.ActivityManager
 import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
+import android.os.SystemClock
 import android.util.Log
 import android.view.Surface
 import androidx.annotation.OptIn
@@ -19,15 +19,13 @@ import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.LoadControl
 import androidx.media3.exoplayer.hls.HlsMediaSource
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.exoplayer.trackselection.AdaptiveTrackSelection
 import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
-import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
+import com.yenaly.han1meviewer.worker.PlaybackPriority
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
@@ -40,41 +38,8 @@ class ExoPlayerKernel(
     companion object {
         private const val TAG = "ExoPlayerKernel"
 
-        private const val MIB = 1024 * 1024
-
-        private const val BUFFER_FOR_PLAYBACK_MS = 1_000
-        private const val BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS = 2_000
-
-        private fun createLoadControl(context: Context): LoadControl {
-            val memoryClassMb = context.getSystemService(ActivityManager::class.java)
-                ?.memoryClass
-                ?.takeIf { it > 0 }
-                ?: 256
-
-            val (targetBufferBytes, minBufferMs, maxBufferMs) = when {
-                memoryClassMb <= 256 -> Triple(48 * MIB, 10_000, 20_000)
-                memoryClassMb <= 384 -> Triple(64 * MIB, 15_000, 30_000)
-                else -> Triple(96 * MIB, 20_000, 40_000)
-            }
-            Log.i(
-                TAG,
-                "memoryClass=${memoryClassMb}MB, " +
-                        "targetBuffer=${targetBufferBytes / MIB}MB, " +
-                        "bufferRange=${minBufferMs / 1_000}s-${maxBufferMs / 1_000}s",
-            )
-
-            return DefaultLoadControl.Builder()
-                .setBufferDurationsMs(
-                    minBufferMs,
-                    maxBufferMs,
-                    BUFFER_FOR_PLAYBACK_MS,
-                    BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
-                )
-                .setTargetBufferBytes(targetBufferBytes)
-
-                .setPrioritizeTimeOverSizeThresholds(false)
-                .build()
-        }
+        private const val CONNECT_TIMEOUT_MS = 10_000
+        private const val READ_TIMEOUT_MS = 20_000
     }
 
     override val type = KernelType.ExoPlayer
@@ -99,6 +64,16 @@ class ExoPlayerKernel(
     private var released = false
 
     private var prevSeek = 0L
+
+    @Volatile
+    private var networkSource = false
+
+    private var prepareStartMs = 0L
+    private var firstReadyMs = 0L
+    private var firstFrameMs = 0L
+    private var rebufferCount = 0
+    private var rebufferTotalMs = 0L
+    private var rebufferStartMs = 0L
 
     @Volatile
     override var videoWidth: Int = 0
@@ -128,11 +103,22 @@ class ExoPlayerKernel(
             pushBufferedPercent()
             when (playbackState) {
                 Player.STATE_BUFFERING -> {
+                    if (firstReadyMs != 0L && rebufferStartMs == 0L && _exoPlayer?.playWhenReady == true) {
+                        rebufferCount++
+                        rebufferStartMs = SystemClock.elapsedRealtime()
+                    }
+                    if (networkSource && _exoPlayer?.playWhenReady == true) PlaybackPriority.onBuffering()
                     mainHandler.post { listener?.onBuffering() }
                 }
 
                 Player.STATE_READY -> {
                     Log.i(TAG, "STATE_READY reached")
+                    if (firstReadyMs == 0L) firstReadyMs = SystemClock.elapsedRealtime() - prepareStartMs
+                    if (rebufferStartMs != 0L) {
+                        rebufferTotalMs += SystemClock.elapsedRealtime() - rebufferStartMs
+                        rebufferStartMs = 0L
+                    }
+                    PlaybackPriority.onStable()
                     runOnPlayerThread {
                         val pwr = _exoPlayer?.playWhenReady
                         Log.i(TAG, "STATE_READY playWhenReady=$pwr")
@@ -153,10 +139,11 @@ class ExoPlayerKernel(
                 }
 
                 Player.STATE_ENDED -> {
+                    PlaybackPriority.onStopped()
                     mainHandler.post { listener?.onCompleted() }
                 }
 
-                Player.STATE_IDLE -> Unit
+                Player.STATE_IDLE -> PlaybackPriority.onStopped()
             }
         }
 
@@ -175,7 +162,15 @@ class ExoPlayerKernel(
             }
         }
 
+        override fun onRenderedFirstFrame() {
+            if (firstFrameMs == 0L) {
+                firstFrameMs = SystemClock.elapsedRealtime() - prepareStartMs
+                Log.i(TAG, "time to first frame=${firstFrameMs}ms")
+            }
+        }
+
         override fun onPlayerError(error: PlaybackException) {
+            PlaybackPriority.onStopped()
             Log.e(TAG, "onPlayerError: $error")
             mainHandler.post { listener?.onError(error) }
         }
@@ -248,22 +243,39 @@ class ExoPlayerKernel(
     }
 
     private fun buildPlayer(request: MediaRequest): ExoPlayer {
+
+        prepareStartMs = SystemClock.elapsedRealtime()
+        firstReadyMs = 0L
+        firstFrameMs = 0L
+        rebufferCount = 0
+        rebufferTotalMs = 0L
+        rebufferStartMs = 0L
+        networkSource = request.url.startsWith("http", ignoreCase = true)
+
         val trackSelector = DefaultTrackSelector(
             context,
-            AdaptiveTrackSelection.Factory(),
+            AdaptiveTrackSelection.Factory(
+                 10_000,
+                 15_000,
+                 25_000,
+                 0.75f,
+            ),
         )
         val renderersFactory = DefaultRenderersFactory(context)
         val player = ExoPlayer.Builder(context, renderersFactory)
             .setTrackSelector(trackSelector)
-            .setLoadControl(createLoadControl(context))
-            .setBandwidthMeter(DefaultBandwidthMeter.Builder(context).build())
+            .setLoadControl(PlayerTuning.createLoadControl(context))
+            .setBandwidthMeter(PlayerTuning.bandwidthMeter(context))
             .build()
         player.addListener(exoListener)
 
         val dataSourceFactory = DefaultDataSource.Factory(
             context,
             DefaultHttpDataSource.Factory()
-                .setDefaultRequestProperties(request.headers),
+                .setDefaultRequestProperties(request.headers)
+                .setConnectTimeoutMs(CONNECT_TIMEOUT_MS)
+                .setReadTimeoutMs(READ_TIMEOUT_MS)
+                .setAllowCrossProtocolRedirects(true),
         )
         val url = request.url
         Log.i(TAG, "URL Link = ${url.logHost()}")
@@ -352,6 +364,16 @@ class ExoPlayerKernel(
     }
 
     override fun release() {
+        if (prepareStartMs != 0L && (firstReadyMs != 0L || rebufferCount > 0)) {
+            Log.i(
+                TAG,
+                "playback metrics: initialBuffer=${firstReadyMs}ms, firstFrame=${firstFrameMs}ms, " +
+                        "rebuffers=$rebufferCount, rebufferTime=${rebufferTotalMs}ms, " +
+                        "bandwidth=${PlayerTuning.bandwidthMeter(context).bitrateEstimate / 1000}kbps"
+            )
+        }
+        prepareStartMs = 0L
+        PlaybackPriority.onStopped()
         released = true
         pendingSurface = null
         pendingPrepare = null

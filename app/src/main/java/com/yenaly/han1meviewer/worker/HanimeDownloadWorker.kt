@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.app.Notification
 import android.content.Context
 import android.content.pm.ServiceInfo
+import android.net.Uri
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
@@ -14,6 +15,7 @@ import kotlinx.serialization.json.put
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.net.toUri
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
@@ -66,10 +68,12 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
+import java.io.Closeable
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.net.ConnectException
 import java.net.SocketException
@@ -117,6 +121,8 @@ class HanimeDownloadWorker(
         const val RESPONSE_INTERVAL = 500L
 
         const val BACKOFF_DELAY = 10_000L
+
+        private const val READ_BUFFER_SIZE = 64 * 1024
 
         private const val MAX_STREAM_RETRY_COUNT = 3
         private const val MAX_WORK_RETRY_COUNT = 3
@@ -342,6 +348,71 @@ class HanimeDownloadWorker(
         DownloadFailureStore.put(context, videoCode, DownloadFailure(kind, message))
     }
 
+    private class Target(val file: File?, val safUri: Uri?) {
+        val uriString: String get() = safUri?.toString() ?: file!!.toUri().toString()
+    }
+
+    private fun resolveTarget(entityUri: String?, computedFile: File, computedSaf: Uri?): Target {
+        val stored = entityUri?.takeIf { it.isNotBlank() }
+            ?.let { runCatching { it.toUri() }.getOrNull() }
+        if (stored != null) {
+            if (stored.scheme == "content") {
+                val doc = runCatching { DocumentFile.fromSingleUri(context, stored) }.getOrNull()
+                if (doc != null && doc.exists() && doc.isFile) return Target(null, stored)
+            } else if (computedSaf == null) {
+                val path = stored.path
+                if (!path.isNullOrBlank()) {
+                    val f = File(path)
+                    if (f.isFile || f.parentFile?.isDirectory == true) return Target(f, null)
+                }
+            }
+        }
+        return if (computedSaf != null) Target(null, computedSaf) else Target(computedFile, null)
+    }
+
+    private class HlsOutput(
+        val stream: OutputStream,
+        val closeables: List<Closeable>,
+        val startSegment: Int,
+        val startBytes: Long,
+    ) {
+        fun close() {
+            runCatching { stream.close() }
+            closeables.forEach { runCatching { it.close() } }
+        }
+    }
+
+    private fun openHlsOutput(target: Target, checkpoint: HlsResumeStore.Checkpoint?): HlsOutput {
+        if (target.safUri != null) {
+            val pfd = context.contentResolver.openFileDescriptor(target.safUri, "rw")
+                ?: throw IOException("Open SAF file failed")
+            try {
+                val fos = FileOutputStream(pfd.fileDescriptor)
+                val channel = fos.channel
+                val resume = checkpoint?.takeIf { channel.size() >= it.bytes }
+                val startBytes = resume?.bytes ?: 0L
+                channel.truncate(startBytes)
+                channel.position(startBytes)
+                return HlsOutput(fos, listOf(pfd), resume?.segments ?: 0, startBytes)
+            } catch (e: Exception) {
+                pfd.closeQuietly()
+                if (checkpoint == null && e is IOException) {
+
+                    val os = context.contentResolver.openOutputStream(target.safUri, "wt")
+                        ?: throw IOException("Open SAF file failed")
+                    return HlsOutput(os, emptyList(), 0, 0L)
+                }
+                throw e
+            }
+        }
+        val file = target.file ?: throw IOException("No download target")
+        file.createFileIfNotExists()
+        val resume = checkpoint?.takeIf { file.length() >= it.bytes }
+        val startBytes = resume?.bytes ?: 0L
+        RandomAccessFile(file, "rw").use { it.setLength(startBytes) }
+        return HlsOutput(FileOutputStream(file, true), emptyList(), resume?.segments ?: 0, startBytes)
+    }
+
     private suspend fun downloadHls(): Result {
         return withContext(Dispatchers.IO) {
             val file = HFileManager.getDownloadVideoFile(
@@ -357,6 +428,7 @@ class HanimeDownloadWorker(
                     HFileManager.getDownloadVideoFolder(context, videoCode).deleteRecursively()
                 }
                 DatabaseRepo.HanimeDownload.delete(videoCode)
+                HlsResumeStore.clearAll(context, videoCode)
                 if (shouldDelete) return@withContext Result.success()
             }
             DownloadFailureStore.clear(context, videoCode)
@@ -391,30 +463,51 @@ class HanimeDownloadWorker(
                 return@withContext Result.success()
             }
 
+            val target = resolveTarget(entity.videoUri, file, safUri)
+            if (target.uriString != entity.videoUri) {
+                entity = entity.copy(videoUri = target.uriString)
+                DatabaseRepo.HanimeDownload.updateKeepingGroup(entity)
+            }
+
             var written = 0L
             var result: Result = Result.failure(
                 workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
             )
             var shouldRetry = false
             var cancelled = false
-            var out: java.io.OutputStream? = null
+            var finished = false
+            var output: HlsOutput? = null
+            var lastDone = 0
+            var lastBytes = 0L
+            var signature: String? = null
             try {
-
-                out = if (safUri != null) {
-                    context.contentResolver.openOutputStream(safUri, "wt")
-                        ?: throw IOException("Open SAF file failed")
-                } else {
-                    file.createFileIfNotExists()
-                    FileOutputStream(file, false)
-                }
                 val downloader = HlsDownloader(
                     siteClient(),
                     SiteDownloadClients.headersFor(videoCode, downloadUrl),
                     SiteDownloadClients.useUrlConnectionFallback(videoCode),
                 )
+
                 val playlist = downloader.resolvePlaylist(downloadUrl)
+                val sig = HlsResumeStore.signature(playlist)
+                signature = sig
+                val checkpoint = HlsResumeStore.load(context, videoCode, quality)
+                    ?.takeIf { it.signature == sig && it.segments in 1 until playlist.segments.size && it.bytes > 0 }
+                val opened = openHlsOutput(target, checkpoint)
+                output = opened
+                lastDone = opened.startSegment
+                lastBytes = opened.startBytes
+                if (opened.startSegment > 0) {
+                    Log.i(TAG, "HLS resume: ${videoCode.logId()} segment ${opened.startSegment}/${playlist.segments.size}")
+                }
                 var lastUpdate = 0L
-                written = downloader.download(playlist, out) { done, total, bytes ->
+                written = downloader.download(
+                    playlist, opened.stream,
+                    parallelism = HlsDownloader.MAX_PARALLELISM,
+                    startSegment = opened.startSegment,
+                    startBytes = opened.startBytes,
+                ) { done, total, bytes ->
+                    lastDone = done
+                    lastBytes = bytes
                     currentCoroutineContext().ensureActive()
                     val now = System.currentTimeMillis()
                     if (now - lastUpdate > RESPONSE_INTERVAL || done == total) {
@@ -427,12 +520,16 @@ class HanimeDownloadWorker(
                             length = estimated.coerceAtLeast(bytes),
                             downloadedLength = bytes,
                         )
-
+                        HlsResumeStore.save(
+                            context, videoCode, quality,
+                            HlsResumeStore.Checkpoint(sig, done, bytes)
+                        )
                         DatabaseRepo.HanimeDownload.updateProgress(
                             entity.id, entity.downloadedLength, entity.length
                         )
                     }
                 }
+                finished = true
                 entity = entity.copy(length = written, downloadedLength = written)
                 writeInfoJson(entity)
                 showSuccessNotification()
@@ -469,15 +566,25 @@ class HanimeDownloadWorker(
                     if (cancelled) {
 
                         DatabaseRepo.HanimeDownload.updateDownloadedLength(
-                            entity.id, entity.downloadedLength
+                            entity.id, lastBytes.coerceAtLeast(entity.downloadedLength)
                         )
                     } else {
                         DatabaseRepo.HanimeDownload.updateKeepingGroup(
                             entity.copy(state = if (shouldRetry) DownloadState.Queued else state)
                         )
                     }
+                    val sig = signature
+                    if (finished) {
+                        HlsResumeStore.clear(context, videoCode, quality)
+                    } else if (sig != null && lastDone > 0 && lastBytes > 0) {
+
+                        HlsResumeStore.save(
+                            context, videoCode, quality,
+                            HlsResumeStore.Checkpoint(sig, lastDone, lastBytes)
+                        )
+                    }
                 }
-                runCatching { out?.close() }
+                output?.close()
             }
             result
         }
@@ -597,6 +704,12 @@ class HanimeDownloadWorker(
                 return@withContext Result.success()
             }
 
+            val target = resolveTarget(entity.videoUri, file, safUri)
+            if (target.uriString != entity.videoUri) {
+                entity = entity.copy(videoUri = target.uriString)
+                DatabaseRepo.HanimeDownload.updateKeepingGroup(entity)
+            }
+
             var downloadedLength = entity.downloadedLength
             val needRange = downloadedLength > 0
             var raf: RandomAccessFile? = null
@@ -613,8 +726,8 @@ class HanimeDownloadWorker(
             var cancelled = false
 
             try {
-                if (safUri != null) {
-                    safPfd = context.contentResolver.openFileDescriptor(safUri, "rw")
+                if (target.safUri != null) {
+                    safPfd = context.contentResolver.openFileDescriptor(target.safUri, "rw")
                     safChannel = safPfd?.fileDescriptor?.let { FileOutputStream(it).channel }
                         ?: throw IOException("Open SAF file failed")
                     if (downloadedLength > safChannel.size()) {
@@ -622,10 +735,14 @@ class HanimeDownloadWorker(
                     }
                     safChannel.position(downloadedLength)
                 } else {
-                    raf = RandomAccessFile(file, "rwd")
-                    if (needRange) raf.seek(downloadedLength)
+                    val targetFile = target.file ?: file
+                    targetFile.createFileIfNotExists()
+
+                    raf = RandomAccessFile(targetFile, "rw")
+                    if (downloadedLength > raf.length()) downloadedLength = raf.length()
+                    raf.seek(downloadedLength)
                 }
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                val buffer = ByteArray(READ_BUFFER_SIZE)
                 var delayTime = 0L
                 var retryCount = 0
 
@@ -692,8 +809,10 @@ class HanimeDownloadWorker(
                                 } else safChannel?.writeFully(buffer, len)
                                 downloadedLength += len
 
+                                if (PlaybackPriority.isBuffering) PlaybackPriority.yieldToPlayback()
                                 if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
                                     currentCoroutineContext().ensureActive()
+                                    runCatching { raf?.fd?.sync() }
                                     val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
                                     setProgress(workDataOf(PROGRESS to progress.toInt()))
                                     updateDownloadNotification(progress.toInt())

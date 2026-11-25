@@ -1,6 +1,5 @@
 package com.yenaly.han1meviewer.SitesHub.Coomer.data.model
 
-/** A post tile (post search results, creator page). */
 data class CoomerCard(
     val slug: String,
     val title: String,
@@ -9,7 +8,6 @@ data class CoomerCard(
     val date: String = "",
 )
 
-/** A creator (OnlyFans / Fansly / ... account). [slug] is `service/id[/name]`. */
 data class CoomerTerm(
     val slug: String,
     val name: String,

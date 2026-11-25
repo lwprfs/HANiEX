@@ -42,11 +42,9 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore = _isLoadingMore.asStateFlow()
 
-    /** Where each loaded site page begins inside [cards]; drives the live page number. */
     private val _pageStarts = MutableStateFlow<List<OnAirPageStart>>(listOf(OnAirPageStart(1, 0)))
     val pageStarts = _pageStarts.asStateFlow()
 
-    /** Session-only page to start from (never persisted, so a restart goes back to page 1). */
     private val _startPage = MutableStateFlow(1)
     val startPage = _startPage.asStateFlow()
 
@@ -97,7 +95,7 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
                     is WebsiteState.Success -> {
                         val info = state.info
                         if (page > 1 && info.videos.isEmpty()) {
-                            // Page does not exist on the site: fall back to page 1 for the retry.
+
                             _startPage.value = 1
                             _homeState.value = WebsiteState.Error(
                                 IllegalStateException(
@@ -149,10 +147,6 @@ class OnAirHomeViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
-    /**
-     * Restart the feed from [page]. Returns false (and does nothing) if the page is out of range.
-     * The choice only lives for this session; it is not saved as the home start page.
-     */
     fun jumpToPage(page: Int): Boolean {
         val total = _pageInfo.value?.total
         if (page < 1 || (total != null && page > total)) return false

@@ -307,10 +307,6 @@ fun SettingNavigationItem(
     }
 }
 
-/**
- * A navigation-style row that shows the current value on the right (before the arrow) and opens a
- * [ChoiceDialog] when tapped, instead of changing the value in place.
- */
 @Composable
 fun SettingChoiceDialogItem(
     title: String,

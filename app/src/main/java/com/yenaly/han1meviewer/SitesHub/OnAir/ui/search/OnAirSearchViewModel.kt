@@ -65,11 +65,9 @@ class OnAirSearchViewModel(
     private val _isLoadingMore = MutableStateFlow(false)
     val isLoadingMore = _isLoadingMore.asStateFlow()
 
-    /** Where each loaded site page begins inside [results]; drives the live page number. */
     private val _pageStarts = MutableStateFlow<List<OnAirPageStart>>(emptyList())
     val pageStarts = _pageStarts.asStateFlow()
 
-    /** Session-only first page of the current result list (never persisted). */
     private val _startPage = MutableStateFlow(1)
     val startPage = _startPage.asStateFlow()
 
@@ -141,10 +139,6 @@ class OnAirSearchViewModel(
         startSearch(page = 1, saveToHistory = true)
     }
 
-    /**
-     * Re-run the current search starting at [page]. Returns false (and does nothing) if the page is
-     * out of range. The chosen page only lives for this session.
-     */
     fun jumpToPage(page: Int): Boolean {
         if (!_hasSearched.value) return false
         val total = _pageInfo.value?.total

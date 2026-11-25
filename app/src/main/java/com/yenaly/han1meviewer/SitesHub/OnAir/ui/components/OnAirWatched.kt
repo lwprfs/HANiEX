@@ -10,7 +10,6 @@ import com.yenaly.han1meviewer.Preferences
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 
-/** IDs of OnAir videos present in watch history (empty when the played indicator is disabled). */
 @Composable
 fun rememberOnAirWatched(): Set<String> {
     val context = LocalContext.current

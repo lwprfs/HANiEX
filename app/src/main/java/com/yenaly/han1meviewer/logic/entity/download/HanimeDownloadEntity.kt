@@ -63,7 +63,12 @@ data class HanimeDownloadEntity(
 
     val isDownloading get() = state == DownloadState.Downloading
 
-    val suffix get() = videoUri.substringAfterLast(".", HFileManager.DEF_VIDEO_TYPE)
+    val suffix: String
+        get() {
+            val raw = videoUri.substringAfterLast(".", HFileManager.DEF_VIDEO_TYPE)
+
+            return if (raw.equals("m2ts", true) || raw.equals("mts", true)) "ts" else raw
+        }
 
     enum class SortedBy {
         ID, TITLE

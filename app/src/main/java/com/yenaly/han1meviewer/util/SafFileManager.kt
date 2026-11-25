@@ -176,18 +176,60 @@ object SafFileManager {
     ): Uri? {
         if (!isSafReady()) return null
         val videoDir = getDownloadVideoFolderSaf(context, videoCode) ?: return null
+        findVideoDoc(videoDir, fileName)?.let { return it.uri }
         val ext = fileName.substringAfterLast('.', "")
-        val mimeType = mimeForExt(ext)
-        val target = videoDir.findFile(fileName)
-            ?: videoDir.createFile(mimeType, fileName)
-            ?: return null
+        val target = videoDir.createFile(mimeForExt(ext), fileName) ?: return null
 
-        return target.uri
+        if (target.name != fileName) runCatching { target.renameTo(fileName) }
+        return (DocumentFile.fromSingleUri(context, target.uri) ?: target).uri
+    }
+
+    fun findVideoDoc(dir: DocumentFile, fileName: String): DocumentFile? {
+        dir.findFile(fileName)?.takeIf { it.isFile }?.let { return it }
+        val prefix = "$fileName."
+        return runCatching {
+            dir.listFiles()
+                .filter { doc ->
+                    val n = doc.name ?: return@filter false
+                    doc.isFile && n.startsWith(prefix) && n.substring(prefix.length).none { it == '.' || it == ' ' }
+                }
+                .maxByOrNull { it.length() }
+        }.getOrNull()
+    }
+
+    fun listVideoFiles(context: Context, videoCode: String): List<Triple<String, String, Long>> {
+        return runCatching {
+            if (isSafReady()) {
+                val dir = getDownloadVideoFolderSaf(context, videoCode) ?: return emptyList()
+                dir.listFiles()
+                    .filter { it.isFile && DownloadLayout.isVideoFileName(it.name) && it.length() > 0 }
+                    .map { Triple(it.uri.toString(), it.name.orEmpty(), it.length()) }
+            } else {
+                val dir = com.yenaly.han1meviewer.HFileManager.getDownloadVideoFolder(context, videoCode)
+                dir.listFiles().orEmpty()
+                    .filter { it.isFile && DownloadLayout.isVideoFileName(it.name) && it.length() > 0 }
+                    .map { Triple(Uri.fromFile(it).toString(), it.name, it.length()) }
+            }.sortedByDescending { it.third }
+        }.getOrDefault(emptyList())
+    }
+
+    fun isUsableVideoUri(context: Context, uriString: String?): Boolean {
+        if (uriString.isNullOrBlank()) return false
+        val uri = runCatching { uriString.toUri() }.getOrNull() ?: return false
+        return runCatching {
+            if (uri.scheme == "content") {
+                context.contentResolver.openFileDescriptor(uri, "r")?.use { it.statSize > 0 } == true
+            } else {
+                val f = File(uri.path ?: return false)
+                f.isFile && f.length() > 0
+            }
+        }.getOrDefault(false)
     }
 
     private fun mimeForExt(ext: String): String = when (ext.lowercase()) {
         "mp4" -> "video/mp4"
-        "ts" -> "video/mp2t"
+
+        "ts", "m2ts", "mts" -> "application/octet-stream"
         "mkv" -> "video/x-matroska"
         "webm" -> "video/webm"
         "png" -> "image/png"
