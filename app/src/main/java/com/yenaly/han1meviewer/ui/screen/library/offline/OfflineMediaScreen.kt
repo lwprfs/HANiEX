@@ -76,7 +76,7 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
-import com.yenaly.han1meviewer.ui.screen.home.download.DownloadSort
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadSort
 import com.yenaly.han1meviewer.util.compactCount
 import com.yenaly.han1meviewer.util.formatFileSizeV2
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally

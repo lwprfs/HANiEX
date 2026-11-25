@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.video
+package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.video
 
 import com.yenaly.han1meviewer.util.translatedDescription
 import com.yenaly.han1meviewer.util.translatedTitle

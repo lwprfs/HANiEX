@@ -67,7 +67,6 @@ import com.yenaly.han1meviewer.ui.model.AdvancedSearchDialogState
 import com.yenaly.han1meviewer.ui.model.SearchScopeSection
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.SearchViewModel
 import kotlinx.coroutines.launch
-import com.yenaly.han1meviewer.ui.screen.search.AdvancedSearchChip
 
 private val advancedSearchTagScopeResIds = listOf(
     R.string.video_attr,

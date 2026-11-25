@@ -18,10 +18,6 @@ import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.CommentViewModel
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.VideoViewModel
 import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.launch
-import com.yenaly.han1meviewer.ui.screen.video.DownloadPromptState
-import com.yenaly.han1meviewer.ui.screen.video.VideoTabItem
-import com.yenaly.han1meviewer.ui.screen.video.VideoTabKind
-import com.yenaly.han1meviewer.ui.screen.video.VideoTabsContent
 
 @Composable
 fun VideoRouteContent(

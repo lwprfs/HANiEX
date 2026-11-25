@@ -130,8 +130,6 @@ import kotlin.math.roundToInt
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import com.yenaly.han1meviewer.util.dp as dpToPx
-import com.yenaly.han1meviewer.ui.screen.video.DownloadPromptState
-import com.yenaly.han1meviewer.ui.screen.video.RelatedVideosSection
 
 @OptIn(ExperimentalTime::class)
 @Composable

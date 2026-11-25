@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.home.videogrid
+package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.videogrid
 
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import com.yenaly.han1meviewer.logic.model.HanimeInfo

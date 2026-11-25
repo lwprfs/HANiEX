@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.home.download
+package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download
 
 import androidx.annotation.StringRes
 import com.yenaly.han1meviewer.R

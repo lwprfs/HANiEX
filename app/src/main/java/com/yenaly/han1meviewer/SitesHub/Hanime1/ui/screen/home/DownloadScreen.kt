@@ -50,12 +50,12 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadEvent
-import com.yenaly.han1meviewer.ui.screen.home.download.DownloadSort
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadSort
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadedScreen
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadingScreen
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.MoveGroupDialog
-import com.yenaly.han1meviewer.ui.screen.home.download.downloadSortComparator
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.downloadSortComparator
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.toDisplayGroups
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.toFlatNodeList
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.toNodeList

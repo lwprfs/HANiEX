@@ -53,7 +53,6 @@ import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.MonthlyStats
 import java.time.LocalDate
 import java.time.YearMonth
-import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.StatItem
 
 @Composable
 fun ContributionReportDialog(

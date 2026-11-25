@@ -39,7 +39,7 @@ import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.videogrid.VideoGridContent
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.videogrid.VideoGridUiState
-import com.yenaly.han1meviewer.ui.screen.home.videogrid.canLoadMore
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.videogrid.canLoadMore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 

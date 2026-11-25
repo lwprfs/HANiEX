@@ -2,7 +2,7 @@ package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.yenaly.han1meviewer.ui.screen.home.WatchHistoryTabScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.WatchHistoryTabScreen
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.OnlineWatchHistoryViewModel
 

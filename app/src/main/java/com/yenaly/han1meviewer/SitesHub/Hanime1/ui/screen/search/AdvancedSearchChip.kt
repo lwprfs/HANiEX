@@ -1,4 +1,4 @@
-package com.yenaly.han1meviewer.ui.screen.search
+package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.search
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box

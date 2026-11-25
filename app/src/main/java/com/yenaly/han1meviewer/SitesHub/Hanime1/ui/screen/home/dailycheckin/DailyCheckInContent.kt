@@ -38,8 +38,6 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.StatsCard
-import com.yenaly.han1meviewer.ui.screen.home.dailycheckin.TodayCheckInCard
 
 @Composable
 fun DailyCheckInContent(

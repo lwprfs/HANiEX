@@ -36,7 +36,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.Serializable
-import com.yenaly.han1meviewer.ui.screen.video.DownloadPromptState
 
 private const val TAG = "HanimeDownload"
 
