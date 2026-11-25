@@ -4,7 +4,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -37,6 +36,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.component.ExpandableRichText
 import com.yenaly.han1meviewer.ui.component.SiteVideoActionBar
+import com.yenaly.han1meviewer.ui.component.inlinePlayerSize
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.util.DownloadLayout
 import com.yenaly.han1meviewer.util.FapOwnerKind
@@ -177,20 +177,17 @@ internal fun InlineVideoSlot(
             onExpired = onExpired,
             inline = true,
             autoStart = true,
-            minInlineAspect = INLINE_MIN_ASPECT,
             onPrevious = onPrevious,
             onNext = onNext,
             onPlayingChanged = onPlayingChanged,
         )
         return
     }
-    val aspect = ((video.aspectRatio ?: (16.0 / 9.0)).toFloat()
-        .takeIf { it.isFinite() && it > 0f } ?: (16f / 9f))
-        .coerceAtLeast(INLINE_MIN_ASPECT)
+    val aspect = (video.aspectRatio ?: (16.0 / 9.0)).toFloat()
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .aspectRatio(aspect)
+            .inlinePlayerSize(aspect)
             .background(Color.Black)
             .clickable { onPlayingChange(true) },
         contentAlignment = Alignment.Center,
@@ -222,8 +219,6 @@ internal fun InlineVideoSlot(
         }
     }
 }
-
-private const val INLINE_MIN_ASPECT = 1.25f
 
 internal fun coverUrlOf(post: FapFolderPost?): String? {
     if (post == null) return null

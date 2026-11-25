@@ -71,7 +71,7 @@ fun ProfileScreen(
     onUpdateClick: (() -> Unit)? = null,
 ) {
     val displayName = username?.takeIf { it.isNotBlank() }
-        ?: stringResource(if (isLoggedIn) R.string.not_logged_in else R.string.login)
+        ?: stringResource(if (isLoggedIn) R.string.refresh_page_or_login_expired else R.string.login)
 
     val entries = listOf(
         ProfileEntry(

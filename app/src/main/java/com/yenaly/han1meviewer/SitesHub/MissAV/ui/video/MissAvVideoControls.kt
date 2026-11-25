@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.yenaly.han1meviewer.ui.component.VideoFitState
 import com.yenaly.han1meviewer.ui.component.fitVideoSurface
+import com.yenaly.han1meviewer.ui.component.inlinePlayerSize
 import com.yenaly.han1meviewer.ui.component.installVideoFit
 import android.annotation.SuppressLint
 import android.content.Context
@@ -31,7 +32,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -280,6 +280,7 @@ fun MissAvVideoPlayer(
     fitState.stretched = stretched && isFullscreen
 
     val effectiveIsPlaying = isPlaying && !isBuffering
+    var videoAspect by remember(exoPlayer) { androidx.compose.runtime.mutableFloatStateOf(0f) }
 
     DisposableEffect(exoPlayer) {
         val exo = exoPlayer
@@ -297,11 +298,13 @@ fun MissAvVideoPlayer(
             override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
                 playingHeight = videoSize.height
                 fitState.updateFrom(videoSize)
+                if (fitState.aspect > 0f) videoAspect = fitState.aspect
                 val frame = lastSurfaceView?.parent as? FrameLayout
                 if (frame != null) lastSurfaceView?.let { fitVideoSurface(frame, it, fitState) }
             }
         }
         exo?.videoSize?.let { fitState.updateFrom(it) }
+        if (fitState.aspect > 0f) videoAspect = fitState.aspect
         exo?.addListener(listener)
         onDispose { exo?.removeListener(listener) }
     }
@@ -320,7 +323,7 @@ fun MissAvVideoPlayer(
     } else {
         modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9f)
+            .inlinePlayerSize(videoAspect)
     }
 
     Box(

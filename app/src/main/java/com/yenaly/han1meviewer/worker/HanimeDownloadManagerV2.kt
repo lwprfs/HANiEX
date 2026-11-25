@@ -12,10 +12,12 @@ import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.state.DownloadState
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import kotlinx.coroutines.CancellationException
 import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.applicationContext
@@ -42,6 +44,8 @@ object HanimeDownloadManagerV2 {
             val args: HanimeDownloadWorker.Args,
             val redownload: Boolean = false,
             val state: DownloadState = DownloadState.Unknown,
+
+            val restore: Boolean = false,
         ) : DownloadMsg()
 
         data class Resume(
@@ -61,6 +65,7 @@ object HanimeDownloadManagerV2 {
     private enum class Exit { NONE, PAUSE, REQUEUE, DELETE }
 
     private class Slot(val args: HanimeDownloadWorker.Args, val token: Long) {
+        @Volatile
         var exit: Exit = Exit.NONE
         var job: Job? = null
     }
@@ -82,6 +87,28 @@ object HanimeDownloadManagerV2 {
     private val waitingQueue = ArrayDeque<HanimeDownloadWorker.Args>()
     private val redownloadPending = hashSetOf<String>()
     private var tokenCounter = 0L
+
+    private const val USER_PAUSED_KEY = "download_user_paused"
+
+    private fun userPaused(): Set<String> =
+        Preferences.preferenceSp.getStringSet(USER_PAUSED_KEY, null).orEmpty().toSet()
+
+    private fun setUserPaused(code: String, paused: Boolean) {
+        val current = userPaused()
+        val updated = if (paused) current + code else current - code
+        if (updated != current) {
+            Preferences.preferenceSp.edit().putStringSet(USER_PAUSED_KEY, updated).apply()
+        }
+    }
+
+    private suspend fun isHeldByUser(code: String): Boolean {
+        val entity = DatabaseRepo.HanimeDownload.find(code)
+        if (entity == null || entity.state == DownloadState.Finished) {
+            setUserPaused(code, false)
+            return false
+        }
+        return entity.state == DownloadState.Paused || code in userPaused()
+    }
 
     private val initialized = AtomicBoolean(false)
 
@@ -125,6 +152,21 @@ object HanimeDownloadManagerV2 {
             else -> Unit
         }
 
+        if (msg.redownload) {
+            setUserPaused(code, false)
+        } else if (isHeldByUser(code)) {
+            DatabaseRepo.HanimeDownload.markPaused(code)
+            if (!msg.restore) {
+                scope.launch(Dispatchers.Main) {
+                    GlobalToasts.show(
+                        applicationContext.getString(R.string.download_still_paused),
+                        level = GlobalToasts.ToastLevel.INFO,
+                    )
+                }
+            }
+            return
+        }
+
         val slot = slots[code]
         if (slot != null) {
 
@@ -152,6 +194,7 @@ object HanimeDownloadManagerV2 {
     private suspend fun onResume(msg: DownloadMsg.Resume) {
         val args = msg.args
         val code = args.videoCode
+        setUserPaused(code, false)
 
         val slot = slots[code]
         if (slot != null) {
@@ -188,6 +231,7 @@ object HanimeDownloadManagerV2 {
 
     private suspend fun onStop(args: HanimeDownloadWorker.Args) {
         val code = args.videoCode
+        setUserPaused(code, true)
         val slot = slots[code]
         if (slot != null) {
             if (slot.exit != Exit.DELETE) slot.exit = Exit.PAUSE
@@ -204,6 +248,7 @@ object HanimeDownloadManagerV2 {
 
     private suspend fun onDelete(args: HanimeDownloadWorker.Args) {
         val code = args.videoCode
+        setUserPaused(code, false)
         waitingQueue.removeAll { it.videoCode == code }
         redownloadPending -= code
         slots[code]?.exit = Exit.DELETE
@@ -257,8 +302,15 @@ object HanimeDownloadManagerV2 {
             try {
 
                 DatabaseRepo.HanimeDownload.markDownloading(args.videoCode)
+
+                if (slot.exit != Exit.NONE) return@launch
                 val workId = startWork(args, redownload)
-                awaitWorkCompletion(workId)
+                when (slot.exit) {
+                    Exit.PAUSE, Exit.REQUEUE -> cancelWork(args)
+
+                    Exit.DELETE -> startWork(args, delete = true)
+                    Exit.NONE -> awaitWorkCompletion(workId)
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
@@ -297,7 +349,11 @@ object HanimeDownloadManagerV2 {
         )
         ordered.forEach { entity ->
             downloadChannel.send(
-                DownloadMsg.Add(HanimeDownloadWorker.Args.fromEntity(entity), state = entity.state)
+                DownloadMsg.Add(
+                    HanimeDownloadWorker.Args.fromEntity(entity),
+                    state = entity.state,
+                    restore = true,
+                )
             )
         }
         downloadChannel.send(DownloadMsg.Pump)

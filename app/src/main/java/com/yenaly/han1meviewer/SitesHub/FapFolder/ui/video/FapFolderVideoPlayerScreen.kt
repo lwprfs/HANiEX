@@ -12,6 +12,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import android.widget.FrameLayout
 import com.yenaly.han1meviewer.ui.component.VideoFitState
 import com.yenaly.han1meviewer.ui.component.fitVideoSurface
+import com.yenaly.han1meviewer.ui.component.inlinePlayerSize
 import com.yenaly.han1meviewer.ui.component.installVideoFit
 import android.app.Activity
 import android.content.ClipData
@@ -172,7 +173,6 @@ fun FapFolderVideoPlayerScreen(
     inline: Boolean = false,
 
     autoStart: Boolean = false,
-    minInlineAspect: Float = 0f,
     onPrevious: (() -> Unit)? = null,
     onNext: (() -> Unit)? = null,
     onPlayingChanged: (Boolean) -> Unit = {},
@@ -656,11 +656,14 @@ fun FapFolderVideoPlayerScreen(
         }
     }
 
+    var videoAspect by remember(playerKey) { mutableFloatStateOf(initialAspect) }
+
     DisposableEffect(exoPlayer) {
         val exo = exoPlayer
         val sizeListener = object : androidx.media3.common.Player.Listener {
             override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
                 fitState.updateFrom(videoSize)
+                if (fitState.aspect > 0f) videoAspect = fitState.aspect
                 val view = surfaceRef.value
                 val frame = view?.parent as? FrameLayout
                 if (view != null && frame != null) fitVideoSurface(frame, view, fitState)
@@ -871,18 +874,20 @@ fun FapFolderVideoPlayerScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(maxOf(initialAspect, minInlineAspect))
+                    .inlinePlayerSize(videoAspect)
                     .background(Color.Black),
             ) {
                 if (!isFullscreen) playerContent()
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Black)
-                    .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
-            ) {
-                StreamUrlRow(url = resolvedUrl ?: video.playUrl)
+            if (!hideChrome) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Black)
+                        .padding(start = 12.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                ) {
+                    StreamUrlRow(url = resolvedUrl ?: video.playUrl)
+                }
             }
         }
         if (isFullscreen) {

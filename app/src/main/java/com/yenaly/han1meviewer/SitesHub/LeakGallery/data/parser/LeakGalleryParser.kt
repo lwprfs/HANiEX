@@ -9,17 +9,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.jsoup.Jsoup
 
-/**
- * The site's JSON is only partly documented by the captured traffic (list endpoints were not
- * recorded with bodies), so lists are read tolerantly: any object that looks like a media item
- * (`id` + `thumbnail_path`/`file_path`) or a profile (`username` + `profile_pic`/`banner_pic`) is
- * picked up wherever it sits in the response.
- */
 object LeakGalleryParser {
 
     private val VIDEO_EXT = setOf("mp4", "webm", "mov", "m4v", "mkv")
 
-    /** The per-page API token lives in the Angular transfer state of every page. */
     fun appToken(html: String): String? {
         runCatching {
             val data = Jsoup.parse(html).selectFirst("script#ng-state")?.data().orEmpty()

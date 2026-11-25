@@ -8,6 +8,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.yenaly.han1meviewer.ui.component.VideoFitState
 import com.yenaly.han1meviewer.ui.component.fitVideoSurface
+import com.yenaly.han1meviewer.ui.component.inlinePlayerSize
 import com.yenaly.han1meviewer.ui.component.installVideoFit
 import android.view.ViewGroup
 import kotlinx.coroutines.launch
@@ -321,16 +322,20 @@ fun OnAirVideoPlayer(
     fitState.stretched = stretched && isFullscreen
     var fitFrame by remember { mutableStateOf<FrameLayout?>(null) }
 
+    var videoAspect by remember(player) { androidx.compose.runtime.mutableFloatStateOf(0f) }
+
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
                 fitState.updateFrom(videoSize)
+                if (fitState.aspect > 0f) videoAspect = fitState.aspect
                 fitFrame?.let { frame ->
                     (frame.getChildAt(0))?.let { fitVideoSurface(frame, it, fitState) }
                 }
             }
         }
         fitState.updateFrom(player.videoSize)
+        if (fitState.aspect > 0f) videoAspect = fitState.aspect
         player.addListener(listener)
         onDispose { player.removeListener(listener) }
     }
@@ -346,7 +351,7 @@ fun OnAirVideoPlayer(
     } else {
         modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9f)
+            .inlinePlayerSize(videoAspect)
     }
 
     Box(

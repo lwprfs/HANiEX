@@ -28,7 +28,6 @@ object LeakGalleryRepo {
         .header("Referer", "${LeakGalleryConstants.BASE_URL}/")
         .header("Origin", LeakGalleryConstants.BASE_URL)
 
-    /** The API token is embedded in the home page's transfer state; fetch and cache it. */
     private fun loadToken(force: Boolean): String {
         if (!force) token?.let { return it }
         val request = Request.Builder()
@@ -67,7 +66,6 @@ object LeakGalleryRepo {
         }
     }
 
-    /** [page] is 1-based. Profile lists show media only; "new models" shows creators. */
     suspend fun page(path: String, page: Int): Result<LeakGalleryListPage> = runCatching {
         val json = api(LeakGalleryConstants.apiUrl(path, page))
         val base = path.substringBefore('?').trim('/')
@@ -97,7 +95,7 @@ object LeakGalleryRepo {
             }
             withContext(Dispatchers.Default) {
                 val result = LeakGalleryParser.parseList(json, wantMedia = !creators, wantTerms = creators)
-                // The creator search is a single response; later pages would repeat it.
+
                 if (creators && page > 1) LeakGalleryListPage(emptyList(), emptyList()) else result
             }
         }

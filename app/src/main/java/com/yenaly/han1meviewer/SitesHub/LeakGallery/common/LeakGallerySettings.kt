@@ -24,7 +24,6 @@ object LeakGallerySettings {
             sp.edit().putBoolean(KEY_VIEWER_TAP_NEXT, value).apply()
         }
 
-    /** Key of the home chip that is selected when the site opens. */
     var defaultSection: String
         get() = sp.getString(KEY_DEFAULT_SECTION, null)
             ?.takeIf { key -> LeakGalleryConstants.HOME_SECTIONS.any { it.key == key } }

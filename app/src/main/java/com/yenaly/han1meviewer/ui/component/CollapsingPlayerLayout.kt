@@ -257,8 +257,14 @@ fun CollapsingPlayerLayout(
 
         if (showMini) {
             val margin = 8.dp.roundToPx()
-            val miniWidth = (width * 0.5f).roundToInt().coerceAtLeast(1)
-            val miniHeight = (miniWidth * 9f / 16f).roundToInt().coerceAtLeast(1)
+            val fullAspect = if (state.heightPx > 0f) width / state.heightPx else 16f / 9f
+            val portrait = fullAspect < 1f
+            val miniWidth = (width * if (portrait) 0.36f else 0.5f).roundToInt().coerceAtLeast(1)
+            val miniHeight = if (portrait) {
+                minOf(miniWidth / fullAspect, height * 0.4f).roundToInt().coerceAtLeast(1)
+            } else {
+                (miniWidth * 9f / 16f).roundToInt().coerceAtLeast(1)
+            }
             val miniPlayer = measurables[0].measure(
                 Constraints(
                     minWidth = miniWidth,

@@ -3227,4 +3227,5 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="leakgallery_pages_videos_desc">Latest video uploads</string>
     <string name="leakgallery_pages_models_desc">Recently added creators</string>
     <string name="leakgallery_pages_shorts_desc">Vertical short videos</string>
+    <string name="download_still_paused">This download is paused. Resume it from Downloads.</string>
 </resources>

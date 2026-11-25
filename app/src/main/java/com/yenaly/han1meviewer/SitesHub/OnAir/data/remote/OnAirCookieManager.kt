@@ -22,6 +22,8 @@ object OnAirCookieManager {
     private const val TAG = "OnAirCookieManager"
     private const val PREF_ONAIR_COOKIES = "onair_cookies_raw"
 
+    private const val CAPTCHA_SESSION_PREFIX = "eyJjYXB0Y2hh"
+
     private val requiredCookieNames = setOf("session", "laravel_session")
 
     private val junkCookieNames = setOf(
@@ -43,6 +45,16 @@ object OnAirCookieManager {
 
     val hasAdPass: Boolean
         get() = _cookiesFlow.value.contains("ad_pass=")
+
+    fun hasSessionCookie(): Boolean {
+        val now = System.currentTimeMillis()
+        return runCatching { parseToCookies(readRaw(), OnAirNetwork.baseUrl) }
+            .getOrDefault(emptyList())
+            .any {
+                it.name in requiredCookieNames && it.value.isNotBlank() && it.expiresAt > now &&
+                        !it.value.startsWith(CAPTCHA_SESSION_PREFIX)
+            }
+    }
 
     fun saveCookies(raw: String) {
         Preferences.preferenceSp.edit(commit = true) {

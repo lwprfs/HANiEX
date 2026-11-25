@@ -1,6 +1,5 @@
 package com.yenaly.han1meviewer.SitesHub.LeakGallery.data.model
 
-/** A media tile (video or photo). [slug] is the numeric media id. */
 data class LeakGalleryCard(
     val slug: String,
     val title: String,
@@ -12,12 +11,11 @@ data class LeakGalleryCard(
     val creatorName: String get() = username
 }
 
-/** A creator profile. [slug] is the username. */
 data class LeakGalleryTerm(
     val slug: String,
     val name: String,
     val thumbUrl: String = "",
-    /** Overrides the creator profile path (used for tag chips). */
+
     val customPath: String? = null,
 ) {
     val path: String

@@ -59,9 +59,9 @@ import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHostSettingsR
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvQualitySettingsRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSubtitleSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirProfileCache
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirCookieManager
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAccountSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirCookieRoute
-import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
@@ -125,15 +125,10 @@ data class SiteLoginStatus(
     val onClick: ((Navigator) -> Unit)?,
 )
 
-private const val ONAIR_COOKIES_KEY = "onair_cookies_raw"
-
 fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (site) {
     SiteType.ONAIR -> {
         val profile = OnAirProfileCache.current()
-        val raw = runCatching {
-            Preferences.preferenceSp.getString(ONAIR_COOKIES_KEY, null)
-        }.getOrNull().orEmpty()
-        val loggedIn = profile != null || raw.contains("session=")
+        val loggedIn = profile != null || OnAirCookieManager.hasSessionCookie()
         if (loggedIn) {
             SiteLoginStatus(
                 title = profile?.displayName?.takeIf { it.isNotBlank() } ?: context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.ONAIR)),

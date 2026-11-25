@@ -3268,4 +3268,5 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="leakgallery_pages_videos_desc">最新上傳的影片</string>
     <string name="leakgallery_pages_models_desc">最近加入的創作者</string>
     <string name="leakgallery_pages_shorts_desc">直式短影片</string>
+    <string name="download_still_paused">此下載仍在暫停中，請到「下載」頁面繼續。</string>
 </resources>

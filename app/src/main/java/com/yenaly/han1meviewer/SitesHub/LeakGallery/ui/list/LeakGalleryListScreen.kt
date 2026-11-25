@@ -32,7 +32,7 @@ fun LeakGalleryListScreen(
     viewModel: LeakGalleryListViewModel = viewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    // Creator pages offer an All / Photos / Videos switch.
+
     val username = remember(path) { LeakGalleryConstants.usernameFromProfilePath(path) }
     var type by rememberSaveable(path) { mutableStateOf("All") }
     val effectivePath = if (username != null) LeakGalleryConstants.profilePath(username, type) else path

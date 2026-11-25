@@ -15,10 +15,8 @@ import kotlinx.coroutines.launch
 
 sealed interface LeakGallerySource {
 
-    /** [path] is an API path (see [LeakGalleryConstants.apiUrl]). */
     data class Page(val path: String) : LeakGallerySource
 
-    /** [creators] = true searches creators, false searches media. */
     data class Search(val query: String, val creators: Boolean = false) : LeakGallerySource
 }
 

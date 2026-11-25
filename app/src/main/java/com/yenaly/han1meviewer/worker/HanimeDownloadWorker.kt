@@ -683,7 +683,7 @@ class HanimeDownloadWorker(
 
                     videoUri = safUri?.toString() ?: file.toUri().toString()
                 )
-                DatabaseRepo.HanimeDownload.update(entity)
+                DatabaseRepo.HanimeDownload.updateKeepingGroup(entity)
                 Log.i(TAG, "占位实体长度已补全：videoCode=${videoCode.logId()}, length=$len")
             }
 

@@ -13,31 +13,26 @@ object LeakGalleryConstants {
     val HOSTNAME: Array<String>
         get() = SiteNetworkPrefs.knownHosts(SiteType.LEAKGALLERY, listOf("leakgallery.com"))
 
-    /** JSON API; every request needs the `x-app-token` that the site embeds in its pages. */
     const val API_URL = "https://api.leakgallery.com"
 
-    /** Media (videos, photos, thumbnails, avatars) is served from here. */
     const val CDN_URL = "https://cdn.leakgallery.com"
 
     val PHOTO_COLUMN_OPTIONS = listOf(2, 3, 4)
     const val DEFAULT_PHOTO_COLUMNS = 3
 
-    /** How the page number is written in the API path. */
     enum class PageStyle {
-        /** Page 1 has no suffix, page n is `/n` (popular, profile). */
+
         BARE_FIRST,
 
-        /** Pages are `/1`, `/2`, ... (feed, new profiles, tags). */
         FROM_ONE,
 
-        /** Pages are `/0`, `/1`, ... (shorts). */
         FROM_ZERO,
     }
 
     data class Section(
         val key: String,
         val title: String,
-        /** API path, may contain a query string. Page suffix is inserted before the `?`. */
+
         val path: String,
     )
 
@@ -78,7 +73,6 @@ object LeakGalleryConstants {
         }
     }
 
-    /** [page] is 1-based; returns the full API URL for it. */
     fun apiUrl(path: String, page: Int): String {
         val raw = path.trim()
         val base = "/" + raw.substringBefore('?').trim('/')
@@ -96,7 +90,6 @@ object LeakGalleryConstants {
 
     fun tagPath(slug: String): String = "/tag/${encode(slug)}"
 
-    /** `username` out of a `/profile/<username>[?...]` path (or null). */
     fun usernameFromProfilePath(path: String): String? {
         val p = path.substringBefore('?').trim('/').split('/')
         return if (p.size >= 2 && p[0] == "profile") p[1] else null
@@ -114,7 +107,6 @@ object LeakGalleryConstants {
 
     fun postUrl(slug: String): String = "$BASE_URL/$slug"
 
-    /** Accepts `https://leakgallery.com/<user>/<id>` or `/<user>/<title>-<id>` and returns the id. */
     fun parsePostReference(input: String): String? {
         val text = input.trim()
         if (!(text.startsWith("http://") || text.startsWith("https://"))) return null

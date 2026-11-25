@@ -86,6 +86,9 @@ abstract class HanimeDownloadDao {
     @Query("SELECT groupId FROM HanimeDownloadEntity WHERE id = :id")
     abstract suspend fun findGroupId(id: Int): Int?
 
+    @Query("SELECT state FROM HanimeDownloadEntity WHERE id = :id")
+    abstract suspend fun findState(id: Int): Int?
+
     @Query("UPDATE HanimeDownloadEntity SET coverUri = :coverUri WHERE id = :id")
     abstract suspend fun updateCoverUri(id: Int, coverUri: String?)
 
@@ -114,7 +117,13 @@ abstract class HanimeDownloadDao {
     @Transaction
     open suspend fun updateKeepingGroup(entity: HanimeDownloadEntity): Int {
         val currentGroup = findGroupId(entity.id) ?: return 0
-        return update(entity.copy(groupId = currentGroup))
+
+        val keepPaused = findState(entity.id) == DownloadState.Mask.PAUSED &&
+                (entity.state == DownloadState.Unknown ||
+                        entity.state == DownloadState.Queued ||
+                        entity.state == DownloadState.Downloading)
+        val state = if (keepPaused) DownloadState.Paused else entity.state
+        return update(entity.copy(groupId = currentGroup, state = state))
     }
 
     @Query("UPDATE HanimeDownloadEntity SET coverUri = :coverUri WHERE (`videoCode` = :videoCode AND `quality` = :quality)")

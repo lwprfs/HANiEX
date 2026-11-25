@@ -39,7 +39,6 @@ object LeakGalleryNetwork {
             .build()
     }
 
-    /** Videos and images are served from the CDN, which expects the site as Referer/Origin. */
     fun streamRefererFor(@Suppress("UNUSED_PARAMETER") slug: String): String =
         "${LeakGalleryConstants.BASE_URL}/"
 

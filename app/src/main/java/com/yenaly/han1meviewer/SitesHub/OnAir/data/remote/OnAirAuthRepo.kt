@@ -190,10 +190,11 @@ object OnAirAuthRepo {
     fun currentUsernameHint(): String? {
         val raw = OnAirCookieManager.cookiesRaw
         if (raw.isBlank()) return null
-        val match = Regex("""(?:^|;\s*)remember_web_[^=]+=([^;]+)""").find(raw)
-        if (match != null) {
+        val remember = OnAirCookieManager.parseToCookies(raw, baseUrl)
+            .firstOrNull { it.name.startsWith("remember_web_") }
+        if (remember != null) {
             val decoded = runCatching {
-                java.net.URLDecoder.decode(match.groupValues[1], "UTF-8")
+                java.net.URLDecoder.decode(remember.value, "UTF-8")
             }.getOrNull()
             val m2 = decoded?.let { Regex(""""username":"([^"]+)"""").find(it) }
             if (m2 != null) return m2.groupValues[1]

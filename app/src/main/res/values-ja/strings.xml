@@ -1495,4 +1495,5 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="leakgallery_pages_videos_desc">最新の動画</string>
     <string name="leakgallery_pages_models_desc">最近追加されたクリエイター</string>
     <string name="leakgallery_pages_shorts_desc">縦型ショート動画</string>
+    <string name="download_still_paused">このダウンロードは一時停止中です。ダウンロード画面から再開してください。</string>
 </resources>

@@ -5,6 +5,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.saveable.rememberSaveable
 import com.yenaly.han1meviewer.ui.component.VideoFitState
 import com.yenaly.han1meviewer.ui.component.fitVideoSurface
+import com.yenaly.han1meviewer.ui.component.inlinePlayerSize
 import com.yenaly.han1meviewer.ui.component.installVideoFit
 import android.annotation.SuppressLint
 import android.content.Context
@@ -22,7 +23,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -184,16 +185,20 @@ fun SiteVideoPlayer(
     fitState.stretched = stretched && isFullscreen
     var fitFrame by remember { mutableStateOf<FrameLayout?>(null) }
 
+    var videoAspect by remember(exoPlayer) { mutableFloatStateOf(0f) }
+
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onVideoSizeChanged(videoSize: androidx.media3.common.VideoSize) {
                 fitState.updateFrom(videoSize)
+                if (fitState.aspect > 0f) videoAspect = fitState.aspect
                 fitFrame?.let { frame ->
                     frame.getChildAt(0)?.let { fitVideoSurface(frame, it, fitState) }
                 }
             }
         }
         exoPlayer?.videoSize?.let { fitState.updateFrom(it) }
+        if (fitState.aspect > 0f) videoAspect = fitState.aspect
         exoPlayer?.addListener(listener)
         onDispose { exoPlayer?.removeListener(listener) }
     }
@@ -203,7 +208,7 @@ fun SiteVideoPlayer(
     } else {
         modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 9f)
+            .inlinePlayerSize(videoAspect)
     }
 
     Box(
