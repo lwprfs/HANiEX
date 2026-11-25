@@ -1,10 +1,10 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
-import com.yenaly.han1meviewer.MissAV.data.remote.MissAvAuth
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvAccountRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvLoginRoute
-import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoAuth
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoAccountRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvAuth
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvAccountRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvLoginRoute
+import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoAuth
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoAccountRoute
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -26,41 +26,41 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import coil3.compose.AsyncImage
-import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
-import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavHistoryRoute
-import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSearchRoute
-import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavSettingsRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoCategoriesRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHistoryRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoHostSettingsRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSearchRoute
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavSearchRoute
+import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoCategoriesRoute
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoHostSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoSearchRoute
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoSettingsRoute
 import com.yenaly.han1meviewer.util.translation.AppTranslation
-import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterAuth
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterAccountRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterChannelsRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterCreatorsRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterPhotosRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterCategoriesRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterCategoryRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterHistoryRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterLibraryRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterStarsRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSearchRoute
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterSettingsRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderCookiesRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderLoginRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSearchHistoryRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSearchRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaHomeSettingsRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaVideoSettingsRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvHomeCategoriesRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvHostSettingsRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvQualitySettingsRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvSubtitleSettingsRoute
-import com.yenaly.han1meviewer.OnAir.data.local.OnAirProfileCache
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirAccountSettingsRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirCookieRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterAuth
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterAccountRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterChannelsRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterCreatorsRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterPhotosRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterCategoriesRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterCategoryRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterLibraryRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterStarsRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterSearchRoute
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderCookiesRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderLoginRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSearchHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSearchRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaHomeSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaVideoSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHomeCategoriesRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHostSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvQualitySettingsRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSubtitleSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirProfileCache
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAccountSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirCookieRoute
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
@@ -92,30 +92,30 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderFollowedCommunitiesRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderHistoryRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSavedRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderSettingsRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaHistoryRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaPlaylistsRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaRecentEpisodesRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaSettingsHubRoute
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaUpcomingRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvHistoryRoute
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvSettingsHubRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirAnnouncementsRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirChatRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirHistoryRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirPicturesRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirSettingsRoute
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirTagsIndexRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderFollowedCommunitiesRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSavedRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaPlaylistsRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaRecentEpisodesRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaSettingsHubRoute
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaUpcomingRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSettingsHubRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAnnouncementsRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirChatRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirPicturesRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirTagsIndexRoute
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderImageFolderRoute
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderImageFolderRoute
 
 data class SiteLoginStatus(
     val title: String,
@@ -206,8 +206,8 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
         )
 
     SiteType.WUMAOBI -> {
-        com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth.reload()
-        val auth = com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiAuth.state.value
+        com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiAuth.reload()
+        val auth = com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiAuth.state.value
         if (auth.loggedIn) {
             SiteLoginStatus(
                 title = auth.userName.ifBlank {
@@ -216,7 +216,7 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
                 subtitle = context.getString(R.string.login_status_tap_account),
                 avatarUrl = null,
                 loggedIn = true,
-                onClick = { it.navigateSafely(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiAccountRoute) },
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.SitesHub.Wumaobi.ui.navigation.WumaobiAccountRoute) },
             )
         } else {
             SiteLoginStatus(
@@ -224,7 +224,7 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
                 subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.WUMAOBI)),
                 avatarUrl = null,
                 loggedIn = false,
-                onClick = { it.navigateSafely(com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiAccountRoute) },
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.SitesHub.Wumaobi.ui.navigation.WumaobiAccountRoute) },
             )
         }
     }
@@ -274,16 +274,16 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
     }
 
     SiteType.REDGIFS -> {
-        val name = if (com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.isLoggedIn) {
-            com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.username
+        val name = if (com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsAuth.isLoggedIn) {
+            com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsAuth.username
         } else null
-        if (com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.isLoggedIn) {
+        if (com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsAuth.isLoggedIn) {
             SiteLoginStatus(
                 title = name ?: context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.REDGIFS)),
                 subtitle = context.getString(R.string.login_status_tap_account),
-                avatarUrl = com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsAuth.avatarUrl,
+                avatarUrl = com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsAuth.avatarUrl,
                 loggedIn = true,
-                onClick = { it.navigateSafely(com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsAccountRoute) },
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsAccountRoute) },
             )
         } else {
             SiteLoginStatus(
@@ -291,7 +291,7 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
                 subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.REDGIFS)),
                 avatarUrl = null,
                 loggedIn = false,
-                onClick = { it.navigateSafely(com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsAccountRoute) },
+                onClick = { it.navigateSafely(com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsAccountRoute) },
             )
         }
     }

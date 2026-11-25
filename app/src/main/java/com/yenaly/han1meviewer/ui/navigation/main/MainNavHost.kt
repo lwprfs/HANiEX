@@ -72,16 +72,30 @@ import com.yenaly.han1meviewer.ui.navigation.settings.SettingsHomeRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsScaffold
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRouteScreen
-import com.yenaly.han1meviewer.ui.screen.account.AccountScreen
-import com.yenaly.han1meviewer.ui.screen.account.AvatarCropScreen
-import com.yenaly.han1meviewer.ui.screen.home.CreatorCenterScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.account.AccountScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.account.AvatarCropScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.CreatorCenterScreen
 import com.yenaly.han1meviewer.ui.screen.library.ContentLibraryScreen
 import com.yenaly.han1meviewer.ui.screen.main.ProfileScreen
 import com.yenaly.han1meviewer.ui.screen.settings.AboutAppScreen
-import com.yenaly.han1meviewer.ui.viewmodel.CreatorCenterViewModel
-import com.yenaly.han1meviewer.ui.viewmodel.UserAccountViewModel
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.CreatorCenterViewModel
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.UserAccountViewModel
 import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.serialization.json.Json
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.DailyCheckInRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.DownloadRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.FavVideoRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.GetchuPreviewDetailRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.GetchuPreviewRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.HomeRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.MyPlaylistRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.PreviewCommentRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.PreviewRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.SearchRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.SubscriptionRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.VideoRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.WatchHistoryRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.WatchLaterRouteScreen
 
 @Composable
 fun MainNavHost(

@@ -8,7 +8,7 @@ import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.core.content.edit
 import com.yenaly.han1meviewer.logic.DatabaseRepo
-import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.ui.component.GlobalDialogs
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.util.SafFileManager

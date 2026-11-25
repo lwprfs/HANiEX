@@ -9,7 +9,7 @@ import com.google.firebase.crashlytics.setCustomKeys
 import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.base.BaseViewModel
-import com.yenaly.han1meviewer.logic.NetworkRepo
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.util.application
@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.viewmodel.IHCsrfToken
 
 object AppViewModel : BaseViewModel(application), IHCsrfToken {
 

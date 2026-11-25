@@ -1,7 +1,7 @@
 package com.yenaly.han1meviewer.util
 
 import com.yenaly.han1meviewer.base.AppLocale
-import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.SearchOption
 
 object TagLocalizer {
 

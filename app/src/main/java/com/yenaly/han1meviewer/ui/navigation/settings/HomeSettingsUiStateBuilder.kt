@@ -9,9 +9,9 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.shizuku.UpdateInstaller
 import com.yenaly.han1meviewer.ui.navigation.disablePredictiveBack
-import com.yenaly.han1meviewer.ui.screen.home.homepage.defaultHomeCategoryPreferenceItems
-import com.yenaly.han1meviewer.ui.screen.home.homepage.hiddenHomeCategoryKeys
-import com.yenaly.han1meviewer.ui.screen.home.homepage.homeCategoryOrder
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.defaultHomeCategoryPreferenceItems
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.hiddenHomeCategoryKeys
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.homeCategoryOrder
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
 import com.yenaly.han1meviewer.ui.theme.ThemeColorPreset
 

@@ -32,7 +32,7 @@ import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.ui.screen.home.homepage.saveHomeCategoryPreferences
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.saveHomeCategoryPreferences
 import com.yenaly.han1meviewer.ui.screen.runAfterUiSettles
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.LicenseDialog

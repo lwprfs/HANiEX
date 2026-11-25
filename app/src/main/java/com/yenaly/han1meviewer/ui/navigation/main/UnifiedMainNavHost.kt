@@ -3,21 +3,21 @@ package com.yenaly.han1meviewer.ui.navigation.main
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import android.util.Log
-import com.yenaly.han1meviewer.FapFolder.ui.navigation.FapFolderNavHost
-import com.yenaly.han1meviewer.SupJav.ui.navigation.SupJavNavHost
-import com.yenaly.han1meviewer.RouVideo.ui.navigation.RouVideoNavHost
-import com.yenaly.han1meviewer.Buondua.ui.navigation.BuonduaNavHost
-import com.yenaly.han1meviewer.Cosplaytele.ui.navigation.CosplayteleNavHost
-import com.yenaly.han1meviewer.Coomer.ui.navigation.CoomerNavHost
-import com.yenaly.han1meviewer.Coser.ui.navigation.CoserNavHost
-import com.yenaly.han1meviewer.FullVideos.ui.navigation.FullVideosNavHost
-import com.yenaly.han1meviewer.FuckingSession.ui.navigation.FuckingSessionNavHost
-import com.yenaly.han1meviewer.RedGifs.ui.navigation.RedGifsNavHost
-import com.yenaly.han1meviewer.XXXTube.ui.navigation.XXXTubeNavHost
-import com.yenaly.han1meviewer.XHamster.ui.navigation.XHamsterNavHost
-import com.yenaly.han1meviewer.HentaiMama.ui.navigation.HentaiMamaNavHost
-import com.yenaly.han1meviewer.MissAV.ui.navigation.MissAvNavHost
-import com.yenaly.han1meviewer.OnAir.ui.navigation.OnAirNavHost
+import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderNavHost
+import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavNavHost
+import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoNavHost
+import com.yenaly.han1meviewer.SitesHub.Buondua.ui.navigation.BuonduaNavHost
+import com.yenaly.han1meviewer.SitesHub.Cosplaytele.ui.navigation.CosplayteleNavHost
+import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerNavHost
+import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserNavHost
+import com.yenaly.han1meviewer.SitesHub.FullVideos.ui.navigation.FullVideosNavHost
+import com.yenaly.han1meviewer.SitesHub.FuckingSession.ui.navigation.FuckingSessionNavHost
+import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsNavHost
+import com.yenaly.han1meviewer.SitesHub.XXXTube.ui.navigation.XXXTubeNavHost
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterNavHost
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaNavHost
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvNavHost
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirNavHost
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -182,7 +182,7 @@ fun UnifiedMainNavHost(
                 )
             }
             SiteType.WUMAOBI -> {
-                com.yenaly.han1meviewer.Wumaobi.ui.navigation.WumaobiNavHost(
+                com.yenaly.han1meviewer.SitesHub.Wumaobi.ui.navigation.WumaobiNavHost(
                     activity = activity,
                     navigator = navigator,
                     navigationState = navigationState,

@@ -62,7 +62,7 @@ import com.yenaly.han1meviewer.ui.navigation.main.UnifiedMainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
 import com.yenaly.han1meviewer.ui.navigation.main.navigateTopLevelDestination
 import com.yenaly.han1meviewer.ui.navigation.settings.buildDomainOptions
-import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.HAnalytics

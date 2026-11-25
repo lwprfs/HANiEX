@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
-import com.yenaly.han1meviewer.logic.Parser
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.Parser
 import com.yenaly.han1meviewer.logic.network.MirrorLatency
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.WebsiteState

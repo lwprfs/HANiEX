@@ -24,12 +24,12 @@ import com.yenaly.han1meviewer.FirebaseConstants
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.base.BaseActivity
-import com.yenaly.han1meviewer.logic.NetworkRepo
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.login
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.ui.screen.login.LoginDialog
-import com.yenaly.han1meviewer.ui.screen.login.LoginScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.login.LoginDialog
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.login.LoginScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.coroutines.launch

@@ -1,5 +1,7 @@
 package com.yenaly.han1meviewer.logic.model
 
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.MultiItemEntity
+
 interface HanimeInfoType : MultiItemEntity
 
 data class HanimeInfo(

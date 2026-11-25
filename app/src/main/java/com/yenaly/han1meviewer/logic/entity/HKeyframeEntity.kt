@@ -7,7 +7,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
-import com.yenaly.han1meviewer.logic.model.MultiItemEntity
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.MultiItemEntity
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 

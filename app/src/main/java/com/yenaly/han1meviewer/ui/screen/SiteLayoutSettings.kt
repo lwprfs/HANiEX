@@ -231,11 +231,11 @@ object SiteHomeSettings {
 object SiteSearchSettings {
 
     fun sortChoices(site: SiteType): List<Pair<String, String>>? = when (site) {
-        SiteType.ONAIR -> com.yenaly.han1meviewer.OnAir.data.model.OnAirOptions.sorts
+        SiteType.ONAIR -> com.yenaly.han1meviewer.SitesHub.OnAir.data.model.OnAirOptions.sorts
             .map { it.label to it.value }
-        SiteType.MISSAV -> com.yenaly.han1meviewer.MissAV.common.MissAvOptions.sortOptions
+        SiteType.MISSAV -> com.yenaly.han1meviewer.SitesHub.MissAV.common.MissAvOptions.sortOptions
             .map { it.name to it.searchKey }
-        SiteType.ROUVIDEO -> com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.Sort.entries
+        SiteType.ROUVIDEO -> com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoConstants.Sort.entries
             .map { applicationContext.getString(it.labelRes) to it.name }
         else -> null
     }

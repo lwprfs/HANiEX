@@ -8,12 +8,12 @@ import android.os.Environment
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.documentfile.provider.DocumentFile
-import com.yenaly.han1meviewer.FapFolder.common.FapFolderConstants
-import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.SitesHub.FapFolder.common.FapFolderConstants
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.HFileManager
-import com.yenaly.han1meviewer.HentaiMama.data.remote.HentaiMamaNetwork
-import com.yenaly.han1meviewer.OnAir.data.remote.OnAirCookieManager
-import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.remote.HentaiMamaNetwork
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirCookieManager
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.SiteCheckIn
@@ -260,32 +260,32 @@ object SiteDownloadClients {
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FAPFOLDER -> runCatching { FapFolderNetwork.playbackOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.MISSAV -> runCatching { com.yenaly.han1meviewer.MissAV.data.remote.MissAvNetwork.downloadOkHttpClient }
+            SiteType.MISSAV -> runCatching { com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvNetwork.downloadOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.SUPJAV -> runCatching { com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork.sharedOkHttpClient }
-                .getOrDefault(ServiceCreator.downloadClient)
-
-            SiteType.ROUVIDEO -> runCatching { com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork.streamClient }
+            SiteType.SUPJAV -> runCatching { com.yenaly.han1meviewer.SitesHub.SupJav.data.remote.SupJavNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
 
-            SiteType.XHAMSTER -> runCatching { com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork.streamClient }
+            SiteType.ROUVIDEO -> runCatching { com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoNetwork.streamClient }
                 .getOrDefault(ServiceCreator.downloadClient)
 
-            SiteType.BUONDUA -> runCatching { com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork.streamClient }
+            SiteType.XHAMSTER -> runCatching { com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterNetwork.streamClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.COSPLAYTELE -> runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.sharedOkHttpClient }
+
+            SiteType.BUONDUA -> runCatching { com.yenaly.han1meviewer.SitesHub.Buondua.data.remote.BuonduaNetwork.streamClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.COOMER -> runCatching { com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork.sharedOkHttpClient }
+            SiteType.COSPLAYTELE -> runCatching { com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.remote.CosplayteleNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.COSER -> runCatching { com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork.sharedOkHttpClient }
+            SiteType.COOMER -> runCatching { com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
+            SiteType.COSER -> runCatching { com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.FUCKINGSESSION -> runCatching { com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork.sharedOkHttpClient }
+            SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.WUMAOBI -> runCatching { com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork.sharedOkHttpClient }
+            SiteType.FUCKINGSESSION -> runCatching { com.yenaly.han1meviewer.SitesHub.FuckingSession.data.remote.FuckingSessionNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
-            SiteType.XXXTUBE -> runCatching { com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork.sharedOkHttpClient }
+            SiteType.WUMAOBI -> runCatching { com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.XXXTUBE -> runCatching { com.yenaly.han1meviewer.SitesHub.XXXTube.data.remote.XXXTubeNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
             else -> ServiceCreator.downloadClient
         }
@@ -324,63 +324,63 @@ object SiteDownloadClients {
                 }
             }
             SiteType.FULLVIDEOS -> {
-                val referer = com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
             }
             SiteType.WUMAOBI -> {
-                val referer = com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
             }
             SiteType.FUCKINGSESSION -> {
-                val referer = com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.FuckingSession.data.remote.FuckingSessionNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer)
             }
             SiteType.XXXTUBE -> {
-                val referer = com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.XXXTube.data.remote.XXXTubeNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer)
             }
             SiteType.SUPJAV -> {
-                val referer = com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.SupJav.data.remote.SupJavNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf("Referer" to referer, "Origin" to referer.trimEnd('/'))
             }
             SiteType.ROUVIDEO -> mapOf(
-                "Referer" to com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.REFERER,
-                "Origin" to com.yenaly.han1meviewer.RouVideo.common.RouVideoConstants.ORIGIN,
+                "Referer" to com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoConstants.REFERER,
+                "Origin" to com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoConstants.ORIGIN,
             )
             SiteType.XHAMSTER -> mapOf(
-                "Referer" to com.yenaly.han1meviewer.XHamster.common.XHamsterConstants.REFERER,
-                "Origin" to com.yenaly.han1meviewer.XHamster.common.XHamsterConstants.ORIGIN,
+                "Referer" to com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterConstants.REFERER,
+                "Origin" to com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterConstants.ORIGIN,
             )
             SiteType.BUONDUA -> runCatching {
-                com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork.mediaHeaders()
+                com.yenaly.han1meviewer.SitesHub.Buondua.data.remote.BuonduaNetwork.mediaHeaders()
             }.getOrDefault(emptyMap())
             SiteType.COSPLAYTELE -> {
-                val referer = com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.remote.CosplayteleNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf(
                     "Referer" to referer,
-                    "Origin" to com.yenaly.han1meviewer.Cosplaytele.common.CosplayteleConstants.STREAM_ORIGIN,
+                    "Origin" to com.yenaly.han1meviewer.SitesHub.Cosplaytele.common.CosplayteleConstants.STREAM_ORIGIN,
                 )
             }
             SiteType.COOMER -> {
-                val referer = com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf(
                     "Referer" to referer,
-                    "Origin" to com.yenaly.han1meviewer.Coomer.common.CoomerConstants.BASE_URL,
+                    "Origin" to com.yenaly.han1meviewer.SitesHub.Coomer.common.CoomerConstants.BASE_URL,
                 )
             }
             SiteType.COSER -> {
-                val referer = com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork
+                val referer = com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork
                     .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
                 mapOf(
                     "Referer" to referer,
-                    "Origin" to com.yenaly.han1meviewer.Coser.common.CoserConstants.STREAM_ORIGIN,
+                    "Origin" to com.yenaly.han1meviewer.SitesHub.Coser.common.CoserConstants.STREAM_ORIGIN,
                 )
             }
             SiteType.FAPFOLDER -> mapOf(

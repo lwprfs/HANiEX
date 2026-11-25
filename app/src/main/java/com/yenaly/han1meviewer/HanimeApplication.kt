@@ -19,12 +19,12 @@ import com.google.firebase.crashlytics.setCustomKeys
 import com.google.firebase.database.database
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
-import com.yenaly.han1meviewer.HentaiMama.data.remote.HentaiMamaNetwork
-import com.yenaly.han1meviewer.HentaiMama.data.local.HentaiMamaHistoryRepo
-import com.yenaly.han1meviewer.HentaiMama.settings.HentaiMamaCardSettings
-import com.yenaly.han1meviewer.OnAir.data.local.OnAirHistoryRepo
-import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
-import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.remote.HentaiMamaNetwork
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.settings.HentaiMamaCardSettings
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.base.AppLocale
 import com.yenaly.han1meviewer.base.BaseApplication
 import com.yenaly.han1meviewer.logic.network.HDns
@@ -38,9 +38,9 @@ import com.yenaly.han1meviewer.util.ThemeUtils
 import `is`.xyz.mpv.MPVLib
 import okhttp3.OkHttpClient
 import java.net.ProxySelector
-import com.yenaly.han1meviewer.MissAV.data.remote.MissAvNetwork
-import com.yenaly.han1meviewer.MissAV.ui.video.MissAvSubtitleHelper
-import com.yenaly.han1meviewer.SupJav.common.SupJavImageLoader
+import com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvNetwork
+import com.yenaly.han1meviewer.SitesHub.MissAV.ui.video.MissAvSubtitleHelper
+import com.yenaly.han1meviewer.SitesHub.SupJav.common.SupJavImageLoader
 import java.util.concurrent.TimeUnit
 
 class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {

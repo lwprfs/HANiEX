@@ -22,6 +22,7 @@ import com.yenaly.han1meviewer.util.runSuspendCatching
 import okio.use
 import java.io.File
 import java.util.zip.ZipInputStream
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.HanimeNetwork
 
 object HUpdater {
 

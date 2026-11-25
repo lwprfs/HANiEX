@@ -5,21 +5,21 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
-import com.yenaly.han1meviewer.logic.model.Announcement
-import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
-import com.yenaly.han1meviewer.logic.model.DownloadItemNode
-import com.yenaly.han1meviewer.logic.model.GetchuPreview
-import com.yenaly.han1meviewer.logic.model.GetchuPreviewDetail
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.Announcement
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadHeaderNode
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadItemNode
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.GetchuPreview
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.GetchuPreviewDetail
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
-import com.yenaly.han1meviewer.logic.model.HanimePreview
-import com.yenaly.han1meviewer.logic.model.HanimeVideo
-import com.yenaly.han1meviewer.logic.model.HomePage
-import com.yenaly.han1meviewer.logic.model.Playlists
-import com.yenaly.han1meviewer.logic.model.SubscriptionItem
-import com.yenaly.han1meviewer.logic.model.SubscriptionVideosItem
-import com.yenaly.han1meviewer.logic.model.VideoComments
-import com.yenaly.han1meviewer.ui.screen.home.homepage.HomeCategory
-import com.yenaly.han1meviewer.ui.screen.home.homepage.HomeHeroItem
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.HanimePreview
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.HomePage
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.Playlists
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.SubscriptionItem
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.SubscriptionVideosItem
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.VideoComments
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.HomeCategory
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.HomeHeroItem
 import kotlinx.datetime.LocalDate
 
 val fakeArtists = listOf(

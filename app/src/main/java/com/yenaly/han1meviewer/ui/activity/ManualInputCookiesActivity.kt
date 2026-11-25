@@ -4,7 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import com.yenaly.han1meviewer.base.BaseActivity
-import com.yenaly.han1meviewer.ui.screen.login.ManualInputCookiesScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.login.ManualInputCookiesScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import com.yenaly.han1meviewer.util.HAnalytics
 

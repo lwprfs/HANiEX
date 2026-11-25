@@ -75,8 +75,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.ui.screen.video.GestureIndicatorOverlay
-import com.yenaly.han1meviewer.ui.screen.video.GestureIndicatorType
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.video.GestureIndicatorOverlay
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.video.GestureIndicatorType
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date

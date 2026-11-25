@@ -1,7 +1,7 @@
 package com.yenaly.han1meviewer.ui.model
 
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.SearchOption
 
 sealed interface AdvancedSearchDialogState {
     val key: String

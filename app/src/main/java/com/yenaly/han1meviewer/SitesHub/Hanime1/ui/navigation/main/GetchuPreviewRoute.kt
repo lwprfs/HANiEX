@@ -1,0 +1,38 @@
+package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main
+
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.preview.getchupreview.GetchuPreviewDetailScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.preview.getchupreview.GetchuPreviewScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.preview.getchupreview.GetchuPreviewViewModel
+import com.yenaly.han1meviewer.ui.navigation.main.GetchuPreviewDetailRoute
+
+@Composable
+fun GetchuPreviewRouteScreen(
+    onBack: () -> Unit,
+    onNavigateToDetail: (String) -> Unit,
+) {
+    val viewModel: GetchuPreviewViewModel = viewModel()
+    GetchuPreviewScreen(
+        onBack = onBack,
+        onNavigateToDetail = onNavigateToDetail,
+        viewModel = viewModel,
+    )
+}
+
+@Composable
+fun GetchuPreviewDetailRouteScreen(
+    route: GetchuPreviewDetailRoute,
+    onBack: () -> Unit,
+    onNavigateToDetail: (String) -> Unit,
+    onNavigateToVideoUrl: (String) -> Unit,
+) {
+    val viewModel: GetchuPreviewViewModel = viewModel()
+    GetchuPreviewDetailScreen(
+        id = route.id,
+        onBack = onBack,
+        onNavigateToDetail = onNavigateToDetail,
+        onNavigateToVideoUrl = onNavigateToVideoUrl,
+        viewModel = viewModel,
+    )
+}

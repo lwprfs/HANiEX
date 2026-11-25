@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.yenaly.han1meviewer.ui.screen.search.SearchAppBar
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.search.SearchAppBar
 
 @Composable
 fun SiteSearchAppBar(

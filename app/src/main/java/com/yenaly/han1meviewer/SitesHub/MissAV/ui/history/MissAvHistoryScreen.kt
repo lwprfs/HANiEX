@@ -1,0 +1,373 @@
+package com.yenaly.han1meviewer.SitesHub.MissAV.ui.history
+import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
+import com.yenaly.han1meviewer.ui.component.SiteEmptyContent
+import com.yenaly.han1meviewer.ui.component.SiteErrorContent
+import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.logic.state.PageLoadingState
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MissAvHistoryScreen(
+    onNavigateToVideo: (String, String) -> Unit,
+    onBack: () -> Unit = {},
+    modifier: Modifier = Modifier,
+    viewModel: MissAvHistoryViewModel = viewModel(),
+) {
+    val historyState by viewModel.historyState.collectAsStateWithLifecycle()
+    val historyItems by viewModel.historyItems.collectAsStateWithLifecycle()
+    val loadedPageCount by viewModel.loadedPageCount.collectAsStateWithLifecycle()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
+
+    val listState = rememberLazyListState()
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
+    var itemToDelete by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (historyItems.isEmpty()) viewModel.loadHistory()
+    }
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val info = listState.layoutInfo
+            val total = info.totalItemsCount
+            if (total == 0) return@derivedStateOf false
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: return@derivedStateOf false
+            last >= total - 4 && total > 4 && !isLoadingMore &&
+                    historyState !is PageLoadingState.Loading &&
+                    historyState !is PageLoadingState.NoMoreData
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) viewModel.loadMore()
+    }
+
+    Scaffold(
+        topBar = {
+            SiteTopAppBar(
+                title = { Text(stringResource(R.string.watch_history)) },
+                navigationIcon = { SiteBackButton(onClick = onBack) },
+                actions = {
+                    if (historyItems.isNotEmpty()) {
+                        IconButton(onClick = { showDeleteAllDialog = true }) {
+                            Icon(
+                                Icons.Default.DeleteSweep,
+                                contentDescription = stringResource(R.string.missav_delete_all_history)
+                            )
+                        }
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when {
+                historyState is PageLoadingState.Loading
+                        && historyItems.isEmpty()
+                        && loadedPageCount == 0 -> {
+                    SiteLoadingContent(message = stringResource(R.string.missav_loading_history))
+                }
+
+                historyState is PageLoadingState.Error && historyItems.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        SiteErrorContent(
+                            title = stringResource(R.string.load_failed_retry),
+                            onRetry = { viewModel.refresh() },
+                        )
+                    }
+                }
+
+                historyItems.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        SiteEmptyContent(
+                            hint = stringResource(R.string.watch_history_empty_title),
+                            subHint = stringResource(R.string.watch_history_empty_description),
+                        )
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        items(items = historyItems, key = { it.videoInfo.videoCode }) { item ->
+                            MissAvHistoryItemCard(
+                                item = item,
+                                onClick = {
+                                    onNavigateToVideo(
+                                        item.videoInfo.videoCode,
+                                        "/en/${item.videoInfo.videoCode}"
+                                    )
+                                },
+                                onDelete = { itemToDelete = item.videoInfo.videoCode },
+                            )
+                        }
+
+                        if (isLoadingMore) {
+                            item(key = "loading_more") {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        strokeWidth = 2.dp,
+                                    )
+                                }
+                            }
+                        }
+
+                        if (historyState is PageLoadingState.NoMoreData && historyItems.isNotEmpty()) {
+                            item(key = "no_more") {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text(
+                                        stringResource(R.string.site_no_more_history),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDeleteAllDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteAllDialog = false },
+            title = { Text(stringResource(R.string.missav_delete_all_history)) },
+            text = { Text(stringResource(R.string.missav_are_you_sure_you_want_to)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteAllHistory()
+                    showDeleteAllDialog = false
+                }) {
+                    Text(stringResource(R.string.missav_delete_all), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteAllDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (itemToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { itemToDelete = null },
+            title = { Text(stringResource(R.string.missav_delete_history_item)) },
+            text = { Text(stringResource(R.string.missav_remove_this_item_from_your_watch)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    itemToDelete?.let { viewModel.deleteHistoryItem(it) }
+                    itemToDelete = null
+                }) {
+                    Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { itemToDelete = null }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+}
+
+@Composable
+fun MissAvHistoryItemCard(
+    item: MissAvHistoryItem,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(68.dp)
+                    .clip(RoundedCornerShape(8.dp))
+            ) {
+                AsyncImage(
+                    model = item.videoInfo.coverUrl,
+                    contentDescription = item.videoInfo.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = item.videoInfo.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = item.videoInfo.videoCode,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = item.formattedWatchDate,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (item.watchDuration > 0) {
+                        Text(
+                            text = "⏱ ${item.formattedWatchDuration}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (item.lastPosition > 0 && item.totalDuration > 0) {
+                        Text(
+                            text = "📍 ${item.formattedLastPosition}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (item.isPlayed) {
+                        Text(
+                            text = stringResource(R.string.missav_played),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.missav_viewed),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (item.watchCount > 0) {
+                        Text(
+                            text = "• ${item.watchCount}x",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    if (item.playCount > 0) {
+                        Text(
+                            text = stringResource(R.string.missav_x_played, item.playCount),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                if (item.totalDuration > 0) {
+                    LinearProgressIndicator(
+                        progress = { item.progressPercentage },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        color = if (item.isPlayed) MaterialTheme.colorScheme.tertiary
+                        else MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                }
+            }
+
+            FilledIconButton(
+                onClick = onDelete,
+                modifier = Modifier
+                    .size(25.dp)
+                    .align(Alignment.Top),
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.delete),
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+    }
+}

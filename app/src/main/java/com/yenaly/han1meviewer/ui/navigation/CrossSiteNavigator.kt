@@ -1,11 +1,11 @@
 package com.yenaly.han1meviewer.ui.navigation
 
-import com.yenaly.han1meviewer.FapFolder.common.FapFolderConstants
+import com.yenaly.han1meviewer.SitesHub.FapFolder.common.FapFolderConstants
 import com.yenaly.han1meviewer.HanimeConstants
-import com.yenaly.han1meviewer.HentaiMama.common.HentaiMamaConstants
-import com.yenaly.han1meviewer.MissAV.common.MissAvConstants
-import com.yenaly.han1meviewer.OnAir.data.remote.OnAirTorChecker
-import com.yenaly.han1meviewer.OnAir.data.remote.TorFailure
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.common.HentaiMamaConstants
+import com.yenaly.han1meviewer.SitesHub.MissAV.common.MissAvConstants
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirTorChecker
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.TorFailure
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType

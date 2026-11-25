@@ -1,0 +1,137 @@
+package com.yenaly.han1meviewer.SitesHub.XHamster.ui.search
+
+import com.yenaly.han1meviewer.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterConstants
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.home.XHamsterListViewModel
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.home.XHamsterSource
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.home.XHamsterVideoGrid
+import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.SiteSearchAppBar
+import com.yenaly.han1meviewer.ui.component.SiteSearchPrompt
+import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
+import com.yenaly.han1meviewer.ui.component.SiteChipRow
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.discover.XHamsterDiscoverActions
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.discover.XHamsterDiscoverStrips
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.entities.XHamsterPhotoSearchResults
+import com.yenaly.han1meviewer.SitesHub.XHamster.ui.profile.ProfileShorts
+
+@Composable
+fun XHamsterSearchScreen(
+    initialQuery: String?,
+    onBack: () -> Unit,
+    onNavigateToVideo: (String) -> Unit,
+    onOpenGallery: (String) -> Unit,
+    onOpenAuthor: (path: String, title: String) -> Unit,
+    discover: XHamsterDiscoverActions,
+    viewModel: XHamsterListViewModel = viewModel(),
+) {
+    var scope by rememberSaveable { mutableStateOf("videos") }
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    var query by rememberSaveable { mutableStateOf(initialQuery.orEmpty()) }
+    var submitted by rememberSaveable { mutableStateOf(initialQuery.orEmpty()) }
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focus = remember { FocusRequester() }
+
+    LaunchedEffect(submitted) {
+        if (submitted.isBlank()) return@LaunchedEffect
+
+        val code = XHamsterConstants.parseVideoReference(submitted)
+        if (code != null) {
+            onNavigateToVideo(code)
+            submitted = ""
+        } else {
+            viewModel.setSource(XHamsterSource.Search(submitted))
+        }
+    }
+    LaunchedEffect(Unit) {
+        if (initialQuery.isNullOrBlank()) focus.requestFocus()
+    }
+
+    Scaffold(
+        topBar = {
+            SiteSearchAppBar(
+                query = query,
+                onQueryChange = { query = it },
+                onSubmit = { submitted = query.trim() },
+                onBack = onBack,
+                hint = stringResource(R.string.xhamster_search_hint),
+                focusRequester = focus,
+            )
+        },
+    ) { padding ->
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)) {
+            SiteChipRow(
+                options = listOf("videos", "photos", "shorts"),
+                selected = scope,
+                label = {
+                    ctx.getString(
+                        when (it) {
+                            "photos" -> R.string.xhamster_photos
+                            "shorts" -> R.string.xhamster_shorts
+                            else -> R.string.xhamster_search_videos
+                        },
+                    )
+                },
+                onSelect = { scope = it },
+                key = { it },
+            )
+            val encoded = java.net.URLEncoder.encode(submitted, "UTF-8")
+            if (submitted.isBlank()) {
+                SiteSearchPrompt(stringResource(R.string.xhamster_search_prompt))
+                Column(Modifier.padding(horizontal = 12.dp)) { XHamsterDiscoverStrips(discover) }
+            } else when (scope) {
+                "photos" -> XHamsterPhotoSearchResults(
+                    url = XHamsterConstants.listUrl("/photos/search/$encoded"),
+                    onOpenGallery = onOpenGallery,
+                    onOpenAuthor = onOpenAuthor,
+                )
+
+                "shorts" -> ProfileShorts(
+                    path = "/shorts/search/$encoded",
+                    preview = emptyList(),
+                )
+
+                else -> XHamsterVideoGrid(
+                    state = state,
+                    onRetry = { viewModel.refresh() },
+                    onLoadMore = { viewModel.loadMore() },
+                    onOpenVideo = onNavigateToVideo,
+                    emptyHint = stringResource(R.string.xhamster_no_results),
+                )
+            }
+        }
+    }
+}

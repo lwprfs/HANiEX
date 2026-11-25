@@ -1,0 +1,61 @@
+package com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.service
+
+import androidx.annotation.IntRange
+import okhttp3.ResponseBody
+import retrofit2.Response
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
+import retrofit2.http.Url
+
+interface HanimeBaseService {
+
+    @GET
+    suspend fun getHomePage(@Url url: String): Response<ResponseBody>
+
+    @GET("search")
+    suspend fun getHanimeSearchResult(
+        @Query("page") @IntRange(from = 1) page: Int = 1,
+        @Query("query") query: String? = null,
+        @Query("genre") genre: String? = null,
+        @Query("sort") sort: String? = null,
+        @Query("broad") broad: String? = null,
+
+        @Query("date") date: String? = null,
+        @Query("duration") duration: String? = null,
+        @Query("tags[]") tags: Set<String> = emptySet(),
+        @Query("brands[]") brands: Set<String> = emptySet(),
+    ): Response<ResponseBody>
+
+    @GET("watch")
+    suspend fun getHanimeVideo(
+        @Query("v") videoCode: String,
+    ): Response<ResponseBody>
+
+    @GET("previews/{date}")
+    suspend fun getHanimePreview(
+        @Path("date") date: String,
+    ): Response<ResponseBody>
+
+    @FormUrlEncoded
+    @POST("login")
+    suspend fun login(
+        @Field("_token") csrfToken: String?,
+        @Field("email") email: String,
+        @Field("password") password: String,
+        @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
+    ): Response<ResponseBody>
+
+    @GET("login")
+    suspend fun getLoginPage(): Response<ResponseBody>
+
+    @GET("subscriptions")
+    suspend fun getMySubscriptions(
+        @Query("page") page: Int
+    ): Response<ResponseBody>
+
+}

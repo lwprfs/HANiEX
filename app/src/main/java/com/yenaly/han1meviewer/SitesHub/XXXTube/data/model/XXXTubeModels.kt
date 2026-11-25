@@ -1,0 +1,55 @@
+package com.yenaly.han1meviewer.SitesHub.XXXTube.data.model
+
+import com.yenaly.han1meviewer.SitesHub.XXXTube.common.XXXTubeConstants
+import com.yenaly.han1meviewer.logic.model.HanimeInfo
+
+data class XXXTubeListPage(
+    val items: List<HanimeInfo>,
+    val nextUrl: String?,
+)
+
+data class XXXTubeEntity(
+    val title: String,
+    val coverUrl: String,
+    val path: String,
+    val kind: XXXTubeConstants.EntityKind,
+) {
+    val listingPath: String
+        get() = XXXTubeConstants.listingPathFor(path)
+}
+
+data class XXXTubeEntityPage(
+    val items: List<XXXTubeEntity>,
+    val nextUrl: String?,
+)
+
+data class XXXTubeLink(val title: String, val url: String) {
+
+    val path: String
+        get() = runCatching { java.net.URI(url).path }.getOrNull().orEmpty().ifBlank { url }
+
+    val listingPath: String
+        get() = XXXTubeConstants.listingPathFor(path)
+}
+
+data class XXXTubeSource(
+    val label: String,
+    val url: String,
+    val height: Int,
+    val referer: String = "",
+)
+
+data class XXXTubeDetail(
+    val code: String,
+    val title: String,
+    val coverUrl: String,
+    val pageUrl: String,
+    val date: String,
+    val durationSeconds: Long,
+    val views: String,
+    val models: List<XXXTubeLink>,
+    val categories: List<XXXTubeLink>,
+    val tags: List<XXXTubeLink>,
+    val sources: List<XXXTubeSource>,
+    val related: List<HanimeInfo>,
+)

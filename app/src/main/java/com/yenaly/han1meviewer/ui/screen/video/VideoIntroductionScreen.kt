@@ -96,7 +96,7 @@ import com.yenaly.han1meviewer.ResolutionLinkMap
 import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
-import com.yenaly.han1meviewer.logic.model.HanimeVideo
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.ui.component.BottomSheetHandler
 import com.yenaly.han1meviewer.ui.component.ExpandableRichText

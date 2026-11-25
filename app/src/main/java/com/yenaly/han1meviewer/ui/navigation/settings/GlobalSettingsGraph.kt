@@ -7,11 +7,11 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
 import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRoute
-import com.yenaly.han1meviewer.ui.navigation.main.DailyCheckInRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.DailyCheckInRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.main.DownloadRoute
-import com.yenaly.han1meviewer.ui.navigation.main.DownloadRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.DownloadRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
-import com.yenaly.han1meviewer.ui.navigation.main.VideoRouteScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.navigation.main.VideoRouteScreen
 import com.yenaly.han1meviewer.ui.navigation.screen
 import com.yenaly.han1meviewer.ui.screen.history.UnifiedHistoryScreen
 import com.yenaly.han1meviewer.ui.screen.library.GifDownloadsScreen

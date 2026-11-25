@@ -21,6 +21,7 @@ import java.io.InputStream
 import java.io.OutputStream
 import java.security.MessageDigest
 import java.util.zip.ZipFile
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.HanimeNetwork
 
 internal object HDeltaUpdater {
 

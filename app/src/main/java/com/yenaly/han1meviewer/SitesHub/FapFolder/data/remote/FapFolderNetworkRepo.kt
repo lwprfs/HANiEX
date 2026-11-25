@@ -1,0 +1,1604 @@
+package com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote
+
+import android.util.Log
+import com.yenaly.han1meviewer.SitesHub.FapFolder.common.FapFolderConstants
+import com.yenaly.han1meviewer.SitesHub.FapFolder.common.FapFolderUrlUtils
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.local.FapFolderHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.local.FapFolderSessionCache
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderAlbumPage
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderAutocompleteSuggestion
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderComment
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderCommentsPage
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderFeedItem
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderFeedPage
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderGroup
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderGroupMembersPage
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderGroupRow
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderHomeExtras
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderLightboxResponse
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderLoadMoreRequest
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderMedia
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderPost
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderSearchResult
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderSearchTab
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderSuggestedCommunity
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderTrendingTag
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderUserProfile
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderAlbumParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderAutocompleteParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderCommentParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderFollowedCommunitiesParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderGroupParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderHomeExtrasParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderHtmlUtils
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderLightboxParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderPostParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderProfileParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderSearchParser
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.parser.FapFolderSessionParser
+import com.yenaly.han1meviewer.logic.state.PageLoadingState
+import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.logic.state.WebsiteState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import org.json.JSONObject
+import org.jsoup.Jsoup
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Request
+import okhttp3.ResponseBody
+import retrofit2.Response
+
+object FapFolderNetworkRepo {
+
+    private const val TAG = "FapFolderNetworkRepo"
+
+    private class SessionExpiredException : IllegalStateException("Session expired.")
+
+    private fun sessionLooksDead(
+        session: com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderSessionContext,
+    ): Boolean {
+        if (session.loggedIn) return false
+        if (session.viewer.username != null) return false
+        return FapFolderNetwork.hasAuthCookies()
+    }
+
+    private fun readText(response: Response<ResponseBody>): String {
+        return if (response.isSuccessful) {
+            response.body()?.string().orEmpty()
+        } else {
+            response.errorBody()?.string().orEmpty()
+        }
+    }
+
+    private suspend fun recheckPage(
+        url: String,
+    ): Pair<String, com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderSessionContext>? {
+        delay(FapFolderConstants.SESSION_RECHECK_DELAY_MS)
+        PageGetThrottle.await()
+        val response = FapFolderNetwork.service.getByUrl(url)
+        val body = readText(response)
+        if (!response.isSuccessful || body.isBlank()) return null
+        if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(body)) return null
+        val session = FapFolderSessionParser.parseAndCache(body, url)
+        return body to session
+    }
+
+    private object AjaxThrottle {
+        private val mutex = Mutex()
+        private var lastAt: Long = 0L
+        suspend fun await() = mutex.withLock {
+            val now = System.currentTimeMillis()
+            val elapsed = now - lastAt
+            if (elapsed in 0 until FapFolderConstants.MIN_GAP_BETWEEN_PAGES_MS) {
+                delay(FapFolderConstants.MIN_GAP_BETWEEN_PAGES_MS - elapsed)
+            }
+            lastAt = System.currentTimeMillis()
+        }
+    }
+
+    private object PageGetThrottle {
+        private val mutex = Mutex()
+        private var lastAt: Long = 0L
+        suspend fun await() = mutex.withLock {
+            val now = System.currentTimeMillis()
+            val elapsed = now - lastAt
+            if (elapsed in 0 until FapFolderConstants.MIN_GAP_BETWEEN_PAGE_GETS_MS) {
+                delay(FapFolderConstants.MIN_GAP_BETWEEN_PAGE_GETS_MS - elapsed)
+            }
+            lastAt = System.currentTimeMillis()
+        }
+    }
+
+    private object LightboxThrottle {
+        private val mutex = Mutex()
+        private var lastAt: Long = 0L
+        suspend fun await() = mutex.withLock {
+            val now = System.currentTimeMillis()
+            val elapsed = now - lastAt
+            if (elapsed in 0 until FapFolderConstants.MIN_GAP_BETWEEN_LIGHTBOX_MS) {
+                delay(FapFolderConstants.MIN_GAP_BETWEEN_LIGHTBOX_MS - elapsed)
+            }
+            lastAt = System.currentTimeMillis()
+        }
+    }
+
+    data class FirstPageSnapshot(
+        val items: List<FapFolderFeedItem>,
+        val hasMore: Boolean,
+        val get: String?,
+        val filter: String?,
+        val id: String?,
+        val type: String?,
+        val uid: String?,
+        val search: String?,
+        val hashtag: String?,
+
+        val nextOffset: Int = 1,
+    )
+
+    data class HomeExtras(
+        val trending: List<FapFolderTrendingTag>,
+        val suggested: List<FapFolderSuggestedCommunity>,
+    )
+
+    data class HomePageBundle(
+        val page: FapFolderFeedPage,
+        val extras: HomeExtras,
+    )
+
+    fun parseFirstPageFromHtml(
+        html: String,
+        pageUrl: String,
+        filter: String?,
+        fallbackId: String?,
+    ): FirstPageSnapshot {
+        val doc = Jsoup.parse(html, pageUrl)
+        val streamRoot = doc.selectFirst("div.js_posts_stream")
+        val attrs = FapFolderGroupParser.parseStreamAttrs(doc)
+        val uploads = FapFolderSessionCache.uploadsBase()
+
+        val posts = FapFolderPostParser.parsePostsFromList(
+            root = streamRoot ?: doc.body(),
+            baseUrl = pageUrl,
+            uploadsBase = uploads,
+            includeComments = false,
+        )
+        val items: List<FapFolderFeedItem> = posts.map { FapFolderFeedItem.Post(it) }
+
+        val seeMore = doc.selectFirst(".js_see-more-infinite")
+            ?: doc.selectFirst(".js_see-more")
+        val hasMore = seeMore != null && !seeMore.hasClass("done") && posts.isNotEmpty()
+
+        return FirstPageSnapshot(
+            items = items,
+            hasMore = hasMore,
+            get = attrs?.get,
+            filter = attrs?.filter ?: filter,
+            id = attrs?.id ?: fallbackId,
+            type = attrs?.type,
+            uid = attrs?.uid,
+            search = attrs?.search,
+            hashtag = attrs?.hashtag,
+            nextOffset = seeMore?.attr("data-offset")?.toIntOrNull()
+                ?: attrs?.offset
+                ?: 1,
+        )
+    }
+
+    private fun basePath(): String = FapFolderConstants.BASE_URL.trimEnd('/')
+    private fun uploadsBase(): String = FapFolderSessionCache.uploadsBase()
+
+    fun getPageWithExtras(path: String): Flow<WebsiteState<HomePageBundle>> = flow {
+        emit(WebsiteState.Loading)
+        val url = basePath() + path
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getByUrl(url)
+            var rawBody = readText(response)
+            val code = response.code()
+            if (!response.isSuccessful || rawBody.isNullOrBlank()) {
+                emit(errorState(code, rawBody))
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(WebsiteState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(WebsiteState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(WebsiteState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val doc = Jsoup.parse(rawBody, url)
+            val streamRoot = doc.selectFirst("div.js_posts_stream")
+            val feedGet = streamRoot?.attr("data-get")?.takeIf { it.isNotBlank() }
+                ?: FapFolderConstants.FEED_GET_NEWSFEED
+            val feedFilter = streamRoot?.attr("data-filter")?.takeIf { it.isNotBlank() }
+                ?: FapFolderConstants.FILTER_ALL
+            val feedId = streamRoot?.attr("data-id")?.takeIf { it.isNotBlank() }
+            val feedType = streamRoot?.attr("data-type")?.takeIf { it.isNotBlank() }
+            val feedUid = streamRoot?.attr("data-uid")?.takeIf { it.isNotBlank() }
+            val posts = FapFolderPostParser.parsePostsFromList(
+                root = streamRoot ?: doc.body(),
+                baseUrl = url,
+                uploadsBase = uploadsBase(),
+                includeComments = false,
+            )
+            val seeMore = doc.selectFirst(".js_see-more-infinite")
+                ?: doc.selectFirst(".js_see-more")
+            val hasMore = seeMore != null && !seeMore.hasClass("done") && posts.isNotEmpty()
+            val page = FapFolderFeedPage(
+                items = posts.map { FapFolderFeedItem.Post(it) },
+                session = session,
+                nextOffset = 1,
+                hasMore = hasMore,
+                feedGet = feedGet,
+                feedFilter = feedFilter,
+                feedId = feedId,
+                feedType = feedType,
+                feedUid = feedUid,
+            )
+            val extras = HomeExtras(
+                trending = FapFolderHomeExtrasParser.parseTrending(doc, url),
+                suggested = FapFolderHomeExtrasParser.parseSuggested(doc, url),
+            )
+            emit(WebsiteState.Success(HomePageBundle(page = page, extras = extras)))
+        } catch (e: Exception) {
+            Log.e(TAG, "getPageWithExtras failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getSavedPage(): Flow<WebsiteState<FapFolderFeedPage>> = flow {
+        emit(WebsiteState.Loading)
+        val url = basePath() + FapFolderConstants.PATH_SAVED
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getByUrl(url)
+            var rawBody = readText(response)
+            val code = response.code()
+            if (!response.isSuccessful || rawBody.isNullOrBlank()) {
+                emit(errorState(code, rawBody))
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(WebsiteState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(WebsiteState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(WebsiteState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val doc = Jsoup.parse(rawBody, url)
+            val streamRoot = doc.selectFirst("div.js_posts_stream")
+            val feedGet = streamRoot?.attr("data-get")?.takeIf { it.isNotBlank() }
+                ?: FapFolderConstants.FEED_GET_SAVED
+            val feedFilter = streamRoot?.attr("data-filter")?.takeIf { it.isNotBlank() }
+                ?: FapFolderConstants.FILTER_ALL
+            val feedId = streamRoot?.attr("data-id")?.takeIf { it.isNotBlank() }
+            val feedType = streamRoot?.attr("data-type")?.takeIf { it.isNotBlank() }
+            val feedUid = streamRoot?.attr("data-uid")?.takeIf { it.isNotBlank() }
+            val posts = FapFolderPostParser.parsePostsFromList(
+                root = streamRoot ?: doc.body(),
+                baseUrl = url,
+                uploadsBase = uploadsBase(),
+                includeComments = false,
+            )
+            val seeMore = doc.selectFirst(".js_see-more-infinite")
+                ?: doc.selectFirst(".js_see-more")
+            val hasMore = seeMore != null && !seeMore.hasClass("done") && posts.isNotEmpty()
+            emit(
+                WebsiteState.Success(
+                    FapFolderFeedPage(
+                        items = posts.map { FapFolderFeedItem.Post(it) },
+                        session = session,
+                        nextOffset = 1,
+                        hasMore = hasMore,
+                        feedGet = feedGet,
+                        feedFilter = feedFilter,
+                        feedId = feedId,
+                        feedType = feedType,
+                        feedUid = feedUid,
+                    )
+                )
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "getSavedPage failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getHomePageWithExtras(): Flow<WebsiteState<HomePageBundle>> =
+        getPageWithExtras(FapFolderConstants.PATH_HOME)
+
+    fun getHotPageWithExtras(): Flow<WebsiteState<HomePageBundle>> =
+        getPageWithExtras(FapFolderConstants.PATH_HOT)
+
+    fun getDiscoverPageWithExtras(): Flow<WebsiteState<HomePageBundle>> =
+        getPageWithExtras(FapFolderConstants.PATH_DISCOVER)
+
+    fun loadMore(
+        request: FapFolderLoadMoreRequest,
+    ): Flow<PageLoadingState<List<FapFolderFeedItem>>> = flow {
+        emit(PageLoadingState.Loading)
+        try {
+            var attempt = 0
+            while (true) {
+                attempt++
+                AjaxThrottle.await()
+                val response = FapFolderNetwork.service.loadMore(
+                    get = request.get,
+                    offset = request.offset,
+                    filter = request.filter,
+                    id = request.id,
+                    type = request.type,
+                    uid = request.uid,
+                    premfeed = request.premfeed,
+                    time = request.time,
+                    search = request.search,
+                    hashtag = request.hashtag,
+                )
+                val rawBody = readText(response)
+                if (!response.isSuccessful) {
+                    val message = when {
+                        FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody) ->
+                            "Cloudflare challenge."
+                        else -> "HTTP ${response.code()}"
+                    }
+                    emit(PageLoadingState.Error(IllegalStateException(message)))
+                    return@flow
+                }
+                if (rawBody.isBlank()) {
+                    emit(PageLoadingState.NoMoreData)
+                    return@flow
+                }
+                val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+                if (parsed == null) {
+
+                    if (attempt < FapFolderConstants.LOAD_MORE_MAX_ATTEMPTS) {
+                        delay(FapFolderConstants.LOAD_MORE_RETRY_DELAY_MS * attempt)
+                        continue
+                    }
+                    val message =
+                        if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody))
+                            "Cloudflare challenge."
+                        else "Unexpected response from FapFolder."
+                    emit(PageLoadingState.Error(IllegalStateException(message)))
+                    return@flow
+                }
+                if (parsed.has("callback") && !parsed.isNull("callback")) {
+                    if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                        emit(PageLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                        return@flow
+                    }
+                    emit(PageLoadingState.Error(IllegalStateException("Session expired. Sign in again.")))
+                    return@flow
+                }
+                val dataHtml = parsed.optString("data").takeIf { it.isNotBlank() }
+                if (dataHtml == null) {
+                    emit(PageLoadingState.NoMoreData)
+                    return@flow
+                }
+                val items = parseLoadMoreItems(dataHtml = dataHtml, request = request)
+                if (items.isEmpty()) emit(PageLoadingState.NoMoreData)
+                else emit(PageLoadingState.Success(items))
+                return@flow
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "loadMore failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun filterPosts(
+        filter: String,
+        id: String? = null,
+        offset: Int = 1,
+    ): Flow<PageLoadingState<List<FapFolderFeedItem>>> = flow {
+        emit(PageLoadingState.Loading)
+        try {
+            AjaxThrottle.await()
+            val response = FapFolderNetwork.service.filterPosts(
+                get = FapFolderConstants.FEED_GET_NEWSFEED,
+                filter = filter,
+                id = id,
+                offset = offset.takeIf { it > 1 },
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(PageLoadingState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            if (parsed.has("callback") && !parsed.isNull("callback")) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(PageLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(PageLoadingState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val postsHtml = parsed.optString("posts").takeIf { it.isNotBlank() }
+                ?: parsed.optString("data").takeIf { it.isNotBlank() }
+            if (postsHtml == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            val posts = FapFolderPostParser.parsePostsFromHtml(
+                html = postsHtml, baseUrl = basePath(),
+                uploadsBase = uploadsBase(), includeComments = false,
+            )
+            if (posts.isEmpty()) emit(PageLoadingState.NoMoreData)
+            else emit(PageLoadingState.Success(posts.map { FapFolderFeedItem.Post(it) }))
+        } catch (e: Exception) {
+            Log.e(TAG, "filterPosts failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun loadDedicatedFeed(path: String): Flow<PageLoadingState<List<FapFolderFeedItem>>> = flow {
+        emit(PageLoadingState.Loading)
+        val url = basePath() + path
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getByUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(PageLoadingState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(PageLoadingState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(PageLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(PageLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val doc = Jsoup.parse(rawBody, url)
+            val streamRoot = doc.selectFirst("div.js_posts_stream") ?: doc.body()
+            val posts = FapFolderPostParser.parsePostsFromList(
+                root = streamRoot, baseUrl = url,
+                uploadsBase = uploadsBase(), includeComments = false,
+            )
+            if (posts.isEmpty()) emit(PageLoadingState.NoMoreData)
+            else emit(PageLoadingState.Success(posts.map { FapFolderFeedItem.Post(it) }))
+        } catch (e: Exception) {
+            Log.e(TAG, "loadDedicatedFeed failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private fun parseLoadMoreItems(
+        dataHtml: String,
+        request: FapFolderLoadMoreRequest,
+    ): List<FapFolderFeedItem> {
+        val get = request.get
+        val base = basePath()
+        val uploads = uploadsBase()
+        return when {
+            get.startsWith("search_") -> FapFolderSearchParser.parseLoadMoreHtml(
+                htmlFragment = dataHtml, baseUrl = base,
+                tab = when {
+                    get.contains("user") -> FapFolderSearchTab.USERS
+                    get.contains("group") || get.contains("communit") ->
+                        FapFolderSearchTab.COMMUNITIES
+                    else -> FapFolderSearchTab.POSTS
+                },
+            )
+            request.search != null || request.hashtag != null ->
+                FapFolderSearchParser.parseLoadMoreHtml(
+                    htmlFragment = dataHtml, baseUrl = base,
+                    tab = FapFolderSearchTab.POSTS,
+                )
+            get == "album_photos" -> FapFolderAlbumParser.parseAlbumFromHtml(
+                html = dataHtml, baseUrl = base, uploadsBase = uploads,
+            ).map { image -> wrapImageAsFeedItem(image) }
+            get == FapFolderConstants.FEED_GET_POSTS_PROFILE ||
+                get == FapFolderConstants.FEED_GET_POSTS_GROUP ->
+                FapFolderPostParser.parsePostsFromHtml(
+                    html = dataHtml, baseUrl = base,
+                    uploadsBase = uploads, includeComments = false,
+                ).map { FapFolderFeedItem.Post(it) }
+            get == "members" -> FapFolderGroupParser.parseMemberRows(
+                Jsoup.parseBodyFragment(dataHtml, base), base,
+            ).map { FapFolderFeedItem.User(it) }
+            get == "profile_groups" -> FapFolderGroupParser.parseGroupRows(
+                Jsoup.parseBodyFragment(dataHtml, base), base,
+            ).map { FapFolderFeedItem.Community(it) }
+            get == "followers" || get == "following" || get == "users" ->
+                FapFolderSearchParser.parseUserRows(
+                    Jsoup.parseBodyFragment(dataHtml, base), base,
+                ).map { FapFolderFeedItem.User(it) }
+            get == "communities" -> FapFolderSearchParser.parseCommunityRows(
+                Jsoup.parseBodyFragment(dataHtml, base), base,
+            ).map { FapFolderFeedItem.Community(it) }
+            get == FapFolderConstants.FEED_GET_SEARCH ->
+                FapFolderSearchParser.parseLoadMoreHtml(
+                    htmlFragment = dataHtml, baseUrl = base,
+                    tab = FapFolderSearchTab.POSTS,
+                )
+            get == FapFolderConstants.FEED_GET_PHOTOS_TAB && request.type == "group" -> {
+                val images = FapFolderAlbumParser.parseAlbumFromHtml(
+                    html = dataHtml, baseUrl = base, uploadsBase = uploads,
+                )
+                if (images.isNotEmpty()) {
+                    images.map { image -> wrapImageAsFeedItem(image) }
+                } else {
+                    val doc = Jsoup.parseBodyFragment(dataHtml, base)
+                    val panel = doc.selectFirst("div.panel-photos") ?: doc.body()
+                    FapFolderProfileParser.parsePhotoTiles(panel).map { tile ->
+                        wrapImageAsFeedItem(
+                            FapFolderMedia.Image(
+                                photoId = tile.photoId,
+                                fullUrl = tile.fullUrl,
+                                previewUrl = tile.previewUrl,
+                                context = "photos",
+                                alt = tile.alt,
+                            )
+                        )
+                    }
+                }
+            }
+
+            get == FapFolderConstants.FEED_GET_VIDEOS_TAB -> {
+                val doc = Jsoup.parseBodyFragment(dataHtml, base)
+                val tiles = FapFolderProfileParser.parseVideoTiles(doc.body())
+                if (tiles.isNotEmpty()) {
+                    tiles.map { wrapVideoTileAsFeedItem(it) }
+                } else {
+                    FapFolderPostParser.parsePostsFromHtml(
+                        html = dataHtml, baseUrl = base,
+                        uploadsBase = uploads, includeComments = false,
+                    ).map { FapFolderFeedItem.Post(it) }
+                }
+            }
+            else -> FapFolderPostParser.parsePostsFromHtml(
+                html = dataHtml, baseUrl = base,
+                uploadsBase = uploads, includeComments = false,
+            ).map { FapFolderFeedItem.Post(it) }
+        }
+    }
+
+    private fun wrapVideoTileAsFeedItem(
+        tile: FapFolderProfileParser.VideoTile,
+    ): FapFolderFeedItem.Post {
+        val id = tile.postId ?: (tile.postUrl.hashCode().toLong() and 0x7fffffffL)
+        val video = FapFolderMedia.Video(
+            videoId = null,
+            onPlayId = null,
+            playUrl = "",
+            posterUrl = tile.thumbnailUrl,
+            durationSeconds = null,
+            aspectRatio = null,
+            adEligible = false,
+            fileExtension = null,
+        )
+        val post = FapFolderPost(
+            postId = id,
+            slug = tile.postUrl.trimEnd('/').substringAfterLast('/').takeIf { it.isNotBlank() },
+            permalink = tile.postUrl,
+            author = com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderAuthor(
+                uid = null, username = null, groupSlug = null, displayName = "",
+                profileUrl = null, avatarUrl = null, isGold = false, isAnonymous = true,
+            ),
+            uploaderUsername = null, uploaderUrl = null, uploaderIsGold = false,
+            action = null, postedAtIso = "", bodyHtml = "",
+            bodyPlain = tile.title.orEmpty(),
+            hashtags = emptyList(), media = listOf(video),
+            variants = setOf(com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.PostVariant.VIDEO),
+            isPremium = false,
+            reactions = com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.ReactionCount.EMPTY,
+            commentCount = 0, shareCount = 0, viewCount = null,
+        )
+        return FapFolderFeedItem.Post(post)
+    }
+
+    private fun wrapImageAsFeedItem(image: FapFolderMedia.Image): FapFolderFeedItem.Post {
+        val post = FapFolderPost(
+            postId = image.photoId ?: 0L,
+            slug = null,
+            permalink = null,
+            author = com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.FapFolderAuthor(
+                uid = null, username = null, groupSlug = null, displayName = "",
+                profileUrl = null, avatarUrl = null, isGold = false, isAnonymous = true,
+            ),
+            uploaderUsername = null, uploaderUrl = null, uploaderIsGold = false,
+            action = null, postedAtIso = "", bodyHtml = "", bodyPlain = "",
+            hashtags = emptyList(), media = listOf(image),
+            variants = setOf(com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.PostVariant.SINGLE_IMAGE),
+            isPremium = false,
+            reactions = com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.ReactionCount.EMPTY,
+            commentCount = 0, shareCount = 0, viewCount = null,
+        )
+        return FapFolderFeedItem.Post(post)
+    }
+
+    fun getSearchPage(
+        query: String,
+        isHashtag: Boolean,
+        tab: FapFolderSearchTab = FapFolderSearchTab.POSTS,
+        page: Int = 1,
+    ): Flow<WebsiteState<FapFolderSearchResult>> = flow {
+        emit(WebsiteState.Loading)
+        val path = if (isHashtag) FapFolderUrlUtils.toHashtagUrlPath(query)
+        else FapFolderUrlUtils.toSearchUrlPath(query, tab)
+        val url = basePath() + path
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getByUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(errorState(response.code(), rawBody))
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(WebsiteState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(WebsiteState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(WebsiteState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val result = FapFolderSearchParser.parseSearchPage(
+                html = rawBody, pageUrl = url, query = query,
+                isHashtag = isHashtag, requestedTab = tab,
+            )
+            emit(WebsiteState.Success(result))
+        } catch (e: Exception) {
+            Log.e(TAG, "getSearchPage failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun autocomplete(query: String): Flow<WebsiteState<String>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.autocompleteSearch(query)
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed == null) {
+                emit(WebsiteState.Error(IllegalStateException("Malformed autocomplete response.")))
+                return@flow
+            }
+            if (parsed.has("callback") && !parsed.isNull("callback")) {
+                emit(WebsiteState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val resultsHtml = parsed.optString("results").takeIf { it.isNotBlank() }
+            if (resultsHtml == null) {
+                emit(WebsiteState.Success(""))
+            } else {
+                emit(WebsiteState.Success(resultsHtml))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "autocomplete failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun autocompleteRows(
+        query: String,
+    ): Flow<WebsiteState<List<FapFolderAutocompleteSuggestion>>> = flow {
+        emit(WebsiteState.Loading)
+        val base = basePath()
+        try {
+            val response = FapFolderNetwork.service.autocompleteSearch(query)
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(errorState(response.code(), rawBody))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed == null) {
+                emit(WebsiteState.Error(IllegalStateException("Malformed autocomplete response.")))
+                return@flow
+            }
+            if (parsed.has("callback") && !parsed.isNull("callback")) {
+                emit(WebsiteState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val resultsHtml = parsed.optString("results").takeIf { it.isNotBlank() }
+            val rows = if (resultsHtml == null) {
+                emptyList()
+            } else {
+                FapFolderAutocompleteParser.parse(resultsHtml, base)
+            }
+            emit(WebsiteState.Success(rows))
+        } catch (e: Exception) {
+            Log.e(TAG, "autocompleteRows failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getPostDetail(slugOrId: String): Flow<VideoLoadingState<FapFolderPost>> = flow {
+        emit(VideoLoadingState.Loading)
+        val slug = slugOrId.trim()
+        val url = if (slug.startsWith("http")) slug else basePath() + "/posts/$slug"
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getPostUrl(url)
+
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(
+                    if (response.code() == 404) VideoLoadingState.NoContent
+                    else VideoLoadingState.Error(IllegalStateException("HTTP ${response.code()}"))
+                )
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(VideoLoadingState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(VideoLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(VideoLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+
+            val doc = Jsoup.parse(rawBody, url)
+            val postEl = doc.selectFirst("div.post[data-id]")
+            if (postEl == null) {
+                emit(VideoLoadingState.NoContent)
+                return@flow
+            }
+            val post = FapFolderPostParser.parsePost(
+                postEl, url, uploadsBase(), parseComments = false
+            )
+            if (post == null) {
+                emit(VideoLoadingState.NoContent)
+                return@flow
+            }
+
+            val isVideo = post.variants.contains(
+                com.yenaly.han1meviewer.SitesHub.FapFolder.data.model.PostVariant.VIDEO
+            )
+            runCatching {
+                FapFolderHistoryRepo.saveProgress(
+                    postId = post.postId,
+                    title = post.bodyPlain.take(120).ifBlank { "FapFolder post" },
+                    coverUrl = post.primaryImage?.fullUrl
+                        ?: post.primaryVideo?.posterUrl
+                        ?: post.firstGallery?.photos?.firstOrNull()?.fullUrl.orEmpty(),
+                    authorName = post.author.displayName,
+                    postSlug = post.slug,
+                    isVideo = isVideo,
+                    positionMs = 0L,
+                    durationMs = 0L,
+                    isPlaying = false,
+                )
+            }.onFailure { Log.w(TAG, "saveProgress failed: ${it.message}") }
+
+            emit(VideoLoadingState.Success(post))
+        } catch (e: Exception) {
+            Log.e(TAG, "getPostDetail failed", e)
+            emit(VideoLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun resolveVideoPlayUrl(playUrl: String): Flow<WebsiteState<String>> = flow {
+        emit(WebsiteState.Loading)
+        val cleaned = playUrl
+            .replace("&amp;", "&")
+            .replace("&#38;", "&")
+            .replace("&#x26;", "&")
+            .trim()
+        if (cleaned.isBlank()) {
+            emit(WebsiteState.Error(IllegalArgumentException("Empty play URL")))
+            return@flow
+        }
+        try {
+
+            val expEpoch = cleaned.toHttpUrlOrNull()?.queryParameter("exp")?.toLongOrNull()
+            if (expEpoch != null && expEpoch * 1000L <= System.currentTimeMillis()) {
+                emit(
+                    WebsiteState.Error(
+                        IllegalStateException("Video link expired. Reload the post to refresh it.")
+                    )
+                )
+                return@flow
+            }
+            val request = Request.Builder()
+                .url(cleaned)
+                .get()
+                .header("referer", FapFolderConstants.HEADER_REFERER)
+                .header("origin", FapFolderConstants.HEADER_ORIGIN)
+                .header("accept", "*/*")
+                .header("accept-encoding", "identity")
+                .header("range", "bytes=0-")
+                .header("user-agent", FapFolderConstants.USER_AGENT_FAPFOLDER)
+                .build()
+
+            FapFolderNetwork.sharedOkHttpClient
+                .newBuilder()
+                .followRedirects(false)
+                .followSslRedirects(false)
+                .build()
+                .newCall(request)
+                .execute()
+                .use { resp ->
+                    val code = resp.code
+                    val location = resp.header("Location")
+                    if (code !in 300..399 || location.isNullOrBlank()) {
+                        val message = "No redirect from /video/play (HTTP $code)"
+                        val errBody = if (code == 403 || code == 503 || code == 200) {
+                            runCatching { resp.body.string() }.getOrDefault("")
+                        } else ""
+                        val isChallenge = errBody.isNotBlank() &&
+                                FapFolderHtmlUtils.looksLikeCloudflareChallenge(errBody)
+
+                        val isSessionExpired = !isChallenge &&
+                                FapFolderNetwork.hasAuthCookies() &&
+                                (code == 401 || code == 200)
+                        emit(
+                            WebsiteState.Error(
+                                when {
+                                    isChallenge -> IllegalStateException("Cloudflare challenge.")
+                                    isSessionExpired -> SessionExpiredException()
+                                    else -> IllegalStateException(message)
+                                }
+                            )
+                        )
+                        return@use
+                    }
+                    emit(WebsiteState.Success(location))
+                }
+        } catch (e: Exception) {
+            Log.e(TAG, "resolveVideoPlayUrl failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getGroupPage(slug: String): Flow<VideoLoadingState<FapFolderGroup>> = flow {
+        emit(VideoLoadingState.Loading)
+        val url = basePath() + "/groups/${slug.trim('/')}"
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getGroupUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(
+                    if (response.code() == 404) VideoLoadingState.NoContent
+                    else VideoLoadingState.Error(IllegalStateException("HTTP ${response.code()}"))
+                )
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(VideoLoadingState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(VideoLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(VideoLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val group = FapFolderGroupParser.parseGroup(rawBody, url)
+            if (group == null) emit(VideoLoadingState.NoContent)
+            else emit(VideoLoadingState.Success(group))
+        } catch (e: Exception) {
+            Log.e(TAG, "getGroupPage failed", e)
+            emit(VideoLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getProfilePage(
+        pathOrUsername: String,
+    ): Flow<VideoLoadingState<FapFolderUserProfile>> = flow {
+        emit(VideoLoadingState.Loading)
+        val clean = pathOrUsername.trim('/')
+        val url = if (clean.startsWith("http")) clean else basePath() + "/$clean"
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getProfileUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(
+                    if (response.code() == 404) VideoLoadingState.NoContent
+                    else VideoLoadingState.Error(IllegalStateException("HTTP ${response.code()}"))
+                )
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(VideoLoadingState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(VideoLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(VideoLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val profile = FapFolderProfileParser.parseProfile(rawBody, url)
+            if (profile == null) emit(VideoLoadingState.NoContent)
+            else emit(VideoLoadingState.Success(profile))
+        } catch (e: Exception) {
+            Log.e(TAG, "getProfilePage failed", e)
+            emit(VideoLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getAlbumPage(
+        albumId: String,
+    ): Flow<VideoLoadingState<FapFolderAlbumPage>> = flow {
+        emit(VideoLoadingState.Loading)
+        val url = basePath() + "/photos/${albumId.trim('/')}"
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getAlbumUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(
+                    if (response.code() == 404) VideoLoadingState.NoContent
+                    else VideoLoadingState.Error(IllegalStateException("HTTP ${response.code()}"))
+                )
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(VideoLoadingState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(VideoLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(VideoLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val album = FapFolderAlbumParser.parseAlbum(rawBody, url, uploadsBase())
+            if (album == null) emit(VideoLoadingState.NoContent)
+            else emit(VideoLoadingState.Success(album))
+        } catch (e: Exception) {
+            Log.e(TAG, "getAlbumPage failed", e)
+            emit(VideoLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun openLightbox(
+        photoId: Long,
+        context: String,
+    ): Flow<WebsiteState<FapFolderLightboxResponse>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            LightboxThrottle.await()
+            val response = FapFolderNetwork.service.lightbox(
+                photoId = photoId.toString(),
+                context = context,
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = FapFolderLightboxParser.parse(
+                rawJson = rawBody,
+                baseUrl = basePath(),
+                uploadsBase = uploadsBase(),
+                requestedPhotoId = photoId,
+            )
+            val err = parsed.error
+            if (err != null) {
+                emit(WebsiteState.Error(err))
+                return@flow
+            }
+            if (parsed.hasCallback) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(WebsiteState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(WebsiteState.Error(IllegalStateException("Session expired. Sign in again.")))
+                return@flow
+            }
+            val lb = parsed.response
+            if (lb == null) {
+                emit(WebsiteState.Error(IllegalStateException("Empty lightbox response.")))
+            } else {
+                val resolved = lb.copy(
+                    nextPhotoSource = FapFolderUrlUtils.resolveLightboxSource(
+                        lb.nextPhotoSource, uploadsBase(),
+                    ),
+                    prevPhotoSource = FapFolderUrlUtils.resolveLightboxSource(
+                        lb.prevPhotoSource, uploadsBase(),
+                    ),
+                )
+                emit(WebsiteState.Success(resolved))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "openLightbox failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getComments(
+        postId: Long,
+        filter: String = FapFolderCommentParser.defaultFilterValue(),
+        page: Int = 1,
+    ): Flow<PageLoadingState<FapFolderCommentsPage>> = flow {
+        emit(PageLoadingState.Loading)
+        try {
+            AjaxThrottle.await()
+            val response = FapFolderNetwork.service.filterComments(
+                get = filter,
+                id = postId.toString(),
+                offset = page.takeIf { it > 1 },
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(PageLoadingState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            if (parsed.has("callback") && !parsed.isNull("callback")) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(PageLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(PageLoadingState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val commentsHtml = parsed.optString("comments").takeIf { it.isNotBlank() }
+            if (commentsHtml == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            val comments = FapFolderCommentParser.parseCommentsFromHtml(
+                commentsHtml, basePath(), uploadsBase()
+            )
+            if (comments.isEmpty()) {
+                emit(PageLoadingState.NoMoreData)
+            } else {
+                emit(
+                    PageLoadingState.Success(
+                        FapFolderCommentsPage(
+                            postId = postId,
+                            comments = comments,
+                            hasMore = true,
+                            nextOffset = page + 1,
+                            activeFilter = filter,
+                        )
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getComments failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun loadMoreReplies(
+        postId: Long,
+        commentId: Long,
+        offset: Int = 1,
+    ): Flow<PageLoadingState<List<FapFolderComment>>> = flow {
+        emit(PageLoadingState.Loading)
+        try {
+            AjaxThrottle.await()
+            val response = FapFolderNetwork.service.filterComments(
+                get = FapFolderCommentParser.FILTER_MOST_RECENT,
+                id = commentId.toString(),
+                offset = offset.takeIf { it > 1 },
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(PageLoadingState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            if (parsed.has("callback") && !parsed.isNull("callback")) {
+                emit(PageLoadingState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val html = parsed.optString("comments").takeIf { it.isNotBlank() }
+                ?: parsed.optString("data").takeIf { it.isNotBlank() }
+            if (html == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            val comments = FapFolderCommentParser.parseCommentsFromHtml(
+                html, basePath(), uploadsBase()
+            )
+            if (comments.isEmpty()) {
+                emit(PageLoadingState.NoMoreData)
+            } else {
+                emit(PageLoadingState.Success(comments))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "loadMoreReplies failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getGroupMembers(
+        groupId: Long?,
+        slug: String,
+        page: Int = 1,
+    ): Flow<PageLoadingState<FapFolderGroupMembersPage>> = flow {
+        emit(PageLoadingState.Loading)
+        val url = basePath() + "/groups/${slug.trim('/')}/members" +
+                if (page > 1) "/page/$page/" else ""
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getByUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(PageLoadingState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(PageLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(PageLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val doc = Jsoup.parse(rawBody, url)
+            val rows = FapFolderGroupParser.parseMemberRows(doc, url)
+            if (rows.isEmpty()) {
+                emit(PageLoadingState.NoMoreData)
+            } else {
+                emit(
+                    PageLoadingState.Success(
+                        FapFolderGroupMembersPage(
+                            groupId = groupId,
+                            members = rows,
+                            hasMore = rows.size >= 20,
+                            nextOffset = page + 1,
+                        )
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getGroupMembers failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun getFollowedCommunitiesFirstPage(
+        username: String,
+    ): Flow<VideoLoadingState<FapFolderFollowedCommunitiesParser.FirstPage>> = flow {
+        emit(VideoLoadingState.Loading)
+        val clean = username.trim('/')
+        if (clean.isBlank()) {
+            emit(VideoLoadingState.NoContent)
+            return@flow
+        }
+        val url = basePath() + "/$clean/groups"
+        try {
+            PageGetThrottle.await()
+            val response = FapFolderNetwork.service.getByUrl(url)
+            var rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(
+                    if (response.code() == 404) VideoLoadingState.NoContent
+                    else VideoLoadingState.Error(IllegalStateException("HTTP ${response.code()}"))
+                )
+                return@flow
+            }
+            if (FapFolderHtmlUtils.looksLikeCloudflareChallenge(rawBody)) {
+                emit(VideoLoadingState.Error(IllegalStateException("Cloudflare challenge.")))
+                return@flow
+            }
+            var session = FapFolderSessionParser.parseAndCache(rawBody, url)
+            if (sessionLooksDead(session)) {
+                val recheck = recheckPage(url)
+                if (recheck != null) {
+                    rawBody = recheck.first
+                    session = recheck.second
+                }
+            }
+            if (sessionLooksDead(session)) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(VideoLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(VideoLoadingState.Error(SessionExpiredException()))
+                return@flow
+            }
+            val parsed = FapFolderFollowedCommunitiesParser.parseFirstPage(rawBody, url)
+            emit(VideoLoadingState.Success(parsed))
+        } catch (e: Exception) {
+            Log.e(TAG, "getFollowedCommunitiesFirstPage failed", e)
+            emit(VideoLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun loadMoreFollowedCommunities(
+        userId: Long,
+        offset: Int,
+    ): Flow<PageLoadingState<List<FapFolderGroupRow>>> = flow {
+        emit(PageLoadingState.Loading)
+        if (userId <= 0L || offset <= 0) {
+            emit(PageLoadingState.NoMoreData)
+            return@flow
+        }
+        try {
+            AjaxThrottle.await()
+            val response = FapFolderNetwork.service.loadMore(
+                get = "profile_groups",
+                offset = offset,
+                filter = null,
+                id = null,
+                type = null,
+                uid = userId.toString(),
+                premfeed = 0,
+                time = -1,
+                search = null,
+                hashtag = null,
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful || rawBody.isBlank()) {
+                emit(PageLoadingState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            if (parsed.has("callback") && !parsed.isNull("callback")) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(PageLoadingState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(PageLoadingState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val dataHtml = parsed.optString("data").takeIf { it.isNotBlank() }
+            if (dataHtml == null) {
+                emit(PageLoadingState.NoMoreData)
+                return@flow
+            }
+            val items = FapFolderFollowedCommunitiesParser.parseAjaxFragment(
+                htmlFragment = dataHtml, baseUrl = basePath(),
+            )
+            if (items.isEmpty()) {
+                emit(PageLoadingState.NoMoreData)
+            } else {
+                emit(PageLoadingState.Success(items))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "loadMoreFollowedCommunities failed", e)
+            emit(PageLoadingState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun reactToPost(
+        postId: Long,
+        action: String,
+        reaction: String? = null,
+    ): Flow<WebsiteState<Unit>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.react(
+                action = action,
+                id = postId.toString(),
+                reaction = reaction,
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed != null && parsed.has("callback") && !parsed.isNull("callback")) {
+                emit(WebsiteState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            if (parsed?.optBoolean("error", false) == true) {
+                emit(
+                    WebsiteState.Error(
+                        IllegalStateException(parsed.optString("message", "Action failed."))
+                    )
+                )
+                return@flow
+            }
+            emit(WebsiteState.Success(Unit))
+        } catch (e: Exception) {
+            Log.e(TAG, "reactToPost failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun reactToComment(
+        commentId: Long,
+        action: String,
+        reaction: String? = null,
+    ): Flow<WebsiteState<Unit>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.react(
+                action = action,
+                id = commentId.toString(),
+                reaction = reaction,
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed != null && parsed.has("callback") && !parsed.isNull("callback")) {
+                emit(WebsiteState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            if (parsed?.optBoolean("error", false) == true) {
+                emit(
+                    WebsiteState.Error(
+                        IllegalStateException(parsed.optString("message", "Action failed."))
+                    )
+                )
+                return@flow
+            }
+            emit(WebsiteState.Success(Unit))
+        } catch (e: Exception) {
+            Log.e(TAG, "reactToComment failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun joinGroup(groupId: Long): Flow<WebsiteState<Unit>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.connectAction(
+                action = FapFolderConstants.GROUP_ACTION_JOIN,
+                id = groupId.toString(),
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed?.optBoolean("error", false) == true) {
+                emit(
+                    WebsiteState.Error(
+                        IllegalStateException(parsed.optString("message", "Join failed."))
+                    )
+                )
+                return@flow
+            }
+            emit(WebsiteState.Success(Unit))
+        } catch (e: Exception) {
+            Log.e(TAG, "joinGroup failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun leaveGroup(groupId: Long): Flow<WebsiteState<Unit>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.connectAction(
+                action = FapFolderConstants.GROUP_ACTION_LEAVE,
+                id = groupId.toString(),
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            emit(WebsiteState.Success(Unit))
+        } catch (e: Exception) {
+            Log.e(TAG, "leaveGroup failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun followUser(uid: Long): Flow<WebsiteState<Unit>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.connectAction(
+                action = FapFolderConstants.FOLLOW_ACTION_FOLLOW,
+                id = uid.toString(),
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            emit(WebsiteState.Success(Unit))
+        } catch (e: Exception) {
+            Log.e(TAG, "followUser failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun unfollowUser(uid: Long): Flow<WebsiteState<Unit>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.connectAction(
+                action = FapFolderConstants.FOLLOW_ACTION_UNFOLLOW,
+                id = uid.toString(),
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            emit(WebsiteState.Success(Unit))
+        } catch (e: Exception) {
+            Log.e(TAG, "unfollowUser failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    fun postComment(
+        postId: Long,
+        message: String,
+    ): Flow<WebsiteState<FapFolderComment>> = flow {
+        emit(WebsiteState.Loading)
+        try {
+            val response = FapFolderNetwork.service.postComment(
+                handle = "post",
+                id = postId.toString(),
+                message = message,
+            )
+            val rawBody = readText(response)
+            if (!response.isSuccessful) {
+                emit(WebsiteState.Error(IllegalStateException("HTTP ${response.code()}")))
+                return@flow
+            }
+            val parsed = runCatching { JSONObject(rawBody) }.getOrNull()
+            if (parsed != null && parsed.has("callback") && !parsed.isNull("callback")) {
+                if (FapFolderSessionGuard.recoverAfterDeadSession()) {
+                    emit(WebsiteState.Error(IllegalStateException("Signed in again. Please retry.")))
+                    return@flow
+                }
+                emit(WebsiteState.Error(IllegalStateException("Session expired.")))
+                return@flow
+            }
+            val commentHtml = parsed?.optString("comment")?.takeIf { it.isNotBlank() }
+            if (commentHtml == null) {
+                emit(WebsiteState.Error(IllegalStateException("Empty comment response.")))
+                return@flow
+            }
+            val comment = FapFolderCommentParser.parseCommentsFromHtml(
+                commentHtml, basePath(), uploadsBase()
+            ).firstOrNull()
+            if (comment == null) {
+                emit(WebsiteState.Error(IllegalStateException("Empty comment response.")))
+            } else {
+                emit(WebsiteState.Success(comment))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "postComment failed", e)
+            emit(WebsiteState.Error(e))
+        }
+    }.flowOn(Dispatchers.IO)
+
+    private fun errorState(code: Int, body: String?): WebsiteState<Nothing> {
+        return when {
+            (code == 403 || code == 503 || code == 429) &&
+                    FapFolderHtmlUtils.looksLikeCloudflareChallenge(body) ->
+                WebsiteState.Error(IllegalStateException("Cloudflare challenge."))
+            code == 403 ->
+                WebsiteState.Error(IllegalStateException("Forbidden (HTTP 403)."))
+            code == 404 ->
+                WebsiteState.Error(IllegalStateException("Not found (HTTP 404)."))
+            code == 429 ->
+                WebsiteState.Error(IllegalStateException("Rate limited (HTTP 429)."))
+            code in 500..599 ->
+                WebsiteState.Error(IllegalStateException("Server error (HTTP $code)."))
+            else ->
+                WebsiteState.Error(IllegalStateException("HTTP $code"))
+        }
+    }
+}

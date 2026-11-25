@@ -79,21 +79,21 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.preference.PreferenceManager
 import com.google.android.material.snackbar.Snackbar
-import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
-import com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork
-import com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork
-import com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork
-import com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork
-import com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork
-import com.yenaly.han1meviewer.RedGifs.data.remote.RedGifsNetwork
-import com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork
-import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
-import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
-import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
-import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork
+import com.yenaly.han1meviewer.SitesHub.Buondua.data.remote.BuonduaNetwork
+import com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.remote.CosplayteleNetwork
+import com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork
+import com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork
+import com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork
+import com.yenaly.han1meviewer.SitesHub.FuckingSession.data.remote.FuckingSessionNetwork
+import com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsNetwork
+import com.yenaly.han1meviewer.SitesHub.XXXTube.data.remote.XXXTubeNetwork
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.SitesHub.SupJav.data.remote.SupJavNetwork
+import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoNetwork
+import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterNetwork
 import com.yenaly.han1meviewer.HanimeConstants
-import com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences
-import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirSitePreferences
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.FirebaseConstants
@@ -101,7 +101,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.base.BaseFragmentActivity
 import com.yenaly.han1meviewer.logout
-import com.yenaly.han1meviewer.logic.network.HanimeNetwork
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.ui.component.SiteSwitchDialog
 import com.yenaly.han1meviewer.ui.bridge.VideoPageHost
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
@@ -113,7 +113,7 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.navigation.main.HomeRoute
 import com.yenaly.han1meviewer.ui.navigation.main.VideoRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
-import com.yenaly.han1meviewer.ui.screen.home.homepage.HomePageViewModel
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.homepage.HomePageViewModel
 import com.yenaly.han1meviewer.ui.screen.main.MainActivityContent
 import com.yenaly.han1meviewer.videoUrlRegex
 import com.yenaly.han1meviewer.util.textFromClipboard
@@ -126,10 +126,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import com.yenaly.han1meviewer.util.HAnalytics
 import kotlinx.coroutines.flow.MutableSharedFlow
 import java.util.Locale
-import com.yenaly.han1meviewer.MissAV.common.MissAvConstants
-import com.yenaly.han1meviewer.MissAV.data.remote.MissAvNetwork
-import com.yenaly.han1meviewer.HentaiMama.common.HentaiMamaConstants
-import com.yenaly.han1meviewer.HentaiMama.data.remote.HentaiMamaNetwork
+import com.yenaly.han1meviewer.SitesHub.MissAV.common.MissAvConstants
+import com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvNetwork
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.common.HentaiMamaConstants
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.remote.HentaiMamaNetwork
 
 class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
@@ -447,7 +447,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
             }
 
             SiteType.WUMAOBI -> {
-                com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork()
+                com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork()
             }
         }
 

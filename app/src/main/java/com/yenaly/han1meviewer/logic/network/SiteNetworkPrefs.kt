@@ -1,8 +1,8 @@
 package com.yenaly.han1meviewer.logic.network
 
 import androidx.core.content.edit
-import com.yenaly.han1meviewer.OnAir.common.OnAirConstants
-import com.yenaly.han1meviewer.OnAir.common.OnAirSitePreferences
+import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirConstants
+import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirSitePreferences
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys

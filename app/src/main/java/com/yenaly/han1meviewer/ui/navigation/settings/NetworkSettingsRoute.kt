@@ -34,20 +34,20 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import com.yenaly.han1meviewer.EMPTY_STRING
-import com.yenaly.han1meviewer.FapFolder.data.remote.FapFolderNetwork
-import com.yenaly.han1meviewer.HentaiMama.data.remote.HentaiMamaNetwork
-import com.yenaly.han1meviewer.MissAV.data.remote.MissAvNetwork
-import com.yenaly.han1meviewer.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.remote.HentaiMamaNetwork
+import com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvNetwork
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
-import com.yenaly.han1meviewer.SupJav.data.remote.SupJavNetwork
-import com.yenaly.han1meviewer.RouVideo.data.remote.RouVideoNetwork
-import com.yenaly.han1meviewer.XHamster.data.remote.XHamsterNetwork
-import com.yenaly.han1meviewer.Buondua.data.remote.BuonduaNetwork
+import com.yenaly.han1meviewer.SitesHub.SupJav.data.remote.SupJavNetwork
+import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoNetwork
+import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterNetwork
+import com.yenaly.han1meviewer.SitesHub.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.logic.network.HDns
 import com.yenaly.han1meviewer.logic.network.HProxySelector
-import com.yenaly.han1meviewer.logic.network.HanimeNetwork
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logic.network.MirrorLatency
 import com.yenaly.han1meviewer.logic.network.MirrorProbeResult
 import com.yenaly.han1meviewer.logic.network.SiteNetworkPrefs
@@ -87,13 +87,13 @@ private fun rebuildAllNetworks() {
     runCatching { XHamsterNetwork.rebuildNetwork() }
     runCatching { FapFolderNetwork.rebuildNetwork() }
     runCatching { BuonduaNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.Cosplaytele.data.remote.CosplayteleNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.Coser.data.remote.CoserNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.Coomer.data.remote.CoomerNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.FullVideos.data.remote.FullVideosNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.FuckingSession.data.remote.FuckingSessionNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork() }
-    runCatching { com.yenaly.han1meviewer.XXXTube.data.remote.XXXTubeNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.remote.CosplayteleNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.FuckingSession.data.remote.FuckingSessionNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.XXXTube.data.remote.XXXTubeNetwork.rebuildNetwork() }
 }
 
 @SuppressLint("LocalContextGetResourceValueCall")

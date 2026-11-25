@@ -55,78 +55,78 @@
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".HentaiMama.cloudflare.HentaiMamaCloudflareActivity"
+            android:name=".SitesHub.HentaiMama.cloudflare.HentaiMamaCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".MissAV.cloudflare.MissAvCloudflareActivity"
+            android:name=".SitesHub.MissAV.cloudflare.MissAvCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".SupJav.cloudflare.SupJavCloudflareActivity"
+            android:name=".SitesHub.SupJav.cloudflare.SupJavCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".Buondua.cloudflare.BuonduaCloudflareActivity"
+            android:name=".SitesHub.Buondua.cloudflare.BuonduaCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".Cosplaytele.cloudflare.CosplayteleCloudflareActivity"
+            android:name=".SitesHub.Cosplaytele.cloudflare.CosplayteleCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".Coser.cloudflare.CoserCloudflareActivity"
+            android:name=".SitesHub.Coser.cloudflare.CoserCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".Wumaobi.cloudflare.WumaobiCloudflareActivity"
+            android:name=".SitesHub.Wumaobi.cloudflare.WumaobiCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".FullVideos.cloudflare.FullVideosCloudflareActivity"
+            android:name=".SitesHub.FullVideos.cloudflare.FullVideosCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".FuckingSession.cloudflare.FuckingSessionCloudflareActivity"
+            android:name=".SitesHub.FuckingSession.cloudflare.FuckingSessionCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".XXXTube.cloudflare.XXXTubeCloudflareActivity"
+            android:name=".SitesHub.XXXTube.cloudflare.XXXTubeCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".RouVideo.cloudflare.RouVideoCloudflareActivity"
+            android:name=".SitesHub.RouVideo.cloudflare.RouVideoCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>
 
         <activity
-            android:name=".RouVideo.ui.login.RouVideoLoginActivity"
+            android:name=".SitesHub.RouVideo.ui.login.RouVideoLoginActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"/>
 
         <activity
-            android:name=".XHamster.cloudflare.XHamsterCloudflareActivity"
+            android:name=".SitesHub.XHamster.cloudflare.XHamsterCloudflareActivity"
             android:theme="@style/Theme.Hanime"
             android:exported="false"
             android:launchMode="singleTask"/>

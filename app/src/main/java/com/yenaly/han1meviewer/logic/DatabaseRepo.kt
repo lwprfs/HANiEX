@@ -16,7 +16,7 @@ import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
-import com.yenaly.han1meviewer.logic.model.SearchOption
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.SearchOption
 import com.yenaly.han1meviewer.util.applicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch

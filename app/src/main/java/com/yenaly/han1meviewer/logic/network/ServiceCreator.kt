@@ -7,7 +7,7 @@ import com.yenaly.han1meviewer.HA1_GITHUB_API_URL
 import com.yenaly.han1meviewer.HJson
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.network.interceptor.CloudflareInterceptor
-import com.yenaly.han1meviewer.logic.network.interceptor.GetchuInterceptor
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.interceptor.GetchuInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.UrlLoggingInterceptor
 import com.yenaly.han1meviewer.logic.network.interceptor.UserAgentInterceptor
@@ -21,6 +21,7 @@ import okhttp3.Protocol
 import retrofit2.Retrofit
 import java.io.File
 import java.util.concurrent.TimeUnit
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.network.HCookieJar
 
 object ServiceCreator {
 

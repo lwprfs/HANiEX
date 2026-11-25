@@ -8,10 +8,10 @@ import com.yenaly.han1meviewer.logic.entity.CheckInRecordEntity
 import com.yenaly.han1meviewer.logic.entity.CheckInType
 import com.yenaly.han1meviewer.logic.entity.SideDishEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
-import com.yenaly.han1meviewer.FapFolder.data.local.FapFolderDatabase
-import com.yenaly.han1meviewer.HentaiMama.data.local.HentaiMamaDatabase
-import com.yenaly.han1meviewer.MissAV.data.local.MissAvDatabase
-import com.yenaly.han1meviewer.OnAir.data.local.OnAirDatabase
+import com.yenaly.han1meviewer.SitesHub.FapFolder.data.local.FapFolderDatabase
+import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaDatabase
+import com.yenaly.han1meviewer.SitesHub.MissAV.data.local.MissAvDatabase
+import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirDatabase
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -155,7 +155,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.SupJav.data.local.SupJavDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.SupJav.data.local.SupJavDatabase.getInstance(context)
                 .supJavHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -167,7 +167,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.RouVideo.data.local.RouVideoDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.RouVideo.data.local.RouVideoDatabase.getInstance(context)
                 .rouVideoHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -179,7 +179,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.XHamster.data.local.XHamsterDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.XHamster.data.local.XHamsterDatabase.getInstance(context)
                 .xHamsterHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -191,7 +191,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.Buondua.data.local.BuonduaDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.Buondua.data.local.BuonduaDatabase.getInstance(context)
                 .buonduaHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -203,7 +203,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.Cosplaytele.data.local.CosplayteleDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.local.CosplayteleDatabase.getInstance(context)
                 .cosplayteleHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -215,7 +215,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.Coomer.data.local.CoomerDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.Coomer.data.local.CoomerDatabase.getInstance(context)
                 .coomerHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -227,7 +227,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.Coser.data.local.CoserDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.Coser.data.local.CoserDatabase.getInstance(context)
                 .coserHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -239,7 +239,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.FullVideos.data.local.FullVideosDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.FullVideos.data.local.FullVideosDatabase.getInstance(context)
                 .fullVideosHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -251,7 +251,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.FuckingSession.data.local.FuckingSessionDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.FuckingSession.data.local.FuckingSessionDatabase.getInstance(context)
                 .fuckingSessionHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -263,7 +263,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.Wumaobi.data.local.WumaobiDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.Wumaobi.data.local.WumaobiDatabase.getInstance(context)
                 .wumaobiHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,
@@ -275,7 +275,7 @@ object SiteCheckIn {
                 }
         }
         runCatching {
-            com.yenaly.han1meviewer.XXXTube.data.local.XXXTubeDatabase.getInstance(context)
+            com.yenaly.han1meviewer.SitesHub.XXXTube.data.local.XXXTubeDatabase.getInstance(context)
                 .xxxTubeHistoryDao().getPage(limit, 0).forEach {
                     result += WatchHistoryEntity(
                         coverUrl = it.coverUrl,

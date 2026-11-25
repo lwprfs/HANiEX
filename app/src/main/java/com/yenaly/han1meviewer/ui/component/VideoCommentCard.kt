@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.logic.model.VideoComments
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.VideoComments
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.util.DisplayTextLocalizer
 
