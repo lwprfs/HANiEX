@@ -1025,7 +1025,7 @@ class HanimeDownloadWorker(
     }
 
     private fun createDownloadNotification(progress: Int = 0): Notification {
-        return NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL)
+        val builder = NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.mipmap.ic_launcher_new)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
@@ -1033,7 +1033,8 @@ class HanimeDownloadWorker(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentText("$progress%")
             .setProgress(100, progress, false)
-            .build()
+        DownloadNotificationActions.addDownloadingActions(context, builder, videoCode, quality)
+        return builder.build()
     }
 
     private fun cancelDownloadNotification() {

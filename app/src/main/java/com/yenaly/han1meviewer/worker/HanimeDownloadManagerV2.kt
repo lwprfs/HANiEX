@@ -195,6 +195,7 @@ object HanimeDownloadManagerV2 {
         val args = msg.args
         val code = args.videoCode
         setUserPaused(code, false)
+        DownloadNotificationActions.cancelPaused(applicationContext, code)
 
         val slot = slots[code]
         if (slot != null) {
@@ -244,6 +245,9 @@ object HanimeDownloadManagerV2 {
         }
 
         DatabaseRepo.HanimeDownload.markPaused(code)
+        DownloadNotificationActions.showPaused(
+            applicationContext, code, args.quality, args.hanimeName
+        )
     }
 
     private suspend fun onDelete(args: HanimeDownloadWorker.Args) {
@@ -252,6 +256,7 @@ object HanimeDownloadManagerV2 {
         waitingQueue.removeAll { it.videoCode == code }
         redownloadPending -= code
         slots[code]?.exit = Exit.DELETE
+        DownloadNotificationActions.cancelPaused(applicationContext, code)
 
         startWork(args, delete = true)
     }
@@ -280,6 +285,10 @@ object HanimeDownloadManagerV2 {
                     (entity.state == DownloadState.Downloading || entity.state == DownloadState.Queued)
                 ) {
                     DatabaseRepo.HanimeDownload.markPaused(msg.videoCode)
+                    DownloadNotificationActions.showPaused(
+                        applicationContext, msg.videoCode,
+                        slot.args.quality, slot.args.hanimeName
+                    )
                 }
             }
         }

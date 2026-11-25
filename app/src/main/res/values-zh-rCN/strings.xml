@@ -1496,4 +1496,8 @@
     <string name="leakgallery_pages_models_desc">最近加入的创作者</string>
     <string name="leakgallery_pages_shorts_desc">竖屏短视频</string>
     <string name="download_still_paused">此下载仍处于暂停状态，请在“下载”页面继续。</string>
+    <string name="download_action_pause">暂停</string>
+    <string name="download_action_resume">继续</string>
+    <string name="download_action_cancel">取消下载</string>
+    <string name="download_paused_notification_s">下载已暂停：%1$s</string>
 </resources>

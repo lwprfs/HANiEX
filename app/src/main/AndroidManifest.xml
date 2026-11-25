@@ -261,6 +261,10 @@
             android:exported="false" />
 
         <receiver
+            android:name=".worker.DownloadActionReceiver"
+            android:exported="false" />
+
+        <receiver
             android:name=".ui.widget.CheckInWidgetProvider"
             android:exported="true">
             <intent-filter>
