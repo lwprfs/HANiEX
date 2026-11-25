@@ -1457,4 +1457,42 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="onair_page_invalid_any">有効なページ番号を入力してください</string>
     <string name="onair_go">移動</string>
     <string name="onair_page_empty">%1$d ページには動画がありません</string>
+
+    <!-- LeakGallery -->
+    <string name="site_leakgallery_description">リーク系クリエイターの動画・写真・ショート</string>
+    <string name="backup_section_leakgallery_history">LeakGallery 閲覧履歴</string>
+    <string name="leakgallery_search_hint">LeakGallery を検索</string>
+    <string name="leakgallery_search_prompt">タイトルまたはクリエイター名を入力、もしくは leakgallery.com のメディアリンクを貼り付け</string>
+    <string name="leakgallery_search_creators">クリエイター</string>
+    <string name="leakgallery_search_posts">メディア</string>
+    <string name="leakgallery_no_results">結果なし</string>
+    <string name="leakgallery_no_history">履歴はまだありません</string>
+    <string name="leakgallery_nothing_here">何もありません</string>
+    <string name="leakgallery_section_photos">写真（%1$d）</string>
+    <string name="leakgallery_similar">類似メディア</string>
+    <string name="leakgallery_related">類似クリエイター</string>
+    <string name="leakgallery_history_title">履歴</string>
+    <string name="leakgallery_history_summary">LeakGallery で開いたメディア</string>
+    <string name="leakgallery_settings_title">再生と表示</string>
+    <string name="leakgallery_settings_summary">開始ページ、写真グリッド、ビューア</string>
+    <string name="leakgallery_default_section">開始ページ</string>
+    <string name="leakgallery_default_section_hint">LeakGallery を開いたときに最初に表示するリスト</string>
+    <string name="leakgallery_photo_columns">写真グリッドの列数</string>
+    <string name="leakgallery_photo_columns_hint">フォトギャラリーで使う列数。</string>
+    <string name="leakgallery_viewer_tap">端をタップでめくる</string>
+    <string name="leakgallery_viewer_tap_summary">写真の左端または右端をタップして前後の写真に移動します</string>
+    <string name="leakgallery_troubleshooting">トラブルシューティング</string>
+    <string name="leakgallery_cookies_clear">Cookie とセッションを消去</string>
+    <string name="leakgallery_cookies_cleared">Cookie を消去しました</string>
+    <string name="leakgallery_reset_defaults">初期設定に戻す</string>
+    <string name="leakgallery_drawer_trending">トレンド</string>
+    <string name="leakgallery_drawer_photos">写真</string>
+    <string name="leakgallery_drawer_videos">動画</string>
+    <string name="leakgallery_drawer_models">新着モデル</string>
+    <string name="leakgallery_drawer_shorts">ショート</string>
+    <string name="leakgallery_pages_trending_desc">今いちばん人気のメディア</string>
+    <string name="leakgallery_pages_photos_desc">最新の写真</string>
+    <string name="leakgallery_pages_videos_desc">最新の動画</string>
+    <string name="leakgallery_pages_models_desc">最近追加されたクリエイター</string>
+    <string name="leakgallery_pages_shorts_desc">縦型ショート動画</string>
 </resources>

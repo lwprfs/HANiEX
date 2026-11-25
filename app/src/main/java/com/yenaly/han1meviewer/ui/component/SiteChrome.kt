@@ -922,6 +922,7 @@ fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifi
         com.yenaly.han1meviewer.SiteType.REDGIFS -> R.drawable.s_switch_redgifs
         com.yenaly.han1meviewer.SiteType.XXXTUBE -> R.drawable.s_switch_x_x_x
         com.yenaly.han1meviewer.SiteType.COOMER -> R.drawable.s_switch_coomer
+        com.yenaly.han1meviewer.SiteType.LEAKGALLERY -> R.drawable.s_switch_leakgallery
         com.yenaly.han1meviewer.SiteType.WUMAOBI -> R.drawable.s_switch_wumaobi
         else -> R.drawable.ic_baseline_h_chan_single_color
     }

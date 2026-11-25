@@ -167,6 +167,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         accentColor = Color(0xFFFF4081),
     ),
     SiteSwitchOption(
+        name = "LeakGallery",
+        description = applicationContext.getString(R.string.site_leakgallery_description),
+        siteType = SiteType.LEAKGALLERY,
+        logoRes = R.drawable.s_switch_leakgallery,
+        accentColor = Color(0xFF7C4DFF),
+    ),
+    SiteSwitchOption(
         name = "Coser",
         description = applicationContext.getString(R.string.site_coser_description),
         siteType = SiteType.COSER,

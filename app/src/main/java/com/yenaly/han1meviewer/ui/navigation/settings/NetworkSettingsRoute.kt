@@ -90,6 +90,7 @@ private fun rebuildAllNetworks() {
     runCatching { com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.remote.CosplayteleNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork.rebuildNetwork() }
+    runCatching { com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.SitesHub.FuckingSession.data.remote.FuckingSessionNetwork.rebuildNetwork() }
     runCatching { com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiNetwork.rebuildNetwork() }

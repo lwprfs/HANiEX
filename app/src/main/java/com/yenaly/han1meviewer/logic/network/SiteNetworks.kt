@@ -234,6 +234,14 @@ object SiteNetworks {
             trailingSlash = false,
             cloudflareFronted = false,
         ),
+        SiteNetworkProfile(
+            siteType = SiteType.LEAKGALLERY,
+            displayName = "LeakGallery",
+            catalogKey = null,
+            defaultUrls = { listOf("https://leakgallery.com") },
+            trailingSlash = false,
+            cloudflareFronted = false,
+        ),
     )
 
     val hubSites: List<HubSite>

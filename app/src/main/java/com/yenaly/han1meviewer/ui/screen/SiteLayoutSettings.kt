@@ -271,6 +271,7 @@ object SiteImageSettings {
         SiteType.MISSAV, SiteType.HENTAIMAMA, SiteType.ONAIR, SiteType.FAPFOLDER, SiteType.SUPJAV,
         SiteType.ROUVIDEO, SiteType.XHAMSTER, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER,
         SiteType.FULLVIDEOS, SiteType.FUCKINGSESSION, SiteType.WUMAOBI, SiteType.XXXTUBE, SiteType.COOMER,
+        SiteType.LEAKGALLERY,
     )
 
     private var version by mutableIntStateOf(0)
@@ -345,7 +346,7 @@ object SiteImageCardSettings {
         Subtitle("subtitle"),
     }
 
-    val sites: Set<SiteType> = setOf(SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER, SiteType.XHAMSTER, SiteType.COOMER)
+    val sites: Set<SiteType> = setOf(SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER, SiteType.XHAMSTER, SiteType.COOMER, SiteType.LEAKGALLERY)
 
     private var version by mutableIntStateOf(0)
     private var listening = false

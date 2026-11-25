@@ -8,6 +8,9 @@ import com.yenaly.han1meviewer.SitesHub.Buondua.ui.navigation.BuonduaSearchRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerHomeRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerPostRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerSearchRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryHomeRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryPostRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGallerySearchRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserHomeRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserPostRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserSearchRoute
@@ -76,6 +79,7 @@ fun siteHomeKey(site: SiteType): NavKey = when (site) {
     SiteType.REDGIFS -> RedGifsHomeRoute
     SiteType.XXXTUBE -> XXXTubeHomeRoute
     SiteType.COOMER -> CoomerHomeRoute
+    SiteType.LEAKGALLERY -> LeakGalleryHomeRoute
     SiteType.WUMAOBI -> WumaobiHomeRoute
 }
 
@@ -133,6 +137,7 @@ fun siteVideoKey(
     SiteType.REDGIFS -> RedGifsGifRoute(id = videoCode)
     SiteType.XXXTUBE -> XXXTubeVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
     SiteType.COOMER -> CoomerPostRoute(slug = videoCode, resumePosition = resumePosition)
+    SiteType.LEAKGALLERY -> LeakGalleryPostRoute(slug = videoCode, resumePosition = resumePosition)
     SiteType.WUMAOBI -> WumaobiVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
 }
 
@@ -153,5 +158,6 @@ fun siteSearchKey(site: SiteType, query: String?): NavKey = when (site) {
     SiteType.REDGIFS -> RedGifsSearchRoute(query = query)
     SiteType.XXXTUBE -> XXXTubeSearchRoute(query = query)
     SiteType.COOMER -> CoomerSearchRoute(query = query)
+    SiteType.LEAKGALLERY -> LeakGallerySearchRoute(query = query)
     SiteType.WUMAOBI -> WumaobiSearchRoute(query = query)
 }

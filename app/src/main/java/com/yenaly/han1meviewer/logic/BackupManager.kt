@@ -30,6 +30,8 @@ import com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.local.CosplayteleDataba
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.local.CosplayteleHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.Coomer.data.local.CoomerDatabase
 import com.yenaly.han1meviewer.SitesHub.Coomer.data.local.CoomerHistoryEntity
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.local.LeakGalleryDatabase
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.local.LeakGalleryHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.Coser.data.local.CoserDatabase
 import com.yenaly.han1meviewer.SitesHub.Coser.data.local.CoserHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.FullVideos.data.local.FullVideosDatabase
@@ -88,6 +90,7 @@ object BackupManager {
         WUMAOBI_HISTORY(R.string.backup_section_wumaobi_history, Group.DATA),
         XXXTUBE_HISTORY(R.string.backup_section_xxxtube_history, Group.DATA),
         COOMER_HISTORY(R.string.backup_section_coomer_history, Group.DATA),
+        LEAKGALLERY_HISTORY(R.string.backup_section_leakgallery_history, Group.DATA),
         LOCAL_PLAYLISTS(R.string.backup_section_local_playlists, Group.DATA),
         COOKIES_HANIME(R.string.backup_section_cookies_hanime, Group.COOKIES),
         COOKIES_MISSAV(R.string.backup_section_cookies_missav, Group.COOKIES),
@@ -145,6 +148,7 @@ object BackupManager {
         val wumaobiHistories: List<WumaobiHistoryEntity>? = null,
         val xxxTubeHistories: List<XXXTubeHistoryEntity>? = null,
         val coomerHistories: List<CoomerHistoryEntity>? = null,
+        val leakgalleryHistories: List<LeakGalleryHistoryEntity>? = null,
         val localPlaylists: List<LocalPlaylist>? = null,
     )
 
@@ -321,6 +325,11 @@ object BackupManager {
                 deleteAll(); insertAll(it)
             }
         }
+        backup.leakgalleryHistories?.takeIf { Section.LEAKGALLERY_HISTORY in sections }?.let {
+            LeakGalleryDatabase.getInstance(context).leakgalleryHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
         backup.xxxTubeHistories?.takeIf { Section.XXXTUBE_HISTORY in sections }?.let {
             XXXTubeDatabase.getInstance(context).xxxTubeHistoryDao().apply {
                 deleteAll(); insertAll(it)
@@ -433,6 +442,8 @@ object BackupManager {
                 WumaobiDatabase.getInstance(context).wumaobiHistoryDao().getAllHistorySync() else null,
             coomerHistories = if (Section.COOMER_HISTORY in sections)
                 CoomerDatabase.getInstance(context).coomerHistoryDao().getAllHistorySync() else null,
+            leakgalleryHistories = if (Section.LEAKGALLERY_HISTORY in sections)
+                LeakGalleryDatabase.getInstance(context).leakgalleryHistoryDao().getAllHistorySync() else null,
             xxxTubeHistories = if (Section.XXXTUBE_HISTORY in sections)
                 XXXTubeDatabase.getInstance(context).xxxTubeHistoryDao().getAllHistorySync() else null,
             localPlaylists = if (Section.LOCAL_PLAYLISTS in sections)

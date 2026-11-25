@@ -1457,4 +1457,42 @@
     <string name="onair_page_invalid_any">请输入有效的页码</string>
     <string name="onair_go">前往</string>
     <string name="onair_page_empty">第 %1$d 页没有视频</string>
+
+    <!-- LeakGallery -->
+    <string name="site_leakgallery_description">外流创作者的视频、照片与短片</string>
+    <string name="backup_section_leakgallery_history">LeakGallery 浏览历史</string>
+    <string name="leakgallery_search_hint">搜索 LeakGallery</string>
+    <string name="leakgallery_search_prompt">输入标题或创作者，或粘贴 leakgallery.com 的媒体链接</string>
+    <string name="leakgallery_search_creators">创作者</string>
+    <string name="leakgallery_search_posts">媒体</string>
+    <string name="leakgallery_no_results">没有结果</string>
+    <string name="leakgallery_no_history">暂无观看记录</string>
+    <string name="leakgallery_nothing_here">这里没有内容</string>
+    <string name="leakgallery_section_photos">照片（%1$d）</string>
+    <string name="leakgallery_similar">相似媒体</string>
+    <string name="leakgallery_related">相似创作者</string>
+    <string name="leakgallery_history_title">浏览记录</string>
+    <string name="leakgallery_history_summary">你在 LeakGallery 打开过的媒体</string>
+    <string name="leakgallery_settings_title">播放与显示</string>
+    <string name="leakgallery_settings_summary">起始页面、照片网格与查看器</string>
+    <string name="leakgallery_default_section">起始页面</string>
+    <string name="leakgallery_default_section_hint">进入 LeakGallery 时最先打开的列表</string>
+    <string name="leakgallery_photo_columns">照片网格列数</string>
+    <string name="leakgallery_photo_columns_hint">相册使用的列数。</string>
+    <string name="leakgallery_viewer_tap">点击边缘翻页</string>
+    <string name="leakgallery_viewer_tap_summary">点击照片左侧或右侧边缘即可切换上一张或下一张</string>
+    <string name="leakgallery_troubleshooting">疑难解答</string>
+    <string name="leakgallery_cookies_clear">清除 Cookies 与会话</string>
+    <string name="leakgallery_cookies_cleared">已清除 Cookies</string>
+    <string name="leakgallery_reset_defaults">恢复默认值</string>
+    <string name="leakgallery_drawer_trending">热门</string>
+    <string name="leakgallery_drawer_photos">照片</string>
+    <string name="leakgallery_drawer_videos">视频</string>
+    <string name="leakgallery_drawer_models">新创作者</string>
+    <string name="leakgallery_drawer_shorts">短片</string>
+    <string name="leakgallery_pages_trending_desc">当前最热门的媒体</string>
+    <string name="leakgallery_pages_photos_desc">最新上传的照片</string>
+    <string name="leakgallery_pages_videos_desc">最新上传的视频</string>
+    <string name="leakgallery_pages_models_desc">最近加入的创作者</string>
+    <string name="leakgallery_pages_shorts_desc">竖屏短视频</string>
 </resources>

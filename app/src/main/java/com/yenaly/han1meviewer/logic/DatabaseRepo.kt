@@ -330,6 +330,7 @@ object DatabaseRepo {
             SiteType.REDGIFS -> "RedGifs"
             SiteType.XXXTUBE -> "X-X-X.tube"
             SiteType.COOMER -> "Coomer"
+            SiteType.LEAKGALLERY -> "LeakGallery"
             SiteType.WUMAOBI -> "Wumaobi"
         }
 

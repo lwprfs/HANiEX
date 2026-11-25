@@ -3230,4 +3230,42 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="onair_page_invalid_any">請輸入有效的頁碼</string>
     <string name="onair_go">前往</string>
     <string name="onair_page_empty">第 %1$d 頁沒有影片</string>
+
+    <!-- LeakGallery -->
+    <string name="site_leakgallery_description">外流創作者的影片、照片與短片</string>
+    <string name="backup_section_leakgallery_history">LeakGallery 瀏覽歷史</string>
+    <string name="leakgallery_search_hint">搜尋 LeakGallery</string>
+    <string name="leakgallery_search_prompt">輸入標題或創作者，或貼上 leakgallery.com 的媒體連結</string>
+    <string name="leakgallery_search_creators">創作者</string>
+    <string name="leakgallery_search_posts">媒體</string>
+    <string name="leakgallery_no_results">沒有結果</string>
+    <string name="leakgallery_no_history">尚無觀看紀錄</string>
+    <string name="leakgallery_nothing_here">這裡沒有內容</string>
+    <string name="leakgallery_section_photos">照片（%1$d）</string>
+    <string name="leakgallery_similar">相似媒體</string>
+    <string name="leakgallery_related">相似創作者</string>
+    <string name="leakgallery_history_title">瀏覽紀錄</string>
+    <string name="leakgallery_history_summary">你在 LeakGallery 開啟過的媒體</string>
+    <string name="leakgallery_settings_title">播放與顯示</string>
+    <string name="leakgallery_settings_summary">起始頁面、照片網格與檢視器</string>
+    <string name="leakgallery_default_section">起始頁面</string>
+    <string name="leakgallery_default_section_hint">進入 LeakGallery 時最先開啟的列表</string>
+    <string name="leakgallery_photo_columns">照片網格欄數</string>
+    <string name="leakgallery_photo_columns_hint">相簿使用的欄數。</string>
+    <string name="leakgallery_viewer_tap">點擊邊緣翻頁</string>
+    <string name="leakgallery_viewer_tap_summary">點擊照片左側或右側邊緣即可切換上一張或下一張</string>
+    <string name="leakgallery_troubleshooting">疑難排解</string>
+    <string name="leakgallery_cookies_clear">清除 Cookies 與連線狀態</string>
+    <string name="leakgallery_cookies_cleared">已清除 Cookies</string>
+    <string name="leakgallery_reset_defaults">還原為預設值</string>
+    <string name="leakgallery_drawer_trending">熱門</string>
+    <string name="leakgallery_drawer_photos">照片</string>
+    <string name="leakgallery_drawer_videos">影片</string>
+    <string name="leakgallery_drawer_models">新創作者</string>
+    <string name="leakgallery_drawer_shorts">短片</string>
+    <string name="leakgallery_pages_trending_desc">目前最熱門的媒體</string>
+    <string name="leakgallery_pages_photos_desc">最新上傳的照片</string>
+    <string name="leakgallery_pages_videos_desc">最新上傳的影片</string>
+    <string name="leakgallery_pages_models_desc">最近加入的創作者</string>
+    <string name="leakgallery_pages_shorts_desc">直式短影片</string>
 </resources>

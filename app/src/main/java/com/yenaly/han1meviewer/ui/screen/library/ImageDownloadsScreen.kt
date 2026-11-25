@@ -7,7 +7,7 @@ import com.yenaly.han1meviewer.util.offline.OfflineKind
 
 val IMAGE_DOWNLOAD_SITES = setOf(
     SiteType.FAPFOLDER, SiteType.BUONDUA, SiteType.XHAMSTER, SiteType.COSPLAYTELE, SiteType.COSER,
-    SiteType.COOMER,
+    SiteType.COOMER, SiteType.LEAKGALLERY,
 )
 
 @Composable

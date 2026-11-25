@@ -9,6 +9,7 @@ import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoNavHost
 import com.yenaly.han1meviewer.SitesHub.Buondua.ui.navigation.BuonduaNavHost
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.ui.navigation.CosplayteleNavHost
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerNavHost
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryNavHost
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserNavHost
 import com.yenaly.han1meviewer.SitesHub.FullVideos.ui.navigation.FullVideosNavHost
 import com.yenaly.han1meviewer.SitesHub.FuckingSession.ui.navigation.FuckingSessionNavHost
@@ -135,6 +136,14 @@ fun UnifiedMainNavHost(
             }
             SiteType.COOMER -> {
                 CoomerNavHost(
+                    activity = activity,
+                    navigator = navigator,
+                    navigationState = navigationState,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+            SiteType.LEAKGALLERY -> {
+                LeakGalleryNavHost(
                     activity = activity,
                     navigator = navigator,
                     navigationState = navigationState,

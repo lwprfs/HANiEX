@@ -63,6 +63,7 @@ object DownloadLayout {
         SiteType.REDGIFS -> "RedGifs"
         SiteType.XXXTUBE -> "XXXTube"
         SiteType.COOMER -> "Coomer"
+        SiteType.LEAKGALLERY -> "LeakGallery"
         SiteType.WUMAOBI -> "Wumaobi"
     }
 
@@ -277,6 +278,8 @@ object SiteDownloadClients {
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.COOMER -> runCatching { com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.LEAKGALLERY -> runCatching { com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
             SiteType.COSER -> runCatching { com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FULLVIDEOS -> runCatching { com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork.sharedOkHttpClient }
@@ -373,6 +376,14 @@ object SiteDownloadClients {
                 mapOf(
                     "Referer" to referer,
                     "Origin" to com.yenaly.han1meviewer.SitesHub.Coomer.common.CoomerConstants.BASE_URL,
+                )
+            }
+            SiteType.LEAKGALLERY -> {
+                val referer = com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryNetwork
+                    .streamRefererFor(SiteCheckIn.rawCodeOfDishCode(videoCode))
+                mapOf(
+                    "Referer" to referer,
+                    "Origin" to com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGalleryConstants.BASE_URL,
                 )
             }
             SiteType.COSER -> {

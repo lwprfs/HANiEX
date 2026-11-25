@@ -82,6 +82,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.yenaly.han1meviewer.SitesHub.Buondua.data.remote.BuonduaNetwork
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.remote.CosplayteleNetwork
 import com.yenaly.han1meviewer.SitesHub.Coomer.data.remote.CoomerNetwork
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryNetwork
 import com.yenaly.han1meviewer.SitesHub.Coser.data.remote.CoserNetwork
 import com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork
 import com.yenaly.han1meviewer.SitesHub.FuckingSession.data.remote.FuckingSessionNetwork
@@ -425,6 +426,10 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.COOMER -> {
                 CoomerNetwork.rebuildNetwork()
+            }
+
+            SiteType.LEAKGALLERY -> {
+                LeakGalleryNetwork.rebuildNetwork()
             }
 
             SiteType.COSER -> {

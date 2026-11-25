@@ -37,6 +37,7 @@ object SiteCheckIn {
         SiteType.REDGIFS -> "redgifs"
         SiteType.XXXTUBE -> "xxxtube"
         SiteType.COOMER -> "coomer"
+        SiteType.LEAKGALLERY -> "leakgallery"
         SiteType.WUMAOBI -> "wumaobi"
     }
 
@@ -64,6 +65,7 @@ object SiteCheckIn {
             "redgifs" -> SiteType.REDGIFS
             "xxxtube" -> SiteType.XXXTUBE
             "coomer" -> SiteType.COOMER
+            "leakgallery" -> SiteType.LEAKGALLERY
             "wumaobi" -> SiteType.WUMAOBI
             else -> null
         }
@@ -223,6 +225,18 @@ object SiteCheckIn {
                         releaseDate = 0L,
                         watchDate = it.watchDate,
                         videoCode = dishCode(SiteType.COOMER, it.videoCode),
+                    )
+                }
+        }
+        runCatching {
+            com.yenaly.han1meviewer.SitesHub.LeakGallery.data.local.LeakGalleryDatabase.getInstance(context)
+                .leakgalleryHistoryDao().getPage(limit, 0).forEach {
+                    result += WatchHistoryEntity(
+                        coverUrl = it.coverUrl,
+                        title = it.title,
+                        releaseDate = 0L,
+                        watchDate = it.watchDate,
+                        videoCode = dishCode(SiteType.LEAKGALLERY, it.videoCode),
                     )
                 }
         }

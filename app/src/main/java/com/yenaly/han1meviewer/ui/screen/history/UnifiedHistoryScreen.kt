@@ -59,6 +59,7 @@ import com.yenaly.han1meviewer.SitesHub.RouVideo.data.repository.RouVideoHistory
 import com.yenaly.han1meviewer.SitesHub.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.data.repository.CosplayteleHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.Coomer.data.repository.CoomerHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.repository.LeakGalleryHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.Coser.data.repository.CoserHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.FullVideos.data.repository.FullVideosHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.data.repository.WumaobiHistoryRepo
@@ -136,6 +137,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         WumaobiHistoryRepo.init(application)
         XXXTubeHistoryRepo.init(application)
         CoomerHistoryRepo.init(application)
+        LeakGalleryHistoryRepo.init(application)
     }
 
     private fun <T> safe(flow: kotlinx.coroutines.flow.Flow<List<T>>) =
@@ -384,6 +386,22 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                         it.lastPosition >= it.totalDuration - 3_000L,
             )
         }).sortedByDescending { it.watchDate }
+    }.combine(safe(LeakGalleryHistoryRepo.loadAll())) { base, leakgallery ->
+        (base + leakgallery.map {
+            UnifiedHistoryItem(
+                site = SiteType.LEAKGALLERY,
+                code = it.videoCode,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = it.lastPosition,
+                durationMs = it.totalDuration,
+                path = null,
+                subtitle = null,
+                completed = it.totalDuration > 0 &&
+                        it.lastPosition >= it.totalDuration - 3_000L,
+            )
+        }).sortedByDescending { it.watchDate }
     }.combine(safe(CoomerHistoryRepo.loadAll())) { base, coomer ->
         (base + coomer.map {
             UnifiedHistoryItem(
@@ -442,6 +460,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     SiteType.REDGIFS -> Unit
                     SiteType.XXXTUBE -> XXXTubeHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.COOMER -> CoomerHistoryRepo.deleteByVideoCode(item.code)
+                    SiteType.LEAKGALLERY -> LeakGalleryHistoryRepo.deleteByVideoCode(item.code)
                 }
             }
         }
@@ -466,6 +485,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                 if (site == null || site == SiteType.WUMAOBI) WumaobiHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.XXXTUBE) XXXTubeHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.COOMER) CoomerHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.LEAKGALLERY) LeakGalleryHistoryRepo.deleteAll()
             }
         }
     }
@@ -488,6 +508,7 @@ private val filterSites = listOf(
     SiteType.WUMAOBI,
     SiteType.XXXTUBE,
     SiteType.COOMER,
+    SiteType.LEAKGALLERY,
 )
 
 private fun siteBadge(site: SiteType): String = when (site) {

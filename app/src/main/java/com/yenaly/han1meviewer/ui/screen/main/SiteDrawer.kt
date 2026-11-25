@@ -100,6 +100,11 @@ import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerListRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerSearchRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGalleryConstants
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryListRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGallerySearchRoute
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGallerySettingsRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.common.CoserConstants
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserListRoute
@@ -694,6 +699,50 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 customize,
                 listOf(
                     entry(str(R.string.coomer_settings_title), R.drawable.ic_video_quilty, CoomerSettingsRoute),
+                    playerSettings,
+                ),
+            ),
+        )
+
+        SiteType.LEAKGALLERY -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, LeakGallerySearchRoute()),
+                    entry(
+                        str(R.string.leakgallery_drawer_trending), R.drawable.ic_drawer_explore,
+                        LeakGalleryListRoute(LeakGalleryConstants.SECTION_TRENDING.path, LeakGalleryConstants.SECTION_TRENDING.title),
+                    ),
+                    entry(
+                        str(R.string.leakgallery_drawer_photos), R.drawable.ic_drawer_photos,
+                        LeakGalleryListRoute(LeakGalleryConstants.SECTION_PHOTOS.path, LeakGalleryConstants.SECTION_PHOTOS.title),
+                    ),
+                    entry(
+                        str(R.string.leakgallery_drawer_videos), R.drawable.ic_drawer_channel,
+                        LeakGalleryListRoute(LeakGalleryConstants.SECTION_VIDEOS.path, LeakGalleryConstants.SECTION_VIDEOS.title),
+                    ),
+                    entry(
+                        str(R.string.leakgallery_drawer_models), R.drawable.ic_drawer_creator,
+                        LeakGalleryListRoute(LeakGalleryConstants.SECTION_MODELS.path, LeakGalleryConstants.SECTION_MODELS.title),
+                    ),
+                    entry(
+                        str(R.string.leakgallery_drawer_shorts), R.drawable.ic_drawer_shorts,
+                        LeakGalleryListRoute(LeakGalleryConstants.SECTION_SHORTS.path, LeakGalleryConstants.SECTION_SHORTS.title),
+                    ),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(
+                    entry(str(R.string.watch_history), history, LeakGalleryHistoryRoute),
+                ),
+            ),
+            SiteDrawerSection(
+                customize,
+                listOf(
+                    entry(str(R.string.leakgallery_settings_title), R.drawable.ic_video_quilty, LeakGallerySettingsRoute),
                     playerSettings,
                 ),
             ),
