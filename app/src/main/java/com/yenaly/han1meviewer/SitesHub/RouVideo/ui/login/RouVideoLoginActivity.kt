@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.base.AppLocale
 import com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoConstants
 import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoAuth
 import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoCookieJar
@@ -56,6 +57,10 @@ class RouVideoLoginActivity : AppCompatActivity() {
     private val progressState = mutableIntStateOf(0)
     private var finished = false
     private var registerClicked = false
+
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppLocale.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

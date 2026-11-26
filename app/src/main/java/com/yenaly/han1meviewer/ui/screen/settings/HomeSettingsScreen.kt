@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.HorizontalCardCountConfig
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SearchGridColumnsConfig
+import com.yenaly.han1meviewer.base.AppFontScale
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
@@ -56,6 +57,8 @@ fun HomeSettingsScreen(
     onOpenUnifiedHistory: () -> Unit = {},
     onOpenTranslationSettings: () -> Unit = {},
     onAppLanguageChange: (String) -> Unit,
+    onAppFontScaleChange: (String) -> Unit,
+    onIgnoreSystemDisplaySizeChange: (Boolean) -> Unit,
     onCheckUpdate: () -> Unit,
     onUpdatePopupIntervalDaysChange: (Int) -> Unit,
     onOpenFakeLauncherIcon: () -> Unit,
@@ -149,6 +152,20 @@ fun HomeSettingsScreen(
         },
     )
 
+    ChoiceDialog(
+        visible = activeDialog == HomeSettingsChoiceDialog.AppFontScale,
+        title = stringResource(R.string.app_font_scale),
+        options = AppFontScale.entries.map { scale ->
+            stringResource(scale.displayNameRes) to scale.key
+        },
+        selectedValue = state.appFontScaleKey,
+        onDismiss = { activeDialog = null },
+        onSelect = {
+            activeDialog = null
+            onAppFontScaleChange(it)
+        },
+    )
+
     ThemeColorPresetDialog(
         visible = activeDialog == HomeSettingsChoiceDialog.ThemeColor,
         presets = ThemeColorPreset.entries
@@ -227,6 +244,7 @@ fun HomeSettingsScreen(
                     onSearchPaginationChange = onSearchPaginationChange,
                     onShowExitConfirmChange = onShowExitConfirmChange,
                     onDisablePredictiveBackChange = onDisablePredictiveBackChange,
+                    onIgnoreSystemDisplaySizeChange = onIgnoreSystemDisplaySizeChange,
                 )
             }
 

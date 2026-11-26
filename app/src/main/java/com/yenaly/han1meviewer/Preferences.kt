@@ -6,6 +6,8 @@ import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
 import com.yenaly.han1meviewer.logic.network.SiteNetworkPrefs
+import com.yenaly.han1meviewer.base.AppDisplayDensity
+import com.yenaly.han1meviewer.base.AppFontScale
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
 import com.yenaly.han1meviewer.ui.player.PlayerDefaults
@@ -503,6 +505,19 @@ object Preferences {
 
     val disableMobileDataWarning: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_MOBILE_DATA_WARNING,false)
+
+    /** 应用字体缩放档位，默认 [AppFontScale.Normal]。 */
+    val appFontScale: AppFontScale
+        get() = AppFontScale.fromKey(
+            preferenceSp.getString(SettingsPreferenceKeys.APP_FONT_SCALE, AppFontScale.DEFAULT.key)
+        )
+
+    /** 「显示大小」兼容模式：保证逻辑宽度不小于 [AppDisplayDensity.MIN_LOGICAL_WIDTH_DP]，默认开启。 */
+    val ignoreSystemDisplaySize: Boolean
+        get() = preferenceSp.getBoolean(
+            SettingsPreferenceKeys.IGNORE_SYSTEM_DISPLAY_SIZE,
+            AppDisplayDensity.DEFAULT_ENABLED,
+        )
 
     val showExitConfirm: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.SHOW_EXIT_CONFIRM, true)

@@ -29,6 +29,7 @@ import com.yenaly.han1meviewer.shizuku.UpdateInstaller
 import com.yenaly.han1meviewer.logic.BackupManager
 import com.yenaly.han1meviewer.ui.component.BackupSectionDialog
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.base.AppFontScale
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
@@ -367,6 +368,23 @@ fun SettingsCategoryRouteScreen(
             val old = Preferences.preferenceSp.getString(SettingsPreferenceKeys.APP_LANGUAGE, "system") ?: "system"
             if (old != value) {
                 Preferences.preferenceSp.edit { putString(SettingsPreferenceKeys.APP_LANGUAGE, value) }
+                refreshKey++
+                recreateAfterDialogDismiss()
+            }
+        },
+        onAppFontScaleChange = { key ->
+            val pref = AppFontScale.fromKey(key)
+            if (pref != Preferences.appFontScale) {
+                Preferences.preferenceSp.edit {
+                    putString(SettingsPreferenceKeys.APP_FONT_SCALE, pref.key)
+                }
+                refreshKey++
+                recreateAfterDialogDismiss()
+            }
+        },
+        onIgnoreSystemDisplaySizeChange = { enabled ->
+            if (enabled != Preferences.ignoreSystemDisplaySize) {
+                saveBoolean(SettingsPreferenceKeys.IGNORE_SYSTEM_DISPLAY_SIZE, enabled)
                 refreshKey++
                 recreateAfterDialogDismiss()
             }

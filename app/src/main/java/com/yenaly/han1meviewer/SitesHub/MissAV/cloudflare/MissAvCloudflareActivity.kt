@@ -2,8 +2,6 @@ package com.yenaly.han1meviewer.SitesHub.MissAV.cloudflare
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
@@ -16,13 +14,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.ComposeView
-import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.base.AppLocale
 import com.yenaly.han1meviewer.USER_AGENT
 import com.yenaly.han1meviewer.ui.screen.web.CloudflareScreen
 import com.yenaly.han1meviewer.ui.theme.HanimeTheme
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-import java.util.Locale
 import com.yenaly.han1meviewer.SitesHub.MissAV.cloudflare.MissAvCloudflareCookieManager
 
 class MissAvCloudflareActivity : AppCompatActivity() {
@@ -154,22 +151,6 @@ class MissAvCloudflareActivity : AppCompatActivity() {
     }
 
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(applyAppLocale(newBase))
-    }
-
-    private fun applyAppLocale(context: Context): Context {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val lang = prefs.getString("app_language", "system") ?: "system"
-        val newLocale = when (lang) {
-            "zh-rCN" -> Locale.SIMPLIFIED_CHINESE
-            "zh" -> Locale.TRADITIONAL_CHINESE
-            "en" -> Locale.ENGLISH
-            "ja" -> Locale.JAPANESE
-            else -> Resources.getSystem().configuration.locales.get(0)
-        }
-        Locale.setDefault(newLocale)
-        val config = Configuration(context.resources.configuration)
-        config.setLocale(newLocale)
-        return context.createConfigurationContext(config)
+        super.attachBaseContext(AppLocale.wrap(newBase))
     }
 }

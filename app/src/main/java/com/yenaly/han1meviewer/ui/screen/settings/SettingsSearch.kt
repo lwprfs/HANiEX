@@ -42,6 +42,8 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.dark_theme),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.theme_color),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.pure_black_dark_mode, R.string.pure_black_dark_mode_summary),
+    SettingsSearchEntry(SettingsCategory.Appearance, R.string.app_font_scale, R.string.app_font_scale_summary),
+    SettingsSearchEntry(SettingsCategory.Appearance, R.string.ignore_system_display_size, R.string.ignore_system_display_size_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.home_category_layout),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.site_video_grid_columns, R.string.hub_video_grid_columns_desc),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.search_grid_columns_title, R.string.search_grid_columns_summary),
