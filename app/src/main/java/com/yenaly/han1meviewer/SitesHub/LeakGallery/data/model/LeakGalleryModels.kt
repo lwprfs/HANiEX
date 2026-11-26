@@ -17,6 +17,9 @@ data class LeakGalleryTerm(
     val thumbUrl: String = "",
 
     val customPath: String? = null,
+    /** Numeric profile id (needed to follow / unfollow); 0 when the API did not give one. */
+    val id: Long = 0L,
+    val subscribed: Boolean = false,
 ) {
     val path: String
         get() = customPath
@@ -46,6 +49,7 @@ data class LeakGalleryDetail(
     val postedAt: String = "",
     val views: Long = 0,
     val likes: Long = 0,
+    val liked: Boolean = false,
 ) {
     val hasVideo: Boolean get() = isVideo && mediaUrl.isNotBlank()
     val photos: List<String> get() = if (!isVideo && mediaUrl.isNotBlank()) listOf(mediaUrl) else emptyList()

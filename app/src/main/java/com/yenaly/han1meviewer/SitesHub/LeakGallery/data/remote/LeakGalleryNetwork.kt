@@ -12,6 +12,7 @@ object LeakGalleryNetwork {
 
     @Volatile private var _client: OkHttpClient? = null
     @Volatile private var _cookieJar: LeakGalleryCookieJar? = null
+    @Volatile private var _streamClient: OkHttpClient? = null
 
     val baseUrl: String
         get() = LeakGalleryConstants.BASE_URL
@@ -20,6 +21,27 @@ object LeakGalleryNetwork {
         get() {
             ensure()
             return _client!!
+        }
+
+    /** Client for CDN video streams / downloads: adds the Referer + Origin the CDN expects. */
+    val streamClient: OkHttpClient
+        get() {
+            val base = sharedOkHttpClient
+            return _streamClient ?: synchronized(this) {
+                _streamClient ?: base.newBuilder()
+                    .readTimeout(60, TimeUnit.SECONDS)
+                    .addInterceptor { chain ->
+                        val b = chain.request().newBuilder()
+                        if (chain.request().header("Referer") == null) {
+                            b.header("Referer", "${LeakGalleryConstants.BASE_URL}/")
+                        }
+                        if (chain.request().header("Origin") == null) {
+                            b.header("Origin", LeakGalleryConstants.BASE_URL)
+                        }
+                        chain.proceed(b.build())
+                    }
+                    .build().also { _streamClient = it }
+            }
         }
 
     @Synchronized
@@ -46,10 +68,12 @@ object LeakGalleryNetwork {
         _cookieJar?.clearCookies()
         _cookieJar = null
         LeakGalleryRepo.clearToken()
+        LeakGalleryAuth.clear()
         rebuildNetwork()
     }
 
     fun rebuildNetwork() {
         _client = null
+        _streamClient = null
     }
 }

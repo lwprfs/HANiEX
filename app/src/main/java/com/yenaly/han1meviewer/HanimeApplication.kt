@@ -228,6 +228,15 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
         ).setName(getString(R.string.notification_channel_download)).build()
         nm.createNotificationChannel(hanimeDownloadChannel)
 
+        // IMPORTANCE_MIN: shows in the notification shade only, no status bar icon.
+        val pausedDownloadChannel = NotificationChannelCompat.Builder(
+            DOWNLOAD_PAUSED_NOTIFICATION_CHANNEL,
+            NotificationManagerCompat.IMPORTANCE_MIN,
+        ).setName(getString(R.string.notification_channel_download_paused))
+            .setShowBadge(false)
+            .build()
+        nm.createNotificationChannel(pausedDownloadChannel)
+
         val appUpdateChannel = NotificationChannelCompat.Builder(
             UPDATE_NOTIFICATION_CHANNEL,
             NotificationManagerCompat.IMPORTANCE_HIGH,

@@ -191,7 +191,7 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
     }
 
     SiteType.HENTAIMAMA, SiteType.SUPJAV, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER, SiteType.FULLVIDEOS,
-    SiteType.FUCKINGSESSION, SiteType.XXXTUBE, SiteType.COOMER, SiteType.LEAKGALLERY ->
+    SiteType.FUCKINGSESSION, SiteType.XXXTUBE, SiteType.COOMER ->
         SiteLoginStatus(
             title = context.getString(R.string.login_status_no_account),
             subtitle = context.getString(R.string.login_status_unavailable, CrossSiteNavigator.siteLabel(site)),
@@ -264,6 +264,28 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
                 avatarUrl = null,
                 loggedIn = false,
                 onClick = { it.navigateSafely(XHamsterAccountRoute) },
+            )
+        }
+    }
+
+    SiteType.LEAKGALLERY -> {
+        val auth = com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryAuth
+        val route = com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryAccountRoute
+        if (auth.isLoggedIn) {
+            SiteLoginStatus(
+                title = auth.username ?: context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.LEAKGALLERY)),
+                subtitle = context.getString(R.string.login_status_tap_account),
+                avatarUrl = auth.avatarUrl,
+                loggedIn = true,
+                onClick = { it.navigateSafely(route) },
+            )
+        } else {
+            SiteLoginStatus(
+                title = context.getString(R.string.not_logged_in),
+                subtitle = context.getString(R.string.login_status_tap_sign_in, CrossSiteNavigator.siteLabel(SiteType.LEAKGALLERY)),
+                avatarUrl = null,
+                loggedIn = false,
+                onClick = { it.navigateSafely(route) },
             )
         }
     }

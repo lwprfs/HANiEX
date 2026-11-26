@@ -158,6 +158,8 @@ fun LeakGalleryPostScreen(
     onOpenPhotos: () -> Unit = {},
     resumePosition: Long = 0L,
     viewModel: LeakGalleryPostViewModel = viewModel(),
+    onOpenShorts: (mode: String, startId: String) -> Unit = { _, _ -> },
+    onLogin: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val activity = remember(context) { context.findHostActivity() }
@@ -401,6 +403,8 @@ fun LeakGalleryPostScreen(
                         onOpenPhotos = onOpenPhotos,
                         onNavigateToTerm = onNavigateToTerm,
                         onNavigateToPost = onNavigateToPost,
+                        onOpenShorts = onOpenShorts,
+                        onLogin = onLogin,
                     )
                 }
                 if (info.hasVideo) {
@@ -461,6 +465,8 @@ private fun LeakGalleryPostContent(
     onOpenPhotos: () -> Unit,
     onNavigateToTerm: (LeakGalleryTerm) -> Unit,
     onNavigateToPost: (String) -> Unit,
+    onOpenShorts: (mode: String, startId: String) -> Unit,
+    onLogin: () -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -550,6 +556,10 @@ private fun LeakGalleryPostContent(
                     Text(info.caption, style = MaterialTheme.typography.bodyMedium)
                 }
             }
+        }
+
+        item(key = "social", span = { GridItemSpan(maxLineSpan) }) {
+            LeakGalleryPostSocialRow(info = info, onOpenShorts = onOpenShorts, onLogin = onLogin)
         }
 
         item(key = "actions", span = { GridItemSpan(maxLineSpan) }) {

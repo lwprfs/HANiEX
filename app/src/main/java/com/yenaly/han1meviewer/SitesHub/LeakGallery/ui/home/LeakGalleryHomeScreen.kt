@@ -41,6 +41,7 @@ fun LeakGalleryHomeScreen(
     onNavigateToTerm: (LeakGalleryTerm) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LeakGalleryListViewModel = viewModel(),
+    onNavigateToShort: (mode: String, startId: String?) -> Unit = { _, _ -> },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var selectedKey by rememberSaveable { mutableStateOf(LeakGallerySettings.defaultSection) }
@@ -90,7 +91,9 @@ fun LeakGalleryHomeScreen(
                     gridState = gridState,
                     onRetry = { viewModel.refresh() },
                     onLoadMore = { viewModel.loadMore() },
-                    onOpenPost = onNavigateToPost,
+                    onOpenPost = LeakGalleryConstants.shortsModeFromPath(selected.path)?.let { mode ->
+                        { id: String -> onNavigateToShort(mode, id) }
+                    } ?: onNavigateToPost,
                     onOpenTerm = onNavigateToTerm,
                 )
             }

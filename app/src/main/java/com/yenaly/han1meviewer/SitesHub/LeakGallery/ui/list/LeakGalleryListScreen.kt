@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.list
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -30,6 +31,8 @@ fun LeakGalleryListScreen(
     onNavigateToPost: (String) -> Unit,
     onNavigateToTerm: (LeakGalleryTerm) -> Unit,
     viewModel: LeakGalleryListViewModel = viewModel(),
+    onNavigateToShort: (mode: String, startId: String?) -> Unit = { _, _ -> },
+    onLogin: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -40,6 +43,8 @@ fun LeakGalleryListScreen(
         viewModel.setSource(LeakGallerySource.Page(effectivePath))
     }
     val gridState = rememberLazyGridState()
+    // Shorts feeds (e.g. /tiktok/trending) open in the shorts player, like the website does.
+    val shortsMode = remember(path) { LeakGalleryConstants.shortsModeFromPath(path) }
     HanimeScaffold(title = title, onBack = onBack) { padding ->
         Box(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {
             SitePullToRefresh(
@@ -50,21 +55,31 @@ fun LeakGalleryListScreen(
                 LeakGalleryCardGrid(
                     header = if (username != null) {
                         {
-                            SiteChipRow(
-                                options = LeakGalleryConstants.PROFILE_TYPES,
-                                selected = type,
-                                label = { it },
-                                onSelect = { type = it },
-                                key = { it },
-                                horizontalPadding = 0.dp,
-                            )
+                            Column {
+                                LeakGalleryProfileHeader(
+                                    username = username,
+                                    refreshKey = state.cards.size,
+                                    onOpenShorts = { onNavigateToShort(username, null) },
+                                    onLogin = onLogin,
+                                )
+                                SiteChipRow(
+                                    options = LeakGalleryConstants.PROFILE_TYPES,
+                                    selected = type,
+                                    label = { it },
+                                    onSelect = { type = it },
+                                    key = { it },
+                                    horizontalPadding = 0.dp,
+                                )
+                            }
                         }
                     } else null,
                     state = state,
                     gridState = gridState,
                     onRetry = { viewModel.refresh() },
                     onLoadMore = { viewModel.loadMore() },
-                    onOpenPost = onNavigateToPost,
+                    onOpenPost = if (shortsMode != null) {
+                        { id -> onNavigateToShort(shortsMode, id) }
+                    } else onNavigateToPost,
                     onOpenTerm = onNavigateToTerm,
                 )
             }

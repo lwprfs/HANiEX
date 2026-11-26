@@ -21,6 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.model.LeakGalleryTerm
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGalleryConstants
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.account.LeakGalleryAccountScreen
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.account.LeakGalleryCollectionScreen
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.account.LeakGalleryLoginScreen
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.account.LeakGalleryNotificationsScreen
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.list.LeakGallerySource
+import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.shorts.LeakGalleryShortsScreen
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.history.LeakGalleryHistoryScreen
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.home.LeakGalleryHomeScreen
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.list.LeakGalleryListScreen
@@ -68,6 +75,25 @@ data class LeakGalleryListRoute(
 object LeakGalleryHistoryRoute : NavKey
 
 @Serializable
+data class LeakGalleryLoginRoute(val register: Boolean = false) : NavKey
+
+@Serializable
+object LeakGalleryAccountRoute : NavKey
+
+/** Shorts feed: [mode] is "" (for you), "trending", "followed" or a creator username. */
+@Serializable
+data class LeakGalleryShortsRoute(val mode: String = "", val startId: String? = null) : NavKey
+
+@Serializable
+object LeakGalleryLikedRoute : NavKey
+
+@Serializable
+object LeakGalleryFollowingRoute : NavKey
+
+@Serializable
+object LeakGalleryNotificationsRoute : NavKey
+
+@Serializable
 object LeakGallerySettingsRoute : NavKey
 
 fun LeakGalleryTerm.toListRoute() = LeakGalleryListRoute(path = path, title = name)
@@ -84,6 +110,9 @@ fun LeakGalleryNavHost(
 
     val openPost: (String) -> Unit = { navigator.navigateSafely(LeakGalleryPostRoute(it)) }
     val openTerm: (LeakGalleryTerm) -> Unit = { navigator.navigateSafely(it.toListRoute()) }
+    val goLogin = { navigator.navigateSafely(LeakGalleryLoginRoute()) }
+    val openShorts: (String, String?) -> Unit =
+        { mode, startId -> navigator.navigateSafely(LeakGalleryShortsRoute(mode, startId)) }
 
     val entryProvider = entryProvider<NavKey> {
         screen<LeakGalleryHomeRoute> {
@@ -93,6 +122,7 @@ fun LeakGalleryNavHost(
                     onNavigateToSearch = { navigator.navigateSafely(LeakGallerySearchRoute(it)) },
                     onNavigateToHistory = { navigator.navigateSafely(LeakGalleryHistoryRoute) },
                     onNavigateToTerm = openTerm,
+                    onNavigateToShort = openShorts,
                 )
             }
         }
@@ -147,6 +177,8 @@ fun LeakGalleryNavHost(
                 onBack = { navigator.goBack() },
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
+                onNavigateToShort = openShorts,
+                onLogin = { goLogin() },
             )
         }
 
@@ -159,6 +191,76 @@ fun LeakGalleryNavHost(
                 onNavigateToPost = openPost,
                 onNavigateToTerm = openTerm,
                 onOpenPhotos = { navigator.navigateSafely(LeakGalleryPhotosRoute(route.slug)) },
+                onOpenShorts = { mode, startId -> openShorts(mode, startId) },
+                onLogin = { goLogin() },
+            )
+        }
+
+        screen<LeakGalleryShortsRoute> {
+            val route = it
+            LeakGalleryShortsScreen(
+                mode = route.mode,
+                startId = route.startId,
+                onBack = { navigator.goBack() },
+                onLogin = { goLogin() },
+                onOpenCreator = { name ->
+                    navigator.navigateSafely(
+                        LeakGalleryListRoute(
+                            path = LeakGalleryConstants.profilePath(name),
+                            title = name,
+                        ),
+                    )
+                },
+            )
+        }
+
+        screen<LeakGalleryLoginRoute> {
+            val route = it
+            LeakGalleryLoginScreen(
+                onBack = { navigator.goBack() },
+                onLoggedIn = { navigator.goBack() },
+                startOnRegister = route.register,
+            )
+        }
+
+        screen<LeakGalleryAccountRoute> {
+            LeakGalleryAccountScreen(
+                onBack = { navigator.goBack() },
+                onLogin = { goLogin() },
+                onOpenLiked = { navigator.navigateSafely(LeakGalleryLikedRoute) },
+                onOpenFollowing = { navigator.navigateSafely(LeakGalleryFollowingRoute) },
+                onOpenFollowedShorts = { openShorts(LeakGalleryConstants.SHORTS_FOLLOWED, null) },
+                onOpenNotifications = { navigator.navigateSafely(LeakGalleryNotificationsRoute) },
+                onOpenSettings = { navigator.navigateSafely(LeakGallerySettingsRoute) },
+            )
+        }
+
+        screen<LeakGalleryLikedRoute> {
+            LeakGalleryCollectionScreen(
+                source = LeakGallerySource.Liked,
+                title = stringResource(R.string.leakgallery_liked_title),
+                onBack = { navigator.goBack() },
+                onLogin = { goLogin() },
+                onNavigateToPost = openPost,
+                onNavigateToTerm = openTerm,
+            )
+        }
+
+        screen<LeakGalleryFollowingRoute> {
+            LeakGalleryCollectionScreen(
+                source = LeakGallerySource.Following,
+                title = stringResource(R.string.leakgallery_following_title),
+                onBack = { navigator.goBack() },
+                onLogin = { goLogin() },
+                onNavigateToPost = openPost,
+                onNavigateToTerm = openTerm,
+            )
+        }
+
+        screen<LeakGalleryNotificationsRoute> {
+            LeakGalleryNotificationsScreen(
+                onBack = { navigator.goBack() },
+                onLogin = { goLogin() },
             )
         }
 

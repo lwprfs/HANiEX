@@ -18,6 +18,12 @@ sealed interface LeakGallerySource {
     data class Page(val path: String) : LeakGallerySource
 
     data class Search(val query: String, val creators: Boolean = false) : LeakGallerySource
+
+    /** Media the signed-in user liked (`likes/me-media-like/<n>`). */
+    data object Liked : LeakGallerySource
+
+    /** Creators the signed-in user follows (`profile-subscription/<n>`). */
+    data object Following : LeakGallerySource
 }
 
 data class LeakGalleryListUiState(
@@ -93,5 +99,7 @@ class LeakGalleryListViewModel : ViewModel() {
     private suspend fun fetch(src: LeakGallerySource, n: Int): Result<LeakGalleryListPage> = when (src) {
         is LeakGallerySource.Page -> LeakGalleryRepo.page(src.path, n)
         is LeakGallerySource.Search -> LeakGalleryRepo.search(src.query, src.creators, n)
+        LeakGallerySource.Liked -> LeakGalleryRepo.likedMedia(n)
+        LeakGallerySource.Following -> LeakGalleryRepo.following(n)
     }
 }

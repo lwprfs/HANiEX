@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.yenaly.han1meviewer.DOWNLOAD_NOTIFICATION_CHANNEL
+import com.yenaly.han1meviewer.DOWNLOAD_PAUSED_NOTIFICATION_CHANNEL
 import com.yenaly.han1meviewer.R
 
 /**
@@ -87,14 +87,14 @@ object DownloadNotificationActions {
     ) {
         val nm = NotificationManagerCompat.from(context)
         if (!nm.areNotificationsEnabled()) return
-        val notification = NotificationCompat.Builder(context, DOWNLOAD_NOTIFICATION_CHANNEL)
+        val notification = NotificationCompat.Builder(context, DOWNLOAD_PAUSED_NOTIFICATION_CHANNEL)
             .setSmallIcon(R.drawable.ic_baseline_download_24)
             .setContentTitle(context.getString(R.string.download_paused_notification_s, title))
             .setContentText(context.getString(R.string.paused))
             .setOngoing(false)
             .setOnlyAlertOnce(true)
             .setSilent(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
             .addAction(
                 R.drawable.ic_baseline_play_arrow_24,
                 context.getString(R.string.download_action_resume),

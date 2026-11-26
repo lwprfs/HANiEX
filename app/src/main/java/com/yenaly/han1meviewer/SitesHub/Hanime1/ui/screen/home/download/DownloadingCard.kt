@@ -322,7 +322,7 @@ private fun DownloadFailurePanel(item: HanimeDownloadEntity) {
                     ) { Text(if (checking) stringResource(R.string.site_checking) else stringResource(R.string.check_tor)) }
                     TextButton(onClick = {
                         runCatching {
-                            NavigationManager.getNavigator()?.navigateSafely(OnAirCookieRoute)
+                            NavigationManager.navigateOnSite(SiteType.ONAIR, OnAirCookieRoute)
                         }
                     }) { Text(stringResource(R.string.site_cookies)) }
                 }
