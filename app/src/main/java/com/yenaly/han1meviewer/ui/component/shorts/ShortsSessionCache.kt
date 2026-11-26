@@ -183,7 +183,7 @@ internal object ShortsSessionCache {
                 }
                 when (outcome) {
                     1 -> granted = true
-                    0 -> if (pending == null) break else pending?.join()
+                    0 -> if (pending == null) break else pending.join()
                     else -> break
                 }
             }

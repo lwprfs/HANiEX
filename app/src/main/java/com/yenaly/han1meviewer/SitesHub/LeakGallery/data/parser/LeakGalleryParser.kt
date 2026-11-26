@@ -35,10 +35,11 @@ object LeakGalleryParser {
 
     private fun JSONObject.flag(key: String, default: Boolean): Boolean {
         if (!has(key) || isNull(key)) return default
-        return when (val v = opt(key)) {
-            is Boolean -> v
-            is Number -> v.toInt() != 0
-            is String -> v.equals("true", true) || v == "1"
+        val v: Any? = opt(key)
+        return when {
+            v is Boolean -> v
+            v is Number -> v.toInt() != 0
+            v is String -> v.equals("true", true) || v == "1"
             else -> default
         }
     }
@@ -60,9 +61,10 @@ object LeakGalleryParser {
 
     private fun JSONObject.longOr(key: String, default: Long = 0L): Long {
         if (!has(key) || isNull(key)) return default
-        return when (val v = opt(key)) {
-            is Number -> v.toLong()
-            is String -> v.trim().toLongOrNull() ?: default
+        val v: Any? = opt(key)
+        return when {
+            v is Number -> v.toLong()
+            v is String -> v.trim().toLongOrNull() ?: default
             else -> default
         }
     }

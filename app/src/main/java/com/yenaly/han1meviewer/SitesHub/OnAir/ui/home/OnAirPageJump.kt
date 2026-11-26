@@ -89,7 +89,7 @@ private fun OnAirPageJumpDialog(
     fun submit() {
         val p = text.trim().toIntOrNull()
         val valid = p != null && p >= 1 && (total == null || p <= total)
-        if (!valid || !onJump(p!!)) invalid = true
+        if (!valid || !onJump(p)) invalid = true
     }
 
     AlertDialog(

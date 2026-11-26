@@ -53,7 +53,7 @@ object LeakGalleryRepo {
             .build()
         val html = LeakGalleryNetwork.sharedOkHttpClient.newCall(request).execute().use {
             if (!it.isSuccessful) throw IOException("HTTP ${it.code}")
-            it.body?.string().orEmpty()
+            it.body.string()
         }
         val fresh = LeakGalleryParser.appToken(html) ?: throw IOException("API token not found")
         token = fresh
@@ -85,7 +85,7 @@ object LeakGalleryRepo {
                 response = client.newCall(buildRequest(url, loadToken(true), body, method)).execute()
             }
             response.use {
-                val text = it.body?.string().orEmpty()
+                val text = it.body.string()
                 if (!it.isSuccessful) throw LeakGalleryApiException(it.code, text)
                 text
             }
@@ -223,7 +223,6 @@ object LeakGalleryRepo {
         } else {
             api(endpoint("profile-subscription/$profileId"), null, "DELETE")
         }
-        Unit
     }
 
     suspend fun following(page: Int = 1): Result<LeakGalleryListPage> = runCatching {
@@ -335,7 +334,6 @@ object LeakGalleryRepo {
 
     suspend fun forgotPassword(email: String): Result<Unit> = runCatching {
         api(endpoint("auth/forgot-password"), JSONObject().put("email", email).toString(), "POST")
-        Unit
     }
 
     suspend fun me(): Result<LeakGalleryMe> = runCatching {
@@ -368,7 +366,6 @@ object LeakGalleryRepo {
 
     suspend fun markAllNotificationsRead(): Result<Unit> = runCatching {
         api(endpoint("notifications/mark-all-read"), "{}", "POST")
-        Unit
     }
 
     suspend fun statistics(): Result<List<Pair<String, Long>>> = runCatching {

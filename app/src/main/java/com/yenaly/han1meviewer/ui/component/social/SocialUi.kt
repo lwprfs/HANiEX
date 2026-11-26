@@ -629,7 +629,7 @@ fun SocialProfileHeader(
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                 ) {
                     RetryableImage(
-                        model = coverUrl!!,
+                        model = coverUrl,
                         modifier = Modifier.fillMaxSize(),
                         placeholder = painterResource(R.drawable.h_chan_loading),
                         error = painterResource(R.drawable.h_chan_load_failed),

@@ -506,13 +506,11 @@ object Preferences {
     val disableMobileDataWarning: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.DISABLE_MOBILE_DATA_WARNING,false)
 
-    /** 应用字体缩放档位，默认 [AppFontScale.Normal]。 */
     val appFontScale: AppFontScale
         get() = AppFontScale.fromKey(
             preferenceSp.getString(SettingsPreferenceKeys.APP_FONT_SCALE, AppFontScale.DEFAULT.key)
         )
 
-    /** 「显示大小」兼容模式：保证逻辑宽度不小于 [AppDisplayDensity.MIN_LOGICAL_WIDTH_DP]，默认开启。 */
     val ignoreSystemDisplaySize: Boolean
         get() = preferenceSp.getBoolean(
             SettingsPreferenceKeys.IGNORE_SYSTEM_DISPLAY_SIZE,
