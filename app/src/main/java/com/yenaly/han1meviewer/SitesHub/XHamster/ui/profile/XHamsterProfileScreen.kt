@@ -4,14 +4,12 @@ import com.yenaly.han1meviewer.ui.component.social.SocialActionButton
 import com.yenaly.han1meviewer.ui.component.social.SocialButtonStyle
 import com.yenaly.han1meviewer.ui.component.social.SocialChip
 import com.yenaly.han1meviewer.ui.component.social.SocialDefaults
+import com.yenaly.han1meviewer.ui.component.social.CollapsingProfileLayout
 import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
 import com.yenaly.han1meviewer.ui.component.social.SocialStat
 import com.yenaly.han1meviewer.ui.component.social.SocialTabRow
 import com.yenaly.han1meviewer.ui.component.social.SocialTagFlow
 import com.yenaly.han1meviewer.ui.component.social.SocialTone
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import android.view.TextureView
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -220,24 +218,28 @@ private fun ProfileContent(
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        Box(Modifier.fillMaxWidth().heightIn(max = 380.dp).verticalScroll(rememberScrollState())) {
+    val tabLabels = tabs.map { tab ->
+        val count = if (tab == ProfileTab.VIDEOS) profile.videoCount else profile.shortsCount
+        stringResource(
+            if (tab == ProfileTab.VIDEOS) R.string.xhamster_tab_videos
+            else R.string.xhamster_tab_shorts
+        ) + (XHamsterFormat.count(count)?.let { " $it" } ?: "")
+    }
+    CollapsingProfileLayout(
+        modifier = Modifier.fillMaxSize(),
+        header = {
             ProfileHeader(profile, subscribed, busy, canSubscribe, toggleSubscribe, onOpenPath)
-        }
-        val tabLabels = tabs.map { tab ->
-            val count = if (tab == ProfileTab.VIDEOS) profile.videoCount else profile.shortsCount
-            stringResource(
-                if (tab == ProfileTab.VIDEOS) R.string.xhamster_tab_videos
-                else R.string.xhamster_tab_shorts
-            ) + (XHamsterFormat.count(count)?.let { " $it" } ?: "")
-        }
-        SocialTabRow(
-            labels = tabLabels,
-            selectedIndex = selected,
-            onSelect = { selected = it },
-            community = profile.kind == XHamsterEntityProfile.Kind.CHANNEL,
-        )
-        Box(Modifier.weight(1f).fillMaxWidth()) {
+        },
+        pinned = {
+            SocialTabRow(
+                labels = tabLabels,
+                selectedIndex = selected,
+                onSelect = { selected = it },
+                community = profile.kind == XHamsterEntityProfile.Kind.CHANNEL,
+            )
+        },
+    ) {
+        Box(Modifier.fillMaxSize()) {
             when (tabs.getOrElse(selected) { ProfileTab.VIDEOS }) {
                 ProfileTab.VIDEOS -> ProfileVideos(videosPath, profile.tags, profile.sorts, onNavigateToVideo)
                 ProfileTab.SHORTS -> ProfileShorts(

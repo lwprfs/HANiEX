@@ -3,14 +3,12 @@ package com.yenaly.han1meviewer.SitesHub.RedGifs.ui.creator
 import com.yenaly.han1meviewer.ui.component.social.SocialActionButton
 import com.yenaly.han1meviewer.ui.component.social.SocialButtonStyle
 import com.yenaly.han1meviewer.ui.component.social.SocialLinkFlow
+import com.yenaly.han1meviewer.ui.component.social.CollapsingProfileLayout
 import com.yenaly.han1meviewer.ui.component.social.SocialProfileHeader
 import com.yenaly.han1meviewer.ui.component.social.SocialStat
 import com.yenaly.han1meviewer.ui.component.social.SocialTabRow
 import com.yenaly.han1meviewer.ui.component.social.SocialTagFlow
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.LocalRedGifsActions
@@ -128,7 +126,9 @@ fun RedGifsCreatorScreen(
             ).joinToString(" · ")
             val shownName = u?.displayName?.takeIf { it.isNotBlank() && !it.equals(name, true) }
 
-            Box(Modifier.fillMaxWidth().heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+            CollapsingProfileLayout(
+                modifier = Modifier.fillMaxSize(),
+                header = {
                 SocialProfileHeader(
                     name = shownName ?: u?.username ?: name,
                     username = "@${u?.username ?: name}".takeIf { shownName != null },
@@ -167,17 +167,21 @@ fun RedGifsCreatorScreen(
                         }
                     },
                 )
-            }
-            SocialTabRow(
-                labels = listOf(allLabel, pinsLabel),
-                selectedIndex = if (pinned) 1 else 0,
-                onSelect = { pinned = it == 1 },
-            )
-            key(pinned) {
-                RedGifsFeedContent(
-                    source = if (pinned) RedGifsFeedSource.Pins(name) else RedGifsFeedSource.Creator(name),
-                    onLogin = onLogin,
-                )
+                },
+                pinned = {
+                    SocialTabRow(
+                        labels = listOf(allLabel, pinsLabel),
+                        selectedIndex = if (pinned) 1 else 0,
+                        onSelect = { pinned = it == 1 },
+                    )
+                },
+            ) {
+                key(pinned) {
+                    RedGifsFeedContent(
+                        source = if (pinned) RedGifsFeedSource.Pins(name) else RedGifsFeedSource.Creator(name),
+                        onLogin = onLogin,
+                    )
+                }
             }
         }
     }
