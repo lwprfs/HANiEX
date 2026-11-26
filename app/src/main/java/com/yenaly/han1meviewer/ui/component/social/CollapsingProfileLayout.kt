@@ -19,15 +19,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Constraints
 import kotlin.math.roundToInt
 
-/**
- * Profile / community / channel layout whose [header] scrolls away together with the
- * list in [content] instead of staying pinned at the top.
- *
- * - [header]: big profile block. Collapses while the list below is scrolled up and
- *   expands again once the list is back at its first item.
- * - [pinned]: small bar (usually the tab row). It stays visible under the top bar.
- * - [content]: any lazy list / grid. It must scroll on its own.
- */
 @Composable
 fun CollapsingProfileLayout(
     modifier: Modifier = Modifier,

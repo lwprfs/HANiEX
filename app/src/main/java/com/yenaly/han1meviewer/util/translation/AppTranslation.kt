@@ -31,7 +31,14 @@ object AppTranslation {
         COMMENT("comment", 1000, long = true),
     }
 
-    data class Entry(val kind: Kind, val source: String, val text: String, val time: Long)
+    data class Entry(
+        val site: SiteType,
+        val kind: Kind,
+        val source: String,
+        val text: String,
+        val time: Long,
+        val edited: Boolean = false,
+    )
 
     data class Stats(
         val tags: Int,
@@ -43,12 +50,17 @@ object AppTranslation {
         val total: Int get() = tags + titles + descriptions + comments
     }
 
-    private const val KEY_ENABLED = "rouvideo_tr_enabled"
-    private const val KEY_TAGS = "rouvideo_tr_tags"
-    private const val KEY_TITLES = "rouvideo_tr_titles"
-    private const val KEY_DESC = "rouvideo_tr_desc"
-    private const val KEY_COMMENTS = "rouvideo_tr_comments"
-    private const val KEY_SITES_OFF = "rouvideo_tr_sites_off"
+    private data class Pending(val site: SiteType, val kind: Kind, val source: String)
+
+    // Legacy (pre per-site) preference keys. They are only read as defaults so that
+    // people who already configured translation keep their choices on every site.
+    private const val LEGACY_ENABLED = "rouvideo_tr_enabled"
+    private const val LEGACY_TAGS = "rouvideo_tr_tags"
+    private const val LEGACY_TITLES = "rouvideo_tr_titles"
+    private const val LEGACY_DESC = "rouvideo_tr_desc"
+    private const val LEGACY_COMMENTS = "rouvideo_tr_comments"
+    private const val LEGACY_SITES_OFF = "rouvideo_tr_sites_off"
+    private const val LEGACY_FILE = "rouvideo_translations.json"
 
     private const val BATCH_ITEMS = 15
     private const val BATCH_CHARS = 500
@@ -61,64 +73,99 @@ object AppTranslation {
 
     private val sp get() = Preferences.preferenceSp
 
-    private val enabledState = mutableStateOf(sp.getBoolean(KEY_ENABLED, true))
-    private val tagsState = mutableStateOf(sp.getBoolean(KEY_TAGS, true))
-    private val titlesState = mutableStateOf(sp.getBoolean(KEY_TITLES, false))
-    private val descState = mutableStateOf(sp.getBoolean(KEY_DESC, false))
-    private val commentsState = mutableStateOf(sp.getBoolean(KEY_COMMENTS, false))
-    private val sitesOffState = mutableStateOf(
-        sp.getString(KEY_SITES_OFF, null).orEmpty().split(',')
-            .mapNotNull { n -> SiteType.entries.firstOrNull { it.name == n } }.toSet()
-    )
+    /** Sites that have translation, in the order they are shown in settings. */
+    val SUPPORTED_SITES: List<SiteType> =
+        listOf(SiteType.HANIME, SiteType.JAVCHU, SiteType.ROUVIDEO, SiteType.WUMAOBI)
 
-    var enabled: Boolean
-        get() = enabledState.value
-        set(v) { enabledState.value = v; sp.edit().putBoolean(KEY_ENABLED, v).apply() }
+    /** The kinds of text that a site actually shows, so settings only list what can work. */
+    fun kindsFor(site: SiteType): List<Kind> = when (site) {
+        SiteType.ROUVIDEO -> listOf(Kind.TAG, Kind.TITLE, Kind.DESC, Kind.COMMENT)
+        SiteType.WUMAOBI -> listOf(Kind.TAG, Kind.TITLE)
+        else -> listOf(Kind.TITLE, Kind.DESC, Kind.COMMENT)
+    }
 
-    var tagsEnabled: Boolean
-        get() = tagsState.value
-        set(v) { tagsState.value = v; sp.edit().putBoolean(KEY_TAGS, v).apply() }
+    /** Settings of one site. Each site has its own switches. */
+    class SiteConfig internal constructor(val site: SiteType) {
+        private fun k(name: String) = "tr_${site.name.lowercase()}_$name"
 
-    var titlesEnabled: Boolean
-        get() = titlesState.value
-        set(v) { titlesState.value = v; sp.edit().putBoolean(KEY_TITLES, v).apply() }
+        private fun legacyOn(): Boolean {
+            val off = sp.getString(LEGACY_SITES_OFF, null).orEmpty().split(',')
+            return sp.getBoolean(LEGACY_ENABLED, true) && site.name !in off
+        }
 
-    var descriptionsEnabled: Boolean
-        get() = descState.value
-        set(v) { descState.value = v; sp.edit().putBoolean(KEY_DESC, v).apply() }
+        private val enabledState = mutableStateOf(sp.getBoolean(k("enabled"), legacyOn()))
+        private val tagsState = mutableStateOf(sp.getBoolean(k("tags"), sp.getBoolean(LEGACY_TAGS, true)))
+        private val titlesState = mutableStateOf(
+            sp.getBoolean(k("titles"), site == SiteType.WUMAOBI || sp.getBoolean(LEGACY_TITLES, false))
+        )
+        private val descState = mutableStateOf(sp.getBoolean(k("desc"), sp.getBoolean(LEGACY_DESC, false)))
+        private val commentsState = mutableStateOf(
+            sp.getBoolean(k("comments"), sp.getBoolean(LEGACY_COMMENTS, false))
+        )
 
-    var commentsEnabled: Boolean
-        get() = commentsState.value
-        set(v) { commentsState.value = v; sp.edit().putBoolean(KEY_COMMENTS, v).apply() }
+        var enabled: Boolean
+            get() = enabledState.value
+            set(v) { enabledState.value = v; sp.edit().putBoolean(k("enabled"), v).apply() }
 
-    val SUPPORTED_SITES: List<SiteType> = listOf(SiteType.HANIME, SiteType.JAVCHU, SiteType.ROUVIDEO)
+        var tags: Boolean
+            get() = tagsState.value
+            set(v) { tagsState.value = v; sp.edit().putBoolean(k("tags"), v).apply() }
+
+        var titles: Boolean
+            get() = titlesState.value
+            set(v) { titlesState.value = v; sp.edit().putBoolean(k("titles"), v).apply() }
+
+        var descriptions: Boolean
+            get() = descState.value
+            set(v) { descState.value = v; sp.edit().putBoolean(k("desc"), v).apply() }
+
+        var comments: Boolean
+            get() = commentsState.value
+            set(v) { commentsState.value = v; sp.edit().putBoolean(k("comments"), v).apply() }
+
+        fun isOn(kind: Kind): Boolean = when (kind) {
+            Kind.TAG -> tags
+            Kind.TITLE -> titles
+            Kind.DESC -> descriptions
+            Kind.COMMENT -> comments
+        }
+
+        fun set(kind: Kind, on: Boolean) {
+            when (kind) {
+                Kind.TAG -> tags = on
+                Kind.TITLE -> titles = on
+                Kind.DESC -> descriptions = on
+                Kind.COMMENT -> comments = on
+            }
+        }
+    }
+
+    private val configs = HashMap<SiteType, SiteConfig>()
+
+    @Synchronized
+    fun config(site: SiteType): SiteConfig = configs.getOrPut(site) { SiteConfig(site) }
 
     fun siteEnabled(site: SiteType): Boolean =
-        site in SUPPORTED_SITES && site !in sitesOffState.value
+        site in SUPPORTED_SITES && config(site).enabled
 
     fun setSiteEnabled(site: SiteType, on: Boolean) {
-        val next = if (on) sitesOffState.value - site else sitesOffState.value + site
-        sitesOffState.value = next
-        sp.edit().putString(KEY_SITES_OFF, next.joinToString(",") { it.name }).apply()
+        if (site in SUPPORTED_SITES) config(site).enabled = on
     }
 
     val available: Boolean
         get() = AppLocale.preferredLanguage.language.equals("en", ignoreCase = true)
 
     fun isActive(kind: Kind, site: SiteType = SiteType.ROUVIDEO): Boolean =
-        available && enabled && siteEnabled(site) && when (kind) {
-            Kind.TAG -> tagsEnabled
-            Kind.TITLE -> titlesEnabled
-            Kind.DESC -> descriptionsEnabled
-            Kind.COMMENT -> commentsEnabled
-        }
+        available && site in SUPPORTED_SITES && kind in kindsFor(site) &&
+            config(site).let { it.enabled && it.isOn(kind) }
 
     private val lock = Any()
-    private val entries = LinkedHashMap<String, Entry>()
-    private val pending = LinkedHashMap<String, Pair<Kind, String>>()
+    private val entries = HashMap<SiteType, LinkedHashMap<String, Entry>>()
+    private val pending = LinkedHashMap<String, Pending>()
     private val failed = HashSet<String>()
-    private val deriveQueue = ArrayDeque<Pair<Kind, String>>()
+    private val deriveQueue = ArrayDeque<Pending>()
     private val deriveTried = HashSet<String>()
+    private val dirty = HashSet<SiteType>()
     private var deriveDirty = true
 
     private val pieces = object : LinkedHashMap<String, String>() {
@@ -150,10 +197,18 @@ object AppTranslation {
             .build()
     }
 
-    private val file: File
-        get() = File(applicationContext.filesDir, "rouvideo_translations.json")
+    private fun fileOf(site: SiteType): File =
+        File(applicationContext.filesDir, "translations_${site.name.lowercase()}.json")
 
+    private fun siteEntries(site: SiteType): LinkedHashMap<String, Entry> =
+        entries.getOrPut(site) { LinkedHashMap() }
+
+    /** Key inside one site's entry map. */
     private fun key(kind: Kind, source: String) = kind.key + "\u0001" + source
+
+    /** Key for the global queues (pending / failed / tried): includes the site. */
+    private fun gkey(site: SiteType, kind: Kind, source: String) =
+        site.name + "\u0002" + key(kind, source)
 
     fun title(text: String, site: SiteType = SiteType.ROUVIDEO): String = shown(Kind.TITLE, text, site)
 
@@ -167,19 +222,20 @@ object AppTranslation {
 
     private fun shown(kind: Kind, text: String, site: SiteType): String {
         if (text.isBlank() || !FOREIGN.containsMatchIn(text) || !isActive(kind, site)) return text
-        return translate(kind, text)
+        return translate(kind, text, site)
     }
 
-    fun translate(kind: Kind, source: String): String {
+    fun translate(kind: Kind, source: String, site: SiteType = SiteType.ROUVIDEO): String {
         version.intValue
         ensureLoaded()
         val k = key(kind, source)
+        val g = gkey(site, kind, source)
         synchronized(lock) {
-            entries[k]?.let { return it.text }
-            if (FOREIGN.containsMatchIn(source) && k !in failed) {
-                if (k !in pending) deriveDirty = true
-                pending.remove(k)
-                pending[k] = kind to source
+            entries[site]?.get(k)?.let { return it.text }
+            if (FOREIGN.containsMatchIn(source) && g !in failed) {
+                if (g !in pending) deriveDirty = true
+                pending.remove(g)
+                pending[g] = Pending(site, kind, source)
                 while (pending.size > MAX_PENDING) pending.remove(pending.keys.first())
             } else {
                 return source
@@ -194,12 +250,12 @@ object AppTranslation {
         return ((pausedUntil - System.currentTimeMillis()) / 1000L).coerceAtLeast(0L)
     }
 
-    fun stats(): Stats {
+    fun stats(site: SiteType): Stats {
         version.intValue
         ensureLoaded()
         var t = 0; var ti = 0; var d = 0; var c = 0
         synchronized(lock) {
-            entries.values.forEach {
+            entries[site]?.values?.forEach {
                 when (it.kind) {
                     Kind.TAG -> t++
                     Kind.TITLE -> ti++
@@ -208,41 +264,65 @@ object AppTranslation {
                 }
             }
         }
-        return Stats(t, ti, d, c, runCatching { file.length() }.getOrDefault(0L))
+        return Stats(t, ti, d, c, runCatching { fileOf(site).length() }.getOrDefault(0L))
     }
 
-    fun snapshot(kind: Kind? = null): List<Entry> {
+    fun snapshot(site: SiteType, kind: Kind? = null): List<Entry> {
         version.intValue
         ensureLoaded()
         return synchronized(lock) {
-            entries.values.filter { kind == null || it.kind == kind }
+            entries[site]?.values.orEmpty().filter { kind == null || it.kind == kind }
         }.sortedByDescending { it.time }
     }
 
     fun delete(entry: Entry) {
         synchronized(lock) {
-            val k = key(entry.kind, entry.source)
-            entries.remove(k)
-            failed.remove(k)
-            deriveTried.remove(k)
+            entries[entry.site]?.remove(key(entry.kind, entry.source))
+            val g = gkey(entry.site, entry.kind, entry.source)
+            failed.remove(g)
+            deriveTried.remove(g)
+            dirty.add(entry.site)
         }
         changed()
     }
 
-    fun clear(kind: Kind? = null) {
+    /**
+     * Replaces the translated text of a cached entry with what the user typed. The entry is
+     * flagged as edited; it is kept until deleted or cleared and is never re-translated.
+     */
+    fun edit(entry: Entry, newText: String) {
+        val text = newText.trim()
+        if (text.isEmpty()) return
         synchronized(lock) {
+            val map = siteEntries(entry.site)
+            val k = key(entry.kind, entry.source)
+            val current = map[k] ?: entry
+            if (current.text == text) return
+            map[k] = current.copy(text = text, time = System.currentTimeMillis(), edited = true)
+            val g = gkey(entry.site, entry.kind, entry.source)
+            failed.remove(g)
+            pending.remove(g)
+            dirty.add(entry.site)
+            deriveDirty = true
+        }
+        changed()
+    }
+
+    fun clear(site: SiteType, kind: Kind? = null) {
+        synchronized(lock) {
+            val prefix = site.name + "\u0002"
             if (kind == null) {
-                entries.clear()
-                failed.clear()
-                pending.clear()
-                deriveQueue.clear()
-                deriveTried.clear()
-                pieces.clear()
+                entries[site]?.clear()
+                failed.removeAll { it.startsWith(prefix) }
+                pending.keys.removeAll { it.startsWith(prefix) }
+                deriveQueue.removeAll { it.site == site }
+                deriveTried.removeAll { it.startsWith(prefix) }
             } else {
-                entries.entries.removeAll { it.value.kind == kind }
-                failed.removeAll { it.startsWith(kind.key + "\u0001") }
-                deriveTried.removeAll { it.startsWith(kind.key + "\u0001") }
+                entries[site]?.entries?.removeAll { it.value.kind == kind }
+                failed.removeAll { it.startsWith(prefix + kind.key + "\u0001") }
+                deriveTried.removeAll { it.startsWith(prefix + kind.key + "\u0001") }
             }
+            dirty.add(site)
             deriveDirty = true
         }
         pausedUntil = 0L
@@ -272,25 +352,24 @@ object AppTranslation {
         val derive = synchronized(lock) {
             if (deriveQueue.isEmpty() && deriveDirty) {
                 deriveDirty = false
-                val hits = pending.entries.toList().asReversed().filter { (k, v) ->
-                    v.first == Kind.TITLE && k !in deriveTried && isActive(v.first, anySite()) &&
-                        findNeighbor(v.second) != null
+                val hits = pending.entries.toList().asReversed().filter { (g, v) ->
+                    v.kind == Kind.TITLE && g !in deriveTried && isActive(v.kind, v.site) &&
+                        findNeighbor(v.site, v.source) != null
                 }
                 hits.forEach { pending.remove(it.key); deriveQueue.addLast(it.value) }
             }
             deriveQueue.removeFirstOrNull()
         }
         if (derive != null) {
-            val (kind, source) = derive
             try {
-                val text = deriveFromNeighbor(source)
+                val text = deriveFromNeighbor(derive.site, derive.source)
                 synchronized(lock) {
                     if (text != null) {
-                        putEntry(kind, source, text)
+                        putEntry(derive.site, derive.kind, derive.source, text)
                     } else {
-                        val k = key(kind, source)
-                        deriveTried.add(k)
-                        pending[k] = derive
+                        val g = gkey(derive.site, derive.kind, derive.source)
+                        deriveTried.add(g)
+                        pending[g] = derive
                     }
                 }
                 if (text != null) changed()
@@ -302,38 +381,44 @@ object AppTranslation {
 
         val group = synchronized(lock) {
             val candidates = pending.entries.toList().asReversed()
-                .filter { isActive(it.value.first, anySite()) }
+                .filter { isActive(it.value.kind, it.value.site) }
             pending.keys.retainAll(candidates.map { it.key }.toSet())
             val first = candidates.firstOrNull() ?: return false
             val picked = mutableListOf(first)
-            if (!first.value.first.long) {
-                var chars = first.value.second.length
+            if (!first.value.kind.long) {
+                var chars = first.value.source.length
                 for (c in candidates.drop(1)) {
                     if (picked.size >= BATCH_ITEMS) break
-                    val (ck, cs) = c.value
-                    if (ck.long) continue
-                    if (chars + cs.length > BATCH_CHARS) continue
+                    val cv = c.value
+                    if (cv.kind.long) continue
+                    if (chars + cv.source.length > BATCH_CHARS) continue
 
-                    if (ck == Kind.TITLE && c.key !in deriveTried &&
-                        picked.any { it.value.first == Kind.TITLE && split(cs, it.value.second) != null }
+                    if (cv.kind == Kind.TITLE && c.key !in deriveTried &&
+                        picked.any {
+                            it.value.kind == Kind.TITLE && it.value.site == cv.site &&
+                                split(cv.source, it.value.source) != null
+                        }
                     ) continue
-                    picked += c; chars += cs.length
+                    picked += c; chars += cv.source.length
                 }
             }
             picked.forEach { pending.remove(it.key) }
             picked.map { it.value }
         }
         try {
-            val out = if (group.first().first.long) {
-                listOf(translateLong(group.first().second))
+            val out = if (group.first().kind.long) {
+                listOf(translateLong(group.first().source))
             } else {
-                translateGroup(group.map { it.second.replace('\n', ' ') })
+                translateGroup(group.map { it.source.replace('\n', ' ') })
             }
             synchronized(lock) {
-                group.forEachIndexed { i, (kind, source) ->
+                group.forEachIndexed { i, p ->
                     val text = out.getOrNull(i).orEmpty().trim()
-                    if (text.isEmpty() || text == source) failed.add(key(kind, source))
-                    else putEntry(kind, source, text)
+                    if (text.isEmpty() || text == p.source) {
+                        failed.add(gkey(p.site, p.kind, p.source))
+                    } else if (siteEntries(p.site)[key(p.kind, p.source)]?.edited != true) {
+                        putEntry(p.site, p.kind, p.source, text)
+                    }
                 }
             }
             changed()
@@ -343,13 +428,12 @@ object AppTranslation {
         return true
     }
 
-    private fun anySite(): SiteType =
-        SUPPORTED_SITES.firstOrNull { siteEnabled(it) } ?: SiteType.ROUVIDEO
-
-    private fun onNetworkError(e: Exception, group: List<Pair<Kind, String>>) {
+    private fun onNetworkError(e: Exception, group: List<Pending>) {
         synchronized(lock) {
-            group.forEach { (kind, source) ->
-                if (pending.size < MAX_PENDING) pending.putIfAbsent(key(kind, source), kind to source)
+            group.forEach { p ->
+                if (pending.size < MAX_PENDING) {
+                    pending.putIfAbsent(gkey(p.site, p.kind, p.source), p)
+                }
             }
         }
         pausedUntil = System.currentTimeMillis() +
@@ -357,22 +441,25 @@ object AppTranslation {
         version.intValue++
     }
 
-    private fun putEntry(kind: Kind, source: String, text: String) {
+    private fun putEntry(site: SiteType, kind: Kind, source: String, text: String) {
+        val map = siteEntries(site)
         val k = key(kind, source)
-        entries.remove(k)
-        entries[k] = Entry(
-            kind, source,
+        map.remove(k)
+        map[k] = Entry(
+            site, kind, source,
             if (kind == Kind.TAG) titleCase(text) else text,
             System.currentTimeMillis(),
         )
+        dirty.add(site)
         deriveDirty = true
-        Kind.entries.forEach { trim(it) }
+        Kind.entries.forEach { trim(site, it) }
     }
 
-    private fun trim(kind: Kind) {
-        var count = entries.values.count { it.kind == kind }
+    private fun trim(site: SiteType, kind: Kind) {
+        val map = siteEntries(site)
+        var count = map.values.count { it.kind == kind }
         if (count <= kind.maxEntries) return
-        val it = entries.entries.iterator()
+        val it = map.entries.iterator()
         while (it.hasNext() && count > kind.maxEntries) {
             if (it.next().value.kind == kind) { it.remove(); count-- }
         }
@@ -406,10 +493,10 @@ object AppTranslation {
         return Split(x.substring(p, x.length - q), dS, p, q)
     }
 
-    private fun findNeighbor(x: String): Pair<Entry, Split>? {
+    private fun findNeighbor(site: SiteType, x: String): Pair<Entry, Split>? {
         var best: Pair<Entry, Split>? = null
         var bestShared = -1
-        for (e in entries.values) {
+        for (e in entries[site]?.values.orEmpty()) {
             if (e.kind != Kind.TITLE) continue
             val sp = split(x, e.source) ?: continue
             val shared = sp.prefix + sp.suffix
@@ -418,8 +505,8 @@ object AppTranslation {
         return best
     }
 
-    private fun deriveFromNeighbor(x: String): String? {
-        val (neighbor, sp) = synchronized(lock) { findNeighbor(x) } ?: return null
+    private fun deriveFromNeighbor(site: SiteType, x: String): String? {
+        val (neighbor, sp) = synchronized(lock) { findNeighbor(site, x) } ?: return null
         val trS = fragment(sp.dS)
         val trX = fragment(sp.dX)
         val text = neighbor.text
@@ -503,17 +590,26 @@ object AppTranslation {
 
     private fun save() {
         runCatching {
-            val arr = JSONArray()
-            synchronized(lock) {
-                entries.values.forEach {
-                    arr.put(
-                        JSONObject().put("k", it.kind.key).put("s", it.source)
-                            .put("t", it.text).put("ts", it.time)
-                    )
+            val toSave = synchronized(lock) {
+                val sites = dirty.toList()
+                dirty.clear()
+                sites.associateWith { site ->
+                    JSONArray().also { arr ->
+                        entries[site]?.values?.forEach {
+                            arr.put(
+                                JSONObject().put("k", it.kind.key).put("s", it.source)
+                                    .put("t", it.text).put("ts", it.time).put("e", it.edited)
+                            )
+                        }
+                    }
                 }
             }
-            val f = file
-            if (arr.length() == 0) f.delete() else f.writeText(arr.toString(), Charsets.UTF_8)
+            toSave.forEach { (site, arr) ->
+                val f = fileOf(site)
+                if (arr.length() == 0) f.delete() else f.writeText(arr.toString(), Charsets.UTF_8)
+            }
+            // The old shared cache has been split into per-site files by now.
+            File(applicationContext.filesDir, LEGACY_FILE).delete()
         }
         version.intValue++
     }
@@ -523,16 +619,34 @@ object AppTranslation {
         if (loaded) return
         loaded = true
         runCatching {
-            val f = file
-            if (!f.exists()) return
-            val arr = JSONArray(f.readText(Charsets.UTF_8))
-            synchronized(lock) {
-                for (i in 0 until arr.length()) {
-                    val o = arr.getJSONObject(i)
-                    val kind = Kind.entries.firstOrNull { it.key == o.getString("k") } ?: continue
-                    val source = o.getString("s")
-                    entries[key(kind, source)] =
-                        Entry(kind, source, o.getString("t"), o.optLong("ts"))
+            // Entries cached before translation became per-site all belong to RouVideo,
+            // the site this feature was written for.
+            val legacy = File(applicationContext.filesDir, LEGACY_FILE)
+            SUPPORTED_SITES.forEach { site ->
+                val f = fileOf(site)
+                val source = when {
+                    f.exists() -> f
+                    site == SiteType.ROUVIDEO && legacy.exists() -> legacy
+                    else -> return@forEach
+                }
+                val arr = JSONArray(source.readText(Charsets.UTF_8))
+                synchronized(lock) {
+                    val map = siteEntries(site)
+                    for (i in 0 until arr.length()) {
+                        val o = arr.getJSONObject(i)
+                        val kind = Kind.entries.firstOrNull { it.key == o.getString("k") } ?: continue
+                        val src = o.getString("s")
+                        map[key(kind, src)] = Entry(
+                            site, kind, src, o.getString("t"), o.optLong("ts"), o.optBoolean("e", false),
+                        )
+                    }
+                    if (source === legacy) dirty.add(site)
+                }
+            }
+            if (synchronized(lock) { dirty.isNotEmpty() }) {
+                scope.launch {
+                    delay(500)
+                    save()
                 }
             }
         }

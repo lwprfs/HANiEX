@@ -2578,7 +2578,7 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="rouvideo_tr_title">Translation</string>
     <string name="rouvideo_tr_privacy">Translates Chinese and Japanese tags, titles, descriptions and comments on every site to English. Text that isn\'t in the built-in dictionary is sent to Google Translate.</string>
     <string name="rouvideo_tr_enable">Enable translation</string>
-    <string name="rouvideo_tr_enable_desc">Master switch. Turn off to show everything in the original language.</string>
+    <string name="rouvideo_tr_enable_desc">Only affects this site. Turn off to show its content in the original language.</string>
     <string name="rouvideo_tr_tags">Tags &amp; genres</string>
     <string name="rouvideo_tr_tags_desc">Categories, genres and studios</string>
     <string name="rouvideo_tr_titles">Video titles</string>
@@ -2598,6 +2598,14 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="rouvideo_tr_clear_confirm">Delete all %1$d cached translations?</string>
     <string name="rouvideo_tr_empty">Nothing translated yet</string>
     <string name="rouvideo_tr_filter_all">All</string>
+    <string name="rouvideo_tr_site_title">%1$s translation</string>
+    <string name="rouvideo_tr_view_site">%1$s translated items</string>
+    <string name="rouvideo_tr_site_summary_on">On · %1$d cached</string>
+    <string name="rouvideo_tr_site_summary_off">Off</string>
+    <string name="rouvideo_tr_edited">Edited</string>
+    <string name="rouvideo_tr_edit_title">Edit translation</string>
+    <string name="rouvideo_tr_edit_original">Original</string>
+    <string name="rouvideo_tr_edit_translation">Translation</string>
     <string name="site_rouvideo_description">Chinese amateur, AI short drama and more</string>
     <string name="rouvideo_all">All</string>
     <string name="rouvideo_categories">Categories</string>

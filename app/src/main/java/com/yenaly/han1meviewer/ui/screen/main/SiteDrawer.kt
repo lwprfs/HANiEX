@@ -60,7 +60,7 @@ import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoHistoryRo
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoHostSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoSearchRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterAuth
 import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterAccountRoute
@@ -397,6 +397,10 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     customize,
                     listOf(
                         entry(str(R.string.wumaobi_settings_playback_title), R.drawable.ic_video_quilty, com.yenaly.han1meviewer.SitesHub.Wumaobi.ui.navigation.WumaobiSettingsRoute),
+                    ) + listOfNotNull(
+                        if (AppTranslation.available) {
+                            entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, TranslationSiteRoute(SiteType.WUMAOBI.name))
+                        } else null,
                         playerSettings,
                     ),
                 ),
@@ -542,7 +546,7 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     entry(str(R.string.rouvideo_settings_title), R.drawable.ic_video_quilty, RouVideoSettingsRoute),
                 ) + listOfNotNull(
                     if (AppTranslation.available) {
-                        entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, TranslationSettingsRoute)
+                        entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, TranslationSiteRoute(SiteType.ROUVIDEO.name))
                     } else null,
                     playerSettings,
                 ),

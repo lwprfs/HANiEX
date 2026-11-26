@@ -104,10 +104,12 @@ fun Context.openDownloadedHanimeVideoLocally(
     }
 }
 
+private const val FAST_COPY_BUFFER_SIZE = 256 * 1024
+
 suspend fun InputStream.copyTo(
     out: OutputStream,
     contentLength: Long,
-    bufferSize: Int = DEFAULT_BUFFER_SIZE,
+    bufferSize: Int = FAST_COPY_BUFFER_SIZE,
     progress: (suspend (Int, Long, Long) -> Unit)? = null,
 ): Long {
     return withContext(Dispatchers.IO) {
@@ -129,7 +131,6 @@ suspend fun InputStream.copyTo(
                 }
                 bytes = read(buffer)
             }
-            Log.i("progress",bytesCopied.toString())
             bytesCopied
         }
     }

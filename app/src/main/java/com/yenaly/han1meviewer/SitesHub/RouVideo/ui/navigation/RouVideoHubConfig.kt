@@ -18,7 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.util.translation.AppTranslation
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoAuth
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.library.RouVideoLibraryTab
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -38,7 +38,7 @@ fun rouVideoHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConf
             title = stringResource(R.string.rouvideo_tr_title),
             subtitle = stringResource(R.string.rouvideo_tr_privacy),
             icon = Icons.Filled.Translate,
-            onClick = { navigator.navigateSafely(TranslationSettingsRoute) },
+            onClick = { navigator.navigateSafely(TranslationSiteRoute(com.yenaly.han1meviewer.SiteType.ROUVIDEO.name)) },
         )
     } else null
     val loggedIn = RouVideoAuth.isLoggedIn

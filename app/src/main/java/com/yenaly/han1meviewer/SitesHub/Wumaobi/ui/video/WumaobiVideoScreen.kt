@@ -12,6 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.video.SubtitleCue
+import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiTranslation
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.video.SubtitleParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -418,7 +419,7 @@ fun WumaobiVideoScreen(
                 exoPlayer.value?.seekTo(0)
                 showResumeDialog = false
             },
-            title = detail?.title.orEmpty(),
+            title = WumaobiTranslation.title(detail?.title.orEmpty()),
             onBack = { if (fullscreen) exitFullscreen() else onBack() },
             onSpeedSelect = { viewModel.setSpeed(it) },
             onQualitySelect = { viewModel.setQuality(it) },
@@ -444,7 +445,7 @@ fun WumaobiVideoScreen(
             if (!inPip) SiteTopAppBar(
                 title = {
                     Text(
-                        text = detail?.title ?: stringResource(R.string.video),
+                        text = detail?.title?.let { WumaobiTranslation.title(it) } ?: stringResource(R.string.video),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -598,7 +599,7 @@ private fun WumaobiVideoContent(
         item(key = "header") {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    text = info.title,
+                    text = WumaobiTranslation.title(info.title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -631,7 +632,7 @@ private fun WumaobiVideoContent(
                     sourceLinks.forEach { link ->
                         AssistChip(
                             onClick = { onNavigateToList(link.title, link.path) },
-                            label = { Text(link.title) },
+                            label = { Text(WumaobiTranslation.tag(link.title)) },
                         )
                     }
                 }
@@ -649,7 +650,7 @@ private fun WumaobiVideoContent(
                         info.models.forEach { model ->
                             AssistChip(
                                 onClick = { onNavigateToList(model.title, model.path) },
-                                label = { Text(model.title) },
+                                label = { Text(WumaobiTranslation.tag(model.title)) },
                             )
                         }
                     }
@@ -666,7 +667,7 @@ private fun WumaobiVideoContent(
                     info.categories.forEach { tag ->
                         AssistChip(
                             onClick = { onNavigateToList(tag.title, tag.path) },
-                            label = { Text(tag.title) },
+                            label = { Text(WumaobiTranslation.tag(tag.title)) },
                         )
                     }
                 }

@@ -2619,7 +2619,7 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="rouvideo_tr_title">翻譯</string>
     <string name="rouvideo_tr_privacy">將各網站的中文與日文標籤、標題、簡介與留言翻譯成英文。內建詞庫以外的文字會傳送到 Google 翻譯。</string>
     <string name="rouvideo_tr_enable">啟用翻譯</string>
-    <string name="rouvideo_tr_enable_desc">總開關，關閉後全部顯示原文</string>
+    <string name="rouvideo_tr_enable_desc">僅作用於此網站，關閉後此網站顯示原文</string>
     <string name="rouvideo_tr_tags">標籤與分類</string>
     <string name="rouvideo_tr_tags_desc">分類、題材與片商</string>
     <string name="rouvideo_tr_titles">影片標題</string>
@@ -2639,6 +2639,14 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="rouvideo_tr_clear_confirm">刪除全部 %1$d 項翻譯快取？</string>
     <string name="rouvideo_tr_empty">尚無翻譯內容</string>
     <string name="rouvideo_tr_filter_all">全部</string>
+    <string name="rouvideo_tr_site_title">%1$s 翻譯</string>
+    <string name="rouvideo_tr_view_site">%1$s 已翻譯內容</string>
+    <string name="rouvideo_tr_site_summary_on">已啟用 · 快取 %1$d 項</string>
+    <string name="rouvideo_tr_site_summary_off">已關閉</string>
+    <string name="rouvideo_tr_edited">已編輯</string>
+    <string name="rouvideo_tr_edit_title">編輯翻譯</string>
+    <string name="rouvideo_tr_edit_original">原文</string>
+    <string name="rouvideo_tr_edit_translation">翻譯</string>
     <string name="site_rouvideo_description">國產、探花、自拍與 AI 短劇影音站</string>
     <string name="rouvideo_all">全部</string>
     <string name="rouvideo_categories">分類</string>

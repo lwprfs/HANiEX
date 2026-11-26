@@ -3,6 +3,8 @@ package com.yenaly.han1meviewer.ui.navigation.settings
 import androidx.annotation.StringRes
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
@@ -46,10 +48,18 @@ object UpdateSettingsRoute : NavKey
 object TranslationSettingsRoute : NavKey
 
 @Serializable
+data class TranslationSiteRoute(val site: String) : NavKey
+
+/** The translation settings page for [site], or the list of sites if it has none. */
+fun translationRouteFor(site: SiteType): NavKey =
+    if (site in AppTranslation.SUPPORTED_SITES) TranslationSiteRoute(site.name)
+    else TranslationSettingsRoute
+
+@Serializable
 object MediaControlsSettingsRoute : NavKey
 
 @Serializable
-object TranslationCacheRoute : NavKey
+data class TranslationCacheRoute(val site: String) : NavKey
 
 @Serializable
 object AboutAppRoute : NavKey

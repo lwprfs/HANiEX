@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiImageLoader
+import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiTranslation
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.data.local.WumaobiHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.data.repository.WumaobiHistoryRepo
 import com.yenaly.han1meviewer.ui.component.SiteHistoryEntry
@@ -26,6 +27,7 @@ fun WumaobiHistoryScreen(
         onDelete = { WumaobiHistoryRepo.deleteByVideoCode(it) },
         onNavigateToVideo = onNavigateToVideo,
         onBack = onBack,
+        titleOf = { WumaobiTranslation.title(it) },
     )
 }
 

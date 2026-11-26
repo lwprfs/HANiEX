@@ -18,6 +18,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.SitePlayerSettingsPage
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSocialStylePage
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
+import com.yenaly.han1meviewer.ui.screen.settings.TranslationSiteSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
 
 fun EntryProviderScope<NavKey>.settingsEntries(
@@ -99,11 +100,20 @@ fun EntryProviderScope<NavKey>.settingsEntries(
     screen<TranslationSettingsRoute> {
         TranslationSettingsScreen(
             onBack = onBack,
-            onOpenCache = { navigator.navigateSafely(TranslationCacheRoute) },
+            onOpenSite = { site -> navigator.navigateSafely(TranslationSiteRoute(site.name)) },
         )
     }
-    screen<TranslationCacheRoute> {
-        TranslationCacheScreen(onBack = onBack)
+    screen<TranslationSiteRoute> { key ->
+        val site = runCatching { SiteType.valueOf(key.site) }.getOrDefault(SiteType.ROUVIDEO)
+        TranslationSiteSettingsScreen(
+            site = site,
+            onBack = onBack,
+            onOpenCache = { navigator.navigateSafely(TranslationCacheRoute(site.name)) },
+        )
+    }
+    screen<TranslationCacheRoute> { key ->
+        val site = runCatching { SiteType.valueOf(key.site) }.getOrDefault(SiteType.ROUVIDEO)
+        TranslationCacheScreen(site = site, onBack = onBack)
     }
     screen<NetworkSettingsRoute> {
         SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {

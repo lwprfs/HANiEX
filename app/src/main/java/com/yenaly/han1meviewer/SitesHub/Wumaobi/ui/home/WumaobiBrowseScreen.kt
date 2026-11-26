@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiConstants
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiImageLoader
+import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiTranslation
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.data.model.WumaobiEntity
 import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
@@ -190,7 +191,7 @@ internal fun EntityCard(
             }
             Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
                 Text(
-                    text = entity.name,
+                    text = WumaobiTranslation.tag(entity.name),
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,

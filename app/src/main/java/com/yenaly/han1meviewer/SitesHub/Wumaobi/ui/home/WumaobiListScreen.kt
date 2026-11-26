@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiConstants
+import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiTranslation
 import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteChipRow
 import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
@@ -48,7 +49,13 @@ fun WumaobiListScreen(
     Scaffold(
         topBar = {
             SiteTopAppBar(
-                title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                title = {
+                    Text(
+                        WumaobiTranslation.tag(title),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 navigationIcon = { SiteBackButton(onClick = onBack) },
             )
         },

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,6 +45,8 @@ import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
+import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
@@ -113,7 +116,7 @@ fun WumaobiNavHost(
             SiteSettingsHubScreen(
                 site = SiteType.WUMAOBI,
                 onResetSite = { com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiSettings.resetToDefaults() },
-                siteEntries = listOf(
+                siteEntries = listOfNotNull(
                     SiteSettingsEntry(
                         key = "playback",
                         title = stringResource(R.string.wumaobi_settings_playback_title),
@@ -128,6 +131,15 @@ fun WumaobiNavHost(
                         icon = Icons.Default.History,
                         onClick = { navigator.navigateSafely(WumaobiHistoryRoute) },
                     ),
+                    SiteSettingsEntry(
+                        key = "translation",
+                        title = stringResource(R.string.rouvideo_tr_title),
+                        subtitle = stringResource(R.string.rouvideo_tr_privacy),
+                        icon = Icons.Default.Translate,
+                        onClick = {
+                            navigator.navigateSafely(TranslationSiteRoute(SiteType.WUMAOBI.name))
+                        },
+                    ).takeIf { AppTranslation.available },
                 ),
                 onBack = { navigator.goBack() },
                 onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },

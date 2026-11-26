@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.util.translation.AppTranslation
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.account.RouVideoAccountScreen
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.account.RouVideoProfileEditScreen
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.library.RouVideoLibraryScreen
@@ -151,7 +151,7 @@ fun RouVideoNavHost(
                         title = stringResource(R.string.rouvideo_tr_title),
                         subtitle = stringResource(R.string.rouvideo_tr_privacy),
                         icon = Icons.Default.Translate,
-                        onClick = { navigator.navigateSafely(TranslationSettingsRoute) },
+                        onClick = { navigator.navigateSafely(TranslationSiteRoute(SiteType.ROUVIDEO.name)) },
                     ).takeIf { AppTranslation.available },
                     SiteSettingsEntry(
                         key = "categories",

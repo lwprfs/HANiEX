@@ -4,6 +4,7 @@ import android.text.format.Formatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -33,6 +35,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.util.translation.AppTranslation.Kind
@@ -56,16 +59,27 @@ private fun SettingsSectionTitle(title: String) {
 }
 
 @Composable
+private fun PausedNotice() {
+    val paused = AppTranslation.pausedForSeconds()
+    if (paused > 0) {
+        Text(
+            text = stringResource(
+                R.string.rouvideo_tr_paused,
+                ((paused + 59) / 60).toInt().coerceAtLeast(1),
+            ),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.error,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+        )
+    }
+}
+
+/** Lists every site that has translation; each one opens its own settings. */
+@Composable
 fun TranslationSettingsScreen(
     onBack: () -> Unit,
-    onOpenCache: () -> Unit,
+    onOpenSite: (SiteType) -> Unit,
 ) {
-    val context = LocalContext.current
-    val stats = AppTranslation.stats()
-    val paused = AppTranslation.pausedForSeconds()
-    val enabled = AppTranslation.enabled
-    var confirmClear by remember { mutableStateOf(false) }
-
     Scaffold(
         topBar = {
             SiteTopAppBar(
@@ -81,66 +95,103 @@ fun TranslationSettingsScreen(
             verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
             item {
+                Text(
+                    text = stringResource(R.string.rouvideo_tr_privacy),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                )
+            }
+            item { SettingsSectionTitle(stringResource(R.string.rouvideo_tr_sites)) }
+            items(AppTranslation.SUPPORTED_SITES, key = { "site_" + it.name }) { site ->
+                val on = AppTranslation.siteEnabled(site)
+                val total = AppTranslation.stats(site).total
+                SettingNavigationItem(
+                    title = CrossSiteNavigator.siteLabel(site),
+                    summary = if (on) {
+                        stringResource(R.string.rouvideo_tr_site_summary_on, total)
+                    } else {
+                        stringResource(R.string.rouvideo_tr_site_summary_off)
+                    },
+                    iconRes = R.drawable.ic_settings_public_24,
+                    onClick = { onOpenSite(site) },
+                )
+            }
+            item { PausedNotice() }
+        }
+    }
+}
+
+private fun kindLabelRes(kind: Kind): Int = when (kind) {
+    Kind.TAG -> R.string.rouvideo_tr_tags
+    Kind.TITLE -> R.string.rouvideo_tr_titles
+    Kind.DESC -> R.string.rouvideo_tr_descriptions
+    Kind.COMMENT -> R.string.rouvideo_tr_comments
+}
+
+private fun kindDescRes(kind: Kind): Int = when (kind) {
+    Kind.TAG -> R.string.rouvideo_tr_tags_desc
+    Kind.TITLE -> R.string.rouvideo_tr_titles_desc
+    Kind.DESC -> R.string.rouvideo_tr_descriptions_desc
+    Kind.COMMENT -> R.string.rouvideo_tr_comments_desc
+}
+
+/** Translation settings, cache and history of a single site. */
+@Composable
+fun TranslationSiteSettingsScreen(
+    site: SiteType,
+    onBack: () -> Unit,
+    onOpenCache: () -> Unit,
+) {
+    val context = LocalContext.current
+    val config = AppTranslation.config(site)
+    val stats = AppTranslation.stats(site)
+    val enabled = config.enabled
+    val kinds = AppTranslation.kindsFor(site)
+    var confirmClear by remember { mutableStateOf(false) }
+
+    Scaffold(
+        topBar = {
+            SiteTopAppBar(
+                title = {
+                    Text(
+                        stringResource(
+                            R.string.rouvideo_tr_site_title,
+                            CrossSiteNavigator.siteLabel(site),
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                navigationIcon = { SiteBackButton(onClick = onBack) },
+            )
+        },
+    ) { padding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            item {
                 SettingSwitchItem(
                     title = stringResource(R.string.rouvideo_tr_enable),
-                    summary = stringResource(R.string.rouvideo_tr_privacy),
+                    summary = stringResource(R.string.rouvideo_tr_enable_desc),
                     iconRes = R.drawable.ic_translate_24,
                     checked = enabled,
-                    onCheckedChange = { AppTranslation.enabled = it },
+                    onCheckedChange = { config.enabled = it },
                 )
             }
 
             item { SettingsSectionTitle(stringResource(R.string.rouvideo_tr_what)) }
-            item {
+            items(kinds, key = { "kind_" + it.name }) { kind ->
                 SettingSwitchItem(
-                    title = stringResource(R.string.rouvideo_tr_tags),
-                    summary = stringResource(R.string.rouvideo_tr_tags_desc),
-                    iconRes = R.drawable.ic_settings_label_24,
-                    checked = AppTranslation.tagsEnabled,
+                    title = stringResource(kindLabelRes(kind)),
+                    summary = stringResource(kindDescRes(kind)),
+                    iconRes = kindIcon(kind),
+                    checked = config.isOn(kind),
                     enabled = enabled,
-                    onCheckedChange = { AppTranslation.tagsEnabled = it },
-                )
-            }
-            item {
-                SettingSwitchItem(
-                    title = stringResource(R.string.rouvideo_tr_titles),
-                    summary = stringResource(R.string.rouvideo_tr_titles_desc),
-                    iconRes = R.drawable.ic_settings_movie_24,
-                    checked = AppTranslation.titlesEnabled,
-                    enabled = enabled,
-                    onCheckedChange = { AppTranslation.titlesEnabled = it },
-                )
-            }
-            item {
-                SettingSwitchItem(
-                    title = stringResource(R.string.rouvideo_tr_descriptions),
-                    summary = stringResource(R.string.rouvideo_tr_descriptions_desc),
-                    iconRes = R.drawable.ic_settings_notes_24,
-                    checked = AppTranslation.descriptionsEnabled,
-                    enabled = enabled,
-                    onCheckedChange = { AppTranslation.descriptionsEnabled = it },
-                )
-            }
-            item {
-                SettingSwitchItem(
-                    title = stringResource(R.string.rouvideo_tr_comments),
-                    summary = stringResource(R.string.rouvideo_tr_comments_desc),
-                    iconRes = R.drawable.ic_baseline_comment_24,
-                    checked = AppTranslation.commentsEnabled,
-                    enabled = enabled,
-                    onCheckedChange = { AppTranslation.commentsEnabled = it },
-                )
-            }
-
-            item { SettingsSectionTitle(stringResource(R.string.rouvideo_tr_sites)) }
-            items(AppTranslation.SUPPORTED_SITES, key = { "site_" + it.name }) { site ->
-                SettingSwitchItem(
-                    title = CrossSiteNavigator.siteLabel(site),
-                    summary = stringResource(R.string.rouvideo_tr_sites_desc),
-                    iconRes = R.drawable.ic_settings_public_24,
-                    checked = AppTranslation.siteEnabled(site),
-                    enabled = enabled,
-                    onCheckedChange = { AppTranslation.setSiteEnabled(site, it) },
+                    onCheckedChange = { config.set(kind, it) },
                 )
             }
 
@@ -169,19 +220,7 @@ fun TranslationSettingsScreen(
                     onClick = { confirmClear = true },
                 )
             }
-            if (paused > 0) {
-                item {
-                    Text(
-                        text = stringResource(
-                            R.string.rouvideo_tr_paused,
-                            ((paused + 59) / 60).toInt().coerceAtLeast(1),
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    )
-                }
-            }
+            item { PausedNotice() }
         }
     }
 
@@ -191,7 +230,7 @@ fun TranslationSettingsScreen(
             text = { Text(stringResource(R.string.rouvideo_tr_clear_confirm, stats.total)) },
             confirmButton = {
                 TextButton(onClick = {
-                    AppTranslation.clear()
+                    AppTranslation.clear(site)
                     confirmClear = false
                 }) { Text(stringResource(R.string.delete)) }
             },
@@ -204,12 +243,15 @@ fun TranslationSettingsScreen(
     }
 }
 
+/** The translated items of one site. Tap an item to edit its translation. */
 @Composable
-fun TranslationCacheScreen(onBack: () -> Unit) {
+fun TranslationCacheScreen(site: SiteType, onBack: () -> Unit) {
     var filterName by rememberSaveable { mutableStateOf("") }
-    val filter = Kind.entries.firstOrNull { it.name == filterName }
-    val items = AppTranslation.snapshot(filter)
-    val options = listOf<Kind?>(null) + Kind.entries
+    var editing by remember { mutableStateOf<AppTranslation.Entry?>(null) }
+    val kinds = AppTranslation.kindsFor(site)
+    val filter = kinds.firstOrNull { it.name == filterName }
+    val items = AppTranslation.snapshot(site, filter)
+    val options = listOf<Kind?>(null) + kinds
     val labels = mapOf<Kind?, String>(
         null to stringResource(R.string.rouvideo_tr_filter_all),
         Kind.TAG to stringResource(R.string.rouvideo_tr_tags),
@@ -221,7 +263,16 @@ fun TranslationCacheScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             SiteTopAppBar(
-                title = { Text(stringResource(R.string.rouvideo_tr_view)) },
+                title = {
+                    Text(
+                        stringResource(
+                            R.string.rouvideo_tr_view_site,
+                            CrossSiteNavigator.siteLabel(site),
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 navigationIcon = { SiteBackButton(onClick = onBack) },
             )
         },
@@ -231,12 +282,14 @@ fun TranslationCacheScreen(onBack: () -> Unit) {
                 .fillMaxSize()
                 .padding(padding),
         ) {
-            SiteChipRow(
-                options = options,
-                selected = filter,
-                label = { labels.getValue(it) },
-                onSelect = { filterName = it?.name.orEmpty() },
-            )
+            if (kinds.size > 1) {
+                SiteChipRow(
+                    options = options,
+                    selected = filter,
+                    label = { labels.getValue(it) },
+                    onSelect = { filterName = it?.name.orEmpty() },
+                )
+            }
             if (items.isEmpty()) {
                 Text(
                     text = stringResource(R.string.rouvideo_tr_empty),
@@ -250,6 +303,7 @@ fun TranslationCacheScreen(onBack: () -> Unit) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable { editing = entry }
                                 .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -274,6 +328,13 @@ fun TranslationCacheScreen(onBack: () -> Unit) {
                                     maxLines = 3,
                                     overflow = TextOverflow.Ellipsis,
                                 )
+                                if (entry.edited) {
+                                    Text(
+                                        text = stringResource(R.string.rouvideo_tr_edited),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
                             }
                             IconButton(onClick = { AppTranslation.delete(entry) }) {
                                 Icon(
@@ -288,4 +349,59 @@ fun TranslationCacheScreen(onBack: () -> Unit) {
             }
         }
     }
+
+    editing?.let { entry ->
+        EditTranslationDialog(
+            entry = entry,
+            onDismiss = { editing = null },
+            onSave = { text ->
+                AppTranslation.edit(entry, text)
+                editing = null
+            },
+        )
+    }
+}
+
+@Composable
+private fun EditTranslationDialog(
+    entry: AppTranslation.Entry,
+    onDismiss: () -> Unit,
+    onSave: (String) -> Unit,
+) {
+    var text by rememberSaveable(entry.kind.key, entry.source) { mutableStateOf(entry.text) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.rouvideo_tr_edit_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = stringResource(R.string.rouvideo_tr_edit_original),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = entry.source,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = text,
+                    onValueChange = { text = it },
+                    label = { Text(stringResource(R.string.rouvideo_tr_edit_translation)) },
+                    minLines = if (entry.kind.long) 4 else 2,
+                    maxLines = 8,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onSave(text) },
+                enabled = text.isNotBlank(),
+            ) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        },
+    )
 }

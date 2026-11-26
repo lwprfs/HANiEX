@@ -122,7 +122,8 @@ class HanimeDownloadWorker(
 
         const val BACKOFF_DELAY = 10_000L
 
-        private const val READ_BUFFER_SIZE = 64 * 1024
+        private const val READ_BUFFER_SIZE = 256 * 1024
+        private const val SYNC_INTERVAL = 5_000L
 
         private const val MAX_STREAM_RETRY_COUNT = 3
         private const val MAX_WORK_RETRY_COUNT = 3
@@ -222,7 +223,7 @@ class HanimeDownloadWorker(
                     context.contentResolver.openFileDescriptor(safUri, "rw")?.closeQuietly()
                 } else {
                     file.createFileIfNotExists()
-                    raf = RandomAccessFile(file, "rwd")
+                    raf = RandomAccessFile(file, "rw")
                 }
 
                 val len = fetchContentLength()
@@ -744,6 +745,7 @@ class HanimeDownloadWorker(
                 }
                 val buffer = ByteArray(READ_BUFFER_SIZE)
                 var delayTime = 0L
+                var lastSyncTime = System.currentTimeMillis()
                 var retryCount = 0
 
                 while (downloadedLength < entity.length) {
@@ -812,7 +814,11 @@ class HanimeDownloadWorker(
                                 if (PlaybackPriority.isBuffering) PlaybackPriority.yieldToPlayback()
                                 if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
                                     currentCoroutineContext().ensureActive()
-                                    runCatching { raf?.fd?.sync() }
+                                    val syncNow = System.currentTimeMillis()
+                                    if (syncNow - lastSyncTime > SYNC_INTERVAL) {
+                                        runCatching { raf?.fd?.sync() }
+                                        lastSyncTime = syncNow
+                                    }
                                     val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
                                     setProgress(workDataOf(PROGRESS to progress.toInt()))
                                     updateDownloadNotification(progress.toInt())
@@ -844,6 +850,7 @@ class HanimeDownloadWorker(
                     }
                 }
 
+                runCatching { raf?.fd?.sync() }
                 if (downloadedLength < entity.length) {
                     throw IOException("Download incomplete: $downloadedLength/${entity.length}")
                 }
