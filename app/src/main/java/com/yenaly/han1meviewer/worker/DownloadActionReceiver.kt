@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/** Handles the buttons on download notifications. */
 class DownloadActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {

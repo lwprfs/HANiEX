@@ -17,10 +17,8 @@ object LeakGalleryConstants {
 
     const val CDN_URL = "https://cdn.leakgallery.com"
 
-    /** Cloudflare Turnstile site key used by the website's login / register forms. */
     const val TURNSTILE_SITE_KEY = "0x4AAAAAAA0qSLIObRpXdOVe"
 
-    /** Modes of the website's `/tiktok/:viewMode` shorts feed. */
     const val SHORTS_FOR_YOU = ""
     const val SHORTS_TRENDING = "trending"
     const val SHORTS_FOLLOWED = "followed"
@@ -94,11 +92,6 @@ object LeakGalleryConstants {
         return API_URL + base + suffix + if (query.isBlank()) "" else "?$query"
     }
 
-    /**
-     * Same URL the website's TikTok page requests: `tiktok/` (for you, no paging),
-     * `tiktok/trending/<n>`, `tiktok/followed/<n>` and `tiktok/<username>/<n>?filter=`.
-     * Pages start at 0.
-     */
     fun shortsApiUrl(mode: String, page: Int, filter: String = SHORTS_FILTER_RECENT): String {
         val m = mode.trim()
         return when (m) {
@@ -108,13 +101,11 @@ object LeakGalleryConstants {
         }
     }
 
-    /** `/tiktok/trending` -> `trending`, `/tiktok` -> `` (for you); null when [path] is not a shorts feed. */
     fun shortsModeFromPath(path: String): String? {
         val p = path.substringBefore('?').trim('/').split('/')
         return if (p.firstOrNull() == "tiktok") p.getOrNull(1).orEmpty() else null
     }
 
-    /** Web URL of the shorts page, handy for "open in browser". */
     fun shortsWebUrl(mode: String): String =
         if (mode.isBlank()) "$BASE_URL/tiktok" else "$BASE_URL/tiktok/${encode(mode)}"
 

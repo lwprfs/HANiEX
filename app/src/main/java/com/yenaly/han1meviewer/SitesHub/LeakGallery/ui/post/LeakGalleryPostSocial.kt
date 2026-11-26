@@ -35,10 +35,6 @@ import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryRepo
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import kotlinx.coroutines.launch
 
-/**
- * Like / Follow / "Watch as shorts" row on the media page. The shorts button opens the same feed
- * the website uses for a creator (`/tiktok/<username>`), starting on this video.
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LeakGalleryPostSocialRow(

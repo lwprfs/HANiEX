@@ -19,7 +19,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
 
-/** Non-2xx answer from the LeakGallery API; [body] is the raw error JSON (may be empty). */
 class LeakGalleryApiException(val code: Int, val body: String) : IOException("HTTP $code")
 
 object LeakGalleryRepo {
@@ -80,9 +79,7 @@ object LeakGalleryRepo {
         withContext(Dispatchers.IO) {
             val client = LeakGalleryNetwork.sharedOkHttpClient
             var response = client.newCall(buildRequest(url, loadToken(false), body, method)).execute()
-            // 401/403 can also be a stale app token; retry once with a fresh one.
-            // Never replay auth calls: their captcha token is single use, so a retry would
-            // turn "wrong password" into a bogus captcha error.
+
             if ((response.code == 401 || response.code == 403) && !url.contains("/auth/")) {
                 response.close()
                 response = client.newCall(buildRequest(url, loadToken(true), body, method)).execute()
@@ -95,8 +92,6 @@ object LeakGalleryRepo {
         }
 
     private fun endpoint(path: String) = LeakGalleryConstants.API_URL + "/" + path.trimStart('/')
-
-    // ---------------------------------------------------------------- lists
 
     suspend fun page(path: String, page: Int): Result<LeakGalleryListPage> = runCatching {
         val json = api(LeakGalleryConstants.apiUrl(path, page))
@@ -150,9 +145,6 @@ object LeakGalleryRepo {
         return if (hit != null) Result.success(hit) else detail(slug)
     }
 
-    // ---------------------------------------------------------------- shorts
-
-    /** One page of the website's TikTok-style feed. [page] is 0-based, like the website. */
     suspend fun shorts(
         mode: String,
         page: Int,
@@ -162,7 +154,6 @@ object LeakGalleryRepo {
         withContext(Dispatchers.Default) { LeakGalleryParser.parseShorts(json) }
     }.onSuccess { p -> rememberShorts(p.shorts) }
 
-    /** A single media as a short (used to put the tapped video first, like the website does). */
     suspend fun shortById(id: String): Result<LeakGalleryShort> = runCatching {
         synchronized(shortCache) { shortCache[id] }?.let { return@runCatching it }
         val json = api("${LeakGalleryConstants.API_URL}/media/$id")
@@ -181,14 +172,10 @@ object LeakGalleryRepo {
         items.forEach { shortCache[it.id] = it }
     }
 
-    /** Marks a view, the same call the website makes when a short starts playing. */
     suspend fun markShortViewed(id: String) {
         runCatching { api(endpoint("tiktok/vue/$id"), "{}", "POST") }
     }
 
-    // ---------------------------------------------------------------- likes / follow
-
-    /** Returns the new like count. Requires a login. */
     suspend fun setLiked(id: String, liked: Boolean): Result<Long?> = runCatching {
         val state = if (liked) "liked" else "deleted"
         val json = api(endpoint("likes?id=$id&liked=$state"))
@@ -215,7 +202,6 @@ object LeakGalleryRepo {
         }
     }
 
-    /** Keeps cached shorts and the profile cache in step after a follow / unfollow. */
     fun markFollowing(username: String, follow: Boolean) {
         synchronized(shortCache) {
             shortCache.entries.toList().forEach { (id, short) ->
@@ -227,7 +213,6 @@ object LeakGalleryRepo {
         updateProfile(username) { it.copy(subscribed = follow) }
     }
 
-    /** Follow / unfollow a creator: `POST profile-subscription {profileId}` / `DELETE profile-subscription/<id>`. */
     suspend fun setFollowing(profileId: Long, follow: Boolean): Result<Unit> = runCatching {
         if (follow) {
             api(
@@ -252,8 +237,6 @@ object LeakGalleryRepo {
         val json = api(endpoint("likes/me-media-like/$page"))
         withContext(Dispatchers.Default) { LeakGalleryParser.parseList(json) }
     }
-
-    // ---------------------------------------------------------------- auth / account
 
     private fun failure(e: LeakGalleryApiException): LeakGalleryLoginResult.Failure {
         val code = LeakGalleryParser.errorCode(e.body).orEmpty()
@@ -292,7 +275,6 @@ object LeakGalleryRepo {
         LeakGalleryLoginResult.Failure(LeakGalleryLoginResult.Kind.OTHER, e.message)
     }
 
-    /** [captcha] is the Cloudflare Turnstile token the website's form also sends as `token`. */
     suspend fun login(username: String, password: String, captcha: String): LeakGalleryLoginResult =
         authCall(
             "auth/login",
@@ -356,7 +338,6 @@ object LeakGalleryRepo {
         Unit
     }
 
-    /** Loads `user/me`; a 401 means the stored session is dead, so it is dropped. */
     suspend fun me(): Result<LeakGalleryMe> = runCatching {
         val json = try {
             api(endpoint("user/me"))

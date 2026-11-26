@@ -9,10 +9,6 @@ import androidx.core.app.NotificationManagerCompat
 import com.yenaly.han1meviewer.DOWNLOAD_PAUSED_NOTIFICATION_CHANNEL
 import com.yenaly.han1meviewer.R
 
-/**
- * Builds the Pause / Resume / Cancel / Pause all / Start all actions that are
- * attached to download notifications, and the "paused" notification itself.
- */
 object DownloadNotificationActions {
 
     const val ACTION_PAUSE = "com.yenaly.han1meviewer.download.ACTION_PAUSE"
@@ -26,7 +22,6 @@ object DownloadNotificationActions {
 
     private const val PAUSED_ID_SALT = 0x5A17_0001
 
-    /** Stable id for the "paused" notification of one video. */
     fun pausedNotificationId(videoCode: String): Int = videoCode.hashCode() xor PAUSED_ID_SALT
 
     private fun pending(
@@ -40,7 +35,7 @@ object DownloadNotificationActions {
             setPackage(context.packageName)
             videoCode?.let { putExtra(EXTRA_VIDEO_CODE, it) }
             quality?.let { putExtra(EXTRA_QUALITY, it) }
-            // Make the PendingIntents unique per video + action.
+
             data = android.net.Uri.parse("han1me-download://$action/${videoCode.orEmpty()}")
         }
         return PendingIntent.getBroadcast(
@@ -51,7 +46,6 @@ object DownloadNotificationActions {
         )
     }
 
-    /** Pause + Cancel + Pause all, for an actively downloading task. */
     fun addDownloadingActions(
         context: Context,
         builder: NotificationCompat.Builder,
@@ -74,10 +68,6 @@ object DownloadNotificationActions {
             pending(context, ACTION_PAUSE_ALL, null, null),
         )
 
-    /**
-     * Quiet "paused" notification: Pause is replaced by Resume and
-     * Pause all is replaced by Start all.
-     */
     @SuppressLint("MissingPermission")
     fun showPaused(
         context: Context,

@@ -7,11 +7,6 @@ import com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGallerySession
 import com.yenaly.han1meviewer.util.applicationContext
 import org.json.JSONObject
 
-/**
- * Stores the LeakGallery session. The site authenticates API calls with a
- * `Authorization: Bearer <jwt>` header (the JWT is returned by `auth/login`
- * and `auth/register`), so the session is just that token plus a cached profile.
- */
 object LeakGalleryAuth {
 
     private const val PREFS = "leakgallery_auth"

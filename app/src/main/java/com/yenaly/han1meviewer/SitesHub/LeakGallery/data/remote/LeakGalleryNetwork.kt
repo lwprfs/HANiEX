@@ -23,7 +23,6 @@ object LeakGalleryNetwork {
             return _client!!
         }
 
-    /** Client for CDN video streams / downloads: adds the Referer + Origin the CDN expects. */
     val streamClient: OkHttpClient
         get() {
             val base = sharedOkHttpClient

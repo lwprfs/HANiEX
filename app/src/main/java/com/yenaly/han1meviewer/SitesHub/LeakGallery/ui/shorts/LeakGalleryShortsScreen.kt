@@ -47,7 +47,6 @@ internal fun LeakGalleryShort.toSiteShort(): SiteShort = SiteShort(
     durationSeconds = durationSec.takeIf { it > 0 },
 )
 
-/** Plugs LeakGallery into the shared vertical shorts player (the one RedGifs uses). */
 internal object LeakGalleryShortsSource : SiteShortsSource {
 
     override val site: SiteType = SiteType.LEAKGALLERY
@@ -131,12 +130,6 @@ internal object LeakGalleryShortsSource : SiteShortsSource {
     }
 }
 
-/**
- * Full-screen shorts feed, same method as the website's `/tiktok/:viewMode` page:
- * [mode] is `""` (for you), `trending`, `followed` or a creator's username. When [startId] is
- * given that video is played first (moved to the front of the feed, or fetched and prepended),
- * which is how the website resumes on a specific video.
- */
 @Composable
 fun LeakGalleryShortsScreen(
     mode: String,
@@ -184,7 +177,7 @@ fun LeakGalleryShortsScreen(
                 hasNext = page.hasNext
             }
             .onFailure {
-                // The tapped video can still be played even if the feed itself failed.
+
                 val only = startId?.let { id -> LeakGalleryRepo.shortById(id).getOrNull() }
                 if (only != null) {
                     shorts = listOf(only)

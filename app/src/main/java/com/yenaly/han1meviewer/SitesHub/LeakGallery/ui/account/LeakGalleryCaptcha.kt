@@ -22,13 +22,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGalleryConstants
 import com.yenaly.han1meviewer.USER_AGENT
 
-/**
- * Cloudflare Turnstile widget. LeakGallery's `auth/login` and `auth/register` need the
- * widget's token in the `token` field, so it is rendered in a small WebView whose base URL is
- * the site itself (Turnstile only issues tokens for the site's own hostname).
- *
- * Tokens are single use: change [resetKey] to render a fresh widget after every attempt.
- */
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun LeakGalleryCaptcha(

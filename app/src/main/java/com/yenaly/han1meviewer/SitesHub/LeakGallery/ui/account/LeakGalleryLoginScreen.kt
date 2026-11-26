@@ -40,10 +40,6 @@ import com.yenaly.han1meviewer.ui.component.SiteBackButton
 import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
 import kotlinx.coroutines.launch
 
-/**
- * LeakGallery sign in / sign up. Mirrors the website: username (or email) + password +
- * Turnstile captcha, then an optional 2FA step (authenticator code or recovery code).
- */
 @Composable
 fun LeakGalleryLoginScreen(
     onBack: () -> Unit,

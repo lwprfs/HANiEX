@@ -80,7 +80,6 @@ data class LeakGalleryLoginRoute(val register: Boolean = false) : NavKey
 @Serializable
 object LeakGalleryAccountRoute : NavKey
 
-/** Shorts feed: [mode] is "" (for you), "trending", "followed" or a creator username. */
 @Serializable
 data class LeakGalleryShortsRoute(val mode: String = "", val startId: String? = null) : NavKey
 

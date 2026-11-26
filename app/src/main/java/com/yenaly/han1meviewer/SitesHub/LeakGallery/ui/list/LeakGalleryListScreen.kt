@@ -43,7 +43,7 @@ fun LeakGalleryListScreen(
         viewModel.setSource(LeakGallerySource.Page(effectivePath))
     }
     val gridState = rememberLazyGridState()
-    // Shorts feeds (e.g. /tiktok/trending) open in the shorts player, like the website does.
+
     val shortsMode = remember(path) { LeakGalleryConstants.shortsModeFromPath(path) }
     HanimeScaffold(title = title, onBack = onBack) { padding ->
         Box(Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {

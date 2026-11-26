@@ -17,7 +17,7 @@ data class LeakGalleryTerm(
     val thumbUrl: String = "",
 
     val customPath: String? = null,
-    /** Numeric profile id (needed to follow / unfollow); 0 when the API did not give one. */
+
     val id: Long = 0L,
     val subscribed: Boolean = false,
 ) {

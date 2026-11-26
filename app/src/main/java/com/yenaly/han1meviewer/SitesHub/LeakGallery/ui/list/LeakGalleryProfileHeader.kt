@@ -38,12 +38,6 @@ import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.SiteAvatar
 import kotlinx.coroutines.launch
 
-/**
- * Creator profile header: avatar, name, Follow button and "Watch in shorts" (the website's
- * "Watch in TikTok version" link on a profile page, which opens `/tiktok/<username>`).
- * [refreshKey] should change when the profile page finished loading so the cached profile
- * block (id, follow state) is picked up.
- */
 @Composable
 fun LeakGalleryProfileHeader(
     username: String,

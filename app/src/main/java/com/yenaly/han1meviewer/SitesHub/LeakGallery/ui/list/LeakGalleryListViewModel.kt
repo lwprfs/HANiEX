@@ -19,10 +19,8 @@ sealed interface LeakGallerySource {
 
     data class Search(val query: String, val creators: Boolean = false) : LeakGallerySource
 
-    /** Media the signed-in user liked (`likes/me-media-like/<n>`). */
     data object Liked : LeakGallerySource
 
-    /** Creators the signed-in user follows (`profile-subscription/<n>`). */
     data object Following : LeakGallerySource
 }
 

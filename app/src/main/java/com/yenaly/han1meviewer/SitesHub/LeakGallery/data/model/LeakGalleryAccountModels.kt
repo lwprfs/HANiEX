@@ -19,7 +19,6 @@ data class LeakGalleryPremium(
     val daysRemaining: Int? = null,
 )
 
-/** One short (vertical video) from the `tiktok/*` feeds. */
 data class LeakGalleryShort(
     val id: String,
     val title: String,
@@ -62,7 +61,6 @@ data class LeakGalleryNotification(
 sealed interface LeakGalleryLoginResult {
     data class Success(val token: String) : LeakGalleryLoginResult
 
-    /** The account has 2FA: [tempToken] must be sent back with the 6-digit code. */
     data class TwoFactor(val tempToken: String) : LeakGalleryLoginResult
 
     data class Failure(val kind: Kind, val message: String? = null) : LeakGalleryLoginResult

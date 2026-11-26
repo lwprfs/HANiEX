@@ -93,12 +93,6 @@ object NavigationManager {
         }, SWITCH_HOME_DELAY_MS)
     }
 
-    /**
-     * Opens [key] on [site]'s own navigation graph. Routes are registered per site, so pushing a
-     * site-specific route (e.g. OnAir's cookie page) while another site's graph is showing, such
-     * as from the shared Downloads screen, throws "Unknown screen". When [site] is not the one on
-     * screen this switches to it first and navigates once its graph is ready.
-     */
     fun navigateOnSite(site: SiteType, key: NavKey) {
         if (isNavigationReady(site)) {
             try {

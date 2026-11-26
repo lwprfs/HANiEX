@@ -21,7 +21,6 @@ import com.yenaly.han1meviewer.ui.component.SitePullToRefresh
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.LoginGate
 
-/** "Liked media" and "Following" lists, shown only while signed in. */
 @Composable
 fun LeakGalleryCollectionScreen(
     source: LeakGallerySource,
