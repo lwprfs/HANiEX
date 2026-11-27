@@ -18,6 +18,7 @@ import com.yenaly.han1meviewer.base.AppFontScale
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
 import com.yenaly.han1meviewer.ui.component.lazy.LazyColumn
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
+import com.yenaly.han1meviewer.ui.navigation.settings.SiteSettingsSection
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HomeCategoryLayoutDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.HorizontalCardCountDialog
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.SearchGridColumnsDialog
@@ -55,7 +56,6 @@ fun HomeSettingsScreen(
     onHomeCategoryPreferencesChange: (List<String>, Set<String>) -> Unit,
     onOpenPlayerSettings: () -> Unit,
     onOpenUnifiedHistory: () -> Unit = {},
-    onOpenTranslationSettings: () -> Unit = {},
     onAppLanguageChange: (String) -> Unit,
     onAppFontScaleChange: (String) -> Unit,
     onIgnoreSystemDisplaySizeChange: (Boolean) -> Unit,
@@ -69,6 +69,7 @@ fun HomeSettingsScreen(
     onImportBackup: () -> Unit,
     onSubmitBug: () -> Unit,
     onOpenForum: () -> Unit,
+    hanimeSection: SiteSettingsSection? = null,
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<HomeSettingsChoiceDialog?>(null) }
     var showSearchGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
@@ -228,20 +229,30 @@ fun HomeSettingsScreen(
         contentPadding = PaddingValues(top = 4.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        when (category) {
+        if (hanimeSection == SiteSettingsSection.LayoutCards) {
+            hanimeLayoutSettings(
+                state = state,
+                onEditHomeCategories = { showHomeCategoryDialog = true },
+            )
+        } else if (hanimeSection != null) {
+            hanimeSiteSettings(
+                state = state,
+                onDisableCommentsChange = onDisableCommentsChange,
+                onOpenDialog = { activeDialog = it },
+                onRelatedVideoAsTabChange = onRelatedVideoAsTabChange,
+                onSearchArtistIgnoreVideoTypeChange = onSearchArtistIgnoreVideoTypeChange,
+                onSearchPaginationChange = onSearchPaginationChange,
+                onWatchedProgressThresholdChange = onWatchedProgressThresholdChange,
+            )
+        } else when (category) {
             SettingsCategory.Appearance -> {
                 appearanceSettings(
                     state = state,
-                    onEditHomeCategories = { showHomeCategoryDialog = true },
                     onEditHorizontalCards = { showHorizontalCardCountDialog = true },
                     onEditSearchGrid = { showSearchGridColumnsDialog = true },
                     onEditVideoGrid = { showVideoGridColumnsDialog = true },
                     onOpenDialog = { activeDialog = it },
-                    onOpenTranslationSettings = onOpenTranslationSettings,
                     onPureBlackDarkModeChange = onPureBlackDarkModeChange,
-                    onRelatedVideoAsTabChange = onRelatedVideoAsTabChange,
-                    onSearchArtistIgnoreVideoTypeChange = onSearchArtistIgnoreVideoTypeChange,
-                    onSearchPaginationChange = onSearchPaginationChange,
                     onShowExitConfirmChange = onShowExitConfirmChange,
                     onDisablePredictiveBackChange = onDisablePredictiveBackChange,
                     onIgnoreSystemDisplaySizeChange = onIgnoreSystemDisplaySizeChange,
@@ -253,12 +264,9 @@ fun HomeSettingsScreen(
                     state = state,
                     onAllowPipModeChange = onAllowPipModeChange,
                     onAllowResumePlaybackChange = onAllowResumePlaybackChange,
-                    onDisableCommentsChange = onDisableCommentsChange,
                     onDisableMobileDataWarningChange = onDisableMobileDataWarningChange,
-                    onOpenDialog = { activeDialog = it },
                     onOpenPlayerSettings = onOpenPlayerSettings,
                     onShowPlayedIndicatorChange = onShowPlayedIndicatorChange,
-                    onWatchedProgressThresholdChange = onWatchedProgressThresholdChange,
                 )
             }
 

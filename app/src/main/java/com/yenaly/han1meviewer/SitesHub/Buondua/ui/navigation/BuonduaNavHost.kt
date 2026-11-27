@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.Buondua.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation3.runtime.entryProvider
@@ -30,13 +31,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
@@ -70,7 +65,6 @@ fun buonduaHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfi
         site = SiteType.BUONDUA,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = BuonduaSettingsHubRoute,
         siteLibraryEntries = listOf(
             SiteHubEntry(
                 key = "history",
@@ -80,7 +74,6 @@ fun buonduaHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfi
                 onClick = { navigator.navigateSafely(BuonduaHistoryRoute) },
             ),
         ),
-        customizeEntries = emptyList(),
     )
 
 @Composable
@@ -105,23 +98,7 @@ fun BuonduaNavHost(
         }
 
         screen<BuonduaSettingsHubRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.BUONDUA,
-                siteEntries = listOf(
-                    SiteSettingsEntry(
-                        key = "history",
-                        title = stringResource(R.string.buondua_history_title),
-                        subtitle = stringResource(R.string.buondua_history_summary),
-                        icon = Icons.Default.History,
-                        onClick = { navigator.navigateSafely(BuonduaHistoryRoute) },
-                    ),
-                ),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.BUONDUA.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<BuonduaSearchRoute> {

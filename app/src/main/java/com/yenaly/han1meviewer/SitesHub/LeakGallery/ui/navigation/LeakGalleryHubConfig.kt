@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.Whatshot
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,7 +27,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGallerySession
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.data.remote.LeakGalleryAuth
 import com.yenaly.han1meviewer.ui.screen.site.gated
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -42,7 +40,6 @@ fun leakgalleryHubConfig(navigator: Navigator, activity: MainActivity): SiteHubC
         site = SiteType.LEAKGALLERY,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = LeakGallerySettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 title = null,
@@ -98,16 +95,6 @@ fun leakgalleryHubConfig(navigator: Navigator, activity: MainActivity): SiteHubC
                 icon = Icons.Filled.AccountCircle,
                 onClick = { navigator.navigateSafely(LeakGalleryAccountRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "playback",
-                title = stringResource(R.string.leakgallery_settings_title),
-                subtitle = stringResource(R.string.leakgallery_settings_summary),
-                icon = Icons.Filled.Tune,
-                onClick = { navigator.navigateSafely(LeakGallerySettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.LEAKGALLERY),
         ),
     )
 }

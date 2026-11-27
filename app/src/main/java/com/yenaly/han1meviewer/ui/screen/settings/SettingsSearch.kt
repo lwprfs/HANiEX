@@ -27,14 +27,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.yenaly.han1meviewer.R
+import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.HKeyframesRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.LocalSiteContentAvailable
+import com.yenaly.han1meviewer.ui.navigation.settings.MediaControlsSettingsRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
-import com.yenaly.han1meviewer.util.translation.AppTranslation
+import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.siteSettingsLabel
+
+internal sealed interface SettingsSearchTarget {
+    data class Category(val category: SettingsCategory) : SettingsSearchTarget
+    data class Screen(val route: NavKey) : SettingsSearchTarget
+    data object Reset : SettingsSearchTarget
+}
 
 internal class SettingsSearchEntry(
     val category: SettingsCategory,
     @param:StringRes val titleRes: Int,
     @param:StringRes val summaryRes: Int? = null,
-    val isAvailable: () -> Boolean = { true },
+    val destination: NavKey? = null,
 )
 
 internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
@@ -44,40 +59,22 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.pure_black_dark_mode, R.string.pure_black_dark_mode_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.app_font_scale, R.string.app_font_scale_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.ignore_system_display_size, R.string.ignore_system_display_size_summary),
-    SettingsSearchEntry(SettingsCategory.Appearance, R.string.home_category_layout),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.site_video_grid_columns, R.string.hub_video_grid_columns_desc),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.search_grid_columns_title, R.string.search_grid_columns_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.horizontal_card_count_title, R.string.horizontal_card_count_summary),
-    SettingsSearchEntry(SettingsCategory.Appearance, R.string.search_pagination, R.string.search_pagination_summary),
-    SettingsSearchEntry(SettingsCategory.Appearance, R.string.search_artist_ignore_video_type, R.string.search_artist_ignore_video_type_summary),
-    SettingsSearchEntry(SettingsCategory.Appearance, R.string.related_video_as_tab, R.string.related_video_as_tab_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.app_lang, R.string.app_lang_sum),
-    SettingsSearchEntry(SettingsCategory.Appearance, R.string.rouvideo_tr_title, R.string.rouvideo_tr_privacy) { AppTranslation.available },
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.show_exit_confirm, R.string.show_exit_confirm_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.disable_predictive_back_title, R.string.disable_predictive_back_summary),
     SettingsSearchEntry(SettingsCategory.Appearance, R.string.site_visibility_title, R.string.site_visibility_summary),
 
-    SettingsSearchEntry(SettingsCategory.Playback, R.string.video_language),
-    SettingsSearchEntry(SettingsCategory.Playback, R.string.default_video_quilty),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.allow_pip_title, R.string.allow_pip_disc),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.resume_playback_title, R.string.resume_playback_summary),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.show_played_indicator, R.string.show_played_indicator_summary),
-    SettingsSearchEntry(SettingsCategory.Playback, R.string.watched_progress_threshold),
     SettingsSearchEntry(SettingsCategory.Playback, R.string.disable_mobile_data_warning, R.string.disable_mobile_data_warning_summary),
-    SettingsSearchEntry(SettingsCategory.Playback, R.string.disable_comments_title, R.string.disable_comments_sum),
-    SettingsSearchEntry(SettingsCategory.Playback, R.string.player_settings),
-
-    SettingsSearchEntry(SettingsCategory.Network, R.string.network_settings_site, R.string.network_settings_site_summary),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.domain_name),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.mirror_latency_entry),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.custom_mirror_site),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.proxy),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.use_backup_media_cdn, R.string.use_backup_media_cdn_summary),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.use_built_in_hosts, R.string.use_built_in_hosts_summary),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.custom_hosts),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.use_doh),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.test_doh, R.string.test_doh_summary),
-    SettingsSearchEntry(SettingsCategory.Network, R.string.apply_deep_links, R.string.apply_deep_links_summary),
+    SettingsSearchEntry(SettingsCategory.Playback, R.string.player_settings, destination = PlayerSettingsRoute),
+    SettingsSearchEntry(SettingsCategory.Playback, R.string.player_fullscreen_orientation, destination = PlayerSettingsRoute),
+    SettingsSearchEntry(SettingsCategory.Playback, R.string.player_media_title, R.string.player_media_summary, destination = MediaControlsSettingsRoute),
+    SettingsSearchEntry(SettingsCategory.Playback, R.string.mpv_advanced_settings, destination = PlayerSettingsRoute),
 
     SettingsSearchEntry(SettingsCategory.Download, R.string.download_path),
     SettingsSearchEntry(SettingsCategory.Download, R.string.pref_export_downloads_title, R.string.pref_export_downloads_summary),
@@ -87,10 +84,10 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Download, R.string.collapse_downloaded_groups, R.string.collapse_downloaded_groups_summary),
 
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.h_keyframes_enable),
-    SettingsSearchEntry(SettingsCategory.Keyframes, R.string.h_keyframe_manage),
+    SettingsSearchEntry(SettingsCategory.Keyframes, R.string.h_keyframe_manage, destination = HKeyframesRoute),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.shared_h_keyframes_enable, R.string.shared_h_keyframes_enable_tip),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.shared_h_keyframes_use_first, R.string.shared_h_keyframes_use_first_tip),
-    SettingsSearchEntry(SettingsCategory.Keyframes, R.string.shared_h_keyframe_manage, R.string.shared_h_keyframe_manage_tip),
+    SettingsSearchEntry(SettingsCategory.Keyframes, R.string.shared_h_keyframe_manage, R.string.shared_h_keyframe_manage_tip, destination = SharedHKeyframesRoute),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.show_prompt_when_countdown),
     SettingsSearchEntry(SettingsCategory.Keyframes, R.string.when_countdown_remind),
 
@@ -98,7 +95,7 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.Privacy, R.string.use_lock_screen, R.string.use_lock_screen_sum),
     SettingsSearchEntry(SettingsCategory.Privacy, R.string.fake_app_icon, R.string.select_fake_icon),
 
-    SettingsSearchEntry(SettingsCategory.Data, R.string.hist_all_sites_title),
+    SettingsSearchEntry(SettingsCategory.Data, R.string.hist_all_sites_title, destination = UnifiedHistoryRoute),
     SettingsSearchEntry(SettingsCategory.Data, R.string.backup_export_title, R.string.backup_export_summary),
     SettingsSearchEntry(SettingsCategory.Data, R.string.backup_import_title, R.string.backup_import_summary),
     SettingsSearchEntry(SettingsCategory.Data, R.string.clear_cache),
@@ -110,37 +107,64 @@ internal val SettingsSearchIndex: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(SettingsCategory.About, R.string.submit_bug, R.string.submit_bug_summary),
     SettingsSearchEntry(SettingsCategory.About, R.string.forum, R.string.forum_summary),
     SettingsSearchEntry(SettingsCategory.About, R.string.open_source_license),
-    SettingsSearchEntry(SettingsCategory.About, R.string.about),
+    SettingsSearchEntry(SettingsCategory.About, R.string.about, destination = AboutAppRoute),
 )
 
 internal data class SettingsSearchResult(
-    val category: SettingsCategory,
+    val id: String,
+    val target: SettingsSearchTarget,
     val title: String,
-    val categoryTitle: String,
+    val subtitle: String,
 )
 
 @SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 internal fun rememberSettingsSearchResults(query: String): List<SettingsSearchResult> {
     val context = LocalContext.current
-    return remember(query, context.resources.configuration) {
+    val site = Preferences.siteType
+    val contentAvailable = LocalSiteContentAvailable.current
+    return remember(query, site, contentAvailable, context.resources.configuration) {
         val words = query.trim().lowercase().split(Regex("\\s+")).filter { it.isNotEmpty() }
         if (words.isEmpty()) return@remember emptyList()
-        SettingsSearchIndex.mapNotNull { entry ->
-            if (!entry.isAvailable()) return@mapNotNull null
-            val title = context.getString(entry.titleRes)
-            val categoryTitle = context.getString(entry.category.titleRes)
-            val haystack = buildString {
-                append(title).append(' ')
-                entry.summaryRes?.let { append(context.getString(it)).append(' ') }
-                append(categoryTitle)
-            }.lowercase()
-            if (words.all { it in haystack }) {
-                SettingsSearchResult(entry.category, title, categoryTitle)
+
+        fun matches(vararg texts: String?): Boolean {
+            val haystack = texts.filterNotNull().joinToString(" ").lowercase()
+            return words.all { it in haystack }
+        }
+
+        val siteLabel = siteSettingsLabel(site)
+        val siteResults = siteSearchEntries(site, contentAvailable).mapNotNull { entry ->
+            val title = entry.titleArg?.let { context.getString(entry.titleRes, it) }
+                ?: context.getString(entry.titleRes)
+            val summary = entry.summaryRes?.let { context.getString(it) }
+            if (matches(title, summary, siteLabel)) {
+                SettingsSearchResult(
+                    id = "site/${entry.target}/${entry.titleRes}",
+                    target = entry.target,
+                    title = title,
+                    subtitle = siteLabel,
+                )
             } else {
                 null
             }
         }
+        val appResults = SettingsSearchIndex.mapNotNull { entry ->
+            val title = context.getString(entry.titleRes)
+            val summary = entry.summaryRes?.let { context.getString(it) }
+            val categoryTitle = context.getString(entry.category.titleRes)
+            if (matches(title, summary, categoryTitle)) {
+                SettingsSearchResult(
+                    id = "app/${entry.category.key}/${entry.titleRes}",
+                    target = entry.destination?.let { SettingsSearchTarget.Screen(it) }
+                        ?: SettingsSearchTarget.Category(entry.category),
+                    title = title,
+                    subtitle = categoryTitle,
+                )
+            } else {
+                null
+            }
+        }
+        (siteResults + appResults).distinctBy { it.id }
     }
 }
 
@@ -189,7 +213,7 @@ internal fun SettingsSearchResultItem(
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             Text(text = result.title, style = MaterialTheme.typography.titleMedium)
             Text(
-                text = result.categoryTitle,
+                text = result.subtitle,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

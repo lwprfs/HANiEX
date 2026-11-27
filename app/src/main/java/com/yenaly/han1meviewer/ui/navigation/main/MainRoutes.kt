@@ -10,6 +10,7 @@ import com.yenaly.han1meviewer.ui.navigation.settings.MpvPlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategoryRoute
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsSiteSectionRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SharedHKeyframesRoute
 import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
@@ -163,6 +164,11 @@ enum class MainDestinationSpec(
     SettingsCategory(
         topLevelDestination = MainTopLevelDestination.Profile,
         routeClass = SettingsCategoryRoute::class,
+        showNavigationSuite = false,
+    ),
+    SettingsSiteSection(
+        topLevelDestination = MainTopLevelDestination.Profile,
+        routeClass = SettingsSiteSectionRoute::class,
         showNavigationSuite = false,
     ),
     SettingsPlayer(

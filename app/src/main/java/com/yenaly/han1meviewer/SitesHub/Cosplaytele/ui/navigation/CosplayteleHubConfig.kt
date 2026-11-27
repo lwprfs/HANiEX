@@ -11,7 +11,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Today
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Whatshot
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.common.CosplayteleConstants
@@ -21,7 +20,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -30,7 +28,6 @@ fun cosplayteleHubConfig(navigator: Navigator, activity: MainActivity): SiteHubC
         site = SiteType.COSPLAYTELE,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = CosplayteleSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 title = null,
@@ -52,16 +49,6 @@ fun cosplayteleHubConfig(navigator: Navigator, activity: MainActivity): SiteHubC
                 icon = Icons.Filled.History,
                 onClick = { navigator.navigateSafely(CosplayteleHistoryRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "playback",
-                title = stringResource(R.string.cosplaytele_settings_title),
-                subtitle = stringResource(R.string.cosplaytele_settings_summary),
-                icon = Icons.Filled.HighQuality,
-                onClick = { navigator.navigateSafely(CosplayteleSettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.COSPLAYTELE),
         ),
     )
 

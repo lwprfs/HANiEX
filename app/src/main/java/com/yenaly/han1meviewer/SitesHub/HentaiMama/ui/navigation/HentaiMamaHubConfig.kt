@@ -6,9 +6,7 @@ import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -18,7 +16,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -27,7 +24,6 @@ fun hentaiMamaHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCo
         site = SiteType.HENTAIMAMA,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = HentaiMamaSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 title = null,
@@ -64,24 +60,5 @@ fun hentaiMamaHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCo
                 icon = Icons.Filled.History,
                 onClick = { navigator.navigateSafely(HentaiMamaHistoryRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "video_card",
-                title = stringResource(R.string.drawer_video_card_size),
-                subtitle = stringResource(R.string.hm_video_card_subtitle),
-                icon = Icons.Filled.PlayCircleOutline,
-                onClick = {
-                    navigator.navigateSafely(HentaiMamaVideoSettingsRoute(target = "all"))
-                },
-            ),
-            SiteHubEntry(
-                key = "home_categories",
-                title = stringResource(R.string.drawer_home_categories),
-                subtitle = stringResource(R.string.site_home_categories_subtitle),
-                icon = Icons.Filled.Category,
-                onClick = { navigator.navigateSafely(HentaiMamaHomeSettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.HENTAIMAMA),
         ),
     )

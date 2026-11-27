@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Subscriptions
@@ -26,8 +25,6 @@ import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.gated
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -111,26 +108,16 @@ fun redGifsHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfi
         icon = Icons.Filled.AccountCircle,
         onClick = { navigator.navigateSafely(RedGifsAccountRoute) },
     )
-    val playback = SiteHubEntry(
-        key = "playback",
-        title = stringResource(R.string.redgifs_settings_title),
-        subtitle = stringResource(R.string.redgifs_settings_summary),
-        icon = Icons.Filled.HighQuality,
-        onClick = { navigator.navigateSafely(RedGifsSettingsRoute) },
-    )
 
     return standardSiteHubConfig(
         site = SiteType.REDGIFS,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = RedGifsSettingsHubRoute,
         siteLibraryEntries = emptyList(),
         extraLibrarySections = listOf(
             SiteHubSection(stringResource(R.string.redgifs_my_library), libraryEntries),
         ),
         subscriptionSections = listOf(subscription),
         profileExtraQuickActions = listOf(account),
-        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.REDGIFS),
-            rememberSocialStyleEntry(navigator, SiteType.REDGIFS)),
     )
 }

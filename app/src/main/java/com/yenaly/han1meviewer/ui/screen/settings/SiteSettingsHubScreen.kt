@@ -1,116 +1,59 @@
 package com.yenaly.han1meviewer.ui.screen.settings
 
-import androidx.compose.runtime.SideEffect
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Apps
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.automirrored.filled.Sort
-import androidx.compose.material.icons.filled.Update
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Animation
-import androidx.compose.material.icons.filled.PhotoSizeSelectSmall
-import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material.icons.filled.Subtitles
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.filled.Animation
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Groups
-import com.yenaly.han1meviewer.ui.component.SettingHintText
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.PhotoSizeSelectSmall
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Subtitles
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterSettings
+import com.yenaly.han1meviewer.SitesHub.XHamster.common.rememberXHamsterFlag
 import com.yenaly.han1meviewer.ui.component.ChoiceDialog
-import com.yenaly.han1meviewer.ui.component.ConfirmDialog
-import com.yenaly.han1meviewer.ui.component.GlobalToasts
-import com.yenaly.han1meviewer.ui.component.SiteBackButton
-import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
-import com.yenaly.han1meviewer.ui.component.SettingIconBadge
+import com.yenaly.han1meviewer.ui.component.SettingHintText
 import com.yenaly.han1meviewer.ui.component.SettingNavigationItem
 import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
 import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
-import com.yenaly.han1meviewer.ui.component.SettingTile
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 import com.yenaly.han1meviewer.ui.screen.SiteCardSettings
-import com.yenaly.han1meviewer.ui.screen.SiteShortsCardSettings
-import com.yenaly.han1meviewer.ui.screen.SiteImageCardSettings
 import com.yenaly.han1meviewer.ui.screen.SiteHomeSettings
+import com.yenaly.han1meviewer.ui.screen.SiteImageCardSettings
 import com.yenaly.han1meviewer.ui.screen.SiteImageSettings
 import com.yenaly.han1meviewer.ui.screen.SiteLayoutSettings
 import com.yenaly.han1meviewer.ui.screen.SiteSearchSettings
+import com.yenaly.han1meviewer.ui.screen.SiteShortsCardSettings
 import com.yenaly.han1meviewer.ui.screen.rememberSiteGridColumns
-import kotlinx.coroutines.launch
 
-data class SiteSettingsEntry(
-    val key: String,
-    val title: String,
-    val subtitle: String,
-    val icon: ImageVector,
-    val onClick: () -> Unit,
-)
+internal var siteSettingsResetTick by mutableIntStateOf(0)
 
-object SiteSettingsRegistry {
-    var site by mutableStateOf<SiteType?>(null)
-        private set
-    var entries by mutableStateOf<List<SiteSettingsEntry>>(emptyList())
-        private set
-
-    fun publish(site: SiteType, entries: List<SiteSettingsEntry>) {
-        if (this.site != site) this.site = site
-        this.entries = entries
-    }
-
-    val activeEntries: List<SiteSettingsEntry>
-        get() = if (site == Preferences.siteType) entries else emptyList()
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SiteSettingsHubScreen(
-    site: SiteType,
-    siteEntries: List<SiteSettingsEntry>,
-    onBack: () -> Unit,
-    onOpenAppSettings: () -> Unit,
-    onOpenPlayerSettings: () -> Unit,
-    onOpenNetworkSettings: () -> Unit,
-    onOpenUnifiedHistory: (() -> Unit)? = null,
-    onResetSite: (suspend () -> Unit)? = null,
-) {
-    SideEffect { SiteSettingsRegistry.publish(site, siteEntries) }
+fun SiteLayoutCardsScreen(site: SiteType) {
+    val resetTick = siteSettingsResetTick
+    val showChannels = rememberXHamsterFlag(XHamsterSettings.KEY_SHOW_CHANNELS)
+    val showCreators = rememberXHamsterFlag(XHamsterSettings.KEY_SHOW_TOP_CREATORS)
     val siteLabel = CrossSiteNavigator.siteLabel(site)
-    val scope = rememberCoroutineScope()
-    var showResetConfirm by remember { mutableStateOf(false) }
-    val resetDoneText = stringResource(R.string.site_reset_done, siteLabel)
-    val resetFailedText = stringResource(R.string.site_reset_failed)
     val hasGridColumns = site in SiteLayoutSettings.gridColumnSites
     val gridColumns = rememberSiteGridColumns(site)
     var showColumnsDialog by remember { mutableStateOf(false) }
@@ -120,18 +63,15 @@ fun SiteSettingsHubScreen(
     var showRetriesDialog by remember { mutableStateOf(false) }
     var showCacheDialog by remember { mutableStateOf(false) }
     val hasCache = site in SiteHomeSettings.cacheSites
-    var cacheMinutes by remember(site) { mutableStateOf(SiteHomeSettings.cacheMinutes(site)) }
+    var cacheMinutes by remember(site, resetTick) { mutableStateOf(SiteHomeSettings.cacheMinutes(site)) }
     val imageOptions = SiteImageSettings.options(site)
     val sortChoices = remember(site) { SiteSearchSettings.sortChoices(site) }
-    var defaultSort by remember(site) { mutableStateOf(SiteSearchSettings.defaultSort(site).orEmpty()) }
+    var defaultSort by remember(site, resetTick) { mutableStateOf(SiteSearchSettings.defaultSort(site).orEmpty()) }
     val cardAspect = if (site in SiteCardSettings.sites) SiteCardSettings.aspect(site) else SiteCardSettings.Aspect.Default
     val hasCardOptions = site in SiteCardSettings.sites
     val hasShortCardOptions = site in SiteShortsCardSettings.sites
     val hasImageCardOptions = site in SiteImageCardSettings.sites
     val homeSections = remember(site) { SiteHomeSettings.sectionsOf(site) }
-    val canReset = onResetSite != null || hasGridColumns || hasCardOptions || hasShortCardOptions || hasImageCardOptions ||
-        homeSections.isNotEmpty() || sortChoices != null
-
     val hiddenDetails = if (hasCardOptions) {
         SiteCardSettings.Detail.entries.count { !SiteCardSettings.isShown(site, it) }
     } else 0
@@ -160,313 +100,261 @@ fun SiteSettingsHubScreen(
         summaryParts.joinToString(" · ")
     }
 
-    Scaffold(
-        topBar = {
-            SiteTopAppBar(
-                title = { Text("$siteLabel · ${stringResource(R.string.settings)}") },
-                navigationIcon = { SiteBackButton(onClick = onBack) },
-            )
-        },
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
-        ) {
-            item(key = "intro") {
-                SettingSectionHeader(siteLabel)
-                SettingHintText(stringResource(R.string.site_settings_intro, siteLabel))
-                SettingHintText(summaryText)
-            }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
+    ) {
+        item(key = "intro") {
+            SettingSectionHeader(siteLabel)
+            SettingHintText(stringResource(R.string.site_settings_intro, siteLabel))
+            SettingHintText(summaryText)
+        }
 
-            if (siteEntries.isNotEmpty()) {
-                item { HubSectionTitle(stringResource(R.string.site_settings_2, siteLabel)) }
-                items(siteEntries.size, key = { siteEntries[it].key }) { index ->
-                    HubRow(siteEntries[index])
-                }
-            }
-
-            if (hasGridColumns || hasCardOptions) {
-                item { HubSectionTitle(stringResource(R.string.site_layout_section)) }
-                item {
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_preset_title),
-                        summary = stringResource(R.string.site_preset_summary),
-                        icon = Icons.Default.Tune,
-                        onClick = { showPresetDialog = true },
-                    )
-                }
-            }
-            if (hasGridColumns) {
-                item {
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_grid_columns_title),
-                        summary = stringResource(R.string.site_grid_columns_summary),
-                        icon = Icons.Default.GridView,
-                        valueText = if (gridColumns == SiteLayoutSettings.FOLLOW_APP) {
-                            stringResource(R.string.site_grid_columns_follow_app)
-                        } else {
-                            gridColumns.toString()
-                        },
-                        onClick = { showColumnsDialog = true },
-                    )
-                }
-            }
-
-            if (hasCardOptions) {
-                item { HubSectionTitle(stringResource(R.string.site_cards_section)) }
-                items(SiteCardSettings.Detail.entries.size) { index ->
-                    val detail = SiteCardSettings.Detail.entries[index]
-                    SettingSwitchItem(
-                        title = stringResource(
-                            when (detail) {
-                                SiteCardSettings.Detail.Views -> R.string.site_card_show_views
-                                SiteCardSettings.Detail.Duration -> R.string.site_card_show_duration
-                                SiteCardSettings.Detail.Subtitle -> R.string.site_card_show_subtitle
-                                SiteCardSettings.Detail.Date -> R.string.site_card_show_date
-                            }
-                        ),
-                        icon = when (detail) {
-                            SiteCardSettings.Detail.Views -> Icons.Default.Visibility
-                            SiteCardSettings.Detail.Duration -> Icons.Default.Timer
-                            SiteCardSettings.Detail.Subtitle -> Icons.Default.Subtitles
-                            SiteCardSettings.Detail.Date -> Icons.Default.CalendarMonth
-                        },
-                        checked = SiteCardSettings.isShown(site, detail),
-                        onCheckedChange = { SiteCardSettings.setShown(site, detail, it) },
-                    )
-                }
-            }
-
-            if (hasCardOptions) {
-                item {
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_card_aspect_title),
-                        summary = stringResource(R.string.site_card_aspect_summary),
-                        icon = Icons.Default.AspectRatio,
-                        valueText = stringResource(cardAspect.labelRes()),
-                        onClick = { showAspectDialog = true },
-                    )
-                }
-            }
-
-            if (hasShortCardOptions) {
-                item { HubSectionTitle(stringResource(R.string.site_shorts_cards_section)) }
-                items(SiteShortsCardSettings.Detail.entries.size) { index ->
-                    val detail = SiteShortsCardSettings.Detail.entries[index]
-                    SettingSwitchItem(
-                        title = stringResource(
-                            when (detail) {
-                                SiteShortsCardSettings.Detail.Views -> R.string.site_card_show_views
-                                SiteShortsCardSettings.Detail.Duration -> R.string.site_card_show_duration
-                                SiteShortsCardSettings.Detail.GifBadge -> R.string.site_shorts_card_gif_badge
-                                SiteShortsCardSettings.Detail.Title -> R.string.site_card_show_title
-                            }
-                        ),
-                        icon = when (detail) {
-                            SiteShortsCardSettings.Detail.Views -> Icons.Default.Visibility
-                            SiteShortsCardSettings.Detail.Duration -> Icons.Default.Timer
-                            SiteShortsCardSettings.Detail.GifBadge -> Icons.Default.GridView
-                            SiteShortsCardSettings.Detail.Title -> Icons.Default.Subtitles
-                        },
-                        checked = SiteShortsCardSettings.isShown(site, detail),
-                        onCheckedChange = { SiteShortsCardSettings.setShown(site, detail, it) },
-                    )
-                }
-                item {
-                    val shortAspect = SiteShortsCardSettings.aspect(site)
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_card_aspect_title),
-                        summary = stringResource(R.string.site_card_aspect_summary),
-                        icon = Icons.Default.AspectRatio,
-                        valueText = stringResource(shortAspect.labelRes()),
-                        onClick = {
-                            val all = SiteCardSettings.Aspect.entries
-                            SiteShortsCardSettings.setAspect(site, all[(all.indexOf(shortAspect) + 1) % all.size])
-                        },
-                    )
-                }
-                item {
-                    val shortColumns = SiteShortsCardSettings.columns(site)
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_grid_columns_title),
-                        summary = stringResource(R.string.site_grid_columns_summary),
-                        icon = Icons.Default.GridView,
-                        valueText = shortColumns.toString(),
-                        onClick = {
-                            val all = SiteShortsCardSettings.COLUMN_CHOICES
-                            SiteShortsCardSettings.setColumns(site, all[(all.indexOf(shortColumns) + 1) % all.size])
-                        },
-                    )
-                }
-            }
-
-            if (hasImageCardOptions) {
-                item { HubSectionTitle(stringResource(R.string.site_image_cards_section)) }
-                items(SiteImageCardSettings.Detail.entries.size) { index ->
-                    val detail = SiteImageCardSettings.Detail.entries[index]
-                    SettingSwitchItem(
-                        title = stringResource(
-                            when (detail) {
-                                SiteImageCardSettings.Detail.Title -> R.string.site_card_show_title
-                                SiteImageCardSettings.Detail.Badges -> R.string.site_image_card_show_badges
-                                SiteImageCardSettings.Detail.Subtitle -> R.string.site_image_card_show_subtitle
-                            }
-                        ),
-                        icon = when (detail) {
-                            SiteImageCardSettings.Detail.Title -> Icons.Default.Subtitles
-                            SiteImageCardSettings.Detail.Badges -> Icons.Default.Visibility
-                            SiteImageCardSettings.Detail.Subtitle -> Icons.Default.CalendarMonth
-                        },
-                        checked = SiteImageCardSettings.isShown(site, detail),
-                        onCheckedChange = { SiteImageCardSettings.setShown(site, detail, it) },
-                    )
-                }
-                item {
-                    val imageAspect = SiteImageCardSettings.aspect(site)
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_card_aspect_title),
-                        summary = stringResource(R.string.site_card_aspect_summary),
-                        icon = Icons.Default.AspectRatio,
-                        valueText = stringResource(imageAspect.labelRes()),
-                        onClick = {
-                            val all = SiteCardSettings.Aspect.entries
-                            SiteImageCardSettings.setAspect(site, all[(all.indexOf(imageAspect) + 1) % all.size])
-                        },
-                    )
-                }
-            }
-
-            if (sortChoices != null) {
-                item { HubSectionTitle(stringResource(R.string.site_search_section)) }
-                item {
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_default_sort_title),
-                        summary = stringResource(R.string.site_default_sort_summary),
-                        icon = Icons.AutoMirrored.Filled.Sort,
-                        valueText = sortChoices.firstOrNull { it.second == defaultSort }?.first
-                            ?: stringResource(R.string.site_default_sort_none),
-                        onClick = { showSortDialog = true },
-                    )
-                }
-            }
-
-            if (homeSections.isNotEmpty() || hasCache) {
-                item { HubSectionTitle(stringResource(R.string.site_home_sections)) }
-                if (hasCache) {
-                    item {
-                        SettingNavigationItem(
-                            title = stringResource(R.string.site_home_cache_title),
-                            summary = stringResource(R.string.site_home_cache_summary),
-                            icon = Icons.Default.Update,
-                            valueText = stringResource(R.string.site_minutes, cacheMinutes),
-                            onClick = { showCacheDialog = true },
-                        )
-                    }
-                }
-                items(homeSections.size) { index ->
-                    val section = homeSections[index]
-                    SettingSwitchItem(
-                        title = stringResource(
-                            when (section) {
-                                SiteHomeSettings.Section.FapFolderTrending -> R.string.fap_trending
-                                SiteHomeSettings.Section.FapFolderSuggested -> R.string.fap_suggested_communities
-                            }
-                        ),
-                        icon = when (section) {
-                            SiteHomeSettings.Section.FapFolderTrending -> Icons.AutoMirrored.Filled.TrendingUp
-                            SiteHomeSettings.Section.FapFolderSuggested -> Icons.Default.Groups
-                        },
-                        checked = SiteHomeSettings.isShown(section),
-                        onCheckedChange = { SiteHomeSettings.setShown(section, it) },
-                    )
-                }
-            }
-
-            if (imageOptions != null) {
-                item { HubSectionTitle(stringResource(R.string.site_image_section)) }
-                item {
-                    SettingNavigationItem(
-                        title = stringResource(R.string.site_image_retries_title),
-                        summary = stringResource(R.string.site_image_retries_summary),
-                        icon = Icons.Default.Refresh,
-                        valueText = stringResource(imageOptions.retries.retriesLabelRes()),
-                        onClick = { showRetriesDialog = true },
-                    )
-                }
-                item {
-                    SettingSwitchItem(
-                        title = stringResource(R.string.site_image_fade_title),
-                        summary = stringResource(R.string.site_image_fade_summary),
-                        icon = Icons.Default.Animation,
-                        checked = imageOptions.fade,
-                        onCheckedChange = { SiteImageSettings.setFade(site, it) },
-                    )
-                }
-                item {
-                    SettingSwitchItem(
-                        title = stringResource(R.string.site_image_reduced_title),
-                        summary = stringResource(R.string.site_image_reduced_summary),
-                        icon = Icons.Default.PhotoSizeSelectSmall,
-                        checked = imageOptions.reduced,
-                        onCheckedChange = { SiteImageSettings.setReduced(site, it) },
-                    )
-                }
-            }
-
-            item { HubSectionTitle(stringResource(R.string.site_all_app_settings)) }
-            item {
-                HubRow(
-                    SiteSettingsEntry(
-                        key = "app_settings",
-                        title = stringResource(R.string.settings),
-                        subtitle = stringResource(R.string.site_playback_language_backup_cache_update),
-                        icon = Icons.Default.Apps,
-                        onClick = onOpenAppSettings,
-                    )
-                )
-            }
+        if (hasGridColumns || hasCardOptions) {
+            item { HubSectionTitle(stringResource(R.string.site_layout_section)) }
             item {
                 SettingNavigationItem(
-                    title = stringResource(R.string.player_settings),
-                    iconRes = R.drawable.ic_settings_player_24,
-                    onClick = onOpenPlayerSettings,
+                    title = stringResource(R.string.site_preset_title),
+                    summary = stringResource(R.string.site_preset_summary),
+                    icon = Icons.Default.Tune,
+                    onClick = { showPresetDialog = true },
+                )
+            }
+        }
+        if (hasGridColumns) {
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_grid_columns_title),
+                    summary = stringResource(R.string.site_grid_columns_summary),
+                    icon = Icons.Default.GridView,
+                    valueText = if (gridColumns == SiteLayoutSettings.FOLLOW_APP) {
+                        stringResource(R.string.site_grid_columns_follow_app)
+                    } else {
+                        gridColumns.toString()
+                    },
+                    onClick = { showColumnsDialog = true },
+                )
+            }
+        }
+
+        if (hasCardOptions) {
+            item { HubSectionTitle(stringResource(R.string.site_cards_section)) }
+            items(SiteCardSettings.Detail.entries.size) { index ->
+                val detail = SiteCardSettings.Detail.entries[index]
+                SettingSwitchItem(
+                    title = stringResource(
+                        when (detail) {
+                            SiteCardSettings.Detail.Views -> R.string.site_card_show_views
+                            SiteCardSettings.Detail.Duration -> R.string.site_card_show_duration
+                            SiteCardSettings.Detail.Subtitle -> R.string.site_card_show_subtitle
+                            SiteCardSettings.Detail.Date -> R.string.site_card_show_date
+                        }
+                    ),
+                    icon = when (detail) {
+                        SiteCardSettings.Detail.Views -> Icons.Default.Visibility
+                        SiteCardSettings.Detail.Duration -> Icons.Default.Timer
+                        SiteCardSettings.Detail.Subtitle -> Icons.Default.Subtitles
+                        SiteCardSettings.Detail.Date -> Icons.Default.CalendarMonth
+                    },
+                    checked = SiteCardSettings.isShown(site, detail),
+                    onCheckedChange = { SiteCardSettings.setShown(site, detail, it) },
+                )
+            }
+        }
+
+        if (hasCardOptions) {
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_card_aspect_title),
+                    summary = stringResource(R.string.site_card_aspect_summary),
+                    icon = Icons.Default.AspectRatio,
+                    valueText = stringResource(cardAspect.labelRes()),
+                    onClick = { showAspectDialog = true },
+                )
+            }
+        }
+
+        if (hasShortCardOptions) {
+            item { HubSectionTitle(stringResource(R.string.site_shorts_cards_section)) }
+            items(SiteShortsCardSettings.Detail.entries.size) { index ->
+                val detail = SiteShortsCardSettings.Detail.entries[index]
+                SettingSwitchItem(
+                    title = stringResource(
+                        when (detail) {
+                            SiteShortsCardSettings.Detail.Views -> R.string.site_card_show_views
+                            SiteShortsCardSettings.Detail.Duration -> R.string.site_card_show_duration
+                            SiteShortsCardSettings.Detail.GifBadge -> R.string.site_shorts_card_gif_badge
+                            SiteShortsCardSettings.Detail.Title -> R.string.site_card_show_title
+                        }
+                    ),
+                    icon = when (detail) {
+                        SiteShortsCardSettings.Detail.Views -> Icons.Default.Visibility
+                        SiteShortsCardSettings.Detail.Duration -> Icons.Default.Timer
+                        SiteShortsCardSettings.Detail.GifBadge -> Icons.Default.GridView
+                        SiteShortsCardSettings.Detail.Title -> Icons.Default.Subtitles
+                    },
+                    checked = SiteShortsCardSettings.isShown(site, detail),
+                    onCheckedChange = { SiteShortsCardSettings.setShown(site, detail, it) },
                 )
             }
             item {
+                val shortAspect = SiteShortsCardSettings.aspect(site)
                 SettingNavigationItem(
-                    title = stringResource(R.string.network_settings),
-                    iconRes = R.drawable.ic_settings_network_24,
-                    onClick = onOpenNetworkSettings,
+                    title = stringResource(R.string.site_card_aspect_title),
+                    summary = stringResource(R.string.site_card_aspect_summary),
+                    icon = Icons.Default.AspectRatio,
+                    valueText = stringResource(shortAspect.labelRes()),
+                    onClick = {
+                        val all = SiteCardSettings.Aspect.entries
+                        SiteShortsCardSettings.setAspect(site, all[(all.indexOf(shortAspect) + 1) % all.size])
+                    },
                 )
             }
+            item {
+                val shortColumns = SiteShortsCardSettings.columns(site)
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_grid_columns_title),
+                    summary = stringResource(R.string.site_grid_columns_summary),
+                    icon = Icons.Default.GridView,
+                    valueText = shortColumns.toString(),
+                    onClick = {
+                        val all = SiteShortsCardSettings.COLUMN_CHOICES
+                        SiteShortsCardSettings.setColumns(site, all[(all.indexOf(shortColumns) + 1) % all.size])
+                    },
+                )
+            }
+        }
 
-            if (canReset) {
-                item { HubSectionTitle(stringResource(R.string.site_reset_section)) }
+        if (hasImageCardOptions) {
+            item { HubSectionTitle(stringResource(R.string.site_image_cards_section)) }
+            items(SiteImageCardSettings.Detail.entries.size) { index ->
+                val detail = SiteImageCardSettings.Detail.entries[index]
+                SettingSwitchItem(
+                    title = stringResource(
+                        when (detail) {
+                            SiteImageCardSettings.Detail.Title -> R.string.site_card_show_title
+                            SiteImageCardSettings.Detail.Badges -> R.string.site_image_card_show_badges
+                            SiteImageCardSettings.Detail.Subtitle -> R.string.site_image_card_show_subtitle
+                        }
+                    ),
+                    icon = when (detail) {
+                        SiteImageCardSettings.Detail.Title -> Icons.Default.Subtitles
+                        SiteImageCardSettings.Detail.Badges -> Icons.Default.Visibility
+                        SiteImageCardSettings.Detail.Subtitle -> Icons.Default.CalendarMonth
+                    },
+                    checked = SiteImageCardSettings.isShown(site, detail),
+                    onCheckedChange = { SiteImageCardSettings.setShown(site, detail, it) },
+                )
+            }
+            item {
+                val imageAspect = SiteImageCardSettings.aspect(site)
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_card_aspect_title),
+                    summary = stringResource(R.string.site_card_aspect_summary),
+                    icon = Icons.Default.AspectRatio,
+                    valueText = stringResource(imageAspect.labelRes()),
+                    onClick = {
+                        val all = SiteCardSettings.Aspect.entries
+                        SiteImageCardSettings.setAspect(site, all[(all.indexOf(imageAspect) + 1) % all.size])
+                    },
+                )
+            }
+        }
+
+        if (sortChoices != null) {
+            item { HubSectionTitle(stringResource(R.string.site_search_section)) }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_default_sort_title),
+                    summary = stringResource(R.string.site_default_sort_summary),
+                    icon = Icons.AutoMirrored.Filled.Sort,
+                    valueText = sortChoices.firstOrNull { it.second == defaultSort }?.first
+                        ?: stringResource(R.string.site_default_sort_none),
+                    onClick = { showSortDialog = true },
+                )
+            }
+        }
+
+        if (homeSections.isNotEmpty() || hasCache) {
+            item { HubSectionTitle(stringResource(R.string.site_home_sections)) }
+            if (hasCache) {
                 item {
                     SettingNavigationItem(
-                        title = stringResource(R.string.site_reset_title, siteLabel),
-                        summary = stringResource(R.string.site_reset_summary),
-                        icon = Icons.Default.Restore,
-                        onClick = { showResetConfirm = true },
+                        title = stringResource(R.string.site_home_cache_title),
+                        summary = stringResource(R.string.site_home_cache_summary),
+                        icon = Icons.Default.Update,
+                        valueText = stringResource(R.string.site_minutes, cacheMinutes),
+                        onClick = { showCacheDialog = true },
                     )
                 }
             }
+            items(homeSections.size) { index ->
+                val section = homeSections[index]
+                SettingSwitchItem(
+                    title = stringResource(
+                        when (section) {
+                            SiteHomeSettings.Section.FapFolderTrending -> R.string.fap_trending
+                            SiteHomeSettings.Section.FapFolderSuggested -> R.string.fap_suggested_communities
+                        }
+                    ),
+                    icon = when (section) {
+                        SiteHomeSettings.Section.FapFolderTrending -> Icons.AutoMirrored.Filled.TrendingUp
+                        SiteHomeSettings.Section.FapFolderSuggested -> Icons.Default.Groups
+                    },
+                    checked = SiteHomeSettings.isShown(section),
+                    onCheckedChange = { SiteHomeSettings.setShown(section, it) },
+                )
+            }
+        }
 
-            if (onOpenUnifiedHistory != null) {
-                item { HubSectionTitle(stringResource(R.string.site_history)) }
-                item {
-                    HubRow(
-                        SiteSettingsEntry(
-                            key = "unified_history",
-                            title = stringResource(R.string.site_watch_history_all_sites),
-                            subtitle = stringResource(R.string.site_touch_an_item_of_another_site),
-                            icon = Icons.Default.History,
-                            onClick = onOpenUnifiedHistory,
-                        )
-                    )
-                }
+        if (site == SiteType.XHAMSTER) {
+            item { HubSectionTitle(stringResource(R.string.hub_xhamster_home_sections)) }
+            item {
+                SettingSwitchItem(
+                    title = stringResource(R.string.hub_xhamster_show_channels),
+                    summary = stringResource(R.string.hub_xhamster_show_channels_desc),
+                    checked = showChannels,
+                    onCheckedChange = { XHamsterSettings.showChannels = it },
+                )
+            }
+            item {
+                SettingSwitchItem(
+                    title = stringResource(R.string.hub_xhamster_show_top_creators),
+                    summary = stringResource(R.string.hub_xhamster_show_top_creators_desc),
+                    checked = showCreators,
+                    onCheckedChange = { XHamsterSettings.showTopCreators = it },
+                )
+            }
+        }
+
+        if (imageOptions != null) {
+            item { HubSectionTitle(stringResource(R.string.site_image_section)) }
+            item {
+                SettingNavigationItem(
+                    title = stringResource(R.string.site_image_retries_title),
+                    summary = stringResource(R.string.site_image_retries_summary),
+                    icon = Icons.Default.Refresh,
+                    valueText = stringResource(imageOptions.retries.retriesLabelRes()),
+                    onClick = { showRetriesDialog = true },
+                )
+            }
+            item {
+                SettingSwitchItem(
+                    title = stringResource(R.string.site_image_fade_title),
+                    summary = stringResource(R.string.site_image_fade_summary),
+                    icon = Icons.Default.Animation,
+                    checked = imageOptions.fade,
+                    onCheckedChange = { SiteImageSettings.setFade(site, it) },
+                )
+            }
+            item {
+                SettingSwitchItem(
+                    title = stringResource(R.string.site_image_reduced_title),
+                    summary = stringResource(R.string.site_image_reduced_summary),
+                    icon = Icons.Default.PhotoSizeSelectSmall,
+                    checked = imageOptions.reduced,
+                    onCheckedChange = { SiteImageSettings.setReduced(site, it) },
+                )
             }
         }
     }
@@ -573,50 +461,11 @@ fun SiteSettingsHubScreen(
             },
         )
     }
-
-    if (canReset) {
-        ConfirmDialog(
-            visible = showResetConfirm,
-            title = stringResource(R.string.site_reset_title, siteLabel),
-            message = stringResource(R.string.site_reset_message, siteLabel),
-            confirmText = stringResource(R.string.site_reset_confirm),
-            dismissText = stringResource(R.string.cancel),
-            destructive = true,
-            onConfirm = {
-                showResetConfirm = false
-                scope.launch {
-                    runCatching {
-                        SiteLayoutSettings.reset(site)
-                        defaultSort = ""
-                        cacheMinutes = SiteHomeSettings.DEFAULT_CACHE_MINUTES
-                        onResetSite?.invoke()
-                    }
-                        .onSuccess {
-                            GlobalToasts.show(resetDoneText, level = GlobalToasts.ToastLevel.SUCCESS)
-                        }
-                        .onFailure {
-                            GlobalToasts.show(resetFailedText, level = GlobalToasts.ToastLevel.ERROR)
-                        }
-                }
-            },
-            onDismiss = { showResetConfirm = false },
-        )
-    }
 }
 
 @Composable
 private fun HubSectionTitle(text: String) {
     SettingSectionHeader(text)
-}
-
-@Composable
-private fun HubRow(entry: SiteSettingsEntry) {
-    SettingNavigationItem(
-        title = entry.title,
-        summary = entry.subtitle,
-        icon = entry.icon,
-        onClick = entry.onClick,
-    )
 }
 
 private fun SiteCardSettings.Aspect.labelRes(): Int = when (this) {

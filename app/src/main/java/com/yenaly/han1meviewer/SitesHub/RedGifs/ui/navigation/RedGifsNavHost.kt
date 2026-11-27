@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation3.runtime.entryProvider
@@ -12,9 +13,6 @@ import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HighQuality
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SitesHub.RedGifs.common.RedGifsSession
-import com.yenaly.han1meviewer.SitesHub.RedGifs.common.RedGifsSettings
 import com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsAuth
 import com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsFeedSource
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.account.RedGifsAccountScreen
@@ -49,13 +46,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.content.LoginGate
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -297,31 +288,7 @@ fun RedGifsNavHost(
         }
 
         screen<RedGifsSettingsHubRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.REDGIFS,
-                onResetSite = { RedGifsSettings.resetToDefaults() },
-                siteEntries = listOf(
-                    SiteSettingsEntry(
-                        key = "playback",
-                        title = stringResource(R.string.redgifs_settings_title),
-                        subtitle = stringResource(R.string.redgifs_settings_summary),
-                        icon = Icons.Default.HighQuality,
-                        onClick = { navigator.navigateSafely(RedGifsSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "account",
-                        title = stringResource(R.string.redgifs_account),
-                        subtitle = stringResource(R.string.redgifs_account_summary),
-                        icon = Icons.Default.Person,
-                        onClick = { navigator.navigateSafely(RedGifsAccountRoute) },
-                    ),
-                ),
-                onBack = { back() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.REDGIFS.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         siteHubEntries(

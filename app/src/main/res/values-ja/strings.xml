@@ -61,10 +61,10 @@
     <string name="profile_settings_desc">プレイヤー、ネットワーク、ダウンロード設定</string>
     <string name="settings_pane_subtitle">自分の好みに合うように調整する</string>
     <string name="settings_select_category_hint">左から設定カテゴリを選択</string>
-    <string name="settings_category_appearance">外観と操作</string>
+    <string name="settings_category_appearance">外観と言語</string>
     <string name="settings_category_appearance_desc">テーマ、言語、レイアウトと表示</string>
     <string name="settings_category_playback">再生</string>
-    <string name="settings_category_playback_desc">画質、プレーヤー、再生動作</string>
+    <string name="settings_category_playback_desc">プレイヤー、ピクチャーインピクチャー、再生の動作</string>
     <string name="settings_category_network">ネットワーク</string>
     <string name="settings_category_network_desc">ネットワーク、ディープリンク、接続</string>
     <string name="settings_category_download">ダウンロード</string>
@@ -73,9 +73,9 @@
     <string name="settings_category_keyframes_desc">H キーフレームと共有キーフレーム</string>
     <string name="settings_category_privacy">プライバシーとセキュリティ</string>
     <string name="settings_category_privacy_desc">分析、アプリロック、偽装アイコン</string>
-    <string name="settings_category_data">データ</string>
+    <string name="settings_category_data">データと履歴</string>
     <string name="settings_category_data_desc">バックアップ、復元、キャッシュ</string>
-    <string name="settings_category_about">このアプリについて</string>
+    <string name="settings_category_about">アプリ情報とアップデート</string>
     <string name="settings_category_about_desc">アップデート、フィードバック、OSS ライセンス</string>
     <string name="settings_group_interface">インターフェースとレイアウト</string>
     <string name="settings_group_app">アプリ</string>
@@ -1174,7 +1174,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="site_drawer_section_browse">閲覧</string>
     <string name="site_drawer_section_library">ライブラリ</string>
     <string name="site_drawer_section_account">アカウント</string>
-    <string name="site_drawer_section_customize">カスタマイズ</string>
     <string name="site_drawer_section_app">アプリ</string>
 
     <!-- ===== site_extras ===== -->
@@ -1206,8 +1205,6 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="hub_site_settings_desc">このサイト専用の設定</string>
     <string name="hub_check_in_desc">毎日のチェックイン</string>
     <string name="hub_switch_site_desc">別のサイトに切り替える</string>
-    <string name="hub_customize_title">カスタマイズ</string>
-    <string name="hub_customize_desc">ホーム、レイアウト、プレーヤー</string>
     <string name="hub_all_history_desc">すべてのサイトの視聴履歴</string>
     <string name="hub_offline_playlist">オフラインプレイリスト</string>
     <string name="hub_offline_playlist_desc">この端末に保存されたプレイリスト</string>
@@ -1215,10 +1212,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="hub_downloads_desc">ダウンロード済みの動画</string>
     <string name="hub_section_on_device">この端末</string>
     <string name="hub_section_history">履歴</string>
-    <string name="hub_horizontal_cards_title">横スクロールのカード数</string>
     <string name="hub_video_grid_columns_desc">ホームや一覧の縦型動画グリッドの列数</string>
-    <string name="hub_search_grid_columns_title">検索グリッドの列数</string>
-    <string name="hub_search_grid_columns_desc">検索結果グリッドの列数</string>
     <string name="hub_scroll_to_top">先頭へ戻る</string>
     <string name="hub_xhamster_home_sections">ホームのセクション</string>
     <string name="hub_xhamster_show_channels">チャンネルを表示</string>
@@ -1578,4 +1572,15 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="onair_already_in_github_queue">キュー済みまたはダウンロード済み</string>
     <string name="onair_github_downloader_title">GitHubダウンローダー</string>
     <string name="onair_github_downloader_subtitle">開発者専用 · GitHubワークフローでダウンロード</string>
+
+    <!-- Unified settings page -->
+    <string name="settings_group_this_site">このサイト · %1$s</string>
+    <string name="settings_group_all_sites">すべてのサイト</string>
+    <string name="settings_drawer_this_site">このサイト</string>
+    <string name="settings_site_account">アカウントとセッション</string>
+    <string name="settings_site_account_summary">このサイトのログイン、アカウント、セッション</string>
+    <string name="settings_site_layout_cards">レイアウトとカード</string>
+    <string name="settings_site_layout_cards_summary">レイアウト、カード、検索、ホーム、画像の設定</string>
+    <string name="settings_site_player_synced">Hanime1 / Javchu のプレイヤー設定に従います</string>
+    <string name="settings_xhamster_privacy_summary">視聴履歴の一時停止、タイトルの翻訳</string>
 </resources>

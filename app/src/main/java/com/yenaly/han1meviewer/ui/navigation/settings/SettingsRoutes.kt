@@ -15,6 +15,9 @@ object HomeSettingsRoute : NavKey
 data class SettingsCategoryRoute(val categoryKey: String) : NavKey
 
 @Serializable
+data class SettingsSiteSectionRoute(val site: String, val section: String) : NavKey
+
+@Serializable
 object PlayerSettingsRoute : NavKey
 
 @Serializable
@@ -73,6 +76,11 @@ enum class SettingsDestinationSpec(
         titleRes = R.string.settings,
         screenClassName = "HomeSettingsScreen",
         routeClass = HomeSettingsRoute::class,
+    ),
+    SiteSection(
+        titleRes = R.string.settings,
+        screenClassName = "SiteSettingsSectionScreen",
+        routeClass = SettingsSiteSectionRoute::class,
     ),
     Player(
         titleRes = R.string.player_settings,
@@ -140,6 +148,7 @@ sealed interface SettingsScreenDestination {
     val titleRes: Int
     val screenClassName: String
     val category: SettingsCategory?
+    val titleArg: String? get() = null
 
     data object Home : SettingsScreenDestination {
         override val titleRes: Int = R.string.settings
@@ -155,6 +164,22 @@ sealed interface SettingsScreenDestination {
         override val category: SettingsCategory get() = value
     }
 
+    data class Site(
+        val site: SiteType,
+        val section: SiteSettingsSection,
+    ) : SettingsScreenDestination {
+        override val titleRes: Int
+            get() = when (section) {
+                SiteSettingsSection.Account -> R.string.settings_site_account
+                SiteSettingsSection.LayoutCards -> R.string.settings_site_layout_cards
+                else -> R.string.hub_site_settings_title
+            }
+        override val titleArg: String?
+            get() = if (titleRes == R.string.hub_site_settings_title) siteSettingsLabel(site) else null
+        override val screenClassName: String = "SiteSettingsSectionScreen"
+        override val category: SettingsCategory? = null
+    }
+
     data class Sub(
         val value: SettingsDestinationSpec,
     ) : SettingsScreenDestination {
@@ -168,6 +193,13 @@ fun NavKey?.resolveSettingsScreenDestination(): SettingsScreenDestination {
     if (this is SettingsCategoryRoute) {
         val category = SettingsCategory.fromKey(categoryKey)
         if (category != null) return SettingsScreenDestination.Category(category)
+    }
+    if (this is SettingsSiteSectionRoute) {
+        val siteType = SiteType.entries.firstOrNull { it.name == site }
+        val siteSection = SiteSettingsSection.fromKey(section)
+        if (siteType != null && siteSection != null) {
+            return SettingsScreenDestination.Site(siteType, siteSection)
+        }
     }
     val spec = SettingsDestinationSpec.fromKey(this)
     return if (spec != null && spec != SettingsDestinationSpec.Home) {

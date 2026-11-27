@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation3.runtime.entryProvider
@@ -13,22 +14,11 @@ import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.VideoLibrary
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Translate
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.util.translation.AppTranslation
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.account.RouVideoAccountScreen
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.account.RouVideoProfileEditScreen
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.library.RouVideoLibraryScreen
@@ -45,12 +35,6 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -114,68 +98,7 @@ fun RouVideoNavHost(
         }
 
         screen<RouVideoSettingsHubRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.ROUVIDEO,
-                onResetSite = { com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoSettings.resetToDefaults() },
-                siteEntries = listOfNotNull(
-                    SiteSettingsEntry(
-                        key = "account",
-                        title = stringResource(R.string.rouvideo_account_title),
-                        subtitle = stringResource(R.string.rouvideo_account_summary),
-                        icon = Icons.Default.AccountCircle,
-                        onClick = { navigator.navigateSafely(RouVideoAccountRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "library",
-                        title = stringResource(R.string.rouvideo_my_library),
-                        subtitle = stringResource(R.string.rouvideo_library_summary),
-                        icon = Icons.Default.VideoLibrary,
-                        onClick = { navigator.navigateSafely(RouVideoLibraryRoute()) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "host",
-                        title = stringResource(R.string.drawer_host_mirror),
-                        subtitle = stringResource(R.string.rouvideo_host_subtitle),
-                        icon = Icons.Default.Dns,
-                        onClick = { navigator.navigateSafely(RouVideoHostSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "site_settings",
-                        title = stringResource(R.string.rouvideo_settings_title),
-                        subtitle = stringResource(R.string.rouvideo_settings_summary),
-                        icon = Icons.Default.Tune,
-                        onClick = { navigator.navigateSafely(RouVideoSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "translation",
-                        title = stringResource(R.string.rouvideo_tr_title),
-                        subtitle = stringResource(R.string.rouvideo_tr_privacy),
-                        icon = Icons.Default.Translate,
-                        onClick = { navigator.navigateSafely(TranslationSiteRoute(SiteType.ROUVIDEO.name)) },
-                    ).takeIf { AppTranslation.available },
-                    SiteSettingsEntry(
-                        key = "categories",
-                        title = stringResource(R.string.rouvideo_categories),
-                        subtitle = stringResource(R.string.rouvideo_categories_summary),
-                        icon = Icons.Default.Category,
-                        onClick = { navigator.navigateSafely(RouVideoCategoriesRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "history",
-                        title = stringResource(R.string.rouvideo_history_title),
-                        subtitle = stringResource(R.string.rouvideo_history_summary),
-                        icon = Icons.Default.History,
-                        onClick = { navigator.navigateSafely(RouVideoHistoryRoute) },
-                    ),
-                ),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = {
-                    navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.ROUVIDEO.name))
-                },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<RouVideoSettingsRoute> {

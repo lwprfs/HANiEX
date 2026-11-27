@@ -4,6 +4,22 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.yenaly.han1meviewer.R
 
+enum class SiteSettingsSection(val key: String) {
+    Main("main"),
+    Account("account"),
+    LayoutCards("layout_cards"),
+    Player("player"),
+    Network("network"),
+    Translation("translation"),
+    SocialStyle("social_style"),
+    Reset("reset");
+
+    companion object {
+        fun fromKey(key: String?): SiteSettingsSection? =
+            entries.firstOrNull { it.key == key }
+    }
+}
+
 enum class SettingsCategory(
     val key: String,
     @param:StringRes val titleRes: Int,

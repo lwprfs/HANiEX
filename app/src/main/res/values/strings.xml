@@ -74,10 +74,10 @@
     <string name="profile_settings_desc">播放器、網路與下載設定</string>
     <string name="settings_pane_subtitle">做一些符合你心意的調整</string>
     <string name="settings_select_category_hint">從左側選擇設定分類</string>
-    <string name="settings_category_appearance">外觀與互動</string>
+    <string name="settings_category_appearance">外觀與語言</string>
     <string name="settings_category_appearance_desc">主題、語言、介面與佈局</string>
     <string name="settings_category_playback">播放</string>
-    <string name="settings_category_playback_desc">清晰度、播放器與播放行為</string>
+    <string name="settings_category_playback_desc">播放器、子母畫面與播放行為</string>
     <string name="settings_category_network">網路</string>
     <string name="settings_category_network_desc">網路、深層連結與連線</string>
     <string name="settings_category_download">下載</string>
@@ -86,9 +86,9 @@
     <string name="settings_category_keyframes_desc">H 關鍵幀與共享關鍵幀</string>
     <string name="settings_category_privacy">隱私與安全</string>
     <string name="settings_category_privacy_desc">資料統計、應用鎖與偽裝圖示</string>
-    <string name="settings_category_data">資料</string>
+    <string name="settings_category_data">資料與紀錄</string>
     <string name="settings_category_data_desc">備份、還原與快取</string>
-    <string name="settings_category_about">關於</string>
+    <string name="settings_category_about">關於與更新</string>
     <string name="settings_category_about_desc">更新、意見回饋與開源許可</string>
     <string name="settings_group_interface">介面與佈局</string>
     <string name="settings_group_app">應用</string>
@@ -1510,7 +1510,6 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="site_drawer_section_browse">瀏覽</string>
     <string name="site_drawer_section_library">資料庫</string>
     <string name="site_drawer_section_account">帳號</string>
-    <string name="site_drawer_section_customize">自訂</string>
     <string name="site_drawer_section_app">應用程式</string>
 
     <!-- ===== site_extras ===== -->
@@ -1546,8 +1545,6 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="hub_site_settings_desc">此站點專屬的設定</string>
     <string name="hub_check_in_desc">每日簽到</string>
     <string name="hub_switch_site_desc">切換到其他站點</string>
-    <string name="hub_customize_title">自訂</string>
-    <string name="hub_customize_desc">首頁、版面與播放器</string>
     <string name="hub_all_history_desc">所有站點的觀看紀錄</string>
     <string name="hub_offline_playlist">離線播放清單</string>
     <string name="hub_offline_playlist_desc">儲存在此裝置上的播放清單</string>
@@ -1555,10 +1552,7 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="hub_downloads_desc">已下載的影片</string>
     <string name="hub_section_on_device">此裝置</string>
     <string name="hub_section_history">紀錄</string>
-    <string name="hub_horizontal_cards_title">橫向卡片每列數量</string>
     <string name="hub_video_grid_columns_desc">首頁與列表中垂直影片網格的欄數</string>
-    <string name="hub_search_grid_columns_title">搜尋網格欄數</string>
-    <string name="hub_search_grid_columns_desc">搜尋結果網格的欄數</string>
     <string name="hub_scroll_to_top">回到頂部</string>
     <string name="hub_xhamster_home_sections">首頁區塊</string>
     <string name="hub_xhamster_show_channels">顯示頻道</string>
@@ -1567,7 +1561,6 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="hub_xhamster_show_top_creators_desc">在首頁顯示熱門創作者區塊</string>
 
     <!-- ===== site_settings ===== -->
-    <string name="current_site_settings">當前站點設定</string>
 
     <!-- ===== site_shorts ===== -->
     <string name="site_shorts_play_failed">無法播放此影片</string>
@@ -2395,11 +2388,7 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="site_layout_column_count">版面與欄數</string>
     <string name="site_video_grid_columns">影片網格欄數</string>
     <string name="site_columns_of_search_list_grids_by">依螢幕寬度設定搜尋 / 列表網格的欄數</string>
-    <string name="site_number_of_cards_visible_in_horizontal">首頁橫向列中可見的卡片數量</string>
-    <string name="site_all_app_settings">所有 App 設定</string>
-    <string name="site_playback_language_backup_cache_update">播放、語言、備份、快取、更新與其他所有設定</string>
     <string name="site_settings_2">%1$s 設定</string>
-    <string name="site_touch_an_item_of_another_site">點擊其他站點的項目即可切換站點、檢查連線並開啟影片頁面</string>
     <string name="site_default_resolution">預設解析度</string>
     <string name="site_default_resolution_summary">開啟影片時使用的畫質；若沒有該畫質，則使用最接近的較低畫質</string>
     <string name="ui_cross_search_also">同時搜尋 %1$s</string>
@@ -3359,4 +3348,15 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="onair_already_in_github_queue">已在 GitHub 下載清單或已下載</string>
     <string name="onair_github_downloader_title">GitHub 下載器</string>
     <string name="onair_github_downloader_subtitle">開發者專用 · 透過 GitHub 工作流程下載</string>
+
+    <!-- Unified settings page -->
+    <string name="settings_group_this_site">當前站點 · %1$s</string>
+    <string name="settings_group_all_sites">所有站點</string>
+    <string name="settings_drawer_this_site">當前站點</string>
+    <string name="settings_site_account">帳號與工作階段</string>
+    <string name="settings_site_account_summary">此站點的登入、帳號與工作階段</string>
+    <string name="settings_site_layout_cards">版面與卡片</string>
+    <string name="settings_site_layout_cards_summary">版面、卡片、搜尋、首頁與圖片選項</string>
+    <string name="settings_site_player_synced">沿用 Hanime1 / Javchu 的播放器設定</string>
+    <string name="settings_xhamster_privacy_summary">暫停觀看紀錄、翻譯標題</string>
 </resources>

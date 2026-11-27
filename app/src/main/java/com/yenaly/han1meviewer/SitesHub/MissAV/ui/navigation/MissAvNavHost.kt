@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation3.runtime.entryProvider
@@ -10,16 +11,9 @@ import com.yenaly.han1meviewer.ui.navigation.settings.globalSettingsEntries
 import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.HighQuality
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -29,13 +23,7 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.home.MissAvHomeScreen
@@ -147,55 +135,7 @@ fun MissAvNavHost(
         }
 
         screen<MissAvSettingsHubRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.MISSAV,
-                onResetSite = {
-                    com.yenaly.han1meviewer.SitesHub.MissAV.ui.home.MissAvHomeCategoryRepo.resetToDefaults()
-                    com.yenaly.han1meviewer.Preferences.resetMissAvCustomization()
-                },
-                siteEntries = listOf(
-                    SiteSettingsEntry(
-                        key = "home_categories",
-                        title = stringResource(R.string.drawer_home_categories),
-                        subtitle = stringResource(R.string.site_home_categories_subtitle),
-                        icon = Icons.Default.Category,
-                        onClick = { navigator.navigateSafely(MissAvHomeCategoriesRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "host",
-                        title = stringResource(R.string.drawer_host_mirror),
-                        subtitle = stringResource(R.string.missav_host_subtitle),
-                        icon = Icons.Default.Dns,
-                        onClick = { navigator.navigateSafely(MissAvHostSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "video_quality",
-                        title = stringResource(R.string.missav_video_resolution),
-                        subtitle = stringResource(R.string.missav_choose_auto_or_a_fixed_starting),
-                        icon = Icons.Default.HighQuality,
-                        onClick = { navigator.navigateSafely(MissAvQualitySettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "video_subtitle",
-                        title = stringResource(R.string.missav_subtitle_title),
-                        subtitle = stringResource(R.string.missav_subtitle_entry_summary),
-                        icon = Icons.Default.Subtitles,
-                        onClick = { navigator.navigateSafely(MissAvSubtitleSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "history",
-                        title = stringResource(R.string.missav_history_title),
-                        subtitle = stringResource(R.string.missav_history_subtitle),
-                        icon = Icons.Default.History,
-                        onClick = { navigator.navigateSafely(MissAvHistoryRoute) },
-                    ),
-                ),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.MISSAV.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<MissAvHomeCategoriesRoute> {

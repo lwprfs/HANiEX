@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import androidx.compose.ui.Modifier
 import com.yenaly.han1meviewer.ui.navigation.Navigator
@@ -12,14 +13,6 @@ import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
 
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.R
-import androidx.compose.ui.res.stringResource
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.automirrored.filled.QueueMusic
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -43,13 +36,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -341,66 +328,7 @@ fun HentaiMamaNavHost(
         }
 
         screen<HentaiMamaSettingsHubRoute> {
-            fun open(route: NavKey) {
-                navigator.navigateSafely(route)
-            }
-            SiteSettingsHubScreen(
-                site = SiteType.HENTAIMAMA,
-                onResetSite = {
-                    com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.home.HentaiMamaHomeCategoryRepo.resetToDefaults()
-                    com.yenaly.han1meviewer.SitesHub.HentaiMama.settings.HentaiMamaCardSettings.resetAllToDefaults()
-                    com.yenaly.han1meviewer.SitesHub.HentaiMama.settings.HentaiMamaVideoSettings.resetToDefaults()
-                },
-                siteEntries = listOf(
-                    SiteSettingsEntry(
-                        key = "video",
-                        title = stringResource(R.string.drawer_video_card_size),
-                        subtitle = stringResource(R.string.hm_video_card_subtitle),
-                        icon = Icons.Default.PlayCircleOutline,
-                        onClick = { open(HentaiMamaVideoSettingsRoute(target = "all")) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "home_categories",
-                        title = stringResource(R.string.drawer_home_categories),
-                        subtitle = stringResource(R.string.site_home_categories_subtitle),
-                        icon = Icons.Default.Category,
-                        onClick = { open(HentaiMamaHomeSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "history",
-                        title = stringResource(R.string.hm_history_title),
-                        subtitle = stringResource(R.string.hm_history_subtitle),
-                        icon = Icons.Default.History,
-                        onClick = { open(HentaiMamaHistoryRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "playlists",
-                        title = stringResource(R.string.hm_playlists_title),
-                        subtitle = stringResource(R.string.hm_playlists_subtitle),
-                        icon = Icons.AutoMirrored.Filled.QueueMusic,
-                        onClick = { open(HentaiMamaPlaylistsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "recent_episodes",
-                        title = stringResource(R.string.drawer_recent_episodes),
-                        subtitle = stringResource(R.string.hm_recent_episodes_subtitle),
-                        icon = Icons.Default.VideoLibrary,
-                        onClick = { open(HentaiMamaRecentEpisodesRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "upcoming",
-                        title = stringResource(R.string.drawer_upcoming),
-                        subtitle = stringResource(R.string.hm_upcoming_subtitle),
-                        icon = Icons.Default.CalendarMonth,
-                        onClick = { open(HentaiMamaUpcomingRoute) },
-                    ),
-                ),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { open(HomeSettingsRoute) },
-                onOpenPlayerSettings = { open(SitePlayerSettingsRoute(SiteType.HENTAIMAMA.name)) },
-                onOpenNetworkSettings = { open(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { open(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<HentaiMamaVideoSettingsRoute> { backStackEntry ->

@@ -7,7 +7,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.NewReleases
@@ -15,7 +14,6 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Recommend
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Translate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -25,13 +23,10 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.common.WumaobiConstants
 import com.yenaly.han1meviewer.SitesHub.Wumaobi.data.remote.WumaobiAuth
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
-import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
 import com.yenaly.han1meviewer.ui.screen.site.gated
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -44,7 +39,6 @@ fun wumaobiHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfi
         site = SiteType.WUMAOBI,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = WumaobiSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 null,
@@ -135,28 +129,6 @@ fun wumaobiHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfi
                 icon = Icons.Filled.AccountCircle,
                 onClick = { navigator.navigateSafely(WumaobiAccountRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "playback",
-                title = stringResource(R.string.wumaobi_settings_playback_title),
-                subtitle = stringResource(R.string.wumaobi_settings_playback_summary),
-                icon = Icons.Filled.HighQuality,
-                onClick = { navigator.navigateSafely(WumaobiSettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.WUMAOBI),
-        ) + listOfNotNull(
-            if (AppTranslation.available) {
-                SiteHubEntry(
-                    key = "translation",
-                    title = stringResource(R.string.rouvideo_tr_title),
-                    subtitle = stringResource(R.string.rouvideo_tr_privacy),
-                    icon = Icons.Filled.Translate,
-                    onClick = {
-                        navigator.navigateSafely(TranslationSiteRoute(SiteType.WUMAOBI.name))
-                    },
-                )
-            } else null,
         ),
     )
 }

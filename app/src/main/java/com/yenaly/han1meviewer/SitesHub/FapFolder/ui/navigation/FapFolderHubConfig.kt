@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
@@ -22,8 +21,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
@@ -85,7 +82,6 @@ fun fapFolderHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCon
         site = SiteType.FAPFOLDER,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = FapFolderSettingsRoute,
         subscriptionSections = listOf(SiteHubSection(null, listOf(followed))),
         siteLibraryEntries = listOf(
             SiteHubEntry(
@@ -105,7 +101,5 @@ fun fapFolderHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCon
         ),
         extraLibrarySections = emptyList(),
         profileExtraQuickActions = authEntries,
-        customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.FAPFOLDER),
-            rememberSocialStyleEntry(navigator, SiteType.FAPFOLDER)),
     )
 }

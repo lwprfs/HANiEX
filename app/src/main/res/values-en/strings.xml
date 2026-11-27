@@ -61,10 +61,10 @@
     <string name="profile_settings_desc">Player, network and download settings</string>
     <string name="settings_pane_subtitle">Make some adjustments that align with your wishes.</string>
     <string name="settings_select_category_hint">Choose a settings category from the left</string>
-    <string name="settings_category_appearance">Appearance &amp; interaction</string>
+    <string name="settings_category_appearance">Appearance &amp; language</string>
     <string name="settings_category_appearance_desc">Theme, language, layout and display</string>
     <string name="settings_category_playback">Playback</string>
-    <string name="settings_category_playback_desc">Quality, player and playback behavior</string>
+    <string name="settings_category_playback_desc">Player, picture-in-picture and playback behavior</string>
     <string name="settings_category_network">Network</string>
     <string name="settings_category_network_desc">Network, deep links and connectivity</string>
     <string name="settings_category_download">Downloads</string>
@@ -73,9 +73,9 @@
     <string name="settings_category_keyframes_desc">H keyframes and shared keyframes</string>
     <string name="settings_category_privacy">Privacy &amp; security</string>
     <string name="settings_category_privacy_desc">Analytics, app lock and disguised icon</string>
-    <string name="settings_category_data">Data</string>
+    <string name="settings_category_data">Data &amp; history</string>
     <string name="settings_category_data_desc">Backup, restore and cache</string>
-    <string name="settings_category_about">About</string>
+    <string name="settings_category_about">About &amp; updates</string>
     <string name="settings_category_about_desc">Updates, feedback and open-source licenses</string>
     <string name="settings_group_interface">Interface &amp; layout</string>
     <string name="settings_group_app">App</string>
@@ -1469,7 +1469,6 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="site_drawer_section_browse">Browse</string>
     <string name="site_drawer_section_library">Library</string>
     <string name="site_drawer_section_account">Account</string>
-    <string name="site_drawer_section_customize">Customize</string>
     <string name="site_drawer_section_app">App</string>
 
     <!-- ===== site_extras ===== -->
@@ -1505,8 +1504,6 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="hub_site_settings_desc">Settings specific to this site</string>
     <string name="hub_check_in_desc">Daily check-in</string>
     <string name="hub_switch_site_desc">Switch to another site</string>
-    <string name="hub_customize_title">Customize</string>
-    <string name="hub_customize_desc">Home, layout and player</string>
     <string name="hub_all_history_desc">Watch history across every site</string>
     <string name="hub_offline_playlist">Offline playlists</string>
     <string name="hub_offline_playlist_desc">Playlists stored on this device</string>
@@ -1514,10 +1511,7 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="hub_downloads_desc">Downloaded videos</string>
     <string name="hub_section_on_device">On this device</string>
     <string name="hub_section_history">History</string>
-    <string name="hub_horizontal_cards_title">Horizontal cards per row</string>
     <string name="hub_video_grid_columns_desc">Columns used by vertical video grids on home and list pages</string>
-    <string name="hub_search_grid_columns_title">Search grid columns</string>
-    <string name="hub_search_grid_columns_desc">Columns used by search result grids</string>
     <string name="hub_scroll_to_top">Back to top</string>
     <string name="hub_xhamster_home_sections">Home sections</string>
     <string name="hub_xhamster_show_channels">Show channels</string>
@@ -1526,7 +1520,6 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="hub_xhamster_show_top_creators_desc">Show the Top Creators strip on the home page</string>
 
     <!-- ===== site_settings ===== -->
-    <string name="current_site_settings">Current site settings</string>
 
     <!-- ===== site_shorts ===== -->
     <string name="site_shorts_play_failed">Couldn\'t play this video</string>
@@ -2354,11 +2347,7 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="site_layout_column_count">Layout &amp; column count</string>
     <string name="site_video_grid_columns">Video grid columns</string>
     <string name="site_columns_of_search_list_grids_by">Columns of search / list grids by screen width</string>
-    <string name="site_number_of_cards_visible_in_horizontal">Number of cards visible in horizontal home rows</string>
-    <string name="site_all_app_settings">All app settings</string>
-    <string name="site_playback_language_backup_cache_update">Playback, language, backup, cache, update and everything else</string>
     <string name="site_settings_2">%1$s settings</string>
-    <string name="site_touch_an_item_of_another_site">Touch an item of another site to switch site, check the connection and open its video page</string>
     <string name="site_default_resolution">Default resolution</string>
     <string name="site_default_resolution_summary">Quality used when a video opens. If it is not offered, the closest lower one is used</string>
     <string name="ui_cross_search_also">Also search %1$s</string>
@@ -3318,4 +3307,15 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="onair_already_in_github_queue">Already queued or downloaded</string>
     <string name="onair_github_downloader_title">GitHub downloader</string>
     <string name="onair_github_downloader_subtitle">Developer only · download through a GitHub workflow</string>
+
+    <!-- Unified settings page -->
+    <string name="settings_group_this_site">This site · %1$s</string>
+    <string name="settings_group_all_sites">All sites</string>
+    <string name="settings_drawer_this_site">This site</string>
+    <string name="settings_site_account">Account &amp; session</string>
+    <string name="settings_site_account_summary">Sign-in, account and session for this site</string>
+    <string name="settings_site_layout_cards">Layout &amp; cards</string>
+    <string name="settings_site_layout_cards_summary">Layout, card, search, home and image options</string>
+    <string name="settings_site_player_synced">Follows the Hanime1 / Javchu player settings</string>
+    <string name="settings_xhamster_privacy_summary">Pause watch history, translate titles</string>
 </resources>

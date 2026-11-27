@@ -61,10 +61,10 @@
     <string name="profile_settings_desc">播放器、网络与下载设置</string>
     <string name="settings_pane_subtitle">做一些符合你心意的调整</string>
     <string name="settings_select_category_hint">从左侧选择设置分类</string>
-    <string name="settings_category_appearance">外观与交互</string>
+    <string name="settings_category_appearance">外观与语言</string>
     <string name="settings_category_appearance_desc">主题、语言、界面与布局</string>
     <string name="settings_category_playback">播放</string>
-    <string name="settings_category_playback_desc">清晰度、播放器与播放行为</string>
+    <string name="settings_category_playback_desc">播放器、画中画与播放行为</string>
     <string name="settings_category_network">网络</string>
     <string name="settings_category_network_desc">网络、深度链接与连接</string>
     <string name="settings_category_download">下载</string>
@@ -73,9 +73,9 @@
     <string name="settings_category_keyframes_desc">H 关键帧与共享关键帧</string>
     <string name="settings_category_privacy">隐私与安全</string>
     <string name="settings_category_privacy_desc">数据统计、应用锁与伪装图标</string>
-    <string name="settings_category_data">数据</string>
+    <string name="settings_category_data">数据与记录</string>
     <string name="settings_category_data_desc">备份、恢复与缓存</string>
-    <string name="settings_category_about">关于</string>
+    <string name="settings_category_about">关于与更新</string>
     <string name="settings_category_about_desc">更新、反馈与开源许可</string>
     <string name="settings_group_interface">界面与布局</string>
     <string name="settings_group_app">应用</string>
@@ -1174,7 +1174,6 @@
     <string name="site_drawer_section_browse">浏览</string>
     <string name="site_drawer_section_library">资料库</string>
     <string name="site_drawer_section_account">账号</string>
-    <string name="site_drawer_section_customize">自定义</string>
     <string name="site_drawer_section_app">应用</string>
 
     <!-- ===== site_extras ===== -->
@@ -1206,8 +1205,6 @@
     <string name="hub_site_settings_desc">此站点专属的设置</string>
     <string name="hub_check_in_desc">每日签到</string>
     <string name="hub_switch_site_desc">切换到其他站点</string>
-    <string name="hub_customize_title">自定义</string>
-    <string name="hub_customize_desc">首页、布局与播放器</string>
     <string name="hub_all_history_desc">所有站点的观看记录</string>
     <string name="hub_offline_playlist">离线播放列表</string>
     <string name="hub_offline_playlist_desc">保存在此设备上的播放列表</string>
@@ -1215,10 +1212,7 @@
     <string name="hub_downloads_desc">已下载的视频</string>
     <string name="hub_section_on_device">此设备</string>
     <string name="hub_section_history">记录</string>
-    <string name="hub_horizontal_cards_title">横向卡片每行数量</string>
     <string name="hub_video_grid_columns_desc">首页与列表中垂直视频网格的列数</string>
-    <string name="hub_search_grid_columns_title">搜索网格列数</string>
-    <string name="hub_search_grid_columns_desc">搜索结果网格的列数</string>
     <string name="hub_scroll_to_top">回到顶部</string>
     <string name="hub_xhamster_home_sections">首页板块</string>
     <string name="hub_xhamster_show_channels">显示频道</string>
@@ -1578,4 +1572,15 @@
     <string name="onair_already_in_github_queue">已在 GitHub 下载列表或已下载</string>
     <string name="onair_github_downloader_title">GitHub 下载器</string>
     <string name="onair_github_downloader_subtitle">仅限开发者 · 通过 GitHub 工作流下载</string>
+
+    <!-- Unified settings page -->
+    <string name="settings_group_this_site">当前站点 · %1$s</string>
+    <string name="settings_group_all_sites">所有站点</string>
+    <string name="settings_drawer_this_site">当前站点</string>
+    <string name="settings_site_account">账号与会话</string>
+    <string name="settings_site_account_summary">此站点的登录、账号与会话</string>
+    <string name="settings_site_layout_cards">布局与卡片</string>
+    <string name="settings_site_layout_cards_summary">布局、卡片、搜索、首页与图片选项</string>
+    <string name="settings_site_player_synced">沿用 Hanime1 / Javchu 的播放器设置</string>
+    <string name="settings_xhamster_privacy_summary">暂停观看记录、翻译标题</string>
 </resources>

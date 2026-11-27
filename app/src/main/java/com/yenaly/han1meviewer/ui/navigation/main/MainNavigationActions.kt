@@ -23,15 +23,19 @@ fun Navigator.navigateTopLevelDestination(
 }
 
 fun Navigator.navigateSettingsCategoryDestination(category: SettingsCategory) {
+    navigateFromSettingsHome(SettingsCategoryRoute(category.key))
+}
+
+fun Navigator.navigateFromSettingsHome(route: androidx.navigation3.runtime.NavKey) {
     val stack = state.currentStack
     val baseIndex = stack.indexOfFirst { it == HomeSettingsRoute }
     if (baseIndex >= 0) {
         while (stack.size > baseIndex + 1) {
             stack.removeAt(stack.size - 1)
         }
-        stack.add(SettingsCategoryRoute(category.key))
+        stack.add(route)
     } else {
-        navigateSafely(SettingsCategoryRoute(category.key))
+        navigateSafely(route)
     }
 }
 

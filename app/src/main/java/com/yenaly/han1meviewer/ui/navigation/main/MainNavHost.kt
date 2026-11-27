@@ -39,7 +39,6 @@ import com.yenaly.han1meviewer.ui.navigation.settings.MediaControlsSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationCacheRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.translationRouteFor
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UpdateSettingsRoute
 import com.yenaly.han1meviewer.ui.screen.history.UnifiedHistoryScreen
@@ -49,7 +48,6 @@ import com.yenaly.han1meviewer.ui.screen.settings.SitePlayerSettingsPage
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationCacheScreen
 import com.yenaly.han1meviewer.ui.screen.settings.TranslationSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.UpdateStatusScreen
-import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.ui.navigation.settings.AboutAppRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.DownloadSettingsRouteScreen
@@ -183,9 +181,6 @@ fun MainNavHost(
                 onSettingsClick = { navigator.navigateSafely(HomeSettingsRoute) },
                 onSwitchSiteClick = onSwitchSiteClick,
                 onUpdateClick = { navigator.navigateSafely(UpdateSettingsRoute) },
-                onTranslationClick = if (AppTranslation.available) {
-                    { navigator.navigateSafely(translationRouteFor(com.yenaly.han1meviewer.Preferences.siteType)) }
-                } else null,
             )
         }
         screen<WatchHistoryRoute> {

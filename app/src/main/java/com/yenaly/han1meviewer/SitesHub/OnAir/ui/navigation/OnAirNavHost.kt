@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.LocalSiteContentAvailable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.SiteChromeVisibility
 import com.yenaly.han1meviewer.ui.navigation.Navigator
@@ -16,13 +19,6 @@ import com.yenaly.han1meviewer.R
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Campaign
-import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -65,13 +61,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 
 @Composable
@@ -297,15 +287,7 @@ fun OnAirNavHost(
         }
 
         screen<OnAirSettingsRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.ONAIR,
-                siteEntries = onAirHubEntries(navigator, signedInContent = gatePassed),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.ONAIR.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<OnAirAccountSettingsRoute> {
@@ -427,13 +409,15 @@ fun OnAirNavHost(
         )
     }
 
-    SiteNavDisplay(
-        navigator = navigator,
-        navigationState = navigationState,
-        entryProvider = entryProvider,
-        modifier = modifier,
-        socialSite = com.yenaly.han1meviewer.SiteType.ONAIR,
-    )
+    CompositionLocalProvider(LocalSiteContentAvailable provides gatePassed) {
+        SiteNavDisplay(
+            navigator = navigator,
+            navigationState = navigationState,
+            entryProvider = entryProvider,
+            modifier = modifier,
+            socialSite = com.yenaly.han1meviewer.SiteType.ONAIR,
+        )
+    }
 }
 
 @Composable
@@ -450,68 +434,4 @@ private fun OnAirGateContent(
         onRetry = onRetry,
         onOpenSettings = { navigator.navigateSingleTop(OnAirSettingsRoute) },
     )
-}
-
-private fun onAirHubEntries(
-    navigator: Navigator,
-    signedInContent: Boolean,
-): List<SiteSettingsEntry> = buildList {
-    if (signedInContent) {
-        add(
-            SiteSettingsEntry(
-                key = "account",
-                title = applicationContext.getString(R.string.drawer_account_session),
-                subtitle = applicationContext.getString(R.string.onair_account_subtitle),
-                icon = Icons.Default.Person,
-                onClick = { navigator.navigateSafely(OnAirAccountSettingsRoute) },
-            )
-        )
-    }
-    add(
-        SiteSettingsEntry(
-            key = "cookies",
-            title = applicationContext.getString(R.string.drawer_cookies_sign_in),
-            subtitle = applicationContext.getString(R.string.onair_cookies_subtitle),
-            icon = Icons.Default.Lock,
-            onClick = { navigator.navigateSafely(OnAirCookieRoute) },
-        )
-    )
-    if (signedInContent) {
-        add(
-            SiteSettingsEntry(
-                key = "tags",
-                title = applicationContext.getString(R.string.drawer_tags),
-                subtitle = applicationContext.getString(R.string.onair_tags_subtitle),
-                icon = Icons.AutoMirrored.Filled.Label,
-                onClick = { navigator.navigateSafely(OnAirTagsIndexRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "announcements",
-                title = applicationContext.getString(R.string.onair_announcements_title),
-                subtitle = applicationContext.getString(R.string.onair_announcements_subtitle),
-                icon = Icons.Default.Campaign,
-                onClick = { navigator.navigateSafely(OnAirAnnouncementsRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "chat",
-                title = applicationContext.getString(R.string.drawer_chat),
-                subtitle = applicationContext.getString(R.string.onair_chat_subtitle),
-                icon = Icons.AutoMirrored.Filled.Chat,
-                onClick = { navigator.navigateSafely(OnAirChatRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "history",
-                title = applicationContext.getString(R.string.onair_history_title),
-                subtitle = applicationContext.getString(R.string.onair_history_subtitle),
-                icon = Icons.Default.History,
-                onClick = { navigator.navigateSafely(OnAirHistoryRoute) },
-            )
-        )
-    }
 }

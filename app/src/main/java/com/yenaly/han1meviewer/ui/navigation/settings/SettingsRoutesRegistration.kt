@@ -6,7 +6,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.navigation.isHanimeFamily
+import com.yenaly.han1meviewer.ui.navigation.main.navigateFromSettingsHome
+import com.yenaly.han1meviewer.ui.screen.settings.SiteLayoutCardsScreen
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import com.yenaly.han1meviewer.ui.navigation.main.navigateSettingsCategoryDestination
@@ -33,6 +37,7 @@ fun EntryProviderScope<NavKey>.settingsEntries(
         SettingsScaffold(navigator = navigator, fallbackDestination = homeFallback) {
             SettingsHomeRouteScreen(
                 onOpenCategory = { navigator.navigateSettingsCategoryDestination(it) },
+                onOpenRoute = { navigator.navigateFromSettingsHome(it) },
             )
         }
     }
@@ -56,10 +61,46 @@ fun EntryProviderScope<NavKey>.settingsEntries(
                     navigator.navigateSettingsDestination(AboutAppRoute)
                 },
                 onNavigateToUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-                onNavigateToTranslationSettings = {
-                    navigator.navigateSettingsDestination(TranslationSettingsRoute)
-                },
             )
+        }
+    }
+    screen<SettingsSiteSectionRoute> { key ->
+        val site = SiteType.entries.firstOrNull { it.name == key.site } ?: Preferences.siteType
+        val section = SiteSettingsSection.fromKey(key.section) ?: SiteSettingsSection.Main
+        SettingsScaffold(navigator = navigator, fallbackDestination = HomeSettingsRoute) {
+            val contentAvailable = LocalSiteContentAvailable.current
+            when {
+                section == SiteSettingsSection.Account -> SiteSettingsRowsScreen(
+                    rows = siteAccountRows(site, contentAvailable),
+                    navigator = navigator,
+                )
+
+                site.isHanimeFamily() -> SettingsCategoryRouteScreen(
+
+                    category = SettingsCategory.Appearance,
+                    hanimeSection = section,
+                    activity = activity,
+                    onNavigateToPlayerSettings = {
+                        navigator.navigateSettingsDestination(PlayerSettingsRoute)
+                    },
+                    onNavigateToHKeyframes = {
+                        navigator.navigateSettingsDestination(HKeyframesRoute)
+                    },
+                    onNavigateToSharedHKeyframes = {
+                        navigator.navigateSettingsDestination(SharedHKeyframesRoute)
+                    },
+                    onNavigateToAboutPage = {
+                        navigator.navigateSettingsDestination(AboutAppRoute)
+                    },
+                )
+
+                section == SiteSettingsSection.LayoutCards -> SiteLayoutCardsScreen(site = site)
+
+                else -> SiteSettingsRowsScreen(
+                    rows = siteMainRows(site),
+                    navigator = navigator,
+                )
+            }
         }
     }
     screen<AboutAppRoute> {

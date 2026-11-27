@@ -10,15 +10,10 @@ import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Subscriptions
-import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Translate
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.util.translation.AppTranslation
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.data.remote.RouVideoAuth
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.library.RouVideoLibraryTab
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
@@ -26,21 +21,11 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
 fun rouVideoHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig {
-    val translation = if (AppTranslation.available) {
-        SiteHubEntry(
-            key = "translation",
-            title = stringResource(R.string.rouvideo_tr_title),
-            subtitle = stringResource(R.string.rouvideo_tr_privacy),
-            icon = Icons.Filled.Translate,
-            onClick = { navigator.navigateSafely(TranslationSiteRoute(com.yenaly.han1meviewer.SiteType.ROUVIDEO.name)) },
-        )
-    } else null
     val loggedIn = RouVideoAuth.isLoggedIn
     val onLogin = { navigator.navigateSafely(RouVideoAccountRoute) }
     fun library(tab: RouVideoLibraryTab) = { navigator.navigateSafely(RouVideoLibraryRoute(tab.name)) }
@@ -73,7 +58,6 @@ fun rouVideoHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConf
         site = SiteType.ROUVIDEO,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = RouVideoSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 null,
@@ -110,24 +94,6 @@ fun rouVideoHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConf
                 onClick = { navigator.navigateSafely(RouVideoHistoryRoute) },
             ),
         ),
-        profileExtraQuickActions = listOfNotNull(translation) + accountEntries,
-        customizeEntries = listOfNotNull(
-            SiteHubEntry(
-                key = "host",
-                title = stringResource(R.string.drawer_host_mirror),
-                subtitle = stringResource(R.string.rouvideo_host_subtitle),
-                icon = Icons.Filled.Dns,
-                onClick = { navigator.navigateSafely(RouVideoHostSettingsRoute) },
-            ),
-            SiteHubEntry(
-                key = "site_settings",
-                title = stringResource(R.string.rouvideo_settings_title),
-                subtitle = stringResource(R.string.rouvideo_settings_summary),
-                icon = Icons.Filled.Tune,
-                onClick = { navigator.navigateSafely(RouVideoSettingsRoute) },
-            ),
-            translation,
-            rememberPlayerSettingsEntry(navigator, SiteType.ROUVIDEO),
-        ),
+        profileExtraQuickActions = accountEntries,
     )
 }

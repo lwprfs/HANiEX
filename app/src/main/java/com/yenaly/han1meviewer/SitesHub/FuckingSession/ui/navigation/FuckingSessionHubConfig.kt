@@ -17,7 +17,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -26,7 +25,6 @@ fun fuckingSessionHubConfig(navigator: Navigator, activity: MainActivity): SiteH
         site = SiteType.FUCKINGSESSION,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = FuckingSessionSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 null,
@@ -76,15 +74,5 @@ fun fuckingSessionHubConfig(navigator: Navigator, activity: MainActivity): SiteH
                 icon = Icons.Filled.History,
                 onClick = { navigator.navigateSafely(FuckingSessionHistoryRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "playback",
-                title = stringResource(R.string.fuckingsession_settings_playback_title),
-                subtitle = stringResource(R.string.fuckingsession_settings_playback_summary),
-                icon = Icons.Filled.HighQuality,
-                onClick = { navigator.navigateSafely(FuckingSessionSettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.FUCKINGSESSION),
         ),
     )

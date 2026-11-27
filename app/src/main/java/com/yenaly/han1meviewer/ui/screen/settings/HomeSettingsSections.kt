@@ -28,16 +28,11 @@ internal enum class HomeSettingsChoiceDialog {
 
 internal fun AnimatedLazyListScope.appearanceSettings(
     state: HomeSettingsUiState,
-    onEditHomeCategories: () -> Unit,
     onEditHorizontalCards: () -> Unit,
     onEditSearchGrid: () -> Unit,
     onEditVideoGrid: () -> Unit,
     onOpenDialog: (HomeSettingsChoiceDialog) -> Unit,
-    onOpenTranslationSettings: () -> Unit,
     onPureBlackDarkModeChange: (Boolean) -> Unit,
-    onRelatedVideoAsTabChange: (Boolean) -> Unit,
-    onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
-    onSearchPaginationChange: (Boolean) -> Unit,
     onShowExitConfirmChange: (Boolean) -> Unit,
     onDisablePredictiveBackChange: (Boolean) -> Unit,
     onIgnoreSystemDisplaySizeChange: (Boolean) -> Unit,
@@ -88,18 +83,7 @@ internal fun AnimatedLazyListScope.appearanceSettings(
                 onCheckedChange = onIgnoreSystemDisplaySizeChange,
             )
         }
-        item {
-            SettingNavigationItem(
-                title = stringResource(R.string.home_category_layout),
-                summary = stringResource(
-                    R.string.home_category_layout_summary,
-                    state.homeCategoryItems.size - state.hiddenHomeCategoryKeys.size,
-                    state.homeCategoryItems.size,
-                ),
-                iconRes = R.drawable.baseline_sort_24,
-                onClick = { onEditHomeCategories() },
-            )
-        }
+        item { SettingsGroupTitle(stringResource(R.string.site_layout_column_count)) }
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.site_video_grid_columns),
@@ -127,33 +111,6 @@ internal fun AnimatedLazyListScope.appearanceSettings(
                 onClick = { onEditHorizontalCards() },
             )
         }
-        item {
-            SettingSwitchItem(
-                title = stringResource(R.string.search_pagination),
-                summary = stringResource(R.string.search_pagination_summary),
-                checked = state.searchPagination,
-                iconRes = R.drawable.baseline_paging_24,
-                onCheckedChange = onSearchPaginationChange,
-            )
-        }
-        item {
-            SettingSwitchItem(
-                title = stringResource(R.string.search_artist_ignore_video_type),
-                summary = stringResource(R.string.search_artist_ignore_video_type_summary),
-                checked = state.searchArtistIgnoreVideoType,
-                iconRes = R.drawable.baseline_prohibit_24,
-                onCheckedChange = onSearchArtistIgnoreVideoTypeChange,
-            )
-        }
-        item {
-            SettingSwitchItem(
-                title = stringResource(R.string.related_video_as_tab),
-                summary = stringResource(R.string.related_video_as_tab_summary),
-                checked = state.relatedVideoAsTab,
-                iconRes = R.drawable.ic_baseline_list_24,
-                onCheckedChange = onRelatedVideoAsTabChange,
-            )
-        }
 
         item { SettingsGroupTitle(stringResource(R.string.settings_group_app)) }
         item {
@@ -164,16 +121,6 @@ internal fun AnimatedLazyListScope.appearanceSettings(
                 iconRes = R.drawable.ic_setting_lang,
                 onClick = { onOpenDialog(HomeSettingsChoiceDialog.AppLanguage) },
             )
-        }
-        if (com.yenaly.han1meviewer.util.translation.AppTranslation.available) {
-            item {
-                SettingNavigationItem(
-                    title = stringResource(R.string.rouvideo_tr_title),
-                    summary = stringResource(R.string.rouvideo_tr_privacy),
-                    iconRes = R.drawable.ic_translate_24,
-                    onClick = onOpenTranslationSettings,
-                )
-            }
         }
         item {
             SettingSwitchItem(
@@ -195,50 +142,16 @@ internal fun AnimatedLazyListScope.appearanceSettings(
         }
 
         item { SiteVisibilitySettings() }
-        val siteEntries = SiteSettingsRegistry.activeEntries
-        if (siteEntries.isNotEmpty()) {
-            item { SettingsGroupTitle(stringResource(R.string.current_site_settings)) }
-            siteEntries.forEach { entry ->
-                item(key = "site_${entry.key}") {
-                    SettingNavigationItem(
-                        title = entry.title,
-                        summary = entry.subtitle,
-                        iconRes = R.drawable.ic_settings_list_24,
-                        onClick = entry.onClick,
-                    )
-                }
-            }
-        }
 }
 
 internal fun AnimatedLazyListScope.playbackSettings(
     state: HomeSettingsUiState,
     onAllowPipModeChange: (Boolean) -> Unit,
     onAllowResumePlaybackChange: (Boolean) -> Unit,
-    onDisableCommentsChange: (Boolean) -> Unit,
     onDisableMobileDataWarningChange: (Boolean) -> Unit,
-    onOpenDialog: (HomeSettingsChoiceDialog) -> Unit,
     onOpenPlayerSettings: () -> Unit,
     onShowPlayedIndicatorChange: (Boolean) -> Unit,
-    onWatchedProgressThresholdChange: (Int) -> Unit,
 ) {
-        item { SettingsGroupTitle(stringResource(R.string.video)) }
-        item {
-            SettingNavigationItem(
-                title = stringResource(R.string.video_language),
-                valueText = state.videoLanguageLabel,
-                iconRes = R.drawable.baseline_simp_to_trad_24,
-                onClick = { onOpenDialog(HomeSettingsChoiceDialog.VideoLanguage) },
-            )
-        }
-        item {
-            SettingNavigationItem(
-                title = stringResource(R.string.default_video_quilty),
-                valueText = state.defaultVideoQuality,
-                iconRes = R.drawable.ic_video_quilty,
-                onClick = { onOpenDialog(HomeSettingsChoiceDialog.VideoQuality) },
-            )
-        }
         item { SettingsGroupTitle(stringResource(R.string.settings_group_playback_behavior)) }
         item {
             SettingSwitchItem(
@@ -268,6 +181,52 @@ internal fun AnimatedLazyListScope.playbackSettings(
             )
         }
         item {
+            SettingSwitchItem(
+                title = stringResource(R.string.disable_mobile_data_warning),
+                summary = stringResource(R.string.disable_mobile_data_warning_summary),
+                checked = state.disableMobileDataWarning,
+                iconRes = R.drawable.baseline_mobile_data_24,
+                onCheckedChange = onDisableMobileDataWarningChange,
+            )
+        }
+        item { SettingsGroupTitle(stringResource(R.string.settings_group_player)) }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.player_settings),
+                iconRes = R.drawable.ic_baseline_play_circle_outline_24,
+                onClick = onOpenPlayerSettings,
+            )
+        }
+}
+
+internal fun AnimatedLazyListScope.hanimeSiteSettings(
+    state: HomeSettingsUiState,
+    onDisableCommentsChange: (Boolean) -> Unit,
+    onOpenDialog: (HomeSettingsChoiceDialog) -> Unit,
+    onRelatedVideoAsTabChange: (Boolean) -> Unit,
+    onSearchArtistIgnoreVideoTypeChange: (Boolean) -> Unit,
+    onSearchPaginationChange: (Boolean) -> Unit,
+    onWatchedProgressThresholdChange: (Int) -> Unit,
+) {
+        item { SettingsGroupTitle(stringResource(R.string.video)) }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.video_language),
+                valueText = state.videoLanguageLabel,
+                iconRes = R.drawable.baseline_simp_to_trad_24,
+                onClick = { onOpenDialog(HomeSettingsChoiceDialog.VideoLanguage) },
+            )
+        }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.default_video_quilty),
+                valueText = state.defaultVideoQuality,
+                iconRes = R.drawable.ic_video_quilty,
+                onClick = { onOpenDialog(HomeSettingsChoiceDialog.VideoQuality) },
+            )
+        }
+        item { SettingsGroupTitle(stringResource(R.string.settings_group_playback_behavior)) }
+        item {
             SettingSliderItem(
                 title = stringResource(R.string.watched_progress_threshold),
                 summary = stringResource(
@@ -284,15 +243,6 @@ internal fun AnimatedLazyListScope.playbackSettings(
         }
         item {
             SettingSwitchItem(
-                title = stringResource(R.string.disable_mobile_data_warning),
-                summary = stringResource(R.string.disable_mobile_data_warning_summary),
-                checked = state.disableMobileDataWarning,
-                iconRes = R.drawable.baseline_mobile_data_24,
-                onCheckedChange = onDisableMobileDataWarningChange,
-            )
-        }
-        item {
-            SettingSwitchItem(
                 title = stringResource(R.string.disable_comments_title),
                 summary = stringResource(R.string.disable_comments_sum),
                 checked = state.disableComments,
@@ -300,12 +250,52 @@ internal fun AnimatedLazyListScope.playbackSettings(
                 onCheckedChange = onDisableCommentsChange,
             )
         }
-        item { SettingsGroupTitle(stringResource(R.string.settings_group_player)) }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.related_video_as_tab),
+                summary = stringResource(R.string.related_video_as_tab_summary),
+                checked = state.relatedVideoAsTab,
+                iconRes = R.drawable.ic_baseline_list_24,
+                onCheckedChange = onRelatedVideoAsTabChange,
+            )
+        }
+
+        item { SettingsGroupTitle(stringResource(R.string.search)) }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.search_pagination),
+                summary = stringResource(R.string.search_pagination_summary),
+                checked = state.searchPagination,
+                iconRes = R.drawable.baseline_paging_24,
+                onCheckedChange = onSearchPaginationChange,
+            )
+        }
+        item {
+            SettingSwitchItem(
+                title = stringResource(R.string.search_artist_ignore_video_type),
+                summary = stringResource(R.string.search_artist_ignore_video_type_summary),
+                checked = state.searchArtistIgnoreVideoType,
+                iconRes = R.drawable.baseline_prohibit_24,
+                onCheckedChange = onSearchArtistIgnoreVideoTypeChange,
+            )
+        }
+}
+
+internal fun AnimatedLazyListScope.hanimeLayoutSettings(
+    state: HomeSettingsUiState,
+    onEditHomeCategories: () -> Unit,
+) {
+        item { SettingsGroupTitle(stringResource(R.string.settings_group_interface)) }
         item {
             SettingNavigationItem(
-                title = stringResource(R.string.player_settings),
-                iconRes = R.drawable.ic_baseline_play_circle_outline_24,
-                onClick = onOpenPlayerSettings,
+                title = stringResource(R.string.home_category_layout),
+                summary = stringResource(
+                    R.string.home_category_layout_summary,
+                    state.homeCategoryItems.size - state.hiddenHomeCategoryKeys.size,
+                    state.homeCategoryItems.size,
+                ),
+                iconRes = R.drawable.baseline_sort_24,
+                onClick = { onEditHomeCategories() },
             )
         }
 }

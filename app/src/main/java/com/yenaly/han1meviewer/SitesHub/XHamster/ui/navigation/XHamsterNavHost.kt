@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation3.runtime.entryProvider
@@ -11,15 +12,9 @@ import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
 
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
 import com.yenaly.han1meviewer.R
-import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HighQuality
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import android.content.Intent
 import android.net.Uri
@@ -51,13 +46,7 @@ import com.yenaly.han1meviewer.SitesHub.XHamster.ui.video.XHamsterVideoScreen
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -172,45 +161,7 @@ fun XHamsterNavHost(
         }
 
         screen<XHamsterSettingsHubRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.XHAMSTER,
-                onResetSite = { com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterSettings.resetToDefaults() },
-                siteEntries = listOf(
-                    SiteSettingsEntry(
-                        key = "playback",
-                        title = stringResource(R.string.xhamster_settings_title),
-                        subtitle = stringResource(R.string.xhamster_settings_summary),
-                        icon = Icons.Default.HighQuality,
-                        onClick = { navigator.navigateSafely(XHamsterSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "account",
-                        title = stringResource(R.string.xhamster_account_settings),
-                        subtitle = stringResource(R.string.xhamster_account_settings_summary),
-                        icon = Icons.Default.Person,
-                        onClick = { navigator.navigateSafely(XHamsterAccountSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "privacy",
-                        title = "Privacy",
-                        subtitle = "Pause watch history, translate titles",
-                        icon = Icons.Default.Lock,
-                        onClick = { navigator.navigateSafely(XHamsterPrivacyRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "history",
-                        title = stringResource(R.string.xhamster_history_title),
-                        subtitle = stringResource(R.string.xhamster_history_summary),
-                        icon = Icons.Default.History,
-                        onClick = { navigator.navigateSafely(XHamsterHistoryRoute) },
-                    ),
-                ),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.XHAMSTER.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<XHamsterPrivacyRoute> {

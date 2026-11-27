@@ -5,16 +5,13 @@ import com.yenaly.han1meviewer.ui.navigation.Navigator
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Gif
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.SmartDisplay
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.automirrored.filled.PlaylistAdd
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
@@ -28,17 +25,11 @@ import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterSession
-import com.yenaly.han1meviewer.SitesHub.XHamster.common.XHamsterSettings
 import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterMomentsRepo
-import com.yenaly.han1meviewer.SitesHub.XHamster.common.rememberXHamsterFlag
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.component.SettingSectionHeader
-import com.yenaly.han1meviewer.ui.component.SettingSwitchItem
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.site.rememberSocialStyleEntry
 import com.yenaly.han1meviewer.ui.screen.site.gated
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterAuth
@@ -128,52 +119,15 @@ fun xHamsterHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConf
         icon = Icons.Filled.AccountCircle,
         onClick = { navigator.navigateSafely(XHamsterAccountSettingsRoute) },
     ).gated(loggedIn, onLogin)
-    val playback = SiteHubEntry(
-        key = "playback",
-        title = stringResource(R.string.xhamster_settings_title),
-        subtitle = stringResource(R.string.xhamster_settings_summary),
-        icon = Icons.Filled.HighQuality,
-        onClick = { navigator.navigateSafely(XHamsterSettingsRoute) },
-    )
-    val showChannels = rememberXHamsterFlag(XHamsterSettings.KEY_SHOW_CHANNELS)
-    val showCreators = rememberXHamsterFlag(XHamsterSettings.KEY_SHOW_TOP_CREATORS)
-    val sectionTitle = stringResource(R.string.hub_xhamster_home_sections)
-    val channelsTitle = stringResource(R.string.hub_xhamster_show_channels)
-    val channelsDesc = stringResource(R.string.hub_xhamster_show_channels_desc)
-    val creatorsTitle = stringResource(R.string.hub_xhamster_show_top_creators)
-    val creatorsDesc = stringResource(R.string.hub_xhamster_show_top_creators_desc)
-
     return standardSiteHubConfig(
         site = SiteType.XHAMSTER,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = XHamsterSettingsHubRoute,
         siteLibraryEntries = emptyList(),
         extraLibrarySections = listOf(
             SiteHubSection(stringResource(R.string.xhamster_my_library), libraryEntries),
         ),
         subscriptionSections = listOf(subscription, more),
         profileExtraQuickActions = listOf(accountSettings),
-        customizeEntries = listOf(playback, rememberPlayerSettingsEntry(navigator, SiteType.XHAMSTER),
-            rememberSocialStyleEntry(navigator, SiteType.XHAMSTER)),
-        customizeExtras = {
-            item(key = "xh_home_header") { SettingSectionHeader(title = sectionTitle) }
-            item(key = "xh_show_channels") {
-                SettingSwitchItem(
-                    title = channelsTitle,
-                    summary = channelsDesc,
-                    checked = showChannels,
-                    onCheckedChange = { XHamsterSettings.showChannels = it },
-                )
-            }
-            item(key = "xh_show_creators") {
-                SettingSwitchItem(
-                    title = creatorsTitle,
-                    summary = creatorsDesc,
-                    checked = showCreators,
-                    onCheckedChange = { XHamsterSettings.showTopCreators = it },
-                )
-            }
-        },
     )
 }

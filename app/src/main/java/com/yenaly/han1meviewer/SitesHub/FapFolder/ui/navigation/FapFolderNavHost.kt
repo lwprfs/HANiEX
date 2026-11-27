@@ -1,5 +1,8 @@
 package com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.LocalSiteContentAvailable
+import androidx.compose.runtime.CompositionLocalProvider
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.SiteChromeVisibility
 import androidx.compose.ui.Modifier
@@ -43,14 +46,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Cookie
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -100,13 +96,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 
 @Composable
@@ -383,16 +373,7 @@ fun FapFolderNavHost(
         }
 
         screen<FapFolderSettingsRoute> {
-            val loggedIn = FapFolderNetwork.hasAuthCookies()
-            SiteSettingsHubScreen(
-                site = SiteType.FAPFOLDER,
-                siteEntries = fapFolderHubEntries(navigator, isLoggedIn = loggedIn, full = true),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.FAPFOLDER.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<FapFolderFollowedCommunitiesRoute> {
@@ -622,15 +603,7 @@ private fun GateErrorHost(
             )
         }
         screen<FapFolderSettingsRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.FAPFOLDER,
-                siteEntries = fapFolderHubEntries(navigator, isLoggedIn = false, full = false),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.FAPFOLDER.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
         globalSettingsEntries(
             activity = activity,
@@ -676,11 +649,13 @@ private fun GateErrorHost(
         }
     }
 
-    SiteNavDisplay(
-        navigator = navigator,
-        navigationState = navigationState,
-        entryProvider = entryProvider,
-    )
+    CompositionLocalProvider(LocalSiteContentAvailable provides false) {
+        SiteNavDisplay(
+            navigator = navigator,
+            navigationState = navigationState,
+            entryProvider = entryProvider,
+        )
+    }
 }
 
 @Composable
@@ -784,113 +759,6 @@ private fun GateButtonLabel(icon: ImageVector, text: String) {
     Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
     Spacer(Modifier.width(8.dp))
     Text(text, maxLines = 1)
-}
-
-private fun fapFolderHubEntries(
-    navigator: Navigator,
-    isLoggedIn: Boolean,
-    full: Boolean,
-): List<SiteSettingsEntry> = buildList {
-    add(
-        SiteSettingsEntry(
-            key = "cookies",
-            title = applicationContext.getString(R.string.site_cookies),
-            subtitle = applicationContext.getString(R.string.fap_cookies_subtitle),
-            icon = Icons.Default.Cookie,
-            onClick = { navigator.navigateSafely(FapFolderCookiesRoute) },
-        )
-    )
-    if (!isLoggedIn) {
-        add(
-            SiteSettingsEntry(
-                key = "login",
-                title = applicationContext.getString(R.string.site_sign_in),
-                subtitle = applicationContext.getString(R.string.fap_signin_subtitle),
-                icon = Icons.AutoMirrored.Filled.Login,
-                onClick = { navigator.navigateSafely(FapFolderLoginRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "register",
-                title = applicationContext.getString(R.string.site_create_account),
-                subtitle = applicationContext.getString(R.string.fap_create_account_subtitle),
-                icon = Icons.Default.PersonAdd,
-                onClick = { navigator.navigateSafely(FapFolderRegisterRoute) },
-            )
-        )
-    }
-    if (full) {
-        add(
-            SiteSettingsEntry(
-                key = "account",
-                title = applicationContext.getString(R.string.site_my_account),
-                subtitle = if (isLoggedIn) {
-                    applicationContext.getString(R.string.fap_account_subtitle_in)
-                } else {
-                    applicationContext.getString(R.string.fap_account_subtitle_out)
-                },
-                icon = Icons.Default.AccountCircle,
-                onClick = { navigator.navigateSafely(FapFolderAccountRoute) },
-            )
-        )
-        if (isLoggedIn) {
-            add(
-                SiteSettingsEntry(
-                    key = "privacy",
-                    title = applicationContext.getString(R.string.site_privacy),
-                    subtitle = applicationContext.getString(R.string.fap_privacy_subtitle),
-                    icon = Icons.Default.Lock,
-                    onClick = { navigator.navigateSafely(FapFolderPrivacyRoute) },
-                )
-            )
-        }
-        add(
-            SiteSettingsEntry(
-                key = "history",
-                title = applicationContext.getString(R.string.fap_history_title),
-                subtitle = applicationContext.getString(R.string.fap_history_subtitle),
-                icon = Icons.Default.History,
-                onClick = { navigator.navigateSafely(FapFolderHistoryRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "search",
-                title = applicationContext.getString(R.string.site_search),
-                subtitle = applicationContext.getString(R.string.fap_search_subtitle),
-                icon = Icons.Default.Search,
-                onClick = { navigator.navigateSafely(FapFolderSearchRoute()) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "search_history",
-                title = applicationContext.getString(R.string.drawer_search_history),
-                subtitle = applicationContext.getString(R.string.fap_search_history_subtitle),
-                icon = Icons.Default.History,
-                onClick = { navigator.navigateSafely(FapFolderSearchHistoryRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "followed",
-                title = applicationContext.getString(R.string.drawer_followed_communities),
-                subtitle = applicationContext.getString(R.string.fap_followed_subtitle),
-                icon = Icons.Default.Groups,
-                onClick = { navigator.navigateSafely(FapFolderFollowedCommunitiesRoute) },
-            )
-        )
-        add(
-            SiteSettingsEntry(
-                key = "saved",
-                title = applicationContext.getString(R.string.fap_saved_posts_title),
-                subtitle = applicationContext.getString(R.string.fap_saved_posts_subtitle),
-                icon = Icons.Default.Bookmark,
-                onClick = { navigator.navigateSafely(FapFolderSavedRoute) },
-            )
-        )
-    }
 }
 
 @Composable

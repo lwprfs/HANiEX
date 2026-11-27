@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation
 
+import com.yenaly.han1meviewer.ui.navigation.settings.SettingsRedirect
 import androidx.navigation3.runtime.NavKey
 import com.yenaly.han1meviewer.ui.navigation.Navigator
 import androidx.navigation3.runtime.entryProvider
@@ -12,13 +13,9 @@ import com.yenaly.han1meviewer.ui.screen.site.siteHubEntries
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yenaly.han1meviewer.SitesHub.Coser.data.model.CoserTerm
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.history.CoserHistoryScreen
@@ -33,13 +30,7 @@ import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.NavigationManager
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
-import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import com.yenaly.han1meviewer.ui.navigation.site.SiteProfileRoute
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsEntry
-import com.yenaly.han1meviewer.ui.screen.settings.SiteSettingsHubScreen
 import kotlinx.coroutines.delay
 import kotlinx.serialization.Serializable
 
@@ -99,31 +90,7 @@ fun CoserNavHost(
         }
 
         screen<CoserSettingsHubRoute> {
-            SiteSettingsHubScreen(
-                site = SiteType.COSER,
-                onResetSite = { com.yenaly.han1meviewer.SitesHub.Coser.common.CoserSettings.resetToDefaults() },
-                siteEntries = listOf(
-                    SiteSettingsEntry(
-                        key = "playback",
-                        title = stringResource(R.string.coser_settings_title),
-                        subtitle = stringResource(R.string.coser_settings_summary),
-                        icon = Icons.Default.HighQuality,
-                        onClick = { navigator.navigateSafely(CoserSettingsRoute) },
-                    ),
-                    SiteSettingsEntry(
-                        key = "history",
-                        title = stringResource(R.string.coser_history_title),
-                        subtitle = stringResource(R.string.coser_history_summary),
-                        icon = Icons.Default.History,
-                        onClick = { navigator.navigateSafely(CoserHistoryRoute) },
-                    ),
-                ),
-                onBack = { navigator.goBack() },
-                onOpenAppSettings = { navigator.navigateSafely(HomeSettingsRoute) },
-                onOpenPlayerSettings = { navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.COSER.name)) },
-                onOpenNetworkSettings = { navigator.navigateSafely(NetworkSettingsRoute) },
-                onOpenUnifiedHistory = { navigator.navigateSafely(UnifiedHistoryRoute) },
-            )
+            SettingsRedirect(navigator)
         }
 
         screen<CoserSettingsRoute> {

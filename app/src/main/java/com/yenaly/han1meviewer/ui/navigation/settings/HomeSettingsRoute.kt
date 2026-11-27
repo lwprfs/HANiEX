@@ -54,10 +54,10 @@ fun SettingsCategoryRouteScreen(
     activity: MainActivity,
     onNavigateToPlayerSettings: () -> Unit,
     onNavigateToUnifiedHistory: () -> Unit = {},
-    onNavigateToTranslationSettings: () -> Unit = {},
     onNavigateToHKeyframes: () -> Unit,
     onNavigateToSharedHKeyframes: () -> Unit,
     onNavigateToAboutPage: () -> Unit,
+    hanimeSection: SiteSettingsSection? = null,
 ) {
     when (category) {
         SettingsCategory.Network -> {
@@ -199,6 +199,7 @@ fun SettingsCategoryRouteScreen(
 
     HomeSettingsScreen(
         category = category,
+        hanimeSection = hanimeSection,
         state = uiState,
         onVideoLanguageChange = { value ->
             if (value != Preferences.videoLanguage) {
@@ -363,7 +364,6 @@ fun SettingsCategoryRouteScreen(
         },
         onOpenPlayerSettings = onNavigateToPlayerSettings,
         onOpenUnifiedHistory = onNavigateToUnifiedHistory,
-        onOpenTranslationSettings = onNavigateToTranslationSettings,
         onAppLanguageChange = { value ->
             val old = Preferences.preferenceSp.getString(SettingsPreferenceKeys.APP_LANGUAGE, "system") ?: "system"
             if (old != value) {

@@ -8,7 +8,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.yenaly.han1meviewer.SitesHub.Coomer.common.CoomerConstants
@@ -18,7 +17,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -27,7 +25,6 @@ fun coomerHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig
         site = SiteType.COOMER,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = CoomerSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 title = null,
@@ -46,16 +43,6 @@ fun coomerHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig
                 icon = Icons.Filled.History,
                 onClick = { navigator.navigateSafely(CoomerHistoryRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "playback",
-                title = stringResource(R.string.coomer_settings_title),
-                subtitle = stringResource(R.string.coomer_settings_summary),
-                icon = Icons.Filled.Tune,
-                onClick = { navigator.navigateSafely(CoomerSettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.COOMER),
         ),
     )
 

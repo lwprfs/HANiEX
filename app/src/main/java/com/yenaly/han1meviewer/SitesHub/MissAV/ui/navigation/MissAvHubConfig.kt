@@ -7,19 +7,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.HighQuality
-import androidx.compose.material.icons.filled.PlayCircleOutline
-import androidx.compose.material.icons.filled.Subtitles
 import androidx.compose.runtime.Composable
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvAuth
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.gated
@@ -33,26 +27,9 @@ fun missAvHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig
     val common = rememberCommonProfileEntries(
         navigator = navigator,
         activity = activity,
-        site = SiteType.MISSAV,
-        siteSettingsRoute = MissAvSettingsHubRoute,
     )
     val loggedIn = MissAvAuth.currentUser() != null
     val onLogin = { navigator.navigateSafely(MissAvLoginRoute) }
-    val subtitles = SiteHubEntry(
-        key = "video_subtitles",
-        title = stringResource(R.string.missav_subtitle_title),
-        subtitle = stringResource(R.string.missav_subtitle_entry_summary),
-        icon = Icons.Filled.Subtitles,
-        onClick = { navigator.navigateSafely(MissAvSubtitleSettingsRoute) },
-    )
-    val playerSettings = SiteHubEntry(
-        key = "player",
-        title = stringResource(R.string.player_settings),
-        icon = Icons.Filled.PlayCircleOutline,
-        onClick = {
-            navigator.navigateSafely(SitePlayerSettingsRoute(SiteType.MISSAV.name))
-        },
-    )
     val account = SiteHubEntry(
         key = "account",
         title = stringResource(R.string.missav_acc_account_title),
@@ -117,43 +94,11 @@ fun missAvHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig
             ),
         ),
         profileQuickActions = listOf(
-            common.siteSettings,
+            common.settings,
             common.checkIn,
             common.switchSite,
-            subtitles,
-            common.update,
-            common.customize,
             common.allHistory,
         ),
         profileSections = listOf(SiteHubSection(stringResource(R.string.site_drawer_section_account), listOf(account))),
-        customizeSections = listOf(
-            SiteHubSection(
-                title = null,
-                entries = listOf(
-                    SiteHubEntry(
-                        key = "home_categories",
-                        title = stringResource(R.string.drawer_home_categories),
-                        subtitle = stringResource(R.string.site_home_categories_subtitle),
-                        icon = Icons.Filled.Category,
-                        onClick = { navigator.navigateSafely(MissAvHomeCategoriesRoute) },
-                    ),
-                    SiteHubEntry(
-                        key = "host",
-                        title = stringResource(R.string.drawer_host_mirror),
-                        subtitle = stringResource(R.string.missav_host_subtitle),
-                        icon = Icons.Filled.Dns,
-                        onClick = { navigator.navigateSafely(MissAvHostSettingsRoute) },
-                    ),
-                    SiteHubEntry(
-                        key = "video_quality",
-                        title = stringResource(R.string.missav_video_resolution),
-                        subtitle = stringResource(R.string.missav_choose_auto_or_a_fixed_starting),
-                        icon = Icons.Filled.HighQuality,
-                        onClick = { navigator.navigateSafely(MissAvQualitySettingsRoute) },
-                    ),
-                    playerSettings,
-                ),
-            ),
-        ),
     )
 }

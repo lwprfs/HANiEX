@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,6 +28,27 @@ import com.yenaly.han1meviewer.ui.navigation.settings.SettingsCategory
 @Composable
 fun SettingsCategoryItem(
     category: SettingsCategory,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    showChevron: Boolean = false,
+) {
+    SettingsListRow(
+        title = stringResource(category.titleRes),
+        description = stringResource(category.descriptionRes),
+        icon = painterResource(category.iconRes),
+        onClick = onClick,
+        modifier = modifier,
+        selected = selected,
+        showChevron = showChevron,
+    )
+}
+
+@Composable
+fun SettingsListRow(
+    title: String,
+    description: String,
+    icon: Painter,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
@@ -70,7 +92,7 @@ fun SettingsCategoryItem(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        painter = painterResource(category.iconRes),
+                        painter = icon,
                         contentDescription = null,
                         modifier = Modifier.size(22.dp),
                     )
@@ -78,13 +100,13 @@ fun SettingsCategoryItem(
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = stringResource(category.titleRes),
+                    text = title,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    text = stringResource(category.descriptionRes),
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = if (selected) {
                         MaterialTheme.colorScheme.onSecondaryContainer

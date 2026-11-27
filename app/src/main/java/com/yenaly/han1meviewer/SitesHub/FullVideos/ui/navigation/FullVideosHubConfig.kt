@@ -5,7 +5,6 @@ import com.yenaly.han1meviewer.ui.navigation.Navigator
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.HighQuality
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.NewReleases
@@ -21,7 +20,6 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubConfig
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubEntry
 import com.yenaly.han1meviewer.ui.screen.site.SiteHubSection
-import com.yenaly.han1meviewer.ui.screen.site.rememberPlayerSettingsEntry
 import com.yenaly.han1meviewer.ui.screen.site.standardSiteHubConfig
 
 @Composable
@@ -30,7 +28,6 @@ fun fullVideosHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCo
         site = SiteType.FULLVIDEOS,
         navigator = navigator,
         activity = activity,
-        siteSettingsRoute = FullVideosSettingsHubRoute,
         subscriptionSections = listOf(
             SiteHubSection(
                 null,
@@ -94,15 +91,5 @@ fun fullVideosHubConfig(navigator: Navigator, activity: MainActivity): SiteHubCo
                 icon = Icons.Filled.History,
                 onClick = { navigator.navigateSafely(FullVideosHistoryRoute) },
             ),
-        ),
-        customizeEntries = listOf(
-            SiteHubEntry(
-                key = "playback",
-                title = stringResource(R.string.fullvideos_settings_playback_title),
-                subtitle = stringResource(R.string.fullvideos_settings_playback_summary),
-                icon = Icons.Filled.HighQuality,
-                onClick = { navigator.navigateSafely(FullVideosSettingsRoute) },
-            ),
-            rememberPlayerSettingsEntry(navigator, SiteType.FULLVIDEOS),
         ),
     )

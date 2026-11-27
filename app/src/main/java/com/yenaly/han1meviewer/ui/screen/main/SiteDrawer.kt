@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.ui.screen.main
 
+import com.yenaly.han1meviewer.ui.navigation.settings.siteSettingsLabel
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSavedRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvPlaylistsRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSiteHistoryRoute
@@ -33,35 +34,25 @@ import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.SitesHub.FullVideos.ui.navigation.FullVideosBrowseRoute
 import com.yenaly.han1meviewer.SitesHub.FullVideos.ui.navigation.FullVideosHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.FullVideos.ui.navigation.FullVideosSearchRoute
-import com.yenaly.han1meviewer.SitesHub.FullVideos.ui.navigation.FullVideosSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.FuckingSession.ui.navigation.FuckingSessionHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.FuckingSession.ui.navigation.FuckingSessionListRoute
 import com.yenaly.han1meviewer.SitesHub.FuckingSession.ui.navigation.FuckingSessionSearchRoute
-import com.yenaly.han1meviewer.SitesHub.FuckingSession.ui.navigation.FuckingSessionSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.data.remote.RedGifsAuth
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.browse.RedGifsUsersMode
-import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsAccountRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsFeedRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsLoginRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsNichesRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsSearchRoute
-import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsUsersRoute
 import com.yenaly.han1meviewer.SitesHub.XXXTube.ui.navigation.XXXTubeEntityRoute
 import com.yenaly.han1meviewer.SitesHub.XXXTube.ui.navigation.XXXTubeHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.XXXTube.ui.navigation.XXXTubeListRoute
 import com.yenaly.han1meviewer.SitesHub.XXXTube.ui.navigation.XXXTubeSearchRoute
-import com.yenaly.han1meviewer.SitesHub.XXXTube.ui.navigation.XXXTubeSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavSearchRoute
-import com.yenaly.han1meviewer.SitesHub.SupJav.ui.navigation.SupJavSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoCategoriesRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoHistoryRoute
-import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoHostSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoSearchRoute
-import com.yenaly.han1meviewer.SitesHub.RouVideo.ui.navigation.RouVideoSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.TranslationSiteRoute
-import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterAuth
 import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterAccountRoute
 import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterChannelsRoute
@@ -73,17 +64,10 @@ import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterHistoryRo
 import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterLibraryRoute
 import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterStarsRoute
 import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterSearchRoute
-import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderCookiesRoute
 import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderLoginRoute
 import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSearchHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSearchRoute
-import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaHomeSettingsRoute
-import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaVideoSettingsRoute
-import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHomeCategoriesRoute
-import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHostSettingsRoute
-import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvQualitySettingsRoute
-import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSubtitleSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirProfileCache
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAccountSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirCookieRoute
@@ -94,28 +78,21 @@ import com.yenaly.han1meviewer.SitesHub.Cosplaytele.common.CosplayteleConstants
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.ui.navigation.CosplayteleHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.ui.navigation.CosplayteleListRoute
 import com.yenaly.han1meviewer.SitesHub.Cosplaytele.ui.navigation.CosplayteleSearchRoute
-import com.yenaly.han1meviewer.SitesHub.Cosplaytele.ui.navigation.CosplayteleSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.common.CoomerConstants
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerListRoute
 import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerSearchRoute
-import com.yenaly.han1meviewer.SitesHub.Coomer.ui.navigation.CoomerSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.common.LeakGalleryConstants
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGalleryListRoute
 import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGallerySearchRoute
-import com.yenaly.han1meviewer.SitesHub.LeakGallery.ui.navigation.LeakGallerySettingsRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.common.CoserConstants
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserListRoute
 import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserSearchRoute
-import com.yenaly.han1meviewer.SitesHub.Coser.ui.navigation.CoserSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.GifDownloadsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.ImageDownloadsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
-import com.yenaly.han1meviewer.ui.navigation.settings.SitePlayerSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.UnifiedHistoryRoute
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -203,11 +180,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
     val browse = str(R.string.site_drawer_section_browse)
     val library = str(R.string.site_drawer_section_library)
     val account = str(R.string.site_drawer_section_account)
-    val customize = str(R.string.site_drawer_section_customize)
-    val playerSettings = entry(
-        str(R.string.player_settings), R.drawable.baseline_player_24, SitePlayerSettingsRoute(site.name),
-    )
-
     return when (site) {
         SiteType.MISSAV -> listOf(
             SiteDrawerSection(browse, listOf(home, checkIn)),
@@ -219,16 +191,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     gatedEntry(str(R.string.missav_acc_saved_actresses), R.drawable.ic_baseline_favorite_24, MissAvSavedRoute(1), loggedIn, MissAvLoginRoute),
                     gatedEntry(str(R.string.missav_acc_playlists), R.drawable.baseline_format_list_bulleted_24, MissAvPlaylistsRoute, loggedIn, MissAvLoginRoute),
                     gatedEntry(str(R.string.missav_acc_site_history), history, MissAvSiteHistoryRoute, loggedIn, MissAvLoginRoute),
-                ),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.drawer_home_categories), R.drawable.baseline_grid_24, MissAvHomeCategoriesRoute),
-                    entry(str(R.string.drawer_host_mirror), R.drawable.baseline_domain_24, MissAvHostSettingsRoute),
-                    entry(str(R.string.drawer_video_resolution), R.drawable.ic_video_quilty, MissAvQualitySettingsRoute),
-                    entry(str(R.string.missav_subtitle_title), R.drawable.ic_baseline_language_24, MissAvSubtitleSettingsRoute),
-                    playerSettings,
                 ),
             ),
         )
@@ -248,14 +210,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 listOf(
                     entry(str(R.string.watch_history), history, HentaiMamaHistoryRoute),
                     entry(str(R.string.play_list), R.drawable.baseline_format_list_bulleted_24, HentaiMamaPlaylistsRoute),
-                ),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.drawer_video_card_size), R.drawable.ic_drawer_card_size, HentaiMamaVideoSettingsRoute(target = "all")),
-                    entry(str(R.string.drawer_home_categories), R.drawable.baseline_grid_24, HentaiMamaHomeSettingsRoute),
-                    playerSettings,
                 ),
             ),
         )
@@ -283,7 +237,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     add(gatedEntry(str(R.string.drawer_account_session), R.drawable.ic_baseline_person_24, OnAirAccountSettingsRoute, loggedIn, OnAirCookieRoute))
                 },
             ),
-            SiteDrawerSection(customize, listOf(playerSettings)),
         )
 
         SiteType.FAPFOLDER -> listOf(
@@ -313,7 +266,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     add(entry(str(R.string.cookies_label), R.drawable.ic_baseline_cookie_24, FapFolderCookiesRoute))
                 },
             ),
-            SiteDrawerSection(customize, listOf(playerSettings)),
         )
 
         SiteType.SUPJAV -> listOf(
@@ -328,13 +280,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             SiteDrawerSection(
                 library,
                 listOf(entry(str(R.string.watch_history), history, SupJavHistoryRoute)),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.supjav_settings_playback_title), R.drawable.ic_video_quilty, SupJavSettingsRoute),
-                    playerSettings,
-                ),
             ),
         )
 
@@ -353,13 +298,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             SiteDrawerSection(
                 library,
                 listOf(entry(str(R.string.watch_history), history, FullVideosHistoryRoute)),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.fullvideos_settings_playback_title), R.drawable.ic_video_quilty, FullVideosSettingsRoute),
-                    playerSettings,
-                ),
             ),
         )
 
@@ -393,17 +331,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                         entry(str(R.string.wumaobi_account_title), R.drawable.ic_baseline_person_24, com.yenaly.han1meviewer.SitesHub.Wumaobi.ui.navigation.WumaobiAccountRoute),
                     ),
                 ),
-                SiteDrawerSection(
-                    customize,
-                    listOf(
-                        entry(str(R.string.wumaobi_settings_playback_title), R.drawable.ic_video_quilty, com.yenaly.han1meviewer.SitesHub.Wumaobi.ui.navigation.WumaobiSettingsRoute),
-                    ) + listOfNotNull(
-                        if (AppTranslation.available) {
-                            entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, TranslationSiteRoute(SiteType.WUMAOBI.name))
-                        } else null,
-                        playerSettings,
-                    ),
-                ),
             )
         }
 
@@ -423,13 +350,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
             SiteDrawerSection(
                 library,
                 listOf(entry(str(R.string.watch_history), history, FuckingSessionHistoryRoute)),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.fuckingsession_settings_playback_title), R.drawable.ic_video_quilty, FuckingSessionSettingsRoute),
-                    playerSettings,
-                ),
             ),
         )
 
@@ -462,14 +382,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                         ),
                     ),
                 ),
-                SiteDrawerSection(
-                    customize,
-                    listOf(
-                        entry(str(R.string.redgifs_account), R.drawable.ic_baseline_person_24, RedGifsAccountRoute),
-                        entry(str(R.string.redgifs_settings_title), R.drawable.ic_video_quilty, RedGifsSettingsRoute),
-                        playerSettings,
-                    ),
-                ),
             )
         }
 
@@ -490,13 +402,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(entry(str(R.string.watch_history), history, XXXTubeHistoryRoute)),
             ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.xxxtube_settings_playback_title), R.drawable.ic_video_quilty, XXXTubeSettingsRoute),
-                    playerSettings,
-                ),
-            ),
         )
 
         SiteType.BUONDUA -> listOf(
@@ -513,10 +418,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 listOf(
                     entry(str(R.string.watch_history), history, BuonduaHistoryRoute),
                 ),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(playerSettings),
             ),
         )
 
@@ -537,18 +438,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     gatedEntry(str(R.string.rouvideo_my_follows), R.drawable.ic_subscribtion, RouVideoLibraryRoute(RouVideoLibraryTab.FOLLOWS.name), loggedIn, RouVideoAccountRoute),
                     gatedEntry(str(R.string.rouvideo_my_favorites), R.drawable.ic_baseline_favorite_24, RouVideoLibraryRoute(RouVideoLibraryTab.FAVORITES.name), loggedIn, RouVideoAccountRoute),
                     gatedEntry(str(R.string.rouvideo_online_watch_history), history, RouVideoLibraryRoute(RouVideoLibraryTab.HISTORY.name), loggedIn, RouVideoAccountRoute),
-                ),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.drawer_host_mirror), R.drawable.baseline_domain_24, RouVideoHostSettingsRoute),
-                    entry(str(R.string.rouvideo_settings_title), R.drawable.ic_video_quilty, RouVideoSettingsRoute),
-                ) + listOfNotNull(
-                    if (AppTranslation.available) {
-                        entry(str(R.string.rouvideo_tr_title), R.drawable.ic_translate_24, TranslationSiteRoute(SiteType.ROUVIDEO.name))
-                    } else null,
-                    playerSettings,
                 ),
             ),
         )
@@ -577,13 +466,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     gatedEntry(str(R.string.xhamster_liked_videos), R.drawable.ic_baseline_thumb_up_alt_24, XHamsterLibraryRoute("LIKED"), loggedIn, XHamsterAccountRoute),
                     gatedEntry(str(R.string.xhamster_playlists), R.drawable.ic_drawer_category, XHamsterLibraryRoute("PLAYLISTS"), loggedIn, XHamsterAccountRoute),
                     gatedEntry(str(R.string.xhamster_my_subscriptions), R.drawable.ic_subscribtion, XHamsterLibraryRoute("SUBSCRIPTIONS"), loggedIn, XHamsterAccountRoute),
-                ),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.xhamster_settings_title), R.drawable.ic_video_quilty, XHamsterSettingsRoute),
-                    playerSettings,
                 ),
             ),
         )
@@ -623,13 +505,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     entry(str(R.string.watch_history), history, CosplayteleHistoryRoute),
                 ),
             ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.cosplaytele_settings_title), R.drawable.ic_video_quilty, CosplayteleSettingsRoute),
-                    playerSettings,
-                ),
-            ),
         )
 
         SiteType.COSER -> listOf(
@@ -663,13 +538,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     entry(str(R.string.watch_history), history, CoserHistoryRoute),
                 ),
             ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.coser_settings_title), R.drawable.ic_video_quilty, CoserSettingsRoute),
-                    playerSettings,
-                ),
-            ),
         )
 
         SiteType.COOMER -> listOf(
@@ -697,13 +565,6 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 library,
                 listOf(
                     entry(str(R.string.watch_history), history, CoomerHistoryRoute),
-                ),
-            ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.coomer_settings_title), R.drawable.ic_video_quilty, CoomerSettingsRoute),
-                    playerSettings,
                 ),
             ),
         )
@@ -743,43 +604,29 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                     entry(str(R.string.watch_history), history, LeakGalleryHistoryRoute),
                 ),
             ),
-            SiteDrawerSection(
-                customize,
-                listOf(
-                    entry(str(R.string.leakgallery_settings_title), R.drawable.ic_video_quilty, LeakGallerySettingsRoute),
-                    playerSettings,
-                ),
-            ),
         )
 
         SiteType.HANIME, SiteType.JAVCHU -> emptyList()
     }
 }
 
-private fun withSocialStyleEntry(
-    context: Context,
-    site: SiteType,
-    sections: List<SiteDrawerSection>,
-): List<SiteDrawerSection> {
-    if (!com.yenaly.han1meviewer.ui.component.social.SiteSocialStyle.isSupported(site)) return sections
-    val customizeTitle = context.getString(R.string.site_drawer_section_customize)
-    val styleEntry = entry(
-        context.getString(R.string.social_style_title),
-        R.drawable.ic_settings_tune_24,
-        com.yenaly.han1meviewer.ui.navigation.settings.SiteSocialStyleRoute(site.name),
+private fun thisSiteSection(context: Context, site: SiteType): SiteDrawerSection =
+    SiteDrawerSection(
+        context.getString(R.string.settings_drawer_this_site),
+        listOf(
+            entry(
+                context.getString(R.string.hub_site_settings_title, siteSettingsLabel(site)),
+                R.drawable.ic_settings_tune_24,
+                HomeSettingsRoute,
+            ),
+        ),
     )
-    return sections.map {
-        if (it.title == customizeTitle) it.copy(entries = it.entries + styleEntry) else it
-    }
-}
 
 private fun appEntries(context: Context): List<SiteDrawerEntry> = listOf(
     entry(context.getString(R.string.download), R.drawable.ic_baseline_download_24, DownloadRoute),
     entry(context.getString(R.string.hub_image_downloads), R.drawable.ic_baseline_image_24, ImageDownloadsRoute),
     entry(context.getString(R.string.hub_gif_downloads), R.drawable.ic_baseline_image_24, GifDownloadsRoute),
     entry(context.getString(R.string.settings), R.drawable.ic_baseline_settings_24, HomeSettingsRoute),
-    entry(context.getString(R.string.player_settings), R.drawable.baseline_player_24, PlayerSettingsRoute),
-    entry(context.getString(R.string.network_settings), R.drawable.baseline_mobile_data_24, NetworkSettingsRoute),
     entry(context.getString(R.string.drawer_watch_history_all), R.drawable.ic_drawer_library, UnifiedHistoryRoute),
 )
 
@@ -793,7 +640,9 @@ fun SiteDrawerContent(
 ) {
     val context = LocalContext.current
     val status = androidx.compose.runtime.remember(site, refreshKey) { siteLoginStatus(context, site) }
-    val sections = withSocialStyleEntry(context, site, siteDrawerSections(context, site, status.loggedIn)) +
+    val siteSections = siteDrawerSections(context, site, status.loggedIn)
+    val sections = siteSections +
+            listOfNotNull(thisSiteSection(context, site).takeIf { siteSections.isNotEmpty() }) +
             SiteDrawerSection(
                 context.getString(R.string.site_drawer_section_app),
                 appEntries(context),
