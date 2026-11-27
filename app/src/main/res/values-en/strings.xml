@@ -3318,4 +3318,13 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="settings_site_layout_cards_summary">Layout, card, search, home and image options</string>
     <string name="settings_site_player_synced">Follows the Hanime1 / Javchu player settings</string>
     <string name="settings_xhamster_privacy_summary">Pause watch history, translate titles</string>
+    <!-- Downloaded player -->
+    <string name="player_previous_video">Previous video</string>
+    <string name="player_next_video">Next video</string>
+    <string name="related_downloads">Related downloads</string>
+    <string name="tag_downloaded">Downloaded</string>
+    <string name="tag_watched">Watched</string>
+    <string name="tag_watched_at">Watched %s</string>
+    <string name="download_folder_by_group">By group</string>
+    <string name="download_folder_by_site">By site</string>
 </resources>

@@ -46,6 +46,7 @@ fun HistoryGridCard(
     subtitle: String? = null,
     meta: String? = null,
     progress: Float? = null,
+    tags: List<HistoryTag> = emptyList(),
     imageLoader: ImageLoader? = null,
 ) {
     Card(
@@ -128,6 +129,7 @@ fun HistoryGridCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                HistoryTagRow(tags, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }

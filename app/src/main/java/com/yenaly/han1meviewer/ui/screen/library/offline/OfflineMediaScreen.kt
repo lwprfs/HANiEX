@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.ui.screen.library.offline
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -76,6 +78,7 @@ import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadFolderCard
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadSort
 import com.yenaly.han1meviewer.util.compactCount
 import com.yenaly.han1meviewer.util.formatFileSizeV2
@@ -140,7 +143,8 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
     var showSortMenu by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf(setOf<String>()) }
     var selecting by remember { mutableStateOf(false) }
-    var collapsed by remember { mutableStateOf(setOf<Int>()) }
+    var folderBySite by remember { mutableStateOf(false) }
+    var openFolderKey by remember { mutableStateOf<String?>(null) }
 
     var popup by remember { mutableStateOf<OfflineItem?>(null) }
     var photoViewer by remember { mutableStateOf<OfflineItem?>(null) }
@@ -164,10 +168,39 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
         }
     }
 
-    val displayOrder = remember(shown, groupsState, query) {
-        if (query.isNotBlank()) shown
-        else groupsState.groups.flatMap { g -> shown.filter { groupsState.groupOf(it.key) == g.id } }
+    // Folders: one per group (or per site). A folder opens its own page with its items.
+    val folders = remember(shown, groupsState, folderBySite, ungrouped) {
+        if (folderBySite) {
+            shown.groupBy { it.site }.map { (site, members) ->
+                OfflineFolder("s:$site", site.ifBlank { "?" }, members, null)
+            }.sortedBy { it.title.lowercase() }
+        } else {
+            groupsState.groups.mapNotNull { g ->
+                val members = shown.filter { groupsState.groupOf(it.key) == g.id }
+                if (members.isEmpty() && g.id == OfflineGroups.DEFAULT_ID) null
+                else OfflineFolder(
+                    "g:${g.id}",
+                    if (g.id == OfflineGroups.DEFAULT_ID) ungrouped else g.name,
+                    members,
+                    g,
+                )
+            }
+        }
     }
+    val searching = query.isNotBlank()
+    val openFolder = folders.firstOrNull { it.key == openFolderKey }
+    LaunchedEffect(openFolder, openFolderKey, items) {
+        if (openFolderKey != null && openFolder == null && items.isNotEmpty() && !searching) openFolderKey = null
+    }
+
+    // What the grid shows right now: search results, or the opened folder. null = the folder list.
+    val visible: List<OfflineItem>? = when {
+        searching -> shown
+        openFolder != null -> openFolder.items
+        else -> null
+    }
+    val displayOrder = visible ?: emptyList()
+    val inFolderPage = pager.currentPage == 1 && openFolder != null && !searching
 
     fun exitSelection() {
         selecting = false
@@ -188,18 +221,20 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
     }
 
     val title = if (selecting) {
-        stringResource(R.string.offl_selected_fmt, selected.size, shown.size)
+        stringResource(R.string.offl_selected_fmt, selected.size, displayOrder.size)
+    } else if (inFolderPage) {
+        openFolder!!.title
     } else {
         stringResource(if (kind == OfflineKind.PHOTOS) R.string.offl_photos_title else R.string.offl_shorts_title)
     }
 
     HanimeScaffold(
         title = title,
-        onBack = if (selecting) ::exitSelection else onBack,
+        onBack = if (selecting) ::exitSelection else if (inFolderPage) ({ openFolderKey = null }) else onBack,
         actions = {
             if (selecting) {
                 FilledIconButton(onClick = {
-                    selected = if (selected.size == shown.size) emptySet() else shown.map { it.key }.toSet()
+                    selected = if (selected.size == displayOrder.size) emptySet() else displayOrder.map { it.key }.toSet()
                     if (selected.isEmpty()) selecting = false
                 }) { Icon(Icons.Filled.SelectAll, contentDescription = stringResource(R.string.select_all)) }
                 FilledIconButton(
@@ -208,7 +243,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                 ) { Icon(Icons.AutoMirrored.Filled.DriveFileMove, contentDescription = stringResource(R.string.move_group)) }
                 FilledIconButton(
                     enabled = selected.isNotEmpty(),
-                    onClick = { confirmDelete = shown.filter { it.key in selected } },
+                    onClick = { confirmDelete = displayOrder.filter { it.key in selected } },
                 ) { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete)) }
             } else if (pager.currentPage == 0) {
                 val hasActive = tasks.any { it.isActive }
@@ -299,6 +334,43 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                             ),
                         )
                     }
+                } else if (visible == null) {
+                    Column(Modifier.fillMaxSize()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            FilterChip(
+                                selected = !folderBySite,
+                                onClick = { folderBySite = false; openFolderKey = null },
+                                label = { Text(stringResource(R.string.download_folder_by_group)) },
+                            )
+                            FilterChip(
+                                selected = folderBySite,
+                                onClick = { folderBySite = true; openFolderKey = null },
+                                label = { Text(stringResource(R.string.download_folder_by_site)) },
+                            )
+                        }
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(150.dp),
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(folders, key = { it.key }) { folder ->
+                                DownloadFolderCard(
+                                    title = folder.title,
+                                    count = folder.items.size,
+                                    cover = folder.items.firstOrNull()?.coverUri,
+                                    onClick = { openFolderKey = folder.key },
+                                    onLongClick = folder.group
+                                        ?.takeIf { it.id != OfflineGroups.DEFAULT_ID }
+                                        ?.let { g -> { editGroup = g } },
+                                )
+                            }
+                        }
+                    }
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(112.dp),
@@ -307,55 +379,37 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        val flat = query.isNotBlank()
-                        val groupsToShow = if (flat) listOf(OfflineGroup(-1, "")) else groupsState.groups
-                        groupsToShow.forEach { group ->
-                            val members = if (flat) shown else shown.filter { groupsState.groupOf(it.key) == group.id }
-                            if (!flat) {
-                                item(key = "h_${group.id}", span = { GridItemSpan(maxLineSpan) }) {
-                                    GroupHeader(
-                                        name = if (group.id == OfflineGroups.DEFAULT_ID) ungrouped else group.name,
-                                        count = members.size,
-                                        expanded = group.id !in collapsed,
-                                        onToggle = {
-                                            collapsed = if (group.id in collapsed) collapsed - group.id else collapsed + group.id
-                                        },
-                                        onLongClick = {
-                                            if (group.id != OfflineGroups.DEFAULT_ID && !selecting) editGroup = group
-                                        },
-                                    )
-                                }
-                            }
-                            if (flat || group.id !in collapsed) {
-                                items(members, key = { it.key }) { item ->
-                                    MediaGridCard(
-                                        thumb = item.coverUri,
-                                        title = item.title,
-                                        subtitle = cardSubtitle(item),
-                                        selecting = selecting,
-                                        selected = item.key in selected,
-                                        badge = if (kind == OfflineKind.PHOTOS) item.count.toString() else null,
-                                        showPlayIcon = kind == OfflineKind.SHORTS,
-                                        onClick = {
-                                            if (selecting) toggle(item)
-                                            else if (kind == OfflineKind.PHOTOS) openItem(item)
-                                            else popup = item
-                                        },
-                                        onDoubleClick = { openItem(item) },
-                                        onLongClick = {
-                                            if (!selecting) {
-                                                selecting = true
-                                                selected = setOf(item.key)
-                                            } else toggle(item)
-                                        },
-                                    )
-                                }
-                            }
+                        items(visible, key = { it.key }) { item ->
+                            MediaGridCard(
+                                thumb = item.coverUri,
+                                title = item.title,
+                                subtitle = cardSubtitle(item),
+                                selecting = selecting,
+                                selected = item.key in selected,
+                                badge = if (kind == OfflineKind.PHOTOS) item.count.toString() else null,
+                                showPlayIcon = kind == OfflineKind.SHORTS,
+                                onClick = {
+                                    if (selecting) toggle(item)
+                                    else if (kind == OfflineKind.PHOTOS) openItem(item)
+                                    else popup = item
+                                },
+                                onDoubleClick = { openItem(item) },
+                                onLongClick = {
+                                    if (!selecting) {
+                                        selecting = true
+                                        selected = setOf(item.key)
+                                    } else toggle(item)
+                                },
+                            )
                         }
                     }
                 }
             }
         }
+    }
+
+    BackHandler(enabled = inFolderPage || selecting) {
+        if (selecting) exitSelection() else openFolderKey = null
     }
 
     popup?.let { item ->
@@ -470,6 +524,13 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
 
     OfflineMigrationGate(onMigrated = { reload++ })
 }
+
+private data class OfflineFolder(
+    val key: String,
+    val title: String,
+    val items: List<OfflineItem>,
+    val group: OfflineGroup?,
+)
 
 private fun groupLabel(groups: List<OfflineGroup>, id: Int, ungrouped: String): String =
     if (id == OfflineGroups.DEFAULT_ID) ungrouped else groups.firstOrNull { it.id == id }?.name ?: ungrouped

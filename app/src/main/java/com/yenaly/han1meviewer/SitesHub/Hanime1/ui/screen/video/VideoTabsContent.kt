@@ -27,6 +27,7 @@ enum class VideoTabKind {
     INTRODUCTION,
     COMMENT,
     RELATED,
+    RELATED_DOWNLOADS,
 }
 
 data class VideoTabItem(

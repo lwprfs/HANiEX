@@ -4,6 +4,16 @@ import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadedNode
+import com.yenaly.han1meviewer.util.offline.DownloadedQueue
+
+/** A folder on the downloaded page: one group, or one site. Tapping it opens its own page. */
+data class DownloadFolder(
+    val key: String,
+    val title: String,
+    val videos: List<VideoWithCategories>,
+    val scope: DownloadedQueue.Scope,
+    val groupId: Int? = null,
+)
 
 data class DownloadUiState(
     val downloadingItems: List<HanimeDownloadEntity> = emptyList(),
@@ -13,6 +23,10 @@ data class DownloadUiState(
     val showCreateGroupDialog: Boolean = false,
     val multiSelectMode: Boolean = false,
     val selectedVideoIds: Set<Int> = emptySet(),
+    val folders: List<DownloadFolder> = emptyList(),
+    val openFolderKey: String? = null,
+    val folderBySite: Boolean = false,
+    val searching: Boolean = false,
 )
 
 sealed interface DownloadEvent {
@@ -62,4 +76,8 @@ sealed interface DownloadEvent {
     data class OnBatchMoveGroup(val videos: List<VideoWithCategories>, val groupId: Int) : DownloadEvent
 
     data object OnBatchMoveRequest : DownloadEvent
+
+    data class OnOpenFolder(val key: String?) : DownloadEvent
+
+    data class OnFolderModeChange(val bySite: Boolean) : DownloadEvent
 }

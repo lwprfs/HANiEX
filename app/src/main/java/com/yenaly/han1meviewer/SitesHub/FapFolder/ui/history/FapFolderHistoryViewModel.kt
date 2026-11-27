@@ -105,6 +105,7 @@ class FapFolderHistoryViewModel(application: Application) : AndroidViewModel(app
 
     fun deleteEntry(postId: Long) {
         viewModelScope.launch {
+            com.yenaly.han1meviewer.util.offline.LocalWatchStore.forget(com.yenaly.han1meviewer.logic.SiteCheckIn.dishCode(com.yenaly.han1meviewer.SiteType.FAPFOLDER, postId.toString()))
             runCatching { FapFolderHistoryRepo.deleteByPostId(postId) }
                 .onSuccess {
                     _uiState.update { current ->
@@ -123,6 +124,7 @@ class FapFolderHistoryViewModel(application: Application) : AndroidViewModel(app
 
     fun clearAll() {
         viewModelScope.launch {
+            com.yenaly.han1meviewer.util.offline.LocalWatchStore.clear(com.yenaly.han1meviewer.SiteType.FAPFOLDER)
             runCatching { FapFolderHistoryRepo.deleteAll() }
                 .onSuccess {
                     _uiState.update {

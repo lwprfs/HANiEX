@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SitesHub.FullVideos.common.FullVideosImageLoader
 import com.yenaly.han1meviewer.SitesHub.FullVideos.data.local.FullVideosHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.FullVideos.data.repository.FullVideosHistoryRepo
@@ -19,6 +20,7 @@ fun FullVideosHistoryScreen(
     FullVideosHistoryRepo.init(LocalContext.current)
     val entries = remember { FullVideosHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.FULLVIDEOS,
         entries = entries,
         emptyHint = R.string.fullvideos_no_history,
         imageLoader = { FullVideosImageLoader.get(it) },
@@ -34,4 +36,7 @@ private fun FullVideosHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = if (totalDuration > 0L) lastPosition.toFloat() / totalDuration else null,
+    positionMs = lastPosition,
+    durationMs = totalDuration,
+    watchDate = watchDate,
 )

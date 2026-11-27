@@ -3359,4 +3359,13 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="settings_site_layout_cards_summary">版面、卡片、搜尋、首頁與圖片選項</string>
     <string name="settings_site_player_synced">沿用 Hanime1 / Javchu 的播放器設定</string>
     <string name="settings_xhamster_privacy_summary">暫停觀看紀錄、翻譯標題</string>
+    <!-- Downloaded player -->
+    <string name="player_previous_video">上一个视频</string>
+    <string name="player_next_video">下一个视频</string>
+    <string name="related_downloads">相关下载</string>
+    <string name="tag_downloaded">已下載</string>
+    <string name="tag_watched">已觀看</string>
+    <string name="tag_watched_at">觀看至 %s</string>
+    <string name="download_folder_by_group">依群組</string>
+    <string name="download_folder_by_site">依網站</string>
 </resources>

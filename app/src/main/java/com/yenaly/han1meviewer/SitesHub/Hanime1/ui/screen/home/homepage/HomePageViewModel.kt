@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
+import com.yenaly.han1meviewer.util.offline.LocalWatchStore
 import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -158,6 +159,7 @@ class HomePageViewModel: ViewModel() {
     fun deleteWatchHistory(history: WatchHistoryEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.WatchHistory.delete(history)
+            LocalWatchStore.forget(history.videoCode)
             Log.d("delete_watch_hty", "DONE!")
         }
     }
@@ -165,6 +167,7 @@ class HomePageViewModel: ViewModel() {
     fun deleteAllWatchHistories() {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.WatchHistory.deleteAll()
+            LocalWatchStore.clear(com.yenaly.han1meviewer.SiteType.HANIME)
             Log.d("del_all_watch_hty", "DONE!")
         }
     }

@@ -55,6 +55,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.SitesHub.FapFolder.data.local.FapFolderHistoryEntity
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.component.HistoryTagRow
+import com.yenaly.han1meviewer.ui.component.rememberHistoryTags
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -350,6 +353,17 @@ private fun HistoryCard(
                     )
                 }
 
+                HistoryTagRow(
+                    rememberHistoryTags(
+                        site = SiteType.FAPFOLDER,
+                        rawCode = entry.postId.toString(),
+                        positionMs = entry.lastPosition,
+                        durationMs = entry.totalDuration,
+                        completed = entry.completed,
+                        watchDate = entry.watchDate,
+                    ),
+                    modifier = Modifier.padding(top = 4.dp),
+                )
                 Row(
                     modifier = Modifier.padding(top = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),

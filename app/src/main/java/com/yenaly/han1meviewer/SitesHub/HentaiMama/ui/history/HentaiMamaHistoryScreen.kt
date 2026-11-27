@@ -68,6 +68,9 @@ import com.yenaly.han1meviewer.SitesHub.HentaiMama.common.HentaiMamaImageLoader
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.remote.HentaiMamaNetwork
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.component.HistoryTagRow
+import com.yenaly.han1meviewer.ui.component.rememberHistoryTags
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
 import com.yenaly.han1meviewer.util.formatRelativeTime
 import com.yenaly.han1meviewer.util.applicationContext
@@ -453,6 +456,17 @@ private fun HistoryCard(
                         color = MaterialTheme.colorScheme.primary,
                     )
                 }
+                HistoryTagRow(
+                    rememberHistoryTags(
+                        site = SiteType.HENTAIMAMA,
+                        rawCode = item.videoCode,
+                        positionMs = item.lastPosition,
+                        durationMs = item.totalDuration,
+                        completed = item.completed,
+                        watchDate = item.watchDate,
+                    ),
+                    modifier = Modifier.padding(top = 4.dp),
+                )
             }
         }
     }

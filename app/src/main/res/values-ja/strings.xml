@@ -1583,4 +1583,13 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="settings_site_layout_cards_summary">レイアウト、カード、検索、ホーム、画像の設定</string>
     <string name="settings_site_player_synced">Hanime1 / Javchu のプレイヤー設定に従います</string>
     <string name="settings_xhamster_privacy_summary">視聴履歴の一時停止、タイトルの翻訳</string>
+    <!-- Downloaded player -->
+    <string name="player_previous_video">前の動画</string>
+    <string name="player_next_video">次の動画</string>
+    <string name="related_downloads">関連ダウンロード</string>
+    <string name="tag_downloaded">ダウンロード済み</string>
+    <string name="tag_watched">視聴済み</string>
+    <string name="tag_watched_at">視聴 %s</string>
+    <string name="download_folder_by_group">グループ別</string>
+    <string name="download_folder_by_site">サイト別</string>
 </resources>

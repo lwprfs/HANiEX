@@ -22,6 +22,12 @@ abstract class HanimeDownloadDao {
     @Query("SELECT * FROM HanimeDownloadEntity ORDER BY id ASC")
     abstract suspend fun getAll(): List<HanimeDownloadEntity>
 
+    @Query("SELECT videoCode FROM HanimeDownloadEntity WHERE state = ${DownloadState.Mask.FINISHED}")
+    abstract fun loadFinishedCodes(): Flow<List<String>>
+
+    @Query("SELECT * FROM HanimeDownloadEntity WHERE state = ${DownloadState.Mask.FINISHED} ORDER BY id DESC")
+    abstract suspend fun getFinishedNewestFirst(): List<HanimeDownloadEntity>
+
     @Query("SELECT * FROM HanimeDownloadEntity WHERE state != ${DownloadState.Mask.FINISHED} ORDER BY id DESC")
     abstract suspend fun loadAllDownloadingHanimeOnce(): MutableList<HanimeDownloadEntity>
 

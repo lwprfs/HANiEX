@@ -62,6 +62,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.component.HistoryTagRow
+import com.yenaly.han1meviewer.ui.component.rememberHistoryTags
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.OnlineWatchHistorySort
@@ -737,6 +740,16 @@ private fun WatchHistoryCard(
                 WatchHistoryMeta(
                     iconRes = R.drawable.ic_baseline_play_circle_outline_24,
                     label = stringResource(R.string.watch_history_released_at, releaseDate),
+                )
+                HistoryTagRow(
+                    rememberHistoryTags(
+                        site = SiteType.HANIME,
+                        rawCode = history.videoCode,
+                        positionMs = history.progress,
+                        durationMs = 0L,
+                        completed = history.watched,
+                        watchDate = fixTimestamp(history.watchDate),
+                    ),
                 )
                 Row(
                     modifier = Modifier

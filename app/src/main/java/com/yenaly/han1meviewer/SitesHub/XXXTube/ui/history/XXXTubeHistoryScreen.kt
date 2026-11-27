@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SitesHub.XXXTube.common.XXXTubeImageLoader
 import com.yenaly.han1meviewer.SitesHub.XXXTube.data.local.XXXTubeHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.XXXTube.data.repository.XXXTubeHistoryRepo
@@ -19,6 +20,7 @@ fun XXXTubeHistoryScreen(
     XXXTubeHistoryRepo.init(LocalContext.current)
     val entries = remember { XXXTubeHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.XXXTUBE,
         entries = entries,
         emptyHint = R.string.xxxtube_no_history,
         imageLoader = { XXXTubeImageLoader.get(it) },
@@ -34,4 +36,7 @@ private fun XXXTubeHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = if (totalDuration > 0L) lastPosition.toFloat() / totalDuration else null,
+    positionMs = lastPosition,
+    durationMs = totalDuration,
+    watchDate = watchDate,
 )

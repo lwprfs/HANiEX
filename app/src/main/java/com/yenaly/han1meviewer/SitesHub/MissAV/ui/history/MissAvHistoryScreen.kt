@@ -56,6 +56,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.ui.component.HistoryTagRow
+import com.yenaly.han1meviewer.ui.component.rememberHistoryTags
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -354,6 +357,17 @@ fun MissAvHistoryItemCard(
                         trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     )
                 }
+                HistoryTagRow(
+                    rememberHistoryTags(
+                        site = SiteType.MISSAV,
+                        rawCode = item.videoInfo.videoCode,
+                        positionMs = item.lastPosition,
+                        durationMs = item.totalDuration,
+                        completed = item.isPlayed,
+                        watchDate = item.watchDate,
+                    ),
+                    modifier = Modifier.padding(top = 4.dp),
+                )
             }
 
             FilledIconButton(

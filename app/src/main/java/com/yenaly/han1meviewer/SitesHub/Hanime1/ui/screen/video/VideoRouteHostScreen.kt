@@ -49,6 +49,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -95,6 +96,11 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.dao.CheckInRecordDatabase
 import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
+import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
+import com.yenaly.han1meviewer.util.DownloadRepair
+import com.yenaly.han1meviewer.util.offline.DownloadedQueue
+import com.yenaly.han1meviewer.util.offline.LocalWatchRecorder
+import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.exception.ParseException
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.HanimeVideo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
@@ -565,6 +571,39 @@ fun VideoRouteHostScreen(
         viewModel.getHanimeVideo(route.videoCode, route.localUri)
     }
 
+    // Downloaded playback -> one up-to-date history record per video (store + the site's own history).
+    LaunchedEffect(route.videoCode, route.localUri) {
+        if (route.localUri == null || route.videoCode == "-1") return@LaunchedEffect
+        val entity = withContext(Dispatchers.IO) {
+            runCatching { DownloadDatabase.instance.hanimeDownloadDao.find(route.videoCode) }.getOrNull()
+        }
+        while (true) {
+            kotlinx.coroutines.delay(10_000)
+            val pos = controller.currentPositionMs
+            if (controller.isPlaying && pos >= 3_000L) {
+                LocalWatchRecorder.record(
+                    route.videoCode, entity?.title ?: videoTitle.orEmpty(), entity?.coverUrl.orEmpty(),
+                    pos, controller.durationMs, true,
+                )
+            }
+        }
+    }
+
+    DisposableEffect(route.videoCode, route.localUri) {
+        onDispose {
+            if (route.localUri != null && route.videoCode != "-1") {
+                val pos = controller.currentPositionMs
+                val dur = controller.durationMs
+                if (pos >= 3_000L) {
+                    kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                        val e = runCatching { DownloadDatabase.instance.hanimeDownloadDao.find(route.videoCode) }.getOrNull()
+                        LocalWatchRecorder.record(route.videoCode, e?.title.orEmpty(), e?.coverUrl.orEmpty(), pos, dur, false)
+                    }
+                }
+            }
+        }
+    }
+
     LaunchedEffect(viewModel) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.CREATED) {
             viewModel.modifyHKeyframeFlow.collect { (success, reason) ->
@@ -631,6 +670,29 @@ fun VideoRouteHostScreen(
     val videoInfoLoading =
         viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle().value is VideoLoadingState.Loading
 
+    val isDownloadedPlayback = viewModel.fromDownload && route.videoCode != "-1"
+    var queueVersion by remember { mutableIntStateOf(0) }
+    val downloadQueue by produceState(
+        initialValue = emptyList<HanimeDownloadEntity>(),
+        route.videoCode, isDownloadedPlayback, queueVersion,
+    ) {
+        value = if (isDownloadedPlayback) DownloadedQueue.load(route.videoCode) else emptyList()
+    }
+    val previousDownload = if (isDownloadedPlayback) {
+        DownloadedQueue.previousOf(downloadQueue, route.videoCode)
+    } else null
+    val nextDownload = if (isDownloadedPlayback) {
+        DownloadedQueue.nextOf(downloadQueue, route.videoCode)
+    } else null
+
+    fun openDownloaded(entity: HanimeDownloadEntity) {
+        if (isFullscreen) exitFullscreen()
+        scope.launch {
+            val uri = DownloadRepair.usableVideoUri(activity, entity)
+            activity.navigator.replaceTop(VideoRoute(entity.videoCode, uri, autoPlay = true))
+        }
+    }
+
     @Composable
     fun PlayerSlot(modifier: Modifier, fullscreen: Boolean) {
         HanimeVideoPlayer(
@@ -650,6 +712,8 @@ fun VideoRouteHostScreen(
                 if (fullscreen) exitFullscreen() else enterFullscreen()
             },
             onNoVideoUrl = { currentOnNoVideoUrl() },
+            onPrevious = previousDownload?.let { prev -> { openDownloaded(prev) } },
+            onNext = nextDownload?.let { next -> { openDownloaded(next) } },
             onAddHKeyframeAt = { positionMs ->
                 if (!controller.isPlaying) {
                     showAddHKeyframeDialog = positionMs to (videoTitle ?: "Untitled")
@@ -829,6 +893,8 @@ fun VideoRouteHostScreen(
                             onCheckedQualityChange = { checkedQuality = it },
                             onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
                             onDownloadPermissionDialogRequest = { showDownloadPermissionDialog = true },
+                            onOpenDownloaded = ::openDownloaded,
+                            onDownloadsChanged = { queueVersion++ },
                         )
                     },
                 )
@@ -971,6 +1037,8 @@ fun VideoRouteHostScreen(
                                     onCheckedQualityChange = { checkedQuality = it },
                                     onPendingDownloadPromptChange = { pendingDownloadPrompt = it },
                                     onDownloadPermissionDialogRequest = { showDownloadPermissionDialog = true },
+                                    onOpenDownloaded = ::openDownloaded,
+                                    onDownloadsChanged = { queueVersion++ },
                                 )
                             }
                         }
@@ -1123,6 +1191,8 @@ private fun VideoTabsHost(
     onCheckedQualityChange: (String?) -> Unit,
     onPendingDownloadPromptChange: (DownloadPromptState?) -> Unit,
     onDownloadPermissionDialogRequest: () -> Unit,
+    onOpenDownloaded: ((com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity) -> Unit)? = null,
+    onDownloadsChanged: () -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     Box(modifier = modifier) {
@@ -1189,6 +1259,8 @@ private fun VideoTabsHost(
         onIntroductionLinkClick = actions::openIntroductionLink,
         stringLongPressShare = stringLongPressShare,
         pageHost = pageHost,
+        onOpenDownloaded = onOpenDownloaded,
+        onDownloadsChanged = onDownloadsChanged,
         )
     }
 }

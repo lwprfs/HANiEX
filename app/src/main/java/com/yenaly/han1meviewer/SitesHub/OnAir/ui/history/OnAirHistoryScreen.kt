@@ -63,6 +63,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirHistoryEntity
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
+import com.yenaly.han1meviewer.logic.SiteCheckIn
+import com.yenaly.han1meviewer.ui.component.HistoryTagRow
+import com.yenaly.han1meviewer.ui.component.rememberHistoryTags
+import com.yenaly.han1meviewer.util.offline.LocalWatchStore
 import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
 import com.yenaly.han1meviewer.ui.screen.rememberVideoGridColumns
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
@@ -206,6 +211,7 @@ fun OnAirHistoryScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteItem(id)
+                    LocalWatchStore.forget(SiteCheckIn.dishCode(SiteType.ONAIR, id))
                     pendingDeleteId = null
                     scope.launch { snackbarHostState.showSnackbar(applicationContext.getString(R.string.onair_removed)) }
                 }) { Text(stringResource(R.string.delete), color = MaterialTheme.colorScheme.error) }
@@ -224,6 +230,7 @@ fun OnAirHistoryScreen(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.deleteAll()
+                    LocalWatchStore.clear(SiteType.ONAIR)
                     showDeleteAllDialog = false
                     scope.launch { snackbarHostState.showSnackbar(applicationContext.getString(R.string.onair_cleared)) }
                 }) { Text(stringResource(R.string.site_delete_all), color = MaterialTheme.colorScheme.error) }
@@ -334,6 +341,17 @@ private fun OnAirHistoryGridCard(
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                HistoryTagRow(
+                    rememberHistoryTags(
+                        site = SiteType.ONAIR,
+                        rawCode = item.videoId,
+                        positionMs = item.lastPosition,
+                        durationMs = item.totalDuration,
+                        completed = item.completed,
+                        watchDate = item.watchDate,
+                    ),
+                    modifier = Modifier.padding(top = 4.dp),
                 )
             }
         }

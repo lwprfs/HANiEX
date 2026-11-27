@@ -116,6 +116,7 @@ class HentaiMamaHistoryViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 HentaiMamaHistoryRepo.deleteByVideoCode(videoCode)
+                com.yenaly.han1meviewer.util.offline.LocalWatchStore.forget(com.yenaly.han1meviewer.logic.SiteCheckIn.dishCode(com.yenaly.han1meviewer.SiteType.HENTAIMAMA, videoCode))
             }
             _uiState.update { prev: HentaiMamaHistoryUiState ->
                 val updated: List<HentaiMamaHistoryEntity> =
@@ -133,6 +134,7 @@ class HentaiMamaHistoryViewModel(application: Application) : AndroidViewModel(ap
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 HentaiMamaHistoryRepo.deleteAll()
+                com.yenaly.han1meviewer.util.offline.LocalWatchStore.clear(com.yenaly.han1meviewer.SiteType.HENTAIMAMA)
             }
             currentOffset = 0
             _uiState.update { state: HentaiMamaHistoryUiState ->

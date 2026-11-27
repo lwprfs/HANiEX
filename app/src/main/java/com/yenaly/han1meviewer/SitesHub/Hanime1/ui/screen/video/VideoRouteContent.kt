@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.VIDEO_COMMENT_PREFIX
+import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.state.VideoLoadingState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
@@ -48,6 +49,8 @@ fun VideoRouteContent(
     onIntroductionLinkClick: (String) -> Unit,
     stringLongPressShare: String,
     pageHost: VideoPageHost,
+    onOpenDownloaded: ((HanimeDownloadEntity) -> Unit)? = null,
+    onDownloadsChanged: () -> Unit = {},
 ) {
     val hostUiState by videoViewModel.videoHostUiStateFlow.collectAsStateWithLifecycle()
     val commentBadgeCount by videoViewModel.commentBadgeCount.collectAsStateWithLifecycle()
@@ -56,9 +59,13 @@ fun VideoRouteContent(
             .getBoolean("disable_comments", false)
     }
     val relatedAsTab = !fromDownload && com.yenaly.han1meviewer.Preferences.relatedVideoAsTab
-    val tabs = remember(disableComments, commentBadgeCount, fromDownload, relatedAsTab) {
+    val showRelatedDownloads = fromDownload && videoCode != "-1" && onOpenDownloaded != null
+    val tabs = remember(disableComments, commentBadgeCount, fromDownload, relatedAsTab, showRelatedDownloads) {
         buildList {
             add(VideoTabItem(VideoTabKind.INTRODUCTION, R.string.introduction))
+            if (showRelatedDownloads) {
+                add(VideoTabItem(VideoTabKind.RELATED_DOWNLOADS, R.string.related_downloads))
+            }
             if (!fromDownload && !disableComments) {
                 add(VideoTabItem(VideoTabKind.COMMENT, R.string.comment, badgeCount = commentBadgeCount))
             }
@@ -142,6 +149,14 @@ fun VideoRouteContent(
                     RenderVideoRelatedContent(
                         viewModel = videoViewModel,
                         onOpenVideo = onOpenVideo,
+                    )
+                }
+
+                VideoTabKind.RELATED_DOWNLOADS -> {
+                    DownloadedRelatedTab(
+                        currentCode = videoCode,
+                        onOpen = { onOpenDownloaded?.invoke(it) },
+                        onChanged = onDownloadsChanged,
                     )
                 }
 

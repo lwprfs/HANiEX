@@ -152,6 +152,8 @@ fun DownloadRouteScreen(
             }
 
             is DownloadEvent.OnToggleGroup,
+            is DownloadEvent.OnOpenFolder,
+            is DownloadEvent.OnFolderModeChange,
             is DownloadEvent.OnCreateGroupDialogChange,
             is DownloadEvent.OnPageChange,
             is DownloadEvent.OnToggleMultiSelect,

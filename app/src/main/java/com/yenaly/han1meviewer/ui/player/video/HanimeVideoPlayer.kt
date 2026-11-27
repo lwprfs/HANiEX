@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.outlined.LockOpen
 import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import androidx.compose.material3.Card
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -94,6 +97,8 @@ fun HanimeVideoPlayer(
     onAddHKeyframeAt: (positionMs: Long) -> Unit,
     onEditKeyframe: (HKeyframeEntity.Keyframe) -> Unit,
     onDeleteKeyframe: (HKeyframeEntity.Keyframe) -> Unit,
+    onPrevious: (() -> Unit)? = null,
+    onNext: (() -> Unit)? = null,
 ) {
     val view = LocalView.current
     val uiState by controller.uiState.collectAsStateWithLifecycle()
@@ -418,6 +423,56 @@ fun HanimeVideoPlayer(
             onRetry = { controller.retry() },
             modifier = Modifier.fillMaxSize(),
         )
+
+        // Previous / next video buttons: only drawn when there is something to go to.
+        AnimatedVisibility(
+            visible = controlsVisible && !videoInfoLoading &&
+                    uiState.state != PlayerState.ERROR &&
+                    uiState.state != PlayerState.PREPARING &&
+                    uiState.state != PlayerState.BUFFERING &&
+                    (onPrevious != null || onNext != null),
+            modifier = Modifier.align(Alignment.Center),
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (onPrevious != null) {
+                    FilledIconButton(
+                        onClick = onPrevious,
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color.Black.copy(alpha = 0.45f)
+                        ),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.SkipPrevious,
+                            contentDescription = stringResource(R.string.player_previous_video),
+                            tint = Color.White,
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.size(48.dp))
+                }
+                Spacer(modifier = Modifier.width(104.dp))
+                if (onNext != null) {
+                    FilledIconButton(
+                        onClick = onNext,
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color.Black.copy(alpha = 0.45f)
+                        ),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.SkipNext,
+                            contentDescription = stringResource(R.string.player_next_video),
+                            tint = Color.White,
+                        )
+                    }
+                } else {
+                    Spacer(modifier = Modifier.size(48.dp))
+                }
+            }
+        }
 
         AnimatedVisibility(
             visible = isFullscreen &&

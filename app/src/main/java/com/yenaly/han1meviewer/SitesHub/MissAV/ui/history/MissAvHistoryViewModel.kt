@@ -164,6 +164,7 @@ class MissAvHistoryViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             runCatching {
                 withContext(Dispatchers.IO) { MissAvHistoryRepo.deleteAll() }
+                com.yenaly.han1meviewer.util.offline.LocalWatchStore.clear(com.yenaly.han1meviewer.SiteType.MISSAV)
                 _historyItems.value = emptyList()
                 _historyState.value = PageLoadingState.NoMoreData
                 totalCount = 0
@@ -176,6 +177,7 @@ class MissAvHistoryViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             runCatching {
                 withContext(Dispatchers.IO) { MissAvHistoryRepo.deleteByVideoCode(videoCode) }
+                com.yenaly.han1meviewer.util.offline.LocalWatchStore.forget(com.yenaly.han1meviewer.logic.SiteCheckIn.dishCode(com.yenaly.han1meviewer.SiteType.MISSAV, videoCode))
                 _historyItems.update { list -> list.filter { it.videoInfo.videoCode != videoCode } }
                 totalCount = _historyItems.value.size
                 if (_historyItems.value.isEmpty()) {

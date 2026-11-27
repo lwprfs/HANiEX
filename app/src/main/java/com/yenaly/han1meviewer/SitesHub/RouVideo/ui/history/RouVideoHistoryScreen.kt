@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoImageLoader
 import com.yenaly.han1meviewer.util.translation.AppTranslation
 import com.yenaly.han1meviewer.SitesHub.RouVideo.data.local.RouVideoHistoryEntity
@@ -20,6 +21,7 @@ fun RouVideoHistoryScreen(
     RouVideoHistoryRepo.init(LocalContext.current)
     val entries = remember { RouVideoHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.ROUVIDEO,
         entries = entries,
         emptyHint = R.string.rouvideo_no_history,
         imageLoader = { RouVideoImageLoader.get(it) },
@@ -36,4 +38,7 @@ private fun RouVideoHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = if (totalDuration > 0L) lastPosition.toFloat() / totalDuration else null,
+    positionMs = lastPosition,
+    durationMs = totalDuration,
+    watchDate = watchDate,
 )

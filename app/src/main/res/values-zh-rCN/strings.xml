@@ -1583,4 +1583,13 @@
     <string name="settings_site_layout_cards_summary">布局、卡片、搜索、首页与图片选项</string>
     <string name="settings_site_player_synced">沿用 Hanime1 / Javchu 的播放器设置</string>
     <string name="settings_xhamster_privacy_summary">暂停观看记录、翻译标题</string>
+    <!-- Downloaded player -->
+    <string name="player_previous_video">上一个视频</string>
+    <string name="player_next_video">下一个视频</string>
+    <string name="related_downloads">相关下载</string>
+    <string name="tag_downloaded">已下载</string>
+    <string name="tag_watched">已观看</string>
+    <string name="tag_watched_at">观看至 %s</string>
+    <string name="download_folder_by_group">按分组</string>
+    <string name="download_folder_by_site">按网站</string>
 </resources>

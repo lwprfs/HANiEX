@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -90,7 +91,7 @@ fun DownloadedScreen(
         },
     )
 
-    if (uiState.downloadedNodes.isEmpty()) {
+    if (uiState.folders.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             EmptyContent(
                 hint = stringResource(R.string.empty_content),
@@ -100,6 +101,57 @@ fun DownloadedScreen(
         return
     }
 
+    if (uiState.downloadedNodes.isEmpty()) {
+        // Folder list: every group (or site) is a card that opens its own page.
+        Column(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FilterChip(
+                    selected = !uiState.folderBySite,
+                    onClick = { onEvent(DownloadEvent.OnFolderModeChange(false)) },
+                    label = { Text(stringResource(R.string.download_folder_by_group)) },
+                )
+                FilterChip(
+                    selected = uiState.folderBySite,
+                    onClick = { onEvent(DownloadEvent.OnFolderModeChange(true)) },
+                    label = { Text(stringResource(R.string.download_folder_by_site)) },
+                )
+            }
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(150.dp),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                items(uiState.folders, key = { it.key }) { folder ->
+                    val first = folder.videos.firstOrNull()?.video
+                    DownloadFolderCard(
+                        title = folder.title,
+                        count = folder.videos.size,
+                        cover = first?.coverUri ?: first?.coverUrl?.takeIf { it.isNotBlank() },
+                        onClick = { onEvent(DownloadEvent.OnOpenFolder(folder.key)) },
+                        onLongClick = folder.groupId
+                            ?.takeIf { it != DownloadGroupEntity.DEFAULT_GROUP_ID }
+                            ?.let { gid ->
+                                {
+                                    pendingRename = DownloadHeaderNode(
+                                        groupId = gid,
+                                        groupKey = folder.title,
+                                        originalVideos = folder.videos,
+                                    )
+                                }
+                            },
+                    )
+                }
+            }
+        }
+        return
+    }
+
+    // Folder page (or search results): the videos themselves.
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
         state = listState,
@@ -109,54 +161,32 @@ fun DownloadedScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(
-            items = uiState.downloadedNodes,
-            key = {
-                when (it) {
-                    is DownloadHeaderNode -> "header-${it.groupId}"
-                    is DownloadItemNode -> "item-${it.parentKey}-${it.data.video.id}"
-                }
-            },
-            span = { node ->
-                if (node is DownloadHeaderNode) GridItemSpan(maxLineSpan) else GridItemSpan(1)
-            },
+            items = uiState.downloadedNodes.filterIsInstance<DownloadItemNode>(),
+            key = { "item-${it.parentKey}-${it.data.video.id}" },
         ) { node ->
-            when (node) {
-                is DownloadHeaderNode -> DownloadGroupHeader(
-                    header = node,
-                    onToggle = { onEvent(DownloadEvent.OnToggleGroup(node.groupId)) },
-                    onRename = {
-                        if (node.groupId != DownloadGroupEntity.DEFAULT_GROUP_ID && !uiState.multiSelectMode) {
-                            pendingRename = node
-                        }
-                    },
-                )
-
-                is DownloadItemNode -> {
-                    val video = node.data
-                    val id = video.video.id
-                    MediaGridCard(
-                        thumb = video.video.coverUri ?: video.video.coverUrl.takeIf { it.isNotBlank() },
-                        title = video.video.title,
-                        subtitle = "${video.video.quality} · ${video.video.length.formatFileSizeV2()}",
-                        selecting = uiState.multiSelectMode,
-                        selected = id in uiState.selectedVideoIds,
-                        aspect = 1.45f,
-                        onClick = {
-                            if (uiState.multiSelectMode) onEvent(DownloadEvent.OnToggleVideoSelection(id))
-                            else popupVideo = video
-                        },
-                        onDoubleClick = { onEvent(DownloadEvent.OnLocalPlayback(video)) },
-                        onLongClick = {
-                            if (!uiState.multiSelectMode) {
-                                onEvent(DownloadEvent.OnToggleMultiSelect)
-                                onEvent(DownloadEvent.OnToggleVideoSelection(id))
-                            } else {
-                                onEvent(DownloadEvent.OnToggleVideoSelection(id))
-                            }
-                        },
-                    )
-                }
-            }
+            val video = node.data
+            val id = video.video.id
+            MediaGridCard(
+                thumb = video.video.coverUri ?: video.video.coverUrl.takeIf { it.isNotBlank() },
+                title = video.video.title,
+                subtitle = "${video.video.quality} · ${video.video.length.formatFileSizeV2()}",
+                selecting = uiState.multiSelectMode,
+                selected = id in uiState.selectedVideoIds,
+                aspect = 1.45f,
+                onClick = {
+                    if (uiState.multiSelectMode) onEvent(DownloadEvent.OnToggleVideoSelection(id))
+                    else popupVideo = video
+                },
+                onDoubleClick = { onEvent(DownloadEvent.OnLocalPlayback(video)) },
+                onLongClick = {
+                    if (!uiState.multiSelectMode) {
+                        onEvent(DownloadEvent.OnToggleMultiSelect)
+                        onEvent(DownloadEvent.OnToggleVideoSelection(id))
+                    } else {
+                        onEvent(DownloadEvent.OnToggleVideoSelection(id))
+                    }
+                },
+            )
         }
     }
 

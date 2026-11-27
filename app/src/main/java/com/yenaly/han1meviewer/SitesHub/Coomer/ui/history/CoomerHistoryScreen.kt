@@ -7,6 +7,7 @@ import com.yenaly.han1meviewer.SitesHub.Coomer.common.CoomerImageLoader
 import com.yenaly.han1meviewer.SitesHub.Coomer.data.local.CoomerHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.Coomer.data.repository.CoomerHistoryRepo
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.component.SiteHistoryEntry
 import com.yenaly.han1meviewer.ui.component.SiteHistoryScreen
 import kotlinx.coroutines.flow.map
@@ -19,6 +20,7 @@ fun CoomerHistoryScreen(
     CoomerHistoryRepo.init(LocalContext.current)
     val entries = remember { CoomerHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.COOMER,
         entries = entries,
         emptyHint = R.string.coomer_no_history,
         imageLoader = { CoomerImageLoader.get(it) },
@@ -34,4 +36,7 @@ private fun CoomerHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = if (totalDuration > 0L) lastPosition.toFloat() / totalDuration else null,
+    positionMs = lastPosition,
+    durationMs = totalDuration,
+    watchDate = watchDate,
 )

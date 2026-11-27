@@ -1,5 +1,6 @@
 package com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Box
@@ -46,10 +47,14 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.state.DownloadState
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadItemNode
+import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadEvent
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadFolder
+import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
+import com.yenaly.han1meviewer.util.offline.DownloadedQueue
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadSort
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadedScreen
@@ -98,15 +103,13 @@ fun DownloadScreen(
             }
         }
     }
-    var downloadedGroupExpandedState by rememberSaveable(stateSaver = intBooleanMapSaver()) {
-        mutableStateOf(emptyMap())
-    }
+    var folderBySite by rememberSaveable { mutableStateOf(false) }
+    var openFolderKey by rememberSaveable { mutableStateOf<String?>(null) }
     val downloadedLazyListState = rememberSaveable(saver = androidx.compose.foundation.lazy.grid.LazyGridState.Saver) {
         androidx.compose.foundation.lazy.grid.LazyGridState()
     }
     val scope = rememberCoroutineScope()
     var showCreateGroupDialog by remember { mutableStateOf(false) }
-    var downloadedHeaderNodes by remember { mutableStateOf<List<DownloadHeaderNode>>(emptyList()) }
     var multiSelectMode by remember { mutableStateOf(false) }
     var selectedVideoIds by remember { mutableStateOf(setOf<Int>()) }
     var pendingBatchMove by remember { mutableStateOf(false) }
@@ -133,34 +136,51 @@ fun DownloadScreen(
             filtered.sortedWith(downloadSortComparator(sort))
         }
 
-    val downloadedNodes =
-        remember(filteredDownloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes, downloadedGroupExpandedState, searchQuery) {
-            val groupIdToNameMap = displayGroups.associate { it.id to it.name }
-            when {
-                filteredDownloadedItems.isEmpty() -> {
-                    downloadedHeaderNodes = emptyList()
-                    emptyList()
-                }
+    val searching = searchQuery.isNotBlank()
 
-                searchQuery.isNotBlank() -> {
-                    downloadedHeaderNodes = emptyList()
-                    filteredDownloadedItems.map { DownloadItemNode(it, it.video.groupId) }
+    val folders = remember(filteredDownloadedItems, displayGroups, folderBySite) {
+        if (folderBySite) {
+            filteredDownloadedItems
+                .groupBy { DownloadedQueue.siteOf(it.video.videoCode) }
+                .map { (site, videos) ->
+                    DownloadFolder(
+                        key = "s:${site.name}",
+                        title = CrossSiteNavigator.siteLabel(site),
+                        videos = videos,
+                        scope = DownloadedQueue.Scope.Site(site),
+                    )
                 }
-
-                else -> {
-                    val newHeaders =
-                        filteredDownloadedItems.toNodeList(groupIdToNameMap, collapseDownloadedGroup)
-                    downloadedHeaderNodes = newHeaders.map { newHeader ->
-                        newHeader.copy(
-                            isExpanded = downloadedGroupExpandedState[newHeader.groupId]
-                                ?: downloadedHeaderNodes.firstOrNull { it.groupId == newHeader.groupId }?.isExpanded
-                                ?: !collapseDownloadedGroup
-                        )
-                    }
-                    downloadedHeaderNodes.toFlatNodeList()
+                .sortedBy { it.title.lowercase() }
+        } else {
+            val names = displayGroups.associate { it.id to it.name }
+            filteredDownloadedItems
+                .groupBy { it.video.groupId }
+                .toSortedMap()
+                .map { (groupId, videos) ->
+                    DownloadFolder(
+                        key = "g:$groupId",
+                        title = names[groupId] ?: "ID: $groupId",
+                        videos = videos,
+                        scope = DownloadedQueue.Scope.Group(groupId),
+                        groupId = groupId,
+                    )
                 }
-            }
         }
+    }
+    val openFolder = folders.firstOrNull { it.key == openFolderKey }
+    LaunchedEffect(openFolder, openFolderKey, downloadedItems) {
+        // the opened folder became empty (everything deleted / moved): back to the folder list
+        if (openFolderKey != null && openFolder == null && downloadedItems.isNotEmpty() && !searching) {
+            openFolderKey = null
+        }
+    }
+
+    // The videos shown right now: search results, or the opened folder. Empty = show the folder list.
+    val downloadedNodes: List<DownloadedNode> = when {
+        searching -> filteredDownloadedItems.map { DownloadItemNode(it, it.video.groupId) }
+        openFolder != null -> openFolder.videos.map { DownloadItemNode(it, openFolder.groupId ?: -1) }
+        else -> emptyList()
+    }
 
     val uiState = DownloadUiState(
         downloadingItems = downloadingItems,
@@ -170,21 +190,28 @@ fun DownloadScreen(
         showCreateGroupDialog = showCreateGroupDialog,
         multiSelectMode = multiSelectMode,
         selectedVideoIds = selectedVideoIds,
+        folders = folders,
+        openFolderKey = openFolder?.key,
+        folderBySite = folderBySite,
+        searching = searching,
     )
 
     val handleEvent: (DownloadEvent) -> Unit = { event ->
         when (event) {
 
-            is DownloadEvent.OnToggleGroup -> {
-                downloadedHeaderNodes = downloadedHeaderNodes.map {
-                    if (it.groupId == event.groupId) {
-                        val expanded = !it.isExpanded
-                        downloadedGroupExpandedState = downloadedGroupExpandedState + (it.groupId to expanded)
-                        it.copy(isExpanded = expanded)
-                    } else {
-                        it
-                    }
-                }
+            is DownloadEvent.OnOpenFolder -> {
+                openFolderKey = event.key
+                multiSelectMode = false
+                selectedVideoIds = emptySet()
+            }
+            is DownloadEvent.OnFolderModeChange -> {
+                folderBySite = event.bySite
+                openFolderKey = null
+            }
+            is DownloadEvent.OnLocalPlayback, is DownloadEvent.OnOpenDownloadedVideo -> {
+                // previous / next and "related downloads" in the player follow this folder + sort
+                DownloadedQueue.setContext(openFolder?.scope ?: DownloadedQueue.Scope.All, sort)
+                onEvent(event)
             }
             is DownloadEvent.OnCreateGroupDialogChange -> showCreateGroupDialog = event.visible
             is DownloadEvent.OnPageChange -> {
@@ -221,17 +248,25 @@ fun DownloadScreen(
         onLoadDownloaded()
     }
 
+    BackHandler(enabled = pagerState.currentPage == 1 && (multiSelectMode || (openFolder != null && !searching))) {
+        if (multiSelectMode) handleEvent(DownloadEvent.OnToggleMultiSelect) else openFolderKey = null
+    }
+
     val allDownloadedItems = downloadedNodes.filterIsInstance<DownloadItemNode>()
     val selectedDownloaded = allDownloadedItems.filter { it.data.video.id in selectedVideoIds }.map { it.data }
 
     HanimeScaffold(
         title = if (uiState.multiSelectMode) {
             stringResource(R.string.offl_selected_fmt, selectedDownloaded.size, allDownloadedItems.size)
+        } else if (uiState.currentPage == 1 && openFolder != null && !searching) {
+            openFolder.title
         } else {
             stringResource(R.string.download)
         },
         onBack = if (uiState.multiSelectMode) {
             { handleEvent(DownloadEvent.OnToggleMultiSelect) }
+        } else if (uiState.currentPage == 1 && openFolder != null && !searching) {
+            { openFolderKey = null }
         } else {
             onBack
         },
@@ -298,13 +333,15 @@ fun DownloadScreen(
                             }
                         }
                     }
-                    FilledIconButton(
-                        onClick = { handleEvent(DownloadEvent.OnToggleMultiSelect) }
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_format_list_bulleted_24),
-                            contentDescription = stringResource(R.string.edit),
-                        )
+                    if (downloadedNodes.isNotEmpty()) {
+                        FilledIconButton(
+                            onClick = { handleEvent(DownloadEvent.OnToggleMultiSelect) }
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_format_list_bulleted_24),
+                                contentDescription = stringResource(R.string.edit),
+                            )
+                        }
                     }
                     FilledIconButton(
                         onClick = { handleEvent(DownloadEvent.OnCreateGroupDialogChange(true)) }

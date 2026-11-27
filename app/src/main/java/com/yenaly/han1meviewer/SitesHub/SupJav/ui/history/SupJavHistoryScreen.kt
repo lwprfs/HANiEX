@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.SitesHub.SupJav.common.SupJavImageLoader
 import com.yenaly.han1meviewer.SitesHub.SupJav.data.local.SupJavHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.SupJav.data.repository.SupJavHistoryRepo
@@ -19,6 +20,7 @@ fun SupJavHistoryScreen(
     SupJavHistoryRepo.init(LocalContext.current)
     val entries = remember { SupJavHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.SUPJAV,
         entries = entries,
         emptyHint = R.string.supjav_no_history,
         imageLoader = { SupJavImageLoader.get(it) },
@@ -34,4 +36,7 @@ private fun SupJavHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = if (totalDuration > 0L) lastPosition.toFloat() / totalDuration else null,
+    positionMs = lastPosition,
+    durationMs = totalDuration,
+    watchDate = watchDate,
 )

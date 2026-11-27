@@ -7,6 +7,7 @@ import com.yenaly.han1meviewer.SitesHub.Buondua.common.BuonduaImageLoader
 import com.yenaly.han1meviewer.SitesHub.Buondua.data.local.BuonduaHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.Buondua.data.repository.BuonduaHistoryRepo
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.component.SiteHistoryEntry
 import com.yenaly.han1meviewer.ui.component.SiteHistoryScreen
 import kotlinx.coroutines.flow.map
@@ -19,6 +20,7 @@ fun BuonduaHistoryScreen(
     BuonduaHistoryRepo.init(LocalContext.current)
     val entries = remember { BuonduaHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.BUONDUA,
         entries = entries,
         emptyHint = R.string.buondua_no_history,
         imageLoader = { BuonduaImageLoader.get(it) },
@@ -34,4 +36,5 @@ private fun BuonduaHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = null,
+    watchDate = watchDate,
 )

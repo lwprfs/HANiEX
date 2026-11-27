@@ -77,6 +77,10 @@ import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
 import com.yenaly.han1meviewer.ui.navigation.PendingVideoOpen
 import com.yenaly.han1meviewer.ui.component.HistoryGridCard
+import com.yenaly.han1meviewer.ui.component.rememberHistoryTags
+import com.yenaly.han1meviewer.logic.SiteCheckIn
+import com.yenaly.han1meviewer.util.offline.LocalWatchEntry
+import com.yenaly.han1meviewer.util.offline.LocalWatchStore
 import com.yenaly.han1meviewer.ui.component.SiteImageLoaders
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.flow.SharingStarted
@@ -418,6 +422,8 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                         it.lastPosition >= it.totalDuration - 3_000L,
             )
         }).sortedByDescending { it.watchDate }
+    }.combine(LocalWatchStore.entries) { base, local ->
+        mergeHistory(base, local)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     private fun WatchHistoryEntity.toItem() = UnifiedHistoryItem(
@@ -426,7 +432,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         title = title,
         coverUrl = coverUrl,
         watchDate = watchDate,
-        positionMs = 0L,
+        positionMs = progress,
         durationMs = 0L,
         path = null,
         subtitle = null,
@@ -434,6 +440,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
     )
 
     fun delete(item: UnifiedHistoryItem) {
+        LocalWatchStore.forget(SiteCheckIn.dishCode(item.site, item.code))
         viewModelScope.launch {
             runCatching {
                 when (item.site) {
@@ -467,6 +474,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
     }
 
     fun clear(site: SiteType?) {
+        LocalWatchStore.clear(site)
         viewModelScope.launch {
             runCatching {
                 if (site == null || site == SiteType.HANIME) DatabaseRepo.WatchHistory.deleteAll()
@@ -489,6 +497,49 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
             }
         }
     }
+}
+
+/**
+ * One entry per video (site + code) holding its latest state. Videos that were played from the
+ * downloads (also ones whose download was deleted since) are merged in, newest state wins.
+ */
+private fun mergeHistory(
+    base: List<UnifiedHistoryItem>,
+    local: Map<String, LocalWatchEntry>,
+): List<UnifiedHistoryItem> {
+    val byKey = LinkedHashMap<String, UnifiedHistoryItem>()
+    for (item in base) {
+        val old = byKey[item.key]
+        if (old == null || item.watchDate > old.watchDate) byKey[item.key] = item
+    }
+    for (e in local.values) {
+        val key = "${e.site.name}:${e.rawCode}"
+        val cur = byKey[key]
+        if (cur == null) {
+            byKey[key] = UnifiedHistoryItem(
+                site = e.site,
+                code = e.rawCode,
+                title = e.title,
+                coverUrl = e.coverUrl,
+                watchDate = e.watchedAt,
+                positionMs = e.positionMs,
+                durationMs = e.durationMs,
+                path = null,
+                subtitle = null,
+                completed = e.completed,
+            )
+        } else if (e.watchedAt > cur.watchDate) {
+            byKey[key] = cur.copy(
+                watchDate = e.watchedAt,
+                positionMs = e.positionMs,
+                durationMs = if (e.durationMs > 0) e.durationMs else cur.durationMs,
+                completed = e.completed,
+                title = cur.title.ifBlank { e.title },
+                coverUrl = cur.coverUrl.ifBlank { e.coverUrl },
+            )
+        }
+    }
+    return byKey.values.sortedByDescending { it.watchDate }
 }
 
 private val filterSites = listOf(
@@ -669,6 +720,14 @@ private fun UnifiedHistoryCard(
         subtitle = item.subtitle,
         meta = dateText,
         progress = item.progress?.let { if (item.completed) 1f else it },
+        tags = rememberHistoryTags(
+            site = item.site,
+            rawCode = item.code,
+            positionMs = item.positionMs,
+            durationMs = item.durationMs,
+            completed = item.completed,
+            watchDate = item.watchDate,
+        ),
         imageLoader = loader,
     )
 }

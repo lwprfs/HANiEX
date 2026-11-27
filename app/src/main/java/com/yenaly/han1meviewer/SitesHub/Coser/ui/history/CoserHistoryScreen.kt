@@ -7,6 +7,7 @@ import com.yenaly.han1meviewer.SitesHub.Coser.common.CoserImageLoader
 import com.yenaly.han1meviewer.SitesHub.Coser.data.local.CoserHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.Coser.data.repository.CoserHistoryRepo
 import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.component.SiteHistoryEntry
 import com.yenaly.han1meviewer.ui.component.SiteHistoryScreen
 import kotlinx.coroutines.flow.map
@@ -19,6 +20,7 @@ fun CoserHistoryScreen(
     CoserHistoryRepo.init(LocalContext.current)
     val entries = remember { CoserHistoryRepo.loadAll().map { list -> list.map { it.toEntry() } } }
     SiteHistoryScreen(
+        site = SiteType.COSER,
         entries = entries,
         emptyHint = R.string.coser_no_history,
         imageLoader = { CoserImageLoader.get(it) },
@@ -34,4 +36,7 @@ private fun CoserHistoryEntity.toEntry() = SiteHistoryEntry(
     title = title,
     coverUrl = coverUrl,
     progress = if (totalDuration > 0L) lastPosition.toFloat() / totalDuration else null,
+    positionMs = lastPosition,
+    durationMs = totalDuration,
+    watchDate = watchDate,
 )
