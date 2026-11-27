@@ -46,6 +46,7 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadHeaderNode
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadItemNode
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.rememberLocalWatchTags
 import com.yenaly.han1meviewer.ui.screen.library.offline.DetailLine
 import com.yenaly.han1meviewer.ui.screen.library.offline.MediaGridCard
 import com.yenaly.han1meviewer.util.formatFileSizeV2
@@ -102,7 +103,7 @@ fun DownloadedScreen(
     }
 
     if (uiState.downloadedNodes.isEmpty()) {
-        // Folder list: every group (or site) is a card that opens its own page.
+
         Column(modifier = Modifier.fillMaxSize()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 4.dp),
@@ -151,7 +152,6 @@ fun DownloadedScreen(
         return
     }
 
-    // Folder page (or search results): the videos themselves.
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
         state = listState,
@@ -173,6 +173,7 @@ fun DownloadedScreen(
                 selecting = uiState.multiSelectMode,
                 selected = id in uiState.selectedVideoIds,
                 aspect = 1.45f,
+                tags = rememberLocalWatchTags(video.video.videoCode),
                 onClick = {
                     if (uiState.multiSelectMode) onEvent(DownloadEvent.OnToggleVideoSelection(id))
                     else popupVideo = video

@@ -499,10 +499,6 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
     }
 }
 
-/**
- * One entry per video (site + code) holding its latest state. Videos that were played from the
- * downloads (also ones whose download was deleted since) are merged in, newest state wins.
- */
 private fun mergeHistory(
     base: List<UnifiedHistoryItem>,
     local: Map<String, LocalWatchEntry>,

@@ -169,13 +169,12 @@ fun DownloadScreen(
     }
     val openFolder = folders.firstOrNull { it.key == openFolderKey }
     LaunchedEffect(openFolder, openFolderKey, downloadedItems) {
-        // the opened folder became empty (everything deleted / moved): back to the folder list
+
         if (openFolderKey != null && openFolder == null && downloadedItems.isNotEmpty() && !searching) {
             openFolderKey = null
         }
     }
 
-    // The videos shown right now: search results, or the opened folder. Empty = show the folder list.
     val downloadedNodes: List<DownloadedNode> = when {
         searching -> filteredDownloadedItems.map { DownloadItemNode(it, it.video.groupId) }
         openFolder != null -> openFolder.videos.map { DownloadItemNode(it, openFolder.groupId ?: -1) }
@@ -209,7 +208,7 @@ fun DownloadScreen(
                 openFolderKey = null
             }
             is DownloadEvent.OnLocalPlayback, is DownloadEvent.OnOpenDownloadedVideo -> {
-                // previous / next and "related downloads" in the player follow this folder + sort
+
                 DownloadedQueue.setContext(openFolder?.scope ?: DownloadedQueue.Scope.All, sort)
                 onEvent(event)
             }

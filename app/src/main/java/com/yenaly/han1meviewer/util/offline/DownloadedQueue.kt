@@ -10,11 +10,6 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * The play order of downloaded videos. The downloads page sets the folder (group / site) and sort
- * it was opened with, the downloaded-video player then uses it for previous / next and for its
- * "related downloads" tab.
- */
 object DownloadedQueue {
 
     sealed interface Scope {
@@ -36,7 +31,6 @@ object DownloadedQueue {
 
     fun siteOf(code: String): SiteType = SiteCheckIn.siteOfDishCode(code) ?: SiteType.HANIME
 
-    /** Finished downloads in play order, one entry per video code. */
     suspend fun load(currentCode: String?): List<HanimeDownloadEntity> = withContext(Dispatchers.IO) {
         val all = runCatching {
             DownloadDatabase.instance.hanimeDownloadDao.getFinishedNewestFirst()
@@ -62,10 +56,6 @@ object DownloadedQueue {
         return if (i >= 0 && i < list.lastIndex) list[i + 1] else null
     }
 
-    /**
-     * 10-16 downloads around [code]: up to [perSide] before and the same amount after it. When one
-     * side is short, the other side fills in (up to [maxTotal]).
-     */
     fun relatedWindow(
         list: List<HanimeDownloadEntity>,
         code: String,

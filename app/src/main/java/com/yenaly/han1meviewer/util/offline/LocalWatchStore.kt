@@ -19,13 +19,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.Serializable
 
-/**
- * Latest watch state of a video that was played from the downloads.
- *
- * One entry per video (keyed by the download "dish code", e.g. `onair:123` or a plain Hanime code),
- * so watching the same video again only refreshes this entry - it is never duplicated.
- * Entries stay after the download is deleted, so the history and its time tag survive.
- */
 @Serializable
 data class LocalWatchEntry(
     val code: String,
@@ -101,7 +94,6 @@ object LocalWatchStore {
     }
 }
 
-/** Codes of videos that are currently downloaded (finished). Shared by all cards. */
 object LocalDownloadedCodes {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

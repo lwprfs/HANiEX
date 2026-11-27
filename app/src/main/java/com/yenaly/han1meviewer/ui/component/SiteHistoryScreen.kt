@@ -58,7 +58,7 @@ fun SiteHistoryScreen(
 ) {
     val scope = rememberCoroutineScope()
     val rawItems by entries.collectAsState(initial = emptyList())
-    // one card per video: the list is newest first, so the first entry is the latest state
+
     val items = remember(rawItems) { rawItems.distinctBy { it.videoCode } }
 
     Scaffold(

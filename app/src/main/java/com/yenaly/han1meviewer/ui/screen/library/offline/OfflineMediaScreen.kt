@@ -168,7 +168,6 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
         }
     }
 
-    // Folders: one per group (or per site). A folder opens its own page with its items.
     val folders = remember(shown, groupsState, folderBySite, ungrouped) {
         if (folderBySite) {
             shown.groupBy { it.site }.map { (site, members) ->
@@ -193,7 +192,6 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
         if (openFolderKey != null && openFolder == null && items.isNotEmpty() && !searching) openFolderKey = null
     }
 
-    // What the grid shows right now: search results, or the opened folder. null = the folder list.
     val visible: List<OfflineItem>? = when {
         searching -> shown
         openFolder != null -> openFolder.items

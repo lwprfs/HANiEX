@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 
-/** Folder tile (a group or a site) used by the downloaded videos and the shorts / GIFs pages. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DownloadFolderCard(

@@ -23,13 +23,6 @@ import com.yenaly.han1meviewer.util.application
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * Called while a downloaded video plays. Keeps ONE up-to-date record per video:
- *  - [LocalWatchStore] (tags: downloaded / watched / watched time), and
- *  - the owning site's own watch history, so that site's history page and its "watched"
- *    markers on video cards show the downloaded playback too.
- * Both are "upsert by video code", so a video is never listed twice and always holds the latest state.
- */
 object LocalWatchRecorder {
 
     private const val TAG = "LocalWatchRecorder"
@@ -172,7 +165,6 @@ object LocalWatchRecorder {
                 LeakGalleryHistoryRepo.upsertWatchProgress(raw, e.title, e.coverUrl, pos, total, isPlaying, done)
             }
 
-            // No video history of their own: the LocalWatchStore entry is their history.
             SiteType.BUONDUA, SiteType.REDGIFS -> Unit
         }
     }

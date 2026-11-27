@@ -6,7 +6,6 @@ import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.SitesHub.Hanime1.logic.model.DownloadedNode
 import com.yenaly.han1meviewer.util.offline.DownloadedQueue
 
-/** A folder on the downloaded page: one group, or one site. Tapping it opens its own page. */
 data class DownloadFolder(
     val key: String,
     val title: String,

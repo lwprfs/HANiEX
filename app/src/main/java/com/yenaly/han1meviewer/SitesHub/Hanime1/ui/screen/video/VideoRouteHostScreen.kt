@@ -571,7 +571,6 @@ fun VideoRouteHostScreen(
         viewModel.getHanimeVideo(route.videoCode, route.localUri)
     }
 
-    // Downloaded playback -> one up-to-date history record per video (store + the site's own history).
     LaunchedEffect(route.videoCode, route.localUri) {
         if (route.localUri == null || route.videoCode == "-1") return@LaunchedEffect
         val entity = withContext(Dispatchers.IO) {

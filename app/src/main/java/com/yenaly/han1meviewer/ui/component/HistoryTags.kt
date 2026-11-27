@@ -33,11 +33,6 @@ private fun formatClock(ms: Long): String {
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%d:%02d".format(m, s)
 }
 
-/**
- * Tags of one history entry: Downloaded (the file is still on the device), Watched (finished) and
- * the watched time. If the video was last played from the downloads, that newer state wins, so a
- * video always shows its latest state - and keeps the Watched / time tags after its download is deleted.
- */
 @Composable
 fun rememberHistoryTags(
     site: SiteType,
@@ -73,6 +68,25 @@ fun rememberHistoryTags(
     return buildList {
         if (dish in downloadedCodes) add(HistoryTag(tDownloaded, HistoryTagKind.DOWNLOADED))
         if (done) add(HistoryTag(tWatched, HistoryTagKind.WATCHED))
+        if (timeText != null) add(HistoryTag(timeText, HistoryTagKind.TIME))
+    }
+}
+
+@Composable
+fun rememberLocalWatchTags(dishCode: String): List<HistoryTag> {
+    val localEntries by LocalWatchStore.entries.collectAsStateWithLifecycle()
+    val local = localEntries[dishCode]
+    val tWatched = stringResource(R.string.tag_watched)
+    val pos = local?.positionMs ?: 0L
+    val dur = local?.durationMs ?: 0L
+    val timeText = if (pos > 0L) {
+        stringResource(
+            R.string.tag_watched_at,
+            if (dur > 0L) "${formatClock(pos)} / ${formatClock(dur)}" else formatClock(pos),
+        )
+    } else null
+    return buildList {
+        if (local?.completed == true) add(HistoryTag(tWatched, HistoryTagKind.WATCHED))
         if (timeText != null) add(HistoryTag(timeText, HistoryTagKind.TIME))
     }
 }

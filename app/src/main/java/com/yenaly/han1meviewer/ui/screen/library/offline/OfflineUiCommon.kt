@@ -48,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.HistoryTag
+import com.yenaly.han1meviewer.ui.component.HistoryTagRow
 import com.yenaly.han1meviewer.util.offline.OfflineFs
 import com.yenaly.han1meviewer.util.offline.OfflineGroup
 import com.yenaly.han1meviewer.util.offline.OfflineGroups
@@ -149,6 +151,7 @@ fun MediaGridCard(
     showPlayIcon: Boolean = false,
     onDoubleClick: (() -> Unit)? = null,
     aspect: Float = 0.75f,
+    tags: List<HistoryTag> = emptyList(),
 ) {
     val shape = RoundedCornerShape(14.dp)
     Box(
@@ -224,6 +227,15 @@ fun MediaGridCard(
                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     )
                 }
+            }
+            if (tags.isNotEmpty() && !selecting) {
+                HistoryTagRow(
+                    tags = tags,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .fillMaxWidth(0.8f)
+                        .padding(6.dp),
+                )
             }
             if (selecting) {
                 Box(

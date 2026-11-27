@@ -39,6 +39,7 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
+import com.yenaly.han1meviewer.ui.component.rememberLocalWatchTags
 import com.yenaly.han1meviewer.ui.screen.library.offline.MediaGridCard
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.formatFileSizeV2
@@ -47,10 +48,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * "Related downloads" tab of the downloaded-video player: the downloads right before and after the
- * playing one (up to 8 each side, 10-16 in total). Tap to play, long-press to mark and delete.
- */
 @Composable
 fun DownloadedRelatedTab(
     currentCode: String,
@@ -138,6 +135,7 @@ fun DownloadedRelatedTab(
                         selecting = selecting,
                         selected = video.videoCode in selected,
                         aspect = 1.45f,
+                        tags = rememberLocalWatchTags(video.videoCode),
                         onClick = {
                             if (selecting) toggle(video.videoCode) else onOpen(video)
                         },

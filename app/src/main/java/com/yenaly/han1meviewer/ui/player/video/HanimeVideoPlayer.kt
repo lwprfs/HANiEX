@@ -424,7 +424,6 @@ fun HanimeVideoPlayer(
             modifier = Modifier.fillMaxSize(),
         )
 
-        // Previous / next video buttons: only drawn when there is something to go to.
         AnimatedVisibility(
             visible = controlsVisible && !videoInfoLoading &&
                     uiState.state != PlayerState.ERROR &&
