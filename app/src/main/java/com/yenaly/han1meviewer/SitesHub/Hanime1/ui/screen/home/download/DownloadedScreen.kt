@@ -39,7 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.ui.component.ThumbnailWithVideoFallback
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
@@ -133,6 +133,7 @@ fun DownloadedScreen(
                         title = folder.title,
                         count = folder.videos.size,
                         cover = first?.coverUri ?: first?.coverUrl?.takeIf { it.isNotBlank() },
+                        coverVideoUri = first?.videoUri,
                         onClick = { onEvent(DownloadEvent.OnOpenFolder(folder.key)) },
                         onLongClick = folder.groupId
                             ?.takeIf { it != DownloadGroupEntity.DEFAULT_GROUP_ID }
@@ -168,6 +169,7 @@ fun DownloadedScreen(
             val id = video.video.id
             MediaGridCard(
                 thumb = video.video.coverUri ?: video.video.coverUrl.takeIf { it.isNotBlank() },
+                videoUri = video.video.videoUri,
                 title = video.video.title,
                 subtitle = "${video.video.quality} · ${video.video.length.formatFileSizeV2()}",
                 selecting = uiState.multiSelectMode,
@@ -220,9 +222,10 @@ private fun VideoDetailsPopup(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 val cover = v.coverUri ?: v.coverUrl.takeIf { it.isNotBlank() }
-                if (cover != null) {
-                    AsyncImage(
+                if (cover != null || v.videoUri.isNotBlank()) {
+                    ThumbnailWithVideoFallback(
                         model = cover,
+                        videoUri = v.videoUri,
                         contentDescription = v.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth().height(170.dp).clip(RoundedCornerShape(16.dp)),

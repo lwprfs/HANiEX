@@ -40,7 +40,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.ui.component.ThumbnailWithVideoFallback
 import com.yenaly.han1meviewer.LOCAL_DATE_TIME_FORMAT
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
@@ -153,8 +153,9 @@ fun DownloadedVideoCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Box {
-                    AsyncImage(
+                    ThumbnailWithVideoFallback(
                         model = item.video.coverUri ?: item.video.coverUrl,
+                        videoUri = item.video.videoUri,
                         contentDescription = item.video.title,
                         placeholder = painterResource(R.drawable.h_chan_loading),
                         error = painterResource(R.drawable.h_chan_load_failed),

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.ui.component.ThumbnailWithVideoFallback
 import com.yenaly.han1meviewer.R
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -38,6 +38,7 @@ fun DownloadFolderCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onLongClick: (() -> Unit)? = null,
+    coverVideoUri: String? = null,
 ) {
     ElevatedCard(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
         Column(
@@ -51,9 +52,10 @@ fun DownloadFolderCard(
                     .aspectRatio(1.45f)
                     .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             ) {
-                if (cover != null) {
-                    AsyncImage(
+                if (cover != null || !coverVideoUri.isNullOrBlank()) {
+                    ThumbnailWithVideoFallback(
                         model = cover,
+                        videoUri = coverVideoUri,
                         contentDescription = title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),

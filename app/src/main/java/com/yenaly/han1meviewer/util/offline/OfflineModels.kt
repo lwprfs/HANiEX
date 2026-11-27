@@ -36,6 +36,10 @@ data class OfflineItem(
     val ownedUris: List<String>,
 ) {
     val count: Int get() = mediaUris.size
+
+    /** Local video to grab a frame from when there is no thumbnail image. */
+    fun videoFallbackUri(): String? =
+        if (kind == OfflineKind.SHORTS) mediaUris.firstOrNull() else null
 }
 
 internal fun JsonObject.str(key: String): String? =

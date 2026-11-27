@@ -45,11 +45,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.HistoryTag
 import com.yenaly.han1meviewer.ui.component.HistoryTagRow
+import com.yenaly.han1meviewer.ui.component.ThumbnailWithVideoFallback
 import com.yenaly.han1meviewer.util.offline.OfflineFs
 import com.yenaly.han1meviewer.util.offline.OfflineGroup
 import com.yenaly.han1meviewer.util.offline.OfflineGroups
@@ -152,8 +152,10 @@ fun MediaGridCard(
     onDoubleClick: (() -> Unit)? = null,
     aspect: Float = 0.75f,
     tags: List<HistoryTag> = emptyList(),
+    videoUri: String? = null,
 ) {
     val shape = RoundedCornerShape(14.dp)
+    val hasThumb = thumb != null || !videoUri.isNullOrBlank()
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -166,9 +168,10 @@ fun MediaGridCard(
             ),
     ) {
         Box(modifier = Modifier.fillMaxWidth().aspectRatio(aspect)) {
-            if (thumb != null) {
-                AsyncImage(
+            if (hasThumb) {
+                ThumbnailWithVideoFallback(
                     model = thumb,
+                    videoUri = videoUri,
                     contentDescription = title,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),
@@ -181,7 +184,7 @@ fun MediaGridCard(
                     modifier = Modifier.align(Alignment.Center).size(40.dp),
                 )
             }
-            if (showPlayIcon && thumb != null) {
+            if (showPlayIcon && hasThumb) {
                 Icon(
                     imageVector = Icons.Filled.PlayArrow,
                     contentDescription = null,

@@ -76,6 +76,7 @@ import coil3.compose.AsyncImage
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.ui.component.ThumbnailWithVideoFallback
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadFolderCard
@@ -361,6 +362,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                                     title = folder.title,
                                     count = folder.items.size,
                                     cover = folder.items.firstOrNull()?.coverUri,
+                                    coverVideoUri = folder.items.firstOrNull()?.videoFallbackUri(),
                                     onClick = { openFolderKey = folder.key },
                                     onLongClick = folder.group
                                         ?.takeIf { it.id != OfflineGroups.DEFAULT_ID }
@@ -380,6 +382,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                         items(visible, key = { it.key }) { item ->
                             MediaGridCard(
                                 thumb = item.coverUri,
+                                videoUri = item.videoFallbackUri(),
                                 title = item.title,
                                 subtitle = cardSubtitle(item),
                                 selecting = selecting,
@@ -690,9 +693,10 @@ private fun ShortDetailsPopup(
                 modifier = Modifier.padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                if (item.coverUri != null) {
-                    AsyncImage(
+                if (item.coverUri != null || item.videoFallbackUri() != null) {
+                    ThumbnailWithVideoFallback(
                         model = item.coverUri,
+                        videoUri = item.videoFallbackUri(),
                         contentDescription = item.title,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxWidth().height(170.dp).clip(RoundedCornerShape(16.dp)),
