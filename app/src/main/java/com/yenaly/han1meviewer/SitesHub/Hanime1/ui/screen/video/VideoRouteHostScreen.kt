@@ -781,7 +781,8 @@ fun VideoRouteHostScreen(
     val configuration = LocalConfiguration.current
     val isTabletLandscape =
         useLargeVideoLayout && configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val showSplitLayout = isTabletLandscape && !isInPipMode
+
+    val showSplitLayout = isTabletLandscape && !isInPipMode && !viewModel.fromDownload
     val relatedAsTab = !viewModel.fromDownload && Preferences.relatedVideoAsTab
 
     var isSidePaneCollapsed by rememberSaveable { mutableStateOf(false) }
@@ -791,7 +792,7 @@ fun VideoRouteHostScreen(
     }
 
     val maxSmallWindowHeightPx = (appScreenHeight * 0.6f).toInt()
-    LaunchedEffect(isInPipMode, isSidePaneCollapsed, showSplitLayout) {
+    LaunchedEffect(isInPipMode, isSidePaneCollapsed, showSplitLayout, configuration.orientation) {
         if (isInPipMode) return@LaunchedEffect
         val height = if (showSplitLayout) {
             if (isSidePaneCollapsed) 500.dpToPx else 400.dpToPx
@@ -811,7 +812,13 @@ fun VideoRouteHostScreen(
         0f
     }
 
-    LaunchedEffect(playerUiState.videoWidth, playerUiState.videoHeight, showSplitLayout, isInPipMode) {
+    LaunchedEffect(
+        playerUiState.videoWidth,
+        playerUiState.videoHeight,
+        showSplitLayout,
+        isInPipMode,
+        configuration.orientation,
+    ) {
         val w = playerUiState.videoWidth
         val h = playerUiState.videoHeight
         if (w > 0 && h > 0 && !showSplitLayout && !isFullscreen && !isInPipMode) {

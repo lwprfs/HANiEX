@@ -175,6 +175,7 @@ fun VideoIntroductionScreen(
     downloadGroups: List<DownloadGroupEntity> = emptyList(),
 
     recommendedGroupId: Int? = null,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     val maxScreenWidth = LocalWindowInfo.current.containerSize.width.dp
 
@@ -219,6 +220,7 @@ fun VideoIntroductionScreen(
                 onIntroductionLinkClick = onIntroductionLinkClick,
                 downloadGroups = downloadGroups,
                 recommendedGroupId = recommendedGroupId,
+                footer = footer,
             )
 
             state is VideoLoadingState.Error -> ErrorContent(
@@ -275,6 +277,7 @@ private fun VideoIntroductionContent(
     onIntroductionLinkClick: (String) -> Unit,
     downloadGroups: List<DownloadGroupEntity>,
     recommendedGroupId: Int?,
+    footer: (@Composable () -> Unit)?,
 ) {
     val bottomInset = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
     val listState = rememberLazyListState(
@@ -457,6 +460,12 @@ private fun VideoIntroductionContent(
                     videos = video.relatedHanimes,
                     onOpenVideo = onOpenVideo,
                 )
+            }
+        }
+
+        if (footer != null) {
+            item(key = "footer") {
+                footer()
             }
         }
     }

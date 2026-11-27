@@ -67,6 +67,7 @@ fun RenderVideoIntroductionContent(
     onCopyText: (String) -> Unit,
     onIntroductionLinkClick: (String) -> Unit,
     stringLongPressShare: String,
+    footer: (@Composable () -> Unit)? = null,
 ) {
     val videoState = viewModel.hanimeVideoStateFlow.collectAsStateWithLifecycle().value
     val video = viewModel.hanimeVideoFlow.collectAsStateWithLifecycle().value
@@ -139,6 +140,7 @@ fun RenderVideoIntroductionContent(
             onIntroductionLinkClick = onIntroductionLinkClick,
             downloadGroups = viewModel.downloadGroups.collectAsStateWithLifecycle().value,
             recommendedGroupId = viewModel.recommendedGroupId.collectAsStateWithLifecycle().value,
+            footer = footer,
         )
     }
 }
