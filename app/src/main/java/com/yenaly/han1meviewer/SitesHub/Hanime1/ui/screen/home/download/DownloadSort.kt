@@ -17,21 +17,28 @@ enum class DownloadSort(@StringRes val labelRes: Int) {
     FIRST_LETTER_DESC(R.string.sort_by_alphabet_descending),
 }
 
-fun downloadSortComparator(sort: DownloadSort): Comparator<VideoWithCategories> = when (sort) {
-    DownloadSort.DATE_DESC -> compareByDescending { it.video.addDate }
-    DownloadSort.DATE_ASC -> compareBy { it.video.addDate }
-    DownloadSort.FIRST_LETTER_ASC -> firstLetterComparator()
-    DownloadSort.FIRST_LETTER_DESC -> firstLetterComparator().reversed()
+fun downloadSortComparator(sort: DownloadSort): Comparator<VideoWithCategories> {
+
+    val byId = compareByDescending<VideoWithCategories> { it.video.id }
+    return when (sort) {
+        DownloadSort.DATE_DESC -> compareByDescending<VideoWithCategories> { it.video.addDate }.then(byId)
+        DownloadSort.DATE_ASC -> compareBy<VideoWithCategories> { it.video.addDate }.then(byId.reversed())
+        DownloadSort.FIRST_LETTER_ASC -> firstLetterComparator().then(byId)
+        DownloadSort.FIRST_LETTER_DESC -> firstLetterComparator().reversed().then(byId)
+    }
+}
+
+fun downloadTitleComparator(): Comparator<String> {
+    val collator = Collator.getInstance(Locale.CHINESE).apply { strength = Collator.PRIMARY }
+    return Comparator { a, b ->
+        val compared = collator.compare(sortKey(a), sortKey(b))
+        if (compared != 0) compared else a.compareTo(b)
+    }
 }
 
 private fun firstLetterComparator(): Comparator<VideoWithCategories> {
-    val collator = Collator.getInstance(Locale.CHINESE).apply {
-        strength = Collator.PRIMARY
-    }
-    return Comparator { a, b ->
-        val compared = collator.compare(sortKey(a.video.title), sortKey(b.video.title))
-        if (compared != 0) compared else a.video.title.compareTo(b.video.title)
-    }
+    val titles = downloadTitleComparator()
+    return Comparator { a, b -> titles.compare(a.video.title, b.video.title) }
 }
 
 private fun sortKey(title: String): String {

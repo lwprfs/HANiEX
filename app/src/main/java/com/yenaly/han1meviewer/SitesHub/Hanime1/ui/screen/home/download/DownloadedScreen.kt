@@ -162,8 +162,10 @@ fun DownloadedScreen(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(
-            items = uiState.downloadedNodes.filterIsInstance<DownloadItemNode>(),
-            key = { "item-${it.parentKey}-${it.data.video.id}" },
+
+            items = uiState.downloadedNodes.filterIsInstance<DownloadItemNode>()
+                .distinctBy { it.data.video.id },
+            key = { it.data.video.id },
         ) { node ->
             val video = node.data
             val id = video.video.id

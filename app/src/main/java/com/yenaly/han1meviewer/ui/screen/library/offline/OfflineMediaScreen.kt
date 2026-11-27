@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
@@ -81,6 +82,7 @@ import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.content.EmptyContent
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadFolderCard
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadSort
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.downloadTitleComparator
 import com.yenaly.han1meviewer.util.compactCount
 import com.yenaly.han1meviewer.util.formatFileSizeV2
 import com.yenaly.han1meviewer.util.openDownloadedHanimeVideoLocally
@@ -95,11 +97,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private fun sortComparator(sort: DownloadSort): Comparator<OfflineItem> = when (sort) {
-    DownloadSort.DATE_DESC -> compareByDescending { it.addedAt }
-    DownloadSort.DATE_ASC -> compareBy { it.addedAt }
-    DownloadSort.FIRST_LETTER_ASC -> compareBy<OfflineItem, String>(String.CASE_INSENSITIVE_ORDER) { it.title }
-    DownloadSort.FIRST_LETTER_DESC -> compareBy<OfflineItem, String>(String.CASE_INSENSITIVE_ORDER) { it.title }.reversed()
+private fun sortComparator(sort: DownloadSort): Comparator<OfflineItem> {
+
+    val titles = downloadTitleComparator()
+    val byKey = compareBy<OfflineItem> { it.key }
+    return when (sort) {
+        DownloadSort.DATE_DESC -> compareByDescending<OfflineItem> { it.addedAt }.then(byKey)
+        DownloadSort.DATE_ASC -> compareBy<OfflineItem> { it.addedAt }.then(byKey)
+        DownloadSort.FIRST_LETTER_ASC -> Comparator<OfflineItem> { a, b -> titles.compare(a.title, b.title) }.then(byKey)
+        DownloadSort.FIRST_LETTER_DESC -> Comparator<OfflineItem> { a, b -> titles.compare(b.title, a.title) }.then(byKey)
+    }
 }
 
 private fun formatDate(ms: Long): String =
@@ -165,7 +172,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                 it.title.contains(q, true) || it.site.contains(q, true) ||
                         it.channel.orEmpty().contains(q, true)
             }
-            filtered.sortedWith(sortComparator(sort))
+            filtered.distinctBy { it.key }.sortedWith(sortComparator(sort))
         }
     }
 
@@ -189,6 +196,14 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
     }
     val searching = query.isNotBlank()
     val openFolder = folders.firstOrNull { it.key == openFolderKey }
+
+    val itemsGridState = rememberLazyGridState()
+    val foldersGridState = rememberLazyGridState()
+
+    LaunchedEffect(sort, openFolderKey, searching, folderBySite) {
+        itemsGridState.scrollToItem(0)
+        foldersGridState.scrollToItem(0)
+    }
     LaunchedEffect(openFolder, openFolderKey, items) {
         if (openFolderKey != null && openFolder == null && items.isNotEmpty() && !searching) openFolderKey = null
     }
@@ -263,7 +278,10 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                     )
                 }
             } else {
-                FilledIconButton(onClick = { showSearch = !showSearch }) {
+                FilledIconButton(onClick = {
+                    showSearch = !showSearch
+                    if (!showSearch) query = ""
+                }) {
                     Icon(painterResource(R.drawable.ic_baseline_search_24), contentDescription = stringResource(R.string.search))
                 }
                 Box {
@@ -352,6 +370,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                         }
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(150.dp),
+                            state = foldersGridState,
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(10.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -374,6 +393,7 @@ fun OfflineMediaScreen(kind: OfflineKind, onBack: () -> Unit) {
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(112.dp),
+                        state = itemsGridState,
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(10.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),

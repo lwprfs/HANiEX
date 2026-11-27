@@ -93,6 +93,12 @@ class DownloadViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
+    fun deleteDownloadHanimeByCode(videoCode: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            DatabaseRepo.HanimeDownload.delete(videoCode)
+        }
+    }
+
     fun deleteDownloadHanimeBy(videoCode: String, quality: String) {
         viewModelScope.launch(Dispatchers.IO) {
             DatabaseRepo.HanimeDownload.delete(videoCode, quality)

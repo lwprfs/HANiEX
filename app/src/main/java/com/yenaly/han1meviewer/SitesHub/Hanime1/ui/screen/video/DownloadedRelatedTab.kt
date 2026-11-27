@@ -130,6 +130,7 @@ fun DownloadedRelatedTab(
                 items(items, key = { it.videoCode }) { video ->
                     MediaGridCard(
                         thumb = video.coverUri ?: video.coverUrl.takeIf { it.isNotBlank() },
+                        videoUri = video.videoUri,
                         title = video.title,
                         subtitle = "${video.quality} · ${video.length.formatFileSizeV2()}",
                         selecting = selecting,
@@ -169,7 +170,7 @@ fun DownloadedRelatedTab(
                     victims.forEach { video ->
                         runCatching {
                             SafFileManager.deleteVideoFolderAndForget(context, video.videoCode)
-                            DatabaseRepo.HanimeDownload.delete(video.videoCode, video.quality)
+                            DatabaseRepo.HanimeDownload.delete(video.videoCode)
                         }
                     }
                 }

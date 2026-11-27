@@ -120,15 +120,21 @@ fun DownloadScreen(
     var showSortMenu by remember { mutableStateOf(false) }
     var pendingBatchDelete by remember { mutableStateOf<List<VideoWithCategories>?>(null) }
 
-    val displayGroups = downloadedGroups.toDisplayGroups()
+    val displayGroupsRaw = downloadedGroups.toDisplayGroups()
+    val displayGroups = remember(displayGroupsRaw.map { it.id to it.name }) { displayGroupsRaw }
 
     val filteredDownloadedItems =
         remember(downloadedItems, searchQuery, sort) {
+
+            val unique = downloadedItems
+                .groupBy { it.video.videoCode.ifBlank { "#${it.video.id}" } }
+                .values
+                .map { rows -> rows.maxBy { it.video.id } }
             val filtered = if (searchQuery.isBlank()) {
-                downloadedItems
+                unique
             } else {
                 val normalizedQuery = searchQuery.toSimplified()
-                downloadedItems.filter {
+                unique.filter {
                     it.video.title.toSimplified().contains(normalizedQuery, ignoreCase = true) ||
                         it.video.videoCode.contains(searchQuery, ignoreCase = true)
                 }
@@ -168,6 +174,14 @@ fun DownloadScreen(
         }
     }
     val openFolder = folders.firstOrNull { it.key == openFolderKey }
+
+    LaunchedEffect(sort, openFolderKey, searching, folderBySite) {
+        downloadedLazyListState.scrollToItem(0)
+    }
+    LaunchedEffect(sort, openFolderKey, folderBySite) {
+        multiSelectMode = false
+        selectedVideoIds = emptySet()
+    }
     LaunchedEffect(openFolder, openFolderKey, downloadedItems) {
 
         if (openFolderKey != null && openFolder == null && downloadedItems.isNotEmpty() && !searching) {
@@ -209,7 +223,13 @@ fun DownloadScreen(
             }
             is DownloadEvent.OnLocalPlayback, is DownloadEvent.OnOpenDownloadedVideo -> {
 
-                DownloadedQueue.setContext(openFolder?.scope ?: DownloadedQueue.Scope.All, sort)
+                val queueScope = when {
+                    searching -> DownloadedQueue.Scope.Codes(
+                        filteredDownloadedItems.map { it.video.videoCode }
+                    )
+                    else -> openFolder?.scope ?: DownloadedQueue.Scope.All
+                }
+                DownloadedQueue.setContext(queueScope, sort)
                 onEvent(event)
             }
             is DownloadEvent.OnCreateGroupDialogChange -> showCreateGroupDialog = event.visible
@@ -301,7 +321,10 @@ fun DownloadScreen(
             } else {
                 if (!uiState.multiSelectMode) {
                     FilledIconButton(
-                        onClick = { showSearchBar = !showSearchBar }
+                        onClick = {
+                            showSearchBar = !showSearchBar
+                            if (!showSearchBar) searchQuery = ""
+                        }
                     ) {
                         Icon(
                             painter = painterResource(R.drawable.ic_baseline_search_24),
@@ -441,6 +464,7 @@ fun DownloadScreen(
 
             HorizontalPager(
                 state = pagerState,
+                userScrollEnabled = !multiSelectMode,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),

@@ -21,10 +21,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 
-/**
- * Extracts a frame from a local video file so cards never show an empty box
- * when the remote/downloaded thumbnail is missing or fails to load.
- */
 object LocalVideoThumbnail {
 
     private const val MAX_EDGE = 480
@@ -33,7 +29,6 @@ object LocalVideoThumbnail {
         override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount
     }
 
-    /** Videos we already failed on, so we don't retry on every recomposition. */
     private val failed = java.util.Collections.synchronizedSet(HashSet<String>())
 
     fun peek(videoUri: String): Bitmap? = cache.get(videoUri)
@@ -56,7 +51,7 @@ object LocalVideoThumbnail {
             }
             val durationMs = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
                 ?.toLongOrNull() ?: 0L
-            // A frame slightly into the video avoids black intro frames.
+
             val timeUs = (durationMs * 1000L / 10L).coerceAtLeast(0L)
             val frame = retriever.getFrameAtTime(timeUs, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
                 ?: retriever.getFrameAtTime(0L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
@@ -79,10 +74,6 @@ object LocalVideoThumbnail {
     }
 }
 
-/**
- * Shows [model] as the thumbnail. If [model] is null/blank or fails to load,
- * falls back to a frame taken from the local video at [videoUri].
- */
 @Composable
 fun ThumbnailWithVideoFallback(
     model: Any?,
@@ -122,7 +113,7 @@ fun ThumbnailWithVideoFallback(
             onError = { remoteFailed = true },
             modifier = modifier,
         )
-        // Fallback still loading / unavailable: keep the previous error visuals.
+
         error != null -> Image(
             painter = error,
             contentDescription = contentDescription,

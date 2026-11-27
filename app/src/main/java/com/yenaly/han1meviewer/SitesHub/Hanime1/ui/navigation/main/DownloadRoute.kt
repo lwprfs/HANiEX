@@ -141,7 +141,7 @@ fun DownloadRouteScreen(
             is DownloadEvent.OnBatchDelete -> {
                 scope.launch(Dispatchers.IO) {
                     event.videos.forEach { video ->
-                        viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                        viewModel.deleteDownloadHanimeByCode(video.video.videoCode)
                         SafFileManager.deleteVideoFolderAndForget(context, video.video.videoCode)
                     }
                 }
@@ -333,7 +333,7 @@ fun DownloadRouteScreen(
                 showDeleteVideoConfirm = null
                 scope.launch(Dispatchers.IO) {
                     SafFileManager.deleteVideoFolderAndForget(context, video.video.videoCode)
-                    viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                    viewModel.deleteDownloadHanimeByCode(video.video.videoCode)
                 }
             },
             onDismiss = { showDeleteVideoConfirm = null },

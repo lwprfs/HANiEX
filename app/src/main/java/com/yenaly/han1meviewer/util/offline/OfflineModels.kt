@@ -37,7 +37,6 @@ data class OfflineItem(
 ) {
     val count: Int get() = mediaUris.size
 
-    /** Local video to grab a frame from when there is no thumbnail image. */
     fun videoFallbackUri(): String? =
         if (kind == OfflineKind.SHORTS) mediaUris.firstOrNull() else null
 }

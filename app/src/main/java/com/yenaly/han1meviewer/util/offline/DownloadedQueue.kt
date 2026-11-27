@@ -16,6 +16,8 @@ object DownloadedQueue {
         data object All : Scope
         data class Group(val id: Int) : Scope
         data class Site(val site: SiteType) : Scope
+
+        data class Codes(val codes: List<String>) : Scope
     }
 
     @Volatile
@@ -39,6 +41,10 @@ object DownloadedQueue {
             Scope.All -> all
             is Scope.Group -> all.filter { it.groupId == s.id }
             is Scope.Site -> all.filter { siteOf(it.videoCode) == s.site }
+            is Scope.Codes -> {
+                val wanted = s.codes.toHashSet()
+                all.filter { it.videoCode in wanted }
+            }
         }
         val base = if (currentCode == null || scoped.any { it.videoCode == currentCode }) scoped else all
         base.map { VideoWithCategories(it, emptyList()) }
