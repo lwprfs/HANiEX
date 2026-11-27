@@ -3355,4 +3355,8 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="leakgallery_validate_username">使用者名稱至少 4 個字元。</string>
     <string name="leakgallery_verify">驗證</string>
     <string name="leakgallery_watch_shorts">以短片觀看</string>
+    <string name="onair_added_to_github_queue">已加入 links_haniex.txt（GitHub 下載器）</string>
+    <string name="onair_already_in_github_queue">已在 GitHub 下載清單或已下載</string>
+    <string name="onair_github_downloader_title">GitHub 下載器</string>
+    <string name="onair_github_downloader_subtitle">開發者專用 · 透過 GitHub 工作流程下載</string>
 </resources>

@@ -53,6 +53,7 @@ import com.yenaly.han1meviewer.SitesHub.OnAir.ui.home.OnAirHomeViewModel
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.picture.OnAirPicturesScreen
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.search.OnAirSearchScreen
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.search.OnAirSearchViewModel
+import com.yenaly.han1meviewer.SitesHub.OnAir.ui.github.GithubDownloaderScreen
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.settings.OnAirCookieSettingsScreen
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.settings.OnAirSettingsScreen
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.tag.OnAirTagScreen
@@ -327,6 +328,10 @@ fun OnAirNavHost(
                     navigator.navigateSafely(OnAirUserRoute(username))
                 },
             )
+        }
+
+        screen<OnAirGithubDownloaderRoute> {
+            GithubDownloaderScreen(onBack = { navigator.goBack() })
         }
 
         screen<OnAirCookieRoute> {

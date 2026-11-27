@@ -52,8 +52,6 @@ object AppTranslation {
 
     private data class Pending(val site: SiteType, val kind: Kind, val source: String)
 
-    // Legacy (pre per-site) preference keys. They are only read as defaults so that
-    // people who already configured translation keep their choices on every site.
     private const val LEGACY_ENABLED = "rouvideo_tr_enabled"
     private const val LEGACY_TAGS = "rouvideo_tr_tags"
     private const val LEGACY_TITLES = "rouvideo_tr_titles"
@@ -73,18 +71,15 @@ object AppTranslation {
 
     private val sp get() = Preferences.preferenceSp
 
-    /** Sites that have translation, in the order they are shown in settings. */
     val SUPPORTED_SITES: List<SiteType> =
         listOf(SiteType.HANIME, SiteType.JAVCHU, SiteType.ROUVIDEO, SiteType.WUMAOBI)
 
-    /** The kinds of text that a site actually shows, so settings only list what can work. */
     fun kindsFor(site: SiteType): List<Kind> = when (site) {
         SiteType.ROUVIDEO -> listOf(Kind.TAG, Kind.TITLE, Kind.DESC, Kind.COMMENT)
         SiteType.WUMAOBI -> listOf(Kind.TAG, Kind.TITLE)
         else -> listOf(Kind.TITLE, Kind.DESC, Kind.COMMENT)
     }
 
-    /** Settings of one site. Each site has its own switches. */
     class SiteConfig internal constructor(val site: SiteType) {
         private fun k(name: String) = "tr_${site.name.lowercase()}_$name"
 
@@ -203,10 +198,8 @@ object AppTranslation {
     private fun siteEntries(site: SiteType): LinkedHashMap<String, Entry> =
         entries.getOrPut(site) { LinkedHashMap() }
 
-    /** Key inside one site's entry map. */
     private fun key(kind: Kind, source: String) = kind.key + "\u0001" + source
 
-    /** Key for the global queues (pending / failed / tried): includes the site. */
     private fun gkey(site: SiteType, kind: Kind, source: String) =
         site.name + "\u0002" + key(kind, source)
 
@@ -286,10 +279,6 @@ object AppTranslation {
         changed()
     }
 
-    /**
-     * Replaces the translated text of a cached entry with what the user typed. The entry is
-     * flagged as edited; it is kept until deleted or cleared and is never re-translated.
-     */
     fun edit(entry: Entry, newText: String) {
         val text = newText.trim()
         if (text.isEmpty()) return
@@ -608,7 +597,7 @@ object AppTranslation {
                 val f = fileOf(site)
                 if (arr.length() == 0) f.delete() else f.writeText(arr.toString(), Charsets.UTF_8)
             }
-            // The old shared cache has been split into per-site files by now.
+
             File(applicationContext.filesDir, LEGACY_FILE).delete()
         }
         version.intValue++
@@ -619,8 +608,7 @@ object AppTranslation {
         if (loaded) return
         loaded = true
         runCatching {
-            // Entries cached before translation became per-site all belong to RouVideo,
-            // the site this feature was written for.
+
             val legacy = File(applicationContext.filesDir, LEGACY_FILE)
             SUPPORTED_SITES.forEach { site ->
                 val f = fileOf(site)

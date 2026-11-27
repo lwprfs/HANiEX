@@ -3314,4 +3314,8 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="leakgallery_validate_username">Username must be at least 4 characters.</string>
     <string name="leakgallery_verify">Verify</string>
     <string name="leakgallery_watch_shorts">Watch as shorts</string>
+    <string name="onair_added_to_github_queue">Added to links_haniex.txt (GitHub downloader)</string>
+    <string name="onair_already_in_github_queue">Already queued or downloaded</string>
+    <string name="onair_github_downloader_title">GitHub downloader</string>
+    <string name="onair_github_downloader_subtitle">Developer only · download through a GitHub workflow</string>
 </resources>

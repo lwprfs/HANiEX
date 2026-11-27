@@ -55,6 +55,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -113,7 +114,9 @@ fun OnAirCookieSettingsScreen(
     val clipboardScope = rememberCoroutineScope()
     val scope = rememberCoroutineScope()
 
+    val liveCookies by OnAirCookieManager.cookiesFlow.collectAsState()
     var cookieInput by remember { mutableStateOf(OnAirCookieManager.cookiesRaw) }
+    var inputDirty by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
     var showSavedDialog by remember { mutableStateOf(false) }
     var showClearDialog by remember { mutableStateOf(false) }
@@ -125,10 +128,24 @@ fun OnAirCookieSettingsScreen(
     var reloadProgress by remember { mutableFloatStateOf(0f) }
     var showProgressBar by remember { mutableStateOf(false) }
 
-    val hasCookies = OnAirCookieManager.hasCookies
+    val hasCookies = liveCookies.isNotBlank()
     var profile by remember { mutableStateOf<OnAirUserProfile?>(OnAirProfileCache.current()) }
     var profileLoading by remember { mutableIntStateOf(0) }
     val usernameHint = remember(hasCookies) { OnAirAuthRepo.currentUsernameHint() }
+
+    LaunchedEffect(liveCookies) {
+        if (!inputDirty || liveCookies.isBlank()) {
+            cookieInput = liveCookies
+            inputDirty = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            OnAirCookieManager.syncFromJar()
+            delay(1_500L)
+        }
+    }
 
     val detectedFormat = remember(cookieInput) { OnAirCookieManager.detectFormat(cookieInput) }
     val formatLabel = when (detectedFormat) {
@@ -251,7 +268,7 @@ fun OnAirCookieSettingsScreen(
                         TextButton(onClick = {
                             clipboardScope.launch {
                 clipboard.setClipEntry(
-                    ClipEntry(ClipData.newPlainText("", OnAirCookieManager.cookiesRaw))
+                    ClipEntry(ClipData.newPlainText("", liveCookies))
                 )
             }
                             GlobalToasts.show(
@@ -406,7 +423,10 @@ fun OnAirCookieSettingsScreen(
 
             OutlinedTextField(
                 value = cookieInput,
-                onValueChange = { cookieInput = it },
+                onValueChange = {
+                    cookieInput = it
+                    inputDirty = it != liveCookies
+                },
                 label = { Text(stringResource(R.string.site_cookies)) },
                 placeholder = { Text(stringResource(R.string.site_paste_cookies_here)) },
                 modifier = Modifier
@@ -431,6 +451,7 @@ fun OnAirCookieSettingsScreen(
                             isSaving = false
                             if (result.valid) {
                                 OnAirCookieManager.saveCookies(cookieInput)
+                                inputDirty = false
                                 showSavedDialog = true
                             } else {
                                 GlobalToasts.show(
@@ -487,6 +508,7 @@ fun OnAirCookieSettingsScreen(
                     OnAirProfileCache.clearAll()
                     profile = null
                     cookieInput = ""
+                    inputDirty = false
                     GlobalToasts.show(applicationContext.getString(R.string.cookies_cleared_toast), level = GlobalToasts.ToastLevel.INFO)
                 }) { Text(stringResource(R.string.site_clear), color = MaterialTheme.colorScheme.error) }
             },

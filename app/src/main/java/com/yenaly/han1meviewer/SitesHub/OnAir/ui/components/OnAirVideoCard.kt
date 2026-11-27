@@ -26,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirUrlUtils
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.model.OnAirVideoCard
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.OnAir.github.GithubDownloaderStore
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
 import com.yenaly.han1meviewer.ui.component.SiteVideoCard
@@ -73,7 +75,26 @@ fun OnAirVideoCardItem(
             level = GlobalToasts.ToastLevel.SUCCESS,
         )
     }
-    val longClickHandler = onLongClick ?: defaultLongClick
+    val downloadTags by rememberOnAirDownloadTags()
+    val queuedText = stringResource(R.string.onair_added_to_github_queue)
+    val alreadyText = stringResource(R.string.onair_already_in_github_queue)
+    val queueLongClick: (OnAirVideoCard) -> Unit = { c ->
+        if (GithubDownloaderStore.repoReady) {
+            val added = GithubDownloaderStore.addVideo(c.videoId)
+            GlobalToasts.show(
+                if (added) queuedText else alreadyText,
+                level = if (added) GlobalToasts.ToastLevel.SUCCESS else GlobalToasts.ToastLevel.INFO,
+            )
+        } else {
+            defaultLongClick(c)
+        }
+    }
+    val longClickHandler = onLongClick ?: queueLongClick
+    val tagText = when (downloadTags[card.videoId]) {
+        OnAirDownloadTags.Tag.DOWNLOADED -> stringResource(R.string.downloaded)
+        OnAirDownloadTags.Tag.DOWNLOADING -> stringResource(R.string.downloading)
+        null -> null
+    }
 
     SiteVideoCard(
         modifier = modifier,
@@ -84,6 +105,7 @@ fun OnAirVideoCardItem(
         subtitle = card.uploaderName,
         onClick = onClick,
         onLongClick = { longClickHandler(card) },
+        bottomStartBadge = tagText,
         isWatched = isWatched,
     )
 }

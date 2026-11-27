@@ -50,7 +50,6 @@ object TranslationSettingsRoute : NavKey
 @Serializable
 data class TranslationSiteRoute(val site: String) : NavKey
 
-/** The translation settings page for [site], or the list of sites if it has none. */
 fun translationRouteFor(site: SiteType): NavKey =
     if (site in AppTranslation.SUPPORTED_SITES) TranslationSiteRoute(site.name)
     else TranslationSettingsRoute

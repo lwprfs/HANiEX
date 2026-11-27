@@ -150,6 +150,7 @@ object DownloadScanner {
     private const val TAG = "DownloadScanner"
     private const val MAX_DEPTH = 8
     private const val MAX_FOLDERS = 20_000
+    private const val MIN_VIDEO_BYTES = 1024L
     private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "webp")
     private val mutex = Mutex()
     private val json = Json { ignoreUnknownKeys = true }
@@ -268,6 +269,11 @@ object DownloadScanner {
                             val (parsedTitle, _) = parseVideoFileName(video.name)
                             val fromInfo = info?.takeIf { f -> allVideos.any { v -> f.videoFile.equals(v.name, true) } }
                             val title = fromInfo?.title ?: info?.title?.takeIf { videos.size == 1 } ?: parsedTitle
+
+                            if (video.length < MIN_VIDEO_BYTES) {
+                                skipped++
+                                continue
+                            }
                             if (!seen.add("$code|$quality")) {
                                 skipped++
                                 continue
@@ -279,7 +285,8 @@ object DownloadScanner {
                             val addDate = info?.addDate ?: video.lastModified.takeIf { it > 0 } ?: System.currentTimeMillis()
                             val existing = dao.find(code, quality)
                             if (existing != null) {
-                                if (existing.state == DownloadState.Queued || existing.state == DownloadState.Downloading) {
+
+                                if (existing.state != DownloadState.Finished) {
                                     skipped++
                                 } else {
 

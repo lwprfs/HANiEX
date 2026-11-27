@@ -71,6 +71,15 @@ object OnAirCookieManager {
         )
     }
 
+    fun syncFromJar() {
+        val snapshot = runCatching { OnAirNetwork.snapshotCookies() }.getOrNull() ?: return
+        val count = runCatching { JSONArray(snapshot).length() }.getOrDefault(0)
+        if (count == 0 || snapshot == _cookiesFlow.value) return
+        val current = parseToCookies(_cookiesFlow.value, OnAirNetwork.baseUrl).size
+        if (count < current && _cookiesFlow.value.isNotBlank()) return
+        persistOnly(snapshot)
+    }
+
     fun persistOnly(raw: String) {
         Preferences.preferenceSp.edit(commit = true) {
             putString(PREF_ONAIR_COOKIES, raw)

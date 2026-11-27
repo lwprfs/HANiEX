@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -83,6 +84,13 @@ fun onAirHubConfig(navigator: Navigator, activity: MainActivity): SiteHubConfig 
                 subtitle = stringResource(R.string.onair_cookies_subtitle),
                 icon = Icons.Filled.Lock,
                 onClick = { navigator.navigateSafely(OnAirCookieRoute) },
+            ),
+            SiteHubEntry(
+                key = "github_downloader",
+                title = stringResource(R.string.onair_github_downloader_title),
+                subtitle = stringResource(R.string.onair_github_downloader_subtitle),
+                icon = Icons.Filled.CloudDownload,
+                onClick = { navigator.navigateSafely(OnAirGithubDownloaderRoute) },
             ),
         ),
         customizeEntries = listOf(rememberPlayerSettingsEntry(navigator, SiteType.ONAIR),

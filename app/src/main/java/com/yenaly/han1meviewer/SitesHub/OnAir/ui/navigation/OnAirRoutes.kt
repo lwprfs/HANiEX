@@ -66,3 +66,6 @@ object OnAirLoginRoute : NavKey
 
 @Serializable
 object OnAirRegisterRoute : NavKey
+
+@Serializable
+object OnAirGithubDownloaderRoute : NavKey

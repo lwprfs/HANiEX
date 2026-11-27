@@ -1574,4 +1574,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="leakgallery_validate_username">ユーザー名は4文字以上にしてください。</string>
     <string name="leakgallery_verify">確認</string>
     <string name="leakgallery_watch_shorts">ショートで見る</string>
+    <string name="onair_added_to_github_queue">links_haniex.txt に追加しました（GitHubダウンローダー）</string>
+    <string name="onair_already_in_github_queue">キュー済みまたはダウンロード済み</string>
+    <string name="onair_github_downloader_title">GitHubダウンローダー</string>
+    <string name="onair_github_downloader_subtitle">開発者専用 · GitHubワークフローでダウンロード</string>
 </resources>

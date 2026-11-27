@@ -1574,4 +1574,8 @@
     <string name="leakgallery_validate_username">用户名至少 4 个字符。</string>
     <string name="leakgallery_verify">验证</string>
     <string name="leakgallery_watch_shorts">以短片观看</string>
+    <string name="onair_added_to_github_queue">已加入 links_haniex.txt（GitHub 下载器）</string>
+    <string name="onair_already_in_github_queue">已在 GitHub 下载列表或已下载</string>
+    <string name="onair_github_downloader_title">GitHub 下载器</string>
+    <string name="onair_github_downloader_subtitle">仅限开发者 · 通过 GitHub 工作流下载</string>
 </resources>

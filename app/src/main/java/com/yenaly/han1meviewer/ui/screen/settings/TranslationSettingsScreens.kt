@@ -74,7 +74,6 @@ private fun PausedNotice() {
     }
 }
 
-/** Lists every site that has translation; each one opens its own settings. */
 @Composable
 fun TranslationSettingsScreen(
     onBack: () -> Unit,
@@ -136,7 +135,6 @@ private fun kindDescRes(kind: Kind): Int = when (kind) {
     Kind.COMMENT -> R.string.rouvideo_tr_comments_desc
 }
 
-/** Translation settings, cache and history of a single site. */
 @Composable
 fun TranslationSiteSettingsScreen(
     site: SiteType,
@@ -243,7 +241,6 @@ fun TranslationSiteSettingsScreen(
     }
 }
 
-/** The translated items of one site. Tap an item to edit its translation. */
 @Composable
 fun TranslationCacheScreen(site: SiteType, onBack: () -> Unit) {
     var filterName by rememberSaveable { mutableStateOf("") }
