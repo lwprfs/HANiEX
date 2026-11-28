@@ -2,9 +2,9 @@
 
 # HANiEX
 
-Hanime1 · Javchu · MissAV · HentaiMama · OnAir · FapFolder · SupJav · RouVideo · XHamster · Buondua
+Hanime1 · Javchu · MissAV · HentaiMama · OnAir · Strawberry · FapFolder · SupJav · RouVideo · XHamster · XXXTube · FullVideos · FuckingSession · Wumaobi · RedGifs · Coomer · LeakGallery · Buondua · Cosplaytele · Coser
 
-[Tor VPN](https://play.google.com/store/apps/details?id=org.torproject.android) is required for the OnAir site (see "Supported Sites").
+[Tor VPN](https://play.google.com/store/apps/details?id=org.torproject.android) is required for the OnAir and Strawberry sites (see "Supported Sites").
 
 <table>
   <tr>
@@ -32,7 +32,7 @@ This app does not accept any form of public promotion. If public promotion, re-p
 
 🔞 R18 warning: downloading and using this app is prohibited for anyone under 18.
 
-HANiEX (Han1meViewer Extended) is an extended fork of Han1meViewer. The app is named **HANiEX** and its application ID (applicationId) is `com.yenaly.hani.extended`. It is an Android client written in Kotlin for browsing, searching, playing and managing publicly available video and image pages. Besides the original Hanime1 support it now bundles **ten site modules** (see "Supported Sites") behind one app shell: a site switcher, per-site home/search/video/history screens, per-site mirror and network settings, cross-site link opening, unified history and local playlists. The project is built mainly on Jetpack Compose, Navigation Compose, ViewModel, StateFlow, Retrofit, Jsoup, Room, WorkManager and Media3 ExoPlayer / libmpv (both used through a Compose player).
+HANiEX (Han1meViewer Extended) is an extended fork of Han1meViewer. The app is named **HANiEX** and its application ID (applicationId) is `com.yenaly.hani.extended`. It is an Android client written in Kotlin for browsing, searching, playing and managing publicly available video and image pages. Besides the original Hanime1 support it now bundles **nineteen site modules** (twenty `SiteType` entries; Javchu shares the Hanime1 module) (see "Supported Sites") behind one app shell: a site switcher, per-site home/search/video/history screens, per-site mirror and network settings, cross-site link opening, unified history and local playlists. The project is built mainly on Jetpack Compose, Navigation Compose, ViewModel, StateFlow, Retrofit, Jsoup, Room, WorkManager and Media3 ExoPlayer / libmpv (both used through a Compose player).
 
 This app has no official website. The GitHub Releases and CI build artifacts of this fork, [lwprfs/HANiEX](https://github.com/lwprfs/HANiEX), are the only download and update channels.
 
@@ -98,7 +98,7 @@ Telegram group: [https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
 ## 🌐 Supported Sites
 
-The site is chosen in the site switcher (drawer / site dialog) and the whole UI follows it. Each site is a self-contained package under `app/src/main/java/com/yenaly/han1meviewer/<Site>/` with its own network client, parser, Room database (history), navigation graph and screens. Sites you do not use can be hidden in Settings (site visibility).
+The site is chosen in the site switcher (drawer / site dialog) and the whole UI follows it. Each site is a self-contained package under `app/src/main/java/com/yenaly/han1meviewer/SitesHub/<Site>/` with its own network client, parser, Room database (history), navigation graph and screens. Sites you do not use can be hidden in Settings (site visibility).
 
 | Site | Type | What the module provides |
 | --- | --- | --- |
@@ -107,11 +107,21 @@ The site is chosen in the site switcher (drawer / site dialog) and the whole UI 
 | MissAV (`MISSAV`) | JAV streaming | Home, search, video playback, history, account / login, Cloudflare handling. |
 | HentaiMama (`HENTAIMAMA`) | Anime streaming | Home, recent, upcoming, series, playlists, search, history, video playback. |
 | OnAir (`ONAIR`) | Self-hosted onion video site | Home, search, tags, pictures, video, history, account/auth, chat, announcements, mirror status. **Requires a Tor exit**; the app checks this before switching to it. |
+| Strawberry (`STRAWBERRY`) | Onion video site (OnAir-style) | Same module layout as OnAir: home, search, tags, pictures, video, history, account/auth, chat, announcements. The onion address is configured in Network Settings. **Requires a Tor exit**; the app checks this before switching to it. |
 | FapFolder (`FAPFOLDER`) | Community feed (albums and videos) | Home feed, posts, albums, groups, hashtags, profiles, followed, saved, search, history, login. |
 | SupJav (`SUPJAV`) | JAV streaming | Home, search, video (stream resolver), history, site settings. |
 | RouVideo (`ROUVIDEO`) | Video | Home, categories, library, search, video, history, account / login, site settings. |
 | XHamster (`XHAMSTER`) | Video and galleries | Home, categories, discover, entities, galleries, library, profile / account, search, video, history. |
+| XXXTube (`XXXTUBE`) | Video | Home, entities (models / categories), search, video (direct streams), history, site settings. |
+| FullVideos (`FULLVIDEOS`) | Video | Home, pages tab, search, video (direct MP4 in several qualities), history, site settings. |
+| FuckingSession (`FUCKINGSESSION`) | Video | Home, search, video (direct streams), history, site settings. |
+| Wumaobi (`WUMAOBI`) | JAV / FC2 video | Home, search, video, favorites, account / login, history, site settings. |
+| RedGifs (`REDGIFS`) | GIFs and short clips | Home, browse, creators, feed, search, vertical shorts player, account, site settings. |
+| Coomer (`COOMER`) | Creator photos and videos | Home, creator lists, posts, search, history, site settings. |
+| LeakGallery (`LEAKGALLERY`) | Creator photos, videos and shorts | Home, creator lists, posts, shorts, search, account, history, site settings (uses a token-based JSON API). |
 | Buondua (`BUONDUA`) | Image albums | Home, search, album viewer, history, image downloads. |
+| Cosplaytele (`COSPLAYTELE`) | Cosplay photo sets and videos | Home, browse, lists, posts, search, history, site settings, image downloads. |
+| Coser (`COSER`) | Cosplay videos and photos | Home, lists, posts, search, history, site settings. |
 
 Available features differ by site. The list above comes from the source tree and is not a promise that every function works on every mirror.
 
@@ -120,14 +130,14 @@ Available features differ by site. The list above comes from the source tree and
 🧩 Across all sites:
 
 - 🔀 Site switching: site drawer and switch dialog, per-site visibility, the last used site is remembered, a usage notice dialog on first launch.
-- 🔗 Cross-site opening: a shared link or clipboard link can open a video on another site (`CrossSiteNavigator`, with a reachability / Tor check before switching).
+- 🔗 Cross-site opening: a shared link or clipboard link can open a video on another site (`CrossSiteNavigator`, with a reachability / Tor check before switching; OnAir and Strawberry need a Tor exit).
 - 🪞 Mirrors and network: per-site mirror lists with built-in catalog, mirror latency test, custom mirror host, DNS-over-HTTPS presets, proxy settings, Cloudflare verification, built-in Cloudflare IP list for fronted sites.
 - 🕘 History: per-site history databases plus a unified history screen; search history per site.
 - 📚 Library: local playlists across sites and a content library entry.
 - 💾 Backup and restore: export / import settings, check-in records, key frames, per-site history, downloads and (optionally) per-site cookies, chosen section by section.
 - 🌍 Languages: Simplified Chinese, English and Japanese, switchable in-app; tag / title / description / comment translation cache and Simplified-to-Traditional conversion.
 - ▶️ Playback: Media3 ExoPlayer and libmpv kernels behind one Compose player, Anime4K super-resolution (MPV), picture-in-picture, playback speed and quality selection, gesture controls, resume from history.
-- 📥 Downloads: WorkManager background downloads (including HLS), download groups (auto-created by series name), importing local files, custom download directory (SAF), playback after download, per-site image saving and download-failure classification (Tor / cookies / network / storage / expired).
+- 📥 Downloads: WorkManager background downloads (including HLS), download groups (auto-created by series name), importing local files, custom download directory (SAF), playback after download, a Downloaded tab with folders (by group or by site), search, sorting, a watch filter (all / unwatched / in progress / watched), "Watched" tags and resume time on each card (from the local watch store), a scroll position that survives opening a video and coming back, per-site image saving and download-failure classification (Tor / cookies / network / storage / expired).
 - 🎨 Theme and settings: Material 3, dynamic color, home layout, grid columns, card size, settings split into Appearance / Playback / Network / Download / Keyframes / Privacy / Data / About.
 - 🕵️ Privacy: app lock (biometric), launcher icon disguise (calculator / Cornhub / "Xxt" aliases), manual cookie management.
 - 🔄 In-app updates: Release / CI channels, delta (patch) updates with automatic fallback to the full APK, install with the system installer or Shizuku. See "App Updates" and "Install Methods".
@@ -259,8 +269,8 @@ After the update package is downloaded, it is installed with the "Install method
 
 🗂️ The app package (`com.yenaly.han1meviewer`) is organized as follows:
 
-- Site modules, one package per site: `MissAV`, `HentaiMama`, `OnAir`, `FapFolder`, `SupJav`, `RouVideo`, `XHamster`, `Buondua`. Each follows the same layout: `common` (constants, URL utils, settings, image loader), `cloudflare`, `data/{remote,parser,model,local,repository}` (Retrofit service, cookie jar, parser, Room history database) and `ui/{home,search,video,history,navigation,...}`.
-- Hanime1 and Javchu live in the shared packages: `logic` (network, parsers, models, DAO, state), `ui` and `worker`.
+- Site modules, one package per site under `SitesHub/`: `MissAV`, `HentaiMama`, `OnAir`, `Strawberry`, `FapFolder`, `SupJav`, `RouVideo`, `XHamster`, `XXXTube`, `FullVideos`, `FuckingSession`, `Wumaobi`, `RedGifs`, `Coomer`, `LeakGallery`, `Buondua`, `Cosplaytele`, `Coser`. Each follows the same layout: `common` (constants, URL utils, settings, image loader), `cloudflare`, `data/{remote,parser,model,local,repository}` (Retrofit service, cookie jar, parser, Room history database) and `ui/{home,search,video,history,navigation,...}`.
+- Hanime1 and Javchu live in `SitesHub/Hanime1` (`logic`: network repo, parsers, models; `ui`: screens and ViewModels) and use the shared `logic` (network, DAO, state), `ui` and `worker` packages.
 - `ui.navigation`: `UnifiedMainNavHost` picks the NavHost of the current `SiteType`; `NavigationManager` (switch site, open video, back stack), `CrossSiteNavigator` (open a video on another site, with reachability / Tor validation), `main/` (Hanime routes), `settings/` (settings routes and categories), `site/` (shared site hub routes).
 - `ui.screen`: Compose screens split by area (`main` for the scaffold and site drawer, `home`, `search`, `video`, `settings`, `account`, `history`, `library`, `login`, `site`, `web`).
 - `ui.component`: reusable components (video cards, dialogs, site chrome, site switch dialog, update dialog, paging and lazy-list wrappers).
@@ -442,7 +452,7 @@ HANiEX/                          Repository root
 │   ├── ISSUE_TEMPLATE/          Bug / feature templates (en, zh-CN, zh-TW)
 │   └── PULL_REQUEST_TEMPLATE/   Bug fix, feature, key-frame submission templates
 ├── app/                         Main Android app (the only Gradle module)
-│   ├── src/main/java/.../<Site>/  Site modules: MissAV, HentaiMama, OnAir, FapFolder, SupJav, RouVideo, XHamster, Buondua
+│   ├── src/main/java/.../SitesHub/<Site>/  Site modules: Hanime1, MissAV, HentaiMama, OnAir, Strawberry, FapFolder, SupJav, RouVideo, XHamster, XXXTube, FullVideos, FuckingSession, Wumaobi, RedGifs, Coomer, LeakGallery, Buondua, Cosplaytele, Coser
 │   ├── src/main/java/.../logic    Network, parsing, models, databases, state, backup, update
 │   ├── src/main/java/.../ui       Activities, Compose screens, navigation, components, player, ViewModels
 │   ├── src/main/java/.../util     Utilities (files, cookies, translation, Bspatch, ...)

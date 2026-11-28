@@ -2,9 +2,9 @@
 
 # HANiEX
 
-Hanime1 · Javchu · MissAV · HentaiMama · OnAir · FapFolder · SupJav · RouVideo · XHamster · Buondua
+Hanime1 · Javchu · MissAV · HentaiMama · OnAir · Strawberry · FapFolder · SupJav · RouVideo · XHamster · XXXTube · FullVideos · FuckingSession · Wumaobi · RedGifs · Coomer · LeakGallery · Buondua · Cosplaytele · Coser
 
-OnAir 站点需要 [Tor VPN](https://play.google.com/store/apps/details?id=org.torproject.android)（见「支持的站点」）。
+OnAir 和 Strawberry 站点需要 [Tor VPN](https://play.google.com/store/apps/details?id=org.torproject.android)（见「支持的站点」）。
 
 <table>
   <tr>
@@ -34,7 +34,7 @@ OnAir 站点需要 [Tor VPN](https://play.google.com/store/apps/details?id=org.t
 
 🔞 **R18 警告：未满 18 岁禁止下载和使用。**
 
-HANiEX（Han1meViewer Extended）是基于 Han1meViewer 的扩展分支，应用名称为 **HANiEX**，应用包名（applicationId）为 `com.yenaly.hani.extended`。它是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理公开的视频与图集页面内容。除原有的 Hanime1 外，现在内置 **十个站点模块**（见「支持的站点」），共用同一个应用外壳：站点切换器、各站点独立的首页/搜索/视频/历史页面、按站点配置的镜像与网络设置、跨站点链接打开、统一历史记录和本地播放列表。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3 ExoPlayer / libmpv（通过 Compose 播放器统一使用）为主要技术栈。
+HANiEX（Han1meViewer Extended）是基于 Han1meViewer 的扩展分支，应用名称为 **HANiEX**，应用包名（applicationId）为 `com.yenaly.hani.extended`。它是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理公开的视频与图集页面内容。除原有的 Hanime1 外，现在内置 **十九个站点模块**（共 20 个 `SiteType`，Javchu 与 Hanime1 共用模块）（见「支持的站点」），共用同一个应用外壳：站点切换器、各站点独立的首页/搜索/视频/历史页面、按站点配置的镜像与网络设置、跨站点链接打开、统一历史记录和本地播放列表。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3 ExoPlayer / libmpv（通过 Compose 播放器统一使用）为主要技术栈。
 
 本应用没有任何官方网站。本分支仓库 [lwprfs/HANiEX](https://github.com/lwprfs/HANiEX) 的 GitHub Release 与 CI 构建产物是唯一下载及更新渠道。
 
@@ -96,7 +96,7 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
 ## 🌐 支持的站点
 
-站点在站点切换器（侧栏 / 切换对话框）中选择，整个界面随之切换。每个站点是 `app/src/main/java/com/yenaly/han1meviewer/<站点>/` 下独立的包，拥有自己的网络客户端、解析器、Room 数据库（历史记录）、导航图和页面。不使用的站点可在设置中隐藏（站点可见性）。
+站点在站点切换器（侧栏 / 切换对话框）中选择，整个界面随之切换。每个站点是 `app/src/main/java/com/yenaly/han1meviewer/SitesHub/<站点>/` 下独立的包，拥有自己的网络客户端、解析器、Room 数据库（历史记录）、导航图和页面。不使用的站点可在设置中隐藏（站点可见性）。
 
 | 站点 | 类型 | 模块提供的内容 |
 | --- | --- | --- |
@@ -105,11 +105,21 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 | MissAV（`MISSAV`） | JAV 流媒体 | 首页、搜索、视频播放、历史、账号 / 登录、Cloudflare 处理。 |
 | HentaiMama（`HENTAIMAMA`） | 动画流媒体 | 首页、最新、即将上线、系列、播放列表、搜索、历史、视频播放。 |
 | OnAir（`ONAIR`） | 自建 onion 视频站 | 首页、搜索、标签、图片、视频、历史、账号认证、聊天、公告、镜像状态。**需要 Tor 出口**，切换前应用会先检测。 |
+| Strawberry（`STRAWBERRY`） | onion 视频站（OnAir 风格） | 与 OnAir 相同的模块结构：首页、搜索、标签、图片、视频、历史、账号认证、聊天、公告。onion 地址在网络设置中配置。**需要 Tor 出口**，切换前应用会先检测。 |
 | FapFolder（`FAPFOLDER`） | 社区信息流（图集与视频） | 首页信息流、帖子、图集、小组、话题标签、个人主页、关注、收藏、搜索、历史、登录。 |
 | SupJav（`SUPJAV`） | JAV 流媒体 | 首页、搜索、视频（含播放源解析）、历史、站点设置。 |
 | RouVideo（`ROUVIDEO`） | 视频 | 首页、分类、资料库、搜索、视频、历史、账号 / 登录、站点设置。 |
 | XHamster（`XHAMSTER`） | 视频与图库 | 首页、分类、发现、实体页、图库、资料库、个人主页 / 账号、搜索、视频、历史。 |
+| XXXTube（`XXXTUBE`） | 视频 | 首页、实体页（模特 / 分类）、搜索、视频（直链播放）、历史、站点设置。 |
+| FullVideos（`FULLVIDEOS`） | 视频 | 首页、分页标签页、搜索、视频（多画质直链 MP4）、历史、站点设置。 |
+| FuckingSession（`FUCKINGSESSION`） | 视频 | 首页、搜索、视频（直链播放）、历史、站点设置。 |
+| Wumaobi（`WUMAOBI`） | JAV / FC2 视频 | 首页、搜索、视频、收藏、账号 / 登录、历史、站点设置。 |
+| RedGifs（`REDGIFS`） | GIF 与短视频 | 首页、浏览、创作者、信息流、搜索、竖屏短视频播放器、账号、站点设置。 |
+| Coomer（`COOMER`） | 创作者图片与视频 | 首页、创作者列表、帖子、搜索、历史、站点设置。 |
+| LeakGallery（`LEAKGALLERY`） | 创作者图片、视频与短视频 | 首页、创作者列表、帖子、短视频、搜索、账号、历史、站点设置（使用带 token 的 JSON API）。 |
 | Buondua（`BUONDUA`） | 图集 | 首页、搜索、图集查看、历史、图片下载。 |
+| Cosplaytele（`COSPLAYTELE`） | Cosplay 图集与视频 | 首页、浏览、列表、帖子、搜索、历史、站点设置、图片下载。 |
+| Coser（`COSER`） | Cosplay 视频与图片 | 首页、列表、帖子、搜索、历史、站点设置。 |
 
 各站点可用功能并不相同。上表依据源码目录整理，不代表每个功能在每个镜像上都可用。
 
@@ -118,14 +128,14 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 🧩 所有站点通用：
 
 - 🔀 站点切换：站点侧栏与切换对话框、按站点显示 / 隐藏、记住上次使用的站点、首次启动的使用须知对话框。
-- 🔗 跨站点打开：分享链接或剪贴板链接可在另一个站点中打开视频（`CrossSiteNavigator`，切换前会做可达性 / Tor 检查）。
+- 🔗 跨站点打开：分享链接或剪贴板链接可在另一个站点中打开视频（`CrossSiteNavigator`，切换前会做可达性 / Tor 检查；OnAir 和 Strawberry 需要 Tor 出口）。
 - 🪞 镜像与网络：按站点的镜像列表（内置目录）、镜像延迟测试、自定义镜像域名、DNS-over-HTTPS 预设、代理设置、Cloudflare 验证，以及套用 Cloudflare 的站点所用的内置 IP 列表。
 - 🕘 历史记录：各站点独立的历史数据库，外加统一历史页面；各站点独立的搜索历史。
 - 📚 资料库：跨站点的本地播放列表和内容库入口。
 - 💾 备份与恢复：按分区导出 / 导入设置、打卡记录、关键帧、各站点历史、下载记录，以及（可选）各站点 Cookie。
 - 🌍 语言：简体中文、English、日本語，可在应用内切换；支持标签 / 标题 / 简介 / 评论的翻译缓存和简繁转换。
 - ▶️ 播放：Media3 ExoPlayer 与 libmpv 两种内核共用一个 Compose 播放器，支持 Anime4K 超分（MPV）、画中画、倍速和画质选择、手势控制、历史进度恢复。
-- 📥 下载：WorkManager 后台下载（含 HLS）、下载分组（可按系列名自动创建）、导入本地文件、自定义下载目录（SAF）、下载后播放、各站点图片保存，以及下载失败分类（Tor / Cookie / 网络 / 存储 / 过期）。
+- 📥 下载：WorkManager 后台下载（含 HLS）、下载分组（可按系列名自动创建）、导入本地文件、自定义下载目录（SAF）、下载后播放、「已下载」页（按分组或按站点分文件夹、搜索、排序、观看过滤：全部 / 未观看 / 观看中 / 已观看、卡片上的「已观看」标签与续播时间、进入视频页返回后保持滚动位置）、各站点图片保存，以及下载失败分类（Tor / Cookie / 网络 / 存储 / 过期）。
 - 🎨 主题与设置：Material 3、动态颜色、首页布局、网格列数、卡片尺寸，设置分为外观 / 播放 / 网络 / 下载 / 关键帧 / 隐私 / 数据 / 关于。
 - 🕵️ 隐私保护：应用锁（生物识别）、启动器图标伪装（计算器 / Cornhub / “Xxt” 别名）、手动 Cookie 管理。
 - 🔄 应用内更新：Release / CI 两个渠道，支持增量（差分）更新并在失败时自动回退到完整 APK，可用系统安装器或 Shizuku 安装。详见「应用更新」「安装方式」。
@@ -257,8 +267,8 @@ Telegram 群组：[https://t.me/Han1meViewer](https://t.me/Han1meViewer)
 
 🗂️ 应用包（`com.yenaly.han1meviewer`）的组织方式：
 
-- 站点模块，每个站点一个包：`MissAV`、`HentaiMama`、`OnAir`、`FapFolder`、`SupJav`、`RouVideo`、`XHamster`、`Buondua`。内部结构基本一致：`common`（常量、URL 工具、设置、图片加载器）、`cloudflare`、`data/{remote,parser,model,local,repository}`（Retrofit Service、CookieJar、解析器、Room 历史数据库）和 `ui/{home,search,video,history,navigation,...}`。
-- Hanime1 与 Javchu 使用共享包：`logic`（网络、解析、模型、DAO、状态）、`ui` 和 `worker`。
+- 站点模块，位于 `SitesHub/` 下，每个站点一个包：`MissAV`、`HentaiMama`、`OnAir`、`Strawberry`、`FapFolder`、`SupJav`、`RouVideo`、`XHamster`、`XXXTube`、`FullVideos`、`FuckingSession`、`Wumaobi`、`RedGifs`、`Coomer`、`LeakGallery`、`Buondua`、`Cosplaytele`、`Coser`。内部结构基本一致：`common`（常量、URL 工具、设置、图片加载器）、`cloudflare`、`data/{remote,parser,model,local,repository}`（Retrofit Service、CookieJar、解析器、Room 历史数据库）和 `ui/{home,search,video,history,navigation,...}`。
+- Hanime1 与 Javchu 位于 `SitesHub/Hanime1`（`logic`：网络仓库、解析、模型；`ui`：页面与 ViewModel），并使用共享的 `logic`（网络、DAO、状态）、`ui` 和 `worker` 包。
 - `ui.navigation`：`UnifiedMainNavHost` 按当前 `SiteType` 选择对应的 NavHost；`NavigationManager`（切换站点、打开视频、返回栈）、`CrossSiteNavigator`（在其他站点打开视频，含可达性 / Tor 校验）、`main/`（Hanime 路由）、`settings/`（设置路由和分类）、`site/`（站点通用 Hub 路由）。
 - `ui.screen`：按业务划分的 Compose 页面（`main` 为脚手架和站点侧栏，另有 `home`、`search`、`video`、`settings`、`account`、`history`、`library`、`login`、`site`、`web`）。
 - `ui.component`：可复用组件（视频卡片、对话框、站点外壳、站点切换对话框、更新对话框、分页与 Lazy 列表封装）。
@@ -442,7 +452,7 @@ HANiEX/                          仓库根目录
 │   ├── ISSUE_TEMPLATE/          Bug / 功能模板（en、zh-CN、zh-TW）
 │   └── PULL_REQUEST_TEMPLATE/   Bug 修复、功能新增、关键帧提交模板
 ├── app/                         主 Android 应用（唯一的 Gradle 模块）
-│   ├── src/main/java/.../<站点>/  站点模块：MissAV、HentaiMama、OnAir、FapFolder、SupJav、RouVideo、XHamster、Buondua
+│   ├── src/main/java/.../SitesHub/<站点>/  站点模块：Hanime1、MissAV、HentaiMama、OnAir、Strawberry、FapFolder、SupJav、RouVideo、XHamster、XXXTube、FullVideos、FuckingSession、Wumaobi、RedGifs、Coomer、LeakGallery、Buondua、Cosplaytele、Coser
 │   ├── src/main/java/.../logic    网络、解析、模型、数据库、状态、备份、更新
 │   ├── src/main/java/.../ui       Activity、Compose 页面、导航、组件、播放器、ViewModel
 │   ├── src/main/java/.../util     通用工具（文件、Cookie、翻译、Bspatch 等）

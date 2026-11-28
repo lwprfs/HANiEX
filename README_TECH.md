@@ -35,8 +35,8 @@ Gradle 模块：
 应用包 `app/src/main/java/com/yenaly/han1meviewer/` 的关键目录：
 
 ```text
-├── <站点>/                MissAV、HentaiMama、OnAir、FapFolder、SupJav、RouVideo、XHamster、Buondua（结构见第 3 章）
-├── logic/                 数据、网络、解析、数据库、状态（Hanime1 / Javchu 与跨站点能力）
+├── SitesHub/<站点>/       全部站点模块：Hanime1（logic / ui）、MissAV、HentaiMama、OnAir、Strawberry、FapFolder、SupJav、RouVideo、XHamster、XXXTube、FullVideos、FuckingSession、Wumaobi、RedGifs、Coomer、LeakGallery、Buondua、Cosplaytele、Coser（结构见第 3 章）
+├── logic/                 跨站点的网络、数据库、状态、备份等基础能力（Hanime 的 NetworkRepo / Parser 位于 SitesHub/Hanime1/logic）
 │   ├── network/           Retrofit Service、OkHttp、DNS/DoH、Cookie、代理、站点网络配置、更新（HUpdater / HDeltaUpdater）
 │   ├── update/            UpdateManager（更新状态机）
 │   ├── model/             业务模型和解析后的页面模型（含 github/ 更新相关模型）
@@ -45,9 +45,8 @@ Gradle 模块：
 │   ├── state/             WebsiteState、PageLoadingState、VideoLoadingState、PageState、DownloadState
 │   ├── exception/         业务异常
 │   ├── local/             LocalPlaylistStore（跨站点本地播放列表）
-│   ├── NetworkRepo.kt     Hanime 网络仓库入口
 │   ├── DatabaseRepo.kt    本地仓库入口
-│   ├── Parser.kt          Hanime HTML/JSON 解析入口
+│   ├── (SitesHub/Hanime1/logic/NetworkRepo.kt、Parser.kt：Hanime 网络仓库与 HTML/JSON 解析入口)
 │   ├── BackupManager.kt   备份 / 恢复
 │   └── SiteCheckIn.kt     按站点的打卡记录
 ├── ui/
@@ -72,15 +71,15 @@ Gradle 模块：
 
 ### 3.1 站点类型与入口
 
-`Preferences.kt` 中的 `SiteType` 枚举列出全部站点：`HANIME`、`MISSAV`、`HENTAIMAMA`、`JAVCHU`、`ONAIR`、`FAPFOLDER`、`SUPJAV`、`ROUVIDEO`、`XHAMSTER`、`BUONDUA`。当前站点保存在偏好 `site_type`（`Preferences.siteType`），默认 `HANIME`；可通过 `Preferences.disabledSites` / `setSiteEnabled` 隐藏站点（当前所在站点不能被隐藏）。
+`Preferences.kt` 中的 `SiteType` 枚举列出全部站点（共 20 个）：`HANIME`、`MISSAV`、`HENTAIMAMA`、`JAVCHU`、`ONAIR`、`FAPFOLDER`、`SUPJAV`、`ROUVIDEO`、`XHAMSTER`、`BUONDUA`、`COSPLAYTELE`、`COSER`、`FULLVIDEOS`、`FUCKINGSESSION`、`REDGIFS`、`WUMAOBI`、`XXXTUBE`、`COOMER`、`LEAKGALLERY`、`STRAWBERRY`。新增值只能追加在末尾（枚举按名称保存）。当前站点保存在偏好 `site_type`（`Preferences.siteType`），默认 `HANIME`；可通过 `Preferences.disabledSites` / `setSiteEnabled` 隐藏站点（当前所在站点不能被隐藏）。
 
-- `HANIME` 与 `JAVCHU` 属于同一「站点家族」（`CrossSiteNavigator.isSameSiteFamily`），共用 `logic` / `ui` 下的 Hanime 实现，仅基础域名不同。
-- 其余站点各自拥有独立的包。
+- `HANIME` 与 `JAVCHU` 属于同一「站点家族」（`CrossSiteNavigator.isSameSiteFamily`），共用 `SitesHub/Hanime1` 下的 Hanime 实现，仅基础域名不同。
+- 其余站点各自拥有独立的包，全部位于 `app/src/main/java/com/yenaly/han1meviewer/SitesHub/<Site>/`。
 - 站点切换入口：`ui/component/SiteSwitchDialog.kt`（`DefaultSiteSwitchOptions` 列出名称、描述、Logo 和主题色）和 `ui/screen/main/SiteDrawer.kt`（站点侧栏条目按站点和登录状态生成）。
 
 ### 3.2 站点包结构
 
-每个站点包大致遵循同一布局（个别站点会缺少部分目录）：
+每个站点包（`SitesHub/<Site>/`）大致遵循同一布局（个别站点会缺少部分目录）：
 
 ```text
 <Site>/
@@ -98,6 +97,12 @@ Gradle 模块：
 
 站点特有部分：
 
+- Strawberry：OnAir 的同构站点（`announcement/auth/chat/gate/github/picture/tag/user` 等页面一致），使用自己的 `StrawberryConstants`、`StrawberryHistoryRepo` 与 Cookie；onion 地址在网络设置中配置，切换前同样走 OnAir 的 Tor 出口检测（`CrossSiteNavigator.validate`）。
+- XXXTube / FullVideos / FuckingSession：无登录的纯视频站，直链或各自的解析器播放，带 Cloudflare 处理；FullVideos 额外有「分页（pages）」底部标签页。
+- Wumaobi：账号 / 登录与收藏（`WumaobiAuth`），多镜像域名。
+- RedGifs：GIF / 短视频，包含信息流、创作者页、竖屏 shorts 播放器、账号。
+- Coomer / LeakGallery：创作者 + 帖子 + 媒体结构；LeakGallery 使用带 `x-app-token` 的 JSON API（token 取自页面内嵌的 `ng-state`，401/403 时刷新一次），并含 shorts。
+- Cosplaytele / Coser / Buondua：图集和图片查看为主，图片下载走 `SiteImageSaver`。
 - OnAir：`OnAirTorChecker` 检测是否通过 Tor 出口，`OnAirAuthRepo` / `OnAirChatRepo` / `OnAirMirrorStatusRepo`，`OnAirEndpointCodec` 解码并校验 onion 端点（主机名必须符合 onion 格式）。
 - FapFolder：登录、`FapFolderSecurePrefs`（EncryptedSharedPreferences，创建失败时回退为普通私有偏好）、`FapFolderSessionGuard.kt`（内含自动登录凭据存储 `FapFolderCredentialStore`，仅在加密存储可用时才保存）、`FapFolderFeedPaging`（信息流分页），页面覆盖帖子、图集、小组、话题、个人主页、关注、收藏。
 - HentaiMama：额外的系列库（`HentaiMamaSeriesEntity`）、播放列表和 `HentaiMamaOptions`（assets 中的 `hentaimama_options/`）。
@@ -108,10 +113,10 @@ Gradle 模块：
 
 ### 3.3 导航
 
-- `ui/navigation/main/UnifiedMainNavHost.kt` 读取 `Preferences.siteType`，用 `key(siteChangeKey)` 包裹，并 `when (siteType)` 选择 `MainNavHost`（Hanime / Javchu）或 `MissAvNavHost`、`HentaiMamaNavHost`、`OnAirNavHost`、`FapFolderNavHost`、`SupJavNavHost`、`RouVideoNavHost`、`XHamsterNavHost`、`BuonduaNavHost`。
+- `ui/navigation/main/UnifiedMainNavHost.kt` 读取 `Preferences.siteType`，用 `key(siteChangeKey)` 包裹，并 `when (siteType)` 选择 `MainNavHost`（Hanime / Javchu）或 `MissAvNavHost`、`HentaiMamaNavHost`、`OnAirNavHost`、`StrawberryNavHost`、`FapFolderNavHost`、`SupJavNavHost`、`RouVideoNavHost`、`XHamsterNavHost`、`BuonduaNavHost`、`CosplayteleNavHost`、`CoserNavHost`、`FullVideosNavHost`、`FuckingSessionNavHost`、`RedGifsNavHost`、`WumaobiNavHost`、`XXXTubeNavHost`、`CoomerNavHost`、`LeakGalleryNavHost`。
 - 每个站点的 NavHost 位于 `<Site>/ui/navigation/`，通常配有 `<Site>HubConfig.kt`。
 - `NavigationManager`（单例）持有当前 `NavController` 和站点类型：`initialize`、`navigateToVideo`、`navigateToSearch`、`navigateToHome`、`navigateBack`、`clearBackStack`、`switchSite(newSite, thenOpen)`。切换站点后会等待导航图就绪（`isNavigationReady` / `isAtHome` 轮询）再执行待打开的视频。
-- `CrossSiteNavigator` 负责「在另一个站点打开视频」：`PendingVideoOpen`（站点、videoCode、路径、续播位置、标题、是否自动播放）、`needsSwitch`、`validate(site)`（OnAir 检查 Tor 出口，其他站点检查可达性）、`siteLabel`。
+- `CrossSiteNavigator` 负责「在另一个站点打开视频」：`PendingVideoOpen`（站点、videoCode、路径、续播位置、标题、是否自动播放）、`needsSwitch`、`validate(site)`（OnAir / Strawberry 检查 Tor 出口，其他站点检查可达性）、`siteLabel`。
 - `ui/component/CrossSiteOpenDialog.kt`、`CrossSiteSearch.kt` 和 `util/ClipboardVideoLinkGuard.kt` 配合剪贴板链接识别与跨站搜索。
 
 ### 3.4 站点 Hub 页
@@ -145,14 +150,15 @@ Gradle 模块：
 
 新增一个站点时通常需要：
 
-1. 在 `SiteType`（`Preferences.kt`）中加入枚举值，并补齐所有 `when (siteType)` 分支（编译器会提示）。
-2. 创建 `<Site>/` 包，按 3.2 的布局建立 `common`、`data/remote`、`data/parser`、`data/local`、`ui`。
+1. 在 `SiteType`（`Preferences.kt`）末尾加入枚举值，并补齐所有 `when (siteType)` 分支（编译器会提示）。
+2. 创建 `SitesHub/<Site>/` 包，按 3.2 的布局建立 `common`、`data/remote`、`data/parser`、`data/local`、`ui`。
 3. 在 `SiteNetworks.profiles` 中加入 `SiteNetworkProfile`，需要镜像目录时在 `SiteMirrorCatalog` 中加入 `HubSite`。
 4. 实现 NavHost 与 `HubConfig`，并在 `UnifiedMainNavHost` 的 `when` 中接入。
 5. 在 `SiteSwitchDialog.kt` 的 `DefaultSiteSwitchOptions` 加入条目（名称、描述、Logo、主题色），并在 `CrossSiteNavigator.siteLabel`、`SiteDrawer.siteDrawerSections`、`NavigationManager` 的各 `when` 中补充。
 6. 需要历史记录时建立 Room 数据库，并接入 `UnifiedHistoryScreen`、`SiteCheckIn`、`BackupManager`。
 7. 需要 Cloudflare 时复用 `util/cloudflare` 下的基类和拦截器。
-8. 补全三套语言的字符串资源（`values`、`values-en`、`values-ja`、`values-zh-rCN`）。
+更完整、带逐文件清单的流程见仓库根目录的 `add.md`。
+8. 补全四套语言的字符串资源（`values`、`values-en`、`values-ja`、`values-zh-rCN`）。
 
 ## 4. 分层职责
 
@@ -513,7 +519,9 @@ exitFullscreen  → movable Surface 移回头部小窗 → 恢复系统栏/亮�
 
 - `ui/screen/home/DownloadScreen.kt`
 - `ui/screen/home/download/DownloadingScreen.kt`
-- `ui/screen/home/download/DownloadedScreen.kt`
+- `ui/screen/home/download/DownloadedScreen.kt`（已下载页：文件夹网格与视频网格）
+- `ui/screen/home/download/DownloadWatchFilter.kt`（观看过滤：全部 / 未观看 / 观看中 / 已观看）
+- `ui/screen/home/download/DownloadSort.kt`、`DownloadFolderCard.kt`、`DownloadedCard.kt`
 - `ui/viewmodel/DownloadViewModel.kt`
 - `worker/HanimeDownloadManagerV2.kt`
 - `worker/HanimeDownloadWorker.kt`
@@ -538,6 +546,14 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager ->
 - 下载目录通过 SAF 相关工具处理，避免直接依赖旧外部存储权限。
 - 下载完成后可走本地播放路径进入视频页。
 - `worker/HanimeDownloadManager.kt` 为旧版管理器，当前入口是 `HanimeDownloadManagerV2`。
+
+已下载页（`DownloadScreen` 的第二个标签页）：
+
+- 文件夹模式：按分组或按站点（`folderBySite`）分文件夹，点开文件夹后显示该文件夹的视频；搜索时跨文件夹显示结果。
+- 排序（`DownloadSort`）、搜索、观看过滤（`DownloadWatchFilter`，依据 `LocalWatchStore.entries` 中的 `completed` / `positionMs`：已观看＝已完成，观看中＝已开始未完成，未观看＝未开始）依次作用于去重后的下载列表。
+- 卡片的「已观看」标签与续播时间来自 `rememberLocalWatchTags`（`ui/component/HistoryTags.kt`）。
+- 滚动位置：视频网格与文件夹网格各自持有 `rememberSaveable` 的 `LazyGridState`；只有排序 / 文件夹 / 搜索 / 过滤真正变化时才回到顶部，因此从视频页返回不会跳回顶部。
+- 播放队列：`DownloadedQueue.setContext(scope, sort)` 记录当前范围（全部 / 分组 / 站点 / 搜索结果），本地播放按此范围连续播放。
 
 性能注意：
 
@@ -575,6 +591,15 @@ Room 主要用于：
 | `RouVideoDatabase` | 1 | `RouVideoHistoryEntity` |
 | `XHamsterDatabase` | 1 | `XHamsterHistoryEntity` |
 | `BuonduaDatabase` | 1 | `BuonduaHistoryEntity` |
+| `StrawberryDatabase` | 1 | `StrawberryHistoryEntity` |
+| `CosplayteleDatabase` | 1 | `CosplayteleHistoryEntity` |
+| `CoserDatabase` | 1 | `CoserHistoryEntity` |
+| `FullVideosDatabase` | 1 | `FullVideosHistoryEntity` |
+| `FuckingSessionDatabase` | 1 | `FuckingSessionHistoryEntity` |
+| `WumaobiDatabase` | 1 | `WumaobiHistoryEntity` |
+| `XXXTubeDatabase` | 1 | `XXXTubeHistoryEntity` |
+| `CoomerDatabase` | 1 | `CoomerHistoryEntity` |
+| `LeakGalleryDatabase` | 1 | `LeakGalleryHistoryEntity` |
 
 所有数据库均为 `exportSchema = false`。部分站点库（例如 SupJav）使用 `fallbackToDestructiveMigration(dropAllTables = true)`，修改其表结构会清空历史，改动前请先确认迁移策略。
 
@@ -703,7 +728,7 @@ inspect(deltas)：计算已安装 APK 的 SHA-256，选出 baseSha256 前缀匹�
 - 登录态和 Cookie 由 `Preferences`、`HCookieJar` 和相关工具共同维护。
 - 手动 Cookie 输入用于绕过无法自动登录或 WebView 登录失败的情况。
 - Cloudflare 页面和拦截器用于处理访问保护导致的请求失败；站点通用的验证逻辑在 `util/cloudflare/`（`BaseCloudflareActivity`、`CloudflareChallengeInterceptor`、`CloudflareCookieStore`、`CloudflareVerificationManager`）。
-- OnAir 需要 Tor 出口，`OnAirTorChecker` 会区分超时、网络不可达和非 Tor 出口三类失败。
+- OnAir / Strawberry 需要 Tor 出口，`OnAirTorChecker` 会区分超时、网络不可达和非 Tor 出口三类失败。
 - FapFolder 的凭据通过 `FapFolderSecurePrefs` 保存：优先使用 EncryptedSharedPreferences；加密存储创建失败时回退为普通私有偏好，此时 `FapFolderCredentialStore.canStore()` 为 false，不会保存自动登录凭据。
 - 账号信息修改、密码修改、头像上传都通过 `HanimeMyListService` 和 `NetworkRepo` 包装。
 
