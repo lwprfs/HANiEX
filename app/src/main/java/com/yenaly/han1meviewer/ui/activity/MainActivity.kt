@@ -95,6 +95,7 @@ import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterNetwork
 import com.yenaly.han1meviewer.HanimeConstants
 import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirSitePreferences
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.Strawberry.common.StrawberrySitePreferences
 import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
@@ -482,6 +483,7 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
             val urlDisplay = when (siteType) {
                 SiteType.JAVCHU -> getString(R.string.site_label_javchu)
                 SiteType.ONAIR -> getString(R.string.site_label_onair, OnAirSitePreferences.currentHostname())
+                SiteType.STRAWBERRY -> getString(R.string.site_label_strawberry, StrawberrySitePreferences.currentHostname())
                 SiteType.FAPFOLDER -> getString(R.string.site_label_fapfolder, Preferences.displayUrl)
                 else -> Preferences.displayUrl
             }

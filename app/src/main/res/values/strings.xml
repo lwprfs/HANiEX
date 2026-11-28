@@ -3715,4 +3715,5 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="dl_filter_unwatched">未觀看</string>
     <string name="dl_filter_in_progress">觀看中</string>
     <string name="dl_filter_watched">已觀看</string>
+    <string name="site_label_strawberry">Strawberry（%1$s）</string>
 </resources>

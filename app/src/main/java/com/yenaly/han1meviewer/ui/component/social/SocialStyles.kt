@@ -56,7 +56,8 @@ object SiteSocialStyle {
 
     fun isSupported(site: SiteType): Boolean = site in supportedSites
 
-    fun hasCommunityList(site: SiteType): Boolean = site != SiteType.ONAIR
+    fun hasCommunityList(site: SiteType): Boolean =
+        site != SiteType.ONAIR && site != SiteType.STRAWBERRY
 
     fun hasCommunityPage(site: SiteType): Boolean =
         site == SiteType.FAPFOLDER || site == SiteType.XHAMSTER

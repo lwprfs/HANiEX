@@ -44,7 +44,7 @@ object StrawberryAuthProbe {
             )
         }
         try {
-            val url = baseUrl.trimEnd('/') + "/settings"
+            val url = baseUrl.trimEnd('/') + "/user/settings.php"
             val request = Request.Builder()
                 .url(url)
                 .header("Accept", "text/html")
@@ -52,7 +52,7 @@ object StrawberryAuthProbe {
             StrawberryNetwork.sharedOkHttpClient.newCall(request).execute().use { resp ->
                 val code = resp.code
                 val body = resp.body.string().orEmpty()
-                Log.d(TAG, "probe /settings: code=$code, htmlLen=${body.length}")
+                Log.d(TAG, "probe /user/settings.php: code=$code, htmlLen=${body.length}")
 
                 when {
                     code == 429 -> StrawberryProbeResult(
@@ -119,7 +119,9 @@ object StrawberryAuthProbe {
                                     body.contains("<title>Login", ignoreCase = true)
                         val hasAuthMarker =
                             body.contains("nav-username", ignoreCase = true) ||
-                                    body.contains("action=\"/logout\"", ignoreCase = true)
+                                    body.contains("action=\"/logout\"", ignoreCase = true) ||
+                                    body.contains("/exit.php", ignoreCase = true) ||
+                                    body.contains("/user/settings.php", ignoreCase = true)
                         if (!hasAuthMarker || (looksLikeLogin && !hasAuthMarker)) {
                             StrawberryCookieManager.clearCookies()
                             StrawberryProbeResult(

@@ -3674,4 +3674,5 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="dl_filter_unwatched">Unwatched</string>
     <string name="dl_filter_in_progress">In progress</string>
     <string name="dl_filter_watched">Watched</string>
+    <string name="site_label_strawberry">Strawberry (%1$s)</string>
 </resources>

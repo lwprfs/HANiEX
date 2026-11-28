@@ -318,7 +318,9 @@ class HanimeDownloadWorker(
 
     private fun siteClient() = SiteDownloadClients.clientFor(videoCode)
 
-    private fun isOnAir() = SiteCheckIn.siteOfDishCode(videoCode) == SiteType.ONAIR
+    private fun isOnAir() = SiteCheckIn.siteOfDishCode(videoCode).let {
+        it == SiteType.ONAIR || it == SiteType.STRAWBERRY
+    }
 
     private fun recordFailure(e: Throwable?, httpCode: Int?, fallbackMessage: String) {
         val onAir = isOnAir()

@@ -50,6 +50,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirTorChecker
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirCookieRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryTorChecker
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryCookieRoute
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.SiteCheckIn
 import com.yenaly.han1meviewer.ui.component.GlobalToasts
@@ -278,7 +280,9 @@ private fun DownloadFailurePanel(item: HanimeDownloadEntity) {
     val failure: DownloadFailure? = remember(item.videoCode, item.state) {
         DownloadFailureStore.get(context, item.videoCode)
     }
-    val isOnAir = SiteCheckIn.siteOfDishCode(item.videoCode) == SiteType.ONAIR
+    val torSite = SiteCheckIn.siteOfDishCode(item.videoCode)
+        ?.takeIf { it == SiteType.ONAIR || it == SiteType.STRAWBERRY }
+    val isOnAir = torSite != null
     var checking by remember { mutableStateOf(false) }
 
     Surface(
@@ -309,11 +313,18 @@ private fun DownloadFailurePanel(item: HanimeDownloadEntity) {
                         onClick = {
                             checking = true
                             scope.launch {
-                                val status = OnAirTorChecker.check()
+                                val (connected, isTorExit, message) =
+                                    if (torSite == SiteType.STRAWBERRY) {
+                                        val s = StrawberryTorChecker.check()
+                                        Triple(s.connected, s.isTorExit, s.message)
+                                    } else {
+                                        val s = OnAirTorChecker.check()
+                                        Triple(s.connected, s.isTorExit, s.message)
+                                    }
                                 checking = false
                                 GlobalToasts.show(
-                                    status.message,
-                                    level = if (status.connected && status.isTorExit)
+                                    message,
+                                    level = if (connected && isTorExit)
                                         GlobalToasts.ToastLevel.SUCCESS
                                     else GlobalToasts.ToastLevel.ERROR,
                                 )
@@ -322,7 +333,11 @@ private fun DownloadFailurePanel(item: HanimeDownloadEntity) {
                     ) { Text(if (checking) stringResource(R.string.site_checking) else stringResource(R.string.check_tor)) }
                     TextButton(onClick = {
                         runCatching {
-                            NavigationManager.navigateOnSite(SiteType.ONAIR, OnAirCookieRoute)
+                            if (torSite == SiteType.STRAWBERRY) {
+                                NavigationManager.navigateOnSite(SiteType.STRAWBERRY, StrawberryCookieRoute)
+                            } else {
+                                NavigationManager.navigateOnSite(SiteType.ONAIR, OnAirCookieRoute)
+                            }
                         }
                     }) { Text(stringResource(R.string.site_cookies)) }
                 }

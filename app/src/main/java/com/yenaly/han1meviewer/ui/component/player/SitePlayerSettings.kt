@@ -391,6 +391,8 @@ object SitePlayerSettings {
             stretchFullscreen = getString(site, ID_STRETCH).toBooleanStrictOrNull() ?: false,
             defaultQuality = if (site == SiteType.ONAIR) {
                 com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirSitePreferences.preferredQuality
+            } else if (site == SiteType.STRAWBERRY) {
+                com.yenaly.han1meviewer.SitesHub.Strawberry.common.StrawberrySitePreferences.preferredQuality
             } else getString(site, ID_DEFAULT_QUALITY).ifBlank { "original" },
             keepScreenOn = bool(site, ID_KEEP_SCREEN_ON),
             gestureSeek = bool(site, ID_GESTURE_SEEK),

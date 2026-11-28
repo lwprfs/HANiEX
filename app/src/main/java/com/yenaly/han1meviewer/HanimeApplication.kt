@@ -24,6 +24,8 @@ import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaHistoryR
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.settings.HentaiMamaCardSettings
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork
 import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.base.AppLocale
 import com.yenaly.han1meviewer.base.BaseApplication
@@ -179,6 +181,14 @@ class HanimeApplication : BaseApplication(), SingletonImageLoader.Factory {
             Log.d(TAG, "OnAirNetwork initialized successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize OnAirNetwork", e)
+        }
+
+        try {
+            StrawberryNetwork.init(applicationContext)
+            StrawberryHistoryRepo.init(applicationContext)
+            Log.d(TAG, "StrawberryNetwork initialized successfully")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to initialize StrawberryNetwork", e)
         }
 
         try {

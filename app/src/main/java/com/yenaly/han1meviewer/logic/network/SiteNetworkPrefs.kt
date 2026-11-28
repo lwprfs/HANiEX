@@ -3,6 +3,8 @@ package com.yenaly.han1meviewer.logic.network
 import androidx.core.content.edit
 import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirConstants
 import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirSitePreferences
+import com.yenaly.han1meviewer.SitesHub.Strawberry.common.StrawberryConstants
+import com.yenaly.han1meviewer.SitesHub.Strawberry.common.StrawberrySitePreferences
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
@@ -29,6 +31,7 @@ object SiteNetworkPrefs {
 
     fun selectedMirrorUrl(site: SiteType): String {
         if (site == SiteType.ONAIR) return OnAirSitePreferences.selectedBaseUrl
+        if (site == SiteType.STRAWBERRY) return StrawberrySitePreferences.selectedBaseUrl
         val profile = SiteNetworks.forSite(site)
         var raw = sp.getString(mirrorKey(site), null)
         if (site == SiteType.HANIME && raw != null &&
@@ -45,6 +48,12 @@ object SiteNetworkPrefs {
             val wanted = url.trim().trimEnd('/')
             val index = OnAirConstants.ONAIR_URL.indexOfFirst { it.trimEnd('/') == wanted }
             if (index >= 0) OnAirSitePreferences.setMirrorIndex(index)
+            return
+        }
+        if (site == SiteType.STRAWBERRY) {
+            val wanted = url.trim().trimEnd('/')
+            val index = StrawberryConstants.STRAWBERRY_URL.indexOfFirst { it.trimEnd('/') == wanted }
+            if (index >= 0) StrawberrySitePreferences.setMirrorIndex(index)
             return
         }
         val normalized = SiteNetworks.forSite(site).normalizeBase(url)
