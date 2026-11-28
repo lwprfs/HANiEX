@@ -3,6 +3,10 @@ package com.yenaly.han1meviewer.ui.screen.settings
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import android.text.format.Formatter
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,6 +56,7 @@ import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.WebsiteState
+import com.yenaly.han1meviewer.logic.update.LocalPatchState
 import com.yenaly.han1meviewer.logic.update.UpdateManager
 import com.yenaly.han1meviewer.logic.update.UpdateMethod
 import com.yenaly.han1meviewer.logic.update.UpdatePhase
@@ -77,6 +82,21 @@ fun UpdateStatusScreen(activity: MainActivity) {
     val latest: Latest? = ui.latest ?: availableFromCheck
 
     var showDiscardConfirm by rememberSaveable { mutableStateOf(false) }
+    val localPatch by UpdateManager.localPatch.collectAsStateWithLifecycle()
+
+    val pickPatch = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) {
+            UpdateManager.applyLocalPatch(
+                activity.applicationContext, uri, displayNameOf(context, uri), latest,
+            )
+        }
+    }
+    val savePatch = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri ->
+        val matched = (UpdateManager.localPatch.value as? LocalPatchState.Mismatch)?.matched
+        if (uri != null && matched != null) UpdateManager.saveMatchedPatch(matched, uri)
+    }
 
     LaunchedEffect(latest?.nodeId) {
         UpdateManager.syncWithDisk(context, latest)
@@ -138,6 +158,16 @@ fun UpdateStatusScreen(activity: MainActivity) {
                 onStopWaiting = { UpdateManager.stopWaiting() },
             )
         }
+        if (ui.phase != UpdatePhase.DOWNLOADING && ui.phase != UpdatePhase.INSTALLING) {
+            item {
+                LocalPatchCard(
+                    state = localPatch,
+                    onPick = { pickPatch.launch(arrayOf("*/*")) },
+                    onDownloadMatched = { name -> savePatch.launch(name) },
+                    onDismiss = { UpdateManager.clearLocalPatch() },
+                )
+            }
+        }
         if (plan != null && latest != null && ui.phase != UpdatePhase.INSTALLING) {
             item { PlanCard(plan = plan, showSmallerHint = ui.phase == UpdatePhase.DOWNLOADING) }
         }
@@ -145,6 +175,133 @@ fun UpdateStatusScreen(activity: MainActivity) {
         item { VersionInfoCard(latest = latest) }
         if (latest != null && latest.changelog.isNotBlank()) {
             item { ChangelogCard(latest = latest) }
+        }
+    }
+}
+
+private fun displayNameOf(context: Context, uri: Uri): String {
+    val fromProvider = runCatching {
+        context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+            ?.use { c -> if (c.moveToFirst()) c.getString(0) else null }
+    }.getOrNull()
+    return fromProvider ?: uri.lastPathSegment?.substringAfterLast('/').orEmpty()
+}
+
+@Composable
+private fun LocalPatchCard(
+    state: LocalPatchState,
+    onPick: () -> Unit,
+    onDownloadMatched: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val busy = state is LocalPatchState.Working || state is LocalPatchState.Downloading
+    SectionCard(
+        title = stringResource(R.string.upd_local_title),
+        iconRes = R.drawable.ic_update_delta,
+    ) {
+        Text(
+            text = stringResource(R.string.upd_local_body),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        when (state) {
+            LocalPatchState.Working -> {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                Text(
+                    text = stringResource(R.string.upd_local_working),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            is LocalPatchState.Downloading -> {
+                LinearProgressIndicator(
+                    progress = { state.progress / 100f },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    text = stringResource(R.string.upd_local_downloading, state.progress),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            is LocalPatchState.Saved -> Text(
+                text = stringResource(R.string.upd_local_saved, state.name),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            is LocalPatchState.Mismatch -> {
+                Text(
+                    text = stringResource(R.string.upd_local_mismatch_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                InfoRow(
+                    label = stringResource(R.string.upd_local_patch_base),
+                    value = state.patchBasePrefix,
+                    mono = true,
+                )
+                InfoRow(
+                    label = stringResource(R.string.upd_plan_installed_build),
+                    value = state.installedPrefix,
+                    mono = true,
+                )
+                if (state.matched != null) {
+                    Text(
+                        text = stringResource(R.string.upd_local_mismatch_download, state.matched.name),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Button(
+                        onClick = {
+                            onDownloadMatched(
+                                state.matched.name.ifBlank { "patch-base-${state.installedPrefix}" }
+                                    .let { if (it.endsWith(".zip", ignoreCase = true)) it else "$it.zip" }
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) { Text(stringResource(R.string.upd_local_download_matched)) }
+                } else {
+                    Text(
+                        text = stringResource(R.string.upd_local_mismatch_none),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            is LocalPatchState.Failed -> {
+                Text(
+                    text = stringResource(R.string.upd_local_failed),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error,
+                )
+                SelectionContainer {
+                    Text(
+                        text = state.detail,
+                        style = MaterialTheme.typography.bodySmall,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 6,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
+            LocalPatchState.NoInstalledApk -> Text(
+                text = stringResource(R.string.upd_local_no_installed),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+
+            LocalPatchState.Idle -> Unit
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onPick, enabled = !busy) {
+                Text(stringResource(R.string.upd_local_select))
+            }
+            if (state !is LocalPatchState.Idle && !busy) {
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.upd_btn_dismiss)) }
+            }
         }
     }
 }

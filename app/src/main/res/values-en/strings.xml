@@ -3675,4 +3675,17 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="dl_filter_in_progress">In progress</string>
     <string name="dl_filter_watched">Watched</string>
     <string name="site_label_strawberry">Strawberry (%1$s)</string>
+    <string name="upd_local_title">Use a local patch</string>
+    <string name="upd_local_body">Pick a patch ZIP (with update.json and update.patch) from local or other storage. It is matched to your installed APK by its JSON or file name and, if it fits, used to build the update.</string>
+    <string name="upd_local_select">Select patch ZIP</string>
+    <string name="upd_local_working">Matching and applying the patch…</string>
+    <string name="upd_local_downloading">Saving patch… %1$d%%</string>
+    <string name="upd_local_saved">Saved %1$s. Now tap “Select patch ZIP” and choose it.</string>
+    <string name="upd_local_mismatch_title">This patch wasn\'t made for your installed version</string>
+    <string name="upd_local_patch_base">Patch base</string>
+    <string name="upd_local_mismatch_download">Download the matching patch (%1$s) with the storage downloader, then select it.</string>
+    <string name="upd_local_download_matched">Download matching patch to storage</string>
+    <string name="upd_local_mismatch_none">No published patch matches your installed build. Check for updates to refresh the list, or use the full APK download.</string>
+    <string name="upd_local_failed">Couldn\'t use this patch</string>
+    <string name="upd_local_no_installed">The installed APK can\'t be read (possibly a split install), so patches can\'t be applied.</string>
 </resources>

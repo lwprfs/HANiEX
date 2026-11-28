@@ -3716,4 +3716,17 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="dl_filter_in_progress">觀看中</string>
     <string name="dl_filter_watched">已觀看</string>
     <string name="site_label_strawberry">Strawberry（%1$s）</string>
+    <string name="upd_local_title">使用本機差分檔</string>
+    <string name="upd_local_body">從本機或其他儲存空間選擇差分 ZIP（內含 update.json 與 update.patch），系統會依 JSON 或檔名比對目前安裝的 APK，相符時直接用它還原更新。</string>
+    <string name="upd_local_select">選擇差分 ZIP</string>
+    <string name="upd_local_working">正在比對並套用差分檔…</string>
+    <string name="upd_local_downloading">正在儲存差分檔… %1$d%%</string>
+    <string name="upd_local_saved">已儲存 %1$s。現在請點「選擇差分 ZIP」並選擇它。</string>
+    <string name="upd_local_mismatch_title">這個差分檔不是為你目前安裝的版本製作的</string>
+    <string name="upd_local_patch_base">差分檔基底</string>
+    <string name="upd_local_mismatch_download">請下載相符的差分檔（%1$s），並用儲存空間下載器存到本機後再選擇。</string>
+    <string name="upd_local_download_matched">下載相符差分檔到儲存空間</string>
+    <string name="upd_local_mismatch_none">目前沒有找到與你安裝版本相符的差分檔。請先檢查更新以取得清單，或改用完整 APK 下載。</string>
+    <string name="upd_local_failed">無法使用這個差分檔</string>
+    <string name="upd_local_no_installed">無法讀取目前安裝的 APK（可能是分割安裝），無法套用差分檔。</string>
 </resources>

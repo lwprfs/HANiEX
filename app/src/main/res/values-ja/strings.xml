@@ -1633,4 +1633,17 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="dl_filter_unwatched">未視聴</string>
     <string name="dl_filter_in_progress">視聴中</string>
     <string name="dl_filter_watched">視聴済み</string>
+    <string name="upd_local_title">ローカルのパッチを使う</string>
+    <string name="upd_local_body">端末内または他のストレージからパッチ ZIP（update.json と update.patch を含む）を選択します。JSON またはファイル名でインストール済み APK と照合し、一致すれば更新の作成に使います。</string>
+    <string name="upd_local_select">パッチ ZIP を選択</string>
+    <string name="upd_local_working">パッチを照合して適用しています…</string>
+    <string name="upd_local_downloading">パッチを保存中… %1$d%%</string>
+    <string name="upd_local_saved">%1$s を保存しました。「パッチ ZIP を選択」からそれを選んでください。</string>
+    <string name="upd_local_mismatch_title">このパッチは、インストール済みのバージョン用ではありません</string>
+    <string name="upd_local_patch_base">パッチの基準</string>
+    <string name="upd_local_mismatch_download">一致するパッチ（%1$s）をストレージダウンローダーで保存してから選択してください。</string>
+    <string name="upd_local_download_matched">一致するパッチをストレージに保存</string>
+    <string name="upd_local_mismatch_none">インストール済みビルドに一致する公開パッチがありません。更新を確認して一覧を更新するか、完全版 APK をダウンロードしてください。</string>
+    <string name="upd_local_failed">このパッチは使用できません</string>
+    <string name="upd_local_no_installed">インストール済み APK を読み取れない（分割インストールの可能性）ため、パッチを適用できません。</string>
 </resources>

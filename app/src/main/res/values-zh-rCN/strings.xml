@@ -1633,4 +1633,17 @@
     <string name="dl_filter_unwatched">未观看</string>
     <string name="dl_filter_in_progress">观看中</string>
     <string name="dl_filter_watched">已观看</string>
+    <string name="upd_local_title">使用本地补丁包</string>
+    <string name="upd_local_body">从本地或其他存储选择补丁 ZIP（含 update.json 与 update.patch），系统会按 JSON 或文件名与当前安装的 APK 匹配，匹配时直接用它还原更新。</string>
+    <string name="upd_local_select">选择补丁 ZIP</string>
+    <string name="upd_local_working">正在匹配并应用补丁…</string>
+    <string name="upd_local_downloading">正在保存补丁… %1$d%%</string>
+    <string name="upd_local_saved">已保存 %1$s。现在点击“选择补丁 ZIP”并选中它。</string>
+    <string name="upd_local_mismatch_title">此补丁不是为你当前安装的版本制作的</string>
+    <string name="upd_local_patch_base">补丁基线</string>
+    <string name="upd_local_mismatch_download">请用存储下载器下载匹配的补丁（%1$s），然后再选择它。</string>
+    <string name="upd_local_download_matched">下载匹配补丁到存储</string>
+    <string name="upd_local_mismatch_none">没有找到与你安装版本匹配的补丁。请先检查更新刷新列表，或改用完整 APK 下载。</string>
+    <string name="upd_local_failed">无法使用此补丁</string>
+    <string name="upd_local_no_installed">无法读取当前安装的 APK（可能是分包安装），无法应用补丁。</string>
 </resources>

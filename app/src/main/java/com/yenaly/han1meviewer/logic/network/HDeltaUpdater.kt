@@ -1,6 +1,7 @@
 package com.yenaly.han1meviewer.logic.network
 
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import com.yenaly.han1meviewer.HJson
@@ -173,6 +174,138 @@ internal object HDeltaUpdater {
         } finally {
             zipFile.delete()
             patchFile.delete()
+        }
+    }
+
+    private val nameBaseRegex = Regex("base-([0-9a-f]{16})", RegexOption.IGNORE_CASE)
+
+    sealed interface LocalResult {
+        data class Applied(val zipSize: Long, val installedPrefix: String) : LocalResult
+        data class Mismatch(val patchBasePrefix: String, val installedPrefix: String) : LocalResult
+        data class Invalid(val detail: String) : LocalResult
+        data object NoInstalledApk : LocalResult
+    }
+
+    /** Installed build prefix (first 16 hex chars of SHA-256), or null for split/unreadable installs. */
+    fun installedPrefixOrNull(): String? = installedApk()?.let { installedSha(it).take(16) }
+
+    /**
+     * Applies a patch ZIP picked from local/other storage. The patch is matched to the installed
+     * APK first by `update.json` (baseSha256), then by the `base-<16 hex>` part of the file name.
+     */
+    suspend fun applyLocal(uri: Uri, displayName: String, target: File): LocalResult =
+        withContext(Dispatchers.IO) {
+            val context = applicationContext
+            val installed = installedApk() ?: return@withContext LocalResult.NoInstalledApk
+            val zipFile = File(context.cacheDir, "update.local.zip")
+            val patchFile = File(context.cacheDir, "update.local.patch")
+            try {
+                val opened = context.contentResolver.openInputStream(uri)
+                    ?: return@withContext LocalResult.Invalid("Cannot open the selected file")
+                zipFile.delete()
+                opened.use { input -> zipFile.outputStream().use { out -> pump(input, out) } }
+                ensureActive()
+
+                val info: DeltaInfo?
+                try {
+                    info = extractLocal(zipFile, patchFile)
+                } catch (e: java.io.IOException) {
+                    return@withContext LocalResult.Invalid(e.message ?: "Not a valid patch ZIP")
+                }
+
+                val sha = installedSha(installed)
+                val jsonBase = info?.baseSha256?.takeIf { it.isNotBlank() }
+                val matches: Boolean
+                val patchPrefix: String
+                if (jsonBase != null) {
+                    matches = jsonBase.equals(sha, ignoreCase = true)
+                    patchPrefix = jsonBase.take(16)
+                } else {
+                    val fromName = nameBaseRegex.find(displayName)?.groupValues?.get(1)
+                        ?: return@withContext LocalResult.Invalid(
+                            "No base build info in update.json or in the file name"
+                        )
+                    matches = sha.startsWith(fromName, ignoreCase = true)
+                    patchPrefix = fromName
+                }
+                if (!matches) {
+                    return@withContext LocalResult.Mismatch(patchPrefix.lowercase(), sha.take(16))
+                }
+                if (info != null && (info.format != FORMAT_BSDIFF40 ||
+                            info.newSha256.length != 64 ||
+                            info.newSize <= 0 || info.newSize > MAX_APK_SIZE)
+                ) {
+                    return@withContext LocalResult.Invalid("Invalid update.json: $info")
+                }
+                ensureActive()
+
+                target.delete()
+                try {
+                    Bspatch.apply(installed, patchFile, target)
+                } catch (e: Exception) {
+                    if (e is CancellationException) throw e
+                    target.delete()
+                    return@withContext LocalResult.Invalid(e.message ?: "Patch failed")
+                }
+                ensureActive()
+
+                if (info != null && (target.length() != info.newSize ||
+                            !target.sha256().equals(info.newSha256, ignoreCase = true))
+                ) {
+                    target.delete()
+                    return@withContext LocalResult.Invalid("Rebuilt APK failed checksum verification")
+                }
+                if (!hasSameSigner(target)) {
+                    target.delete()
+                    return@withContext LocalResult.Invalid("Rebuilt APK is signed differently from the installed app")
+                }
+                LocalResult.Applied(zipFile.length(), sha.take(16))
+            } catch (e: CancellationException) {
+                target.delete()
+                throw e
+            } catch (e: Exception) {
+                Log.w(TAG, "local patch failed: ${e.message}", e)
+                target.delete()
+                LocalResult.Invalid(e.message?.take(160) ?: e::class.java.simpleName)
+            } finally {
+                zipFile.delete()
+                patchFile.delete()
+            }
+        }
+
+    /** Downloads a published patch ZIP straight into a user-chosen document (SAF) location. */
+    suspend fun downloadToUri(
+        url: String,
+        uri: Uri,
+        progress: (suspend (Int, Long, Long) -> Unit)? = null,
+    ) = withContext(Dispatchers.IO) {
+        val body = HanimeNetwork.githubService.request(url).orThrowDownload(url)
+        val out = applicationContext.contentResolver.openOutputStream(uri, "w")
+            ?: throw java.io.IOException("Cannot write to the selected location")
+        out.use { stream ->
+            body.use {
+                it.byteStream().copyTo(stream, it.contentLength(), progress = progress)
+            }
+        }
+    }
+
+    private fun extractLocal(zipFile: File, patchOut: File): DeltaInfo? {
+        ZipFile(zipFile).use { zip ->
+            val entries = zip.entries().asSequence().filterNot { it.isDirectory }.toList()
+            val patchEntry = entries.firstOrNull { it.name.substringAfterLast('/') == PATCH_NAME }
+                ?: throw java.io.IOException("$PATCH_NAME not found in the ZIP")
+            val infoEntry = entries.firstOrNull { it.name.substringAfterLast('/') == INFO_NAME }
+            patchOut.delete()
+            zip.getInputStream(patchEntry).use { input ->
+                patchOut.outputStream().use { out -> pump(input, out) }
+            }
+            return infoEntry?.let { e ->
+                runCatching {
+                    HJson.decodeFromString<DeltaInfo>(
+                        zip.getInputStream(e).use { it.readBytes().toString(Charsets.UTF_8) }
+                    )
+                }.getOrNull()
+            }
         }
     }
 

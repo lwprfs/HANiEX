@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.logic.update
 
 import android.app.NotificationManager
 import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.work.WorkManager
 import com.yenaly.han1meviewer.Preferences
@@ -33,6 +34,21 @@ enum class UpdateStage {
     APPLYING_PATCH,
     VERIFYING,
     DOWNLOADING_FULL,
+}
+
+sealed interface LocalPatchState {
+    data object Idle : LocalPatchState
+    data object Working : LocalPatchState
+    data class Downloading(val progress: Int) : LocalPatchState
+    data class Saved(val name: String) : LocalPatchState
+    data class Mismatch(
+        val patchBasePrefix: String,
+        val installedPrefix: String,
+        val matched: Latest.Delta?,
+    ) : LocalPatchState
+
+    data class Failed(val detail: String) : LocalPatchState
+    data object NoInstalledApk : LocalPatchState
 }
 
 enum class UpdateMethod { UNDECIDED, DELTA, FULL }
@@ -99,6 +115,9 @@ object UpdateManager {
     private val _preview = MutableStateFlow<Pair<String, UpdatePlan>?>(null)
     val preview: StateFlow<Pair<String, UpdatePlan>?> = _preview.asStateFlow()
 
+    private val _localPatch = MutableStateFlow<LocalPatchState>(LocalPatchState.Idle)
+    val localPatch: StateFlow<LocalPatchState> = _localPatch.asStateFlow()
+
     @Volatile
     private var currentRun = 0L
 
@@ -124,6 +143,80 @@ object UpdateManager {
         val runId = System.currentTimeMillis().coerceAtLeast(currentRun + 1)
         currentRun = runId
         HUpdateWorker.enqueue(context.applicationContext, latest, runId)
+    }
+
+    fun clearLocalPatch() {
+        if (_localPatch.value !is LocalPatchState.Working && _localPatch.value !is LocalPatchState.Downloading) {
+            _localPatch.value = LocalPatchState.Idle
+        }
+    }
+
+    /** Applies a patch ZIP picked from storage; on success the rebuilt APK is ready to install. */
+    fun applyLocalPatch(context: Context, uri: Uri, displayName: String, latest: Latest?) {
+        val localBusy = _localPatch.value is LocalPatchState.Working ||
+                _localPatch.value is LocalPatchState.Downloading
+        if (_state.value.isBusy || localBusy) return
+        installWatchdog?.cancel()
+        _localPatch.value = LocalPatchState.Working
+        val appContext = context.applicationContext
+        scope.launch {
+            val target = appContext.updateFile
+            val result = try {
+                com.yenaly.han1meviewer.logic.network.HDeltaUpdater.applyLocal(uri, displayName, target)
+            } catch (e: Exception) {
+                com.yenaly.han1meviewer.logic.network.HDeltaUpdater.LocalResult.Invalid(
+                    e.message ?: e::class.java.simpleName
+                )
+            }
+            _localPatch.value = when (result) {
+                is com.yenaly.han1meviewer.logic.network.HDeltaUpdater.LocalResult.Applied -> {
+                    Preferences.updateNodeId = latest?.nodeId.orEmpty()
+                    _state.value = UpdateUiState(
+                        phase = UpdatePhase.DOWNLOADED,
+                        latest = latest,
+                        apkBytes = target.length(),
+                        plan = UpdatePlan(
+                            method = UpdateMethod.DELTA,
+                            deltaName = displayName,
+                            deltaSize = result.zipSize,
+                            fullName = latest?.apkName.orEmpty(),
+                            fullSize = latest?.apkSize ?: 0L,
+                            installedBuildPrefix = result.installedPrefix,
+                        ),
+                    )
+                    LocalPatchState.Idle
+                }
+
+                is com.yenaly.han1meviewer.logic.network.HDeltaUpdater.LocalResult.Mismatch -> {
+                    val matched = latest?.deltas?.let {
+                        com.yenaly.han1meviewer.logic.network.HDeltaUpdater.inspect(it).delta
+                    }?.takeIf { !it.baseSha256Prefix.isNullOrEmpty() }
+                    LocalPatchState.Mismatch(result.patchBasePrefix, result.installedPrefix, matched)
+                }
+
+                is com.yenaly.han1meviewer.logic.network.HDeltaUpdater.LocalResult.Invalid ->
+                    LocalPatchState.Failed(result.detail)
+
+                com.yenaly.han1meviewer.logic.network.HDeltaUpdater.LocalResult.NoInstalledApk ->
+                    LocalPatchState.NoInstalledApk
+            }
+        }
+    }
+
+    /** Storage downloader: saves the patch that matches the installed build to a chosen location. */
+    fun saveMatchedPatch(delta: Latest.Delta, uri: Uri) {
+        if (_localPatch.value is LocalPatchState.Working || _localPatch.value is LocalPatchState.Downloading) return
+        _localPatch.value = LocalPatchState.Downloading(0)
+        scope.launch {
+            _localPatch.value = try {
+                com.yenaly.han1meviewer.logic.network.HDeltaUpdater.downloadToUri(
+                    delta.downloadLink, uri
+                ) { percent, _, _ -> _localPatch.value = LocalPatchState.Downloading(percent.coerceIn(0, 100)) }
+                LocalPatchState.Saved(delta.name)
+            } catch (e: Exception) {
+                LocalPatchState.Failed(e.message ?: e::class.java.simpleName)
+            }
+        }
     }
 
     fun cancel(context: Context) {
