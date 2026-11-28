@@ -1629,4 +1629,8 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="strawberry_account_subtitle">Manage your Strawberry account</string>
     <string name="strawberry_cookies_subtitle">Manage Strawberry login cookies</string>
     <string name="backup_section_cookies_strawberry">Strawberry cookies</string>
+    <string name="dl_filter_all">すべて</string>
+    <string name="dl_filter_unwatched">未視聴</string>
+    <string name="dl_filter_in_progress">視聴中</string>
+    <string name="dl_filter_watched">視聴済み</string>
 </resources>

@@ -3670,4 +3670,8 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="site_label_strawberry">Strawberry</string>
 
     <string name="backup_section_cookies_strawberry">Strawberry cookies</string>
+    <string name="dl_filter_all">All</string>
+    <string name="dl_filter_unwatched">Unwatched</string>
+    <string name="dl_filter_in_progress">In progress</string>
+    <string name="dl_filter_watched">Watched</string>
 </resources>

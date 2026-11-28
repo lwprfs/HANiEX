@@ -58,6 +58,9 @@ import com.yenaly.han1meviewer.util.offline.DownloadedQueue
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadSort
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadedScreen
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadWatchFilter
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadWatchFilterRow
+import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.matches
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.DownloadingScreen
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.MoveGroupDialog
 import com.yenaly.han1meviewer.SitesHub.Hanime1.ui.screen.home.download.downloadSortComparator
@@ -108,6 +111,9 @@ fun DownloadScreen(
     val downloadedLazyListState = rememberSaveable(saver = androidx.compose.foundation.lazy.grid.LazyGridState.Saver) {
         androidx.compose.foundation.lazy.grid.LazyGridState()
     }
+    val downloadedFolderListState = rememberSaveable(saver = androidx.compose.foundation.lazy.grid.LazyGridState.Saver) {
+        androidx.compose.foundation.lazy.grid.LazyGridState()
+    }
     val scope = rememberCoroutineScope()
     var showCreateGroupDialog by remember { mutableStateOf(false) }
     var multiSelectMode by remember { mutableStateOf(false) }
@@ -117,6 +123,8 @@ fun DownloadScreen(
     var searchQuery by rememberSaveable { mutableStateOf("") }
     var sort by rememberSaveable { mutableStateOf(DownloadSort.DATE_DESC) }
     var showSearchBar by rememberSaveable { mutableStateOf(false) }
+    var watchFilter by rememberSaveable { mutableStateOf(DownloadWatchFilter.ALL) }
+    val watchEntries by com.yenaly.han1meviewer.util.offline.LocalWatchStore.entries.collectAsStateWithLifecycle()
     var showSortMenu by remember { mutableStateOf(false) }
     var pendingBatchDelete by remember { mutableStateOf<List<VideoWithCategories>?>(null) }
 
@@ -124,17 +132,22 @@ fun DownloadScreen(
     val displayGroups = remember(displayGroupsRaw.map { it.id to it.name }) { displayGroupsRaw }
 
     val filteredDownloadedItems =
-        remember(downloadedItems, searchQuery, sort) {
+        remember(downloadedItems, searchQuery, sort, watchFilter, watchEntries) {
 
             val unique = downloadedItems
                 .groupBy { it.video.videoCode.ifBlank { "#${it.video.id}" } }
                 .values
                 .map { rows -> rows.maxBy { it.video.id } }
-            val filtered = if (searchQuery.isBlank()) {
+            val byWatch = if (watchFilter == DownloadWatchFilter.ALL) {
                 unique
             } else {
+                unique.filter { watchFilter.matches(watchEntries[it.video.videoCode]) }
+            }
+            val filtered = if (searchQuery.isBlank()) {
+                byWatch
+            } else {
                 val normalizedQuery = searchQuery.toSimplified()
-                unique.filter {
+                byWatch.filter {
                     it.video.title.toSimplified().contains(normalizedQuery, ignoreCase = true) ||
                         it.video.videoCode.contains(searchQuery, ignoreCase = true)
                 }
@@ -175,8 +188,17 @@ fun DownloadScreen(
     }
     val openFolder = folders.firstOrNull { it.key == openFolderKey }
 
-    LaunchedEffect(sort, openFolderKey, searching, folderBySite) {
-        downloadedLazyListState.scrollToItem(0)
+    var itemsScrollKey by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(sort, openFolderKey, searching, watchFilter) {
+        val key = "$sort|$openFolderKey|$searching|$watchFilter"
+        if (itemsScrollKey != null && itemsScrollKey != key) downloadedLazyListState.scrollToItem(0)
+        itemsScrollKey = key
+    }
+    var folderScrollKey by rememberSaveable { mutableStateOf<String?>(null) }
+    LaunchedEffect(sort, folderBySite, watchFilter) {
+        val key = "$sort|$folderBySite|$watchFilter"
+        if (folderScrollKey != null && folderScrollKey != key) downloadedFolderListState.scrollToItem(0)
+        folderScrollKey = key
     }
     LaunchedEffect(sort, openFolderKey, folderBySite) {
         multiSelectMode = false
@@ -462,6 +484,13 @@ fun DownloadScreen(
                 )
             }
 
+            AnimatedVisibility(visible = uiState.currentPage == 1 && !multiSelectMode) {
+                DownloadWatchFilterRow(
+                    selected = watchFilter,
+                    onSelect = { watchFilter = it },
+                )
+            }
+
             HorizontalPager(
                 state = pagerState,
                 userScrollEnabled = !multiSelectMode,
@@ -478,6 +507,7 @@ fun DownloadScreen(
                     else -> DownloadedScreen(
                         uiState = uiState,
                         listState = downloadedLazyListState,
+                        folderListState = downloadedFolderListState,
                         onEvent = handleEvent,
                     )
                 }

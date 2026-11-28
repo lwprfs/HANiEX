@@ -158,8 +158,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         safe(HentaiMamaHistoryRepo.loadAll()),
         safe(OnAirHistoryRepo.loadAll()),
         safe(FapFolderHistoryRepo.loadAll()),
-        safe(StrawberryHistoryRepo.loadAll()),
-    ) { hanime, missav, mama, onair, fap, strawberry ->
+    ) { hanime, missav, mama, onair, fap ->
         buildList {
             hanime.forEach { add(it.toItem()) }
             missav.forEach {
@@ -211,22 +210,6 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     )
                 )
             }
-            strawberry.forEach {
-                add(
-                    UnifiedHistoryItem(
-                        site = SiteType.STRAWBERRY,
-                        code = it.videoId,
-                        title = it.title,
-                        coverUrl = it.coverUrl,
-                        watchDate = it.watchDate,
-                        positionMs = it.lastPosition,
-                        durationMs = it.totalDuration,
-                        path = null,
-                        subtitle = it.uploaderName,
-                        completed = it.completed,
-                    )
-                )
-            }
             fap.forEach {
                 add(
                     UnifiedHistoryItem(
@@ -248,12 +231,26 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         }
     },
         safe(SupJavHistoryRepo.loadAll()),
-    ) { base, supjav ->
-        base to supjav
+        safe(StrawberryHistoryRepo.loadAll()),
+    ) { base, supjav, strawberry ->
+        Triple(base, supjav, strawberry)
     },
         safe(RouVideoHistoryRepo.loadAll()),
-    ) { (base, supjav), rouvideo ->
-        (base + rouvideo.map {
+    ) { (base, supjav, strawberry), rouvideo ->
+        (base + strawberry.map {
+            UnifiedHistoryItem(
+                site = SiteType.STRAWBERRY,
+                code = it.videoId,
+                title = it.title,
+                coverUrl = it.coverUrl,
+                watchDate = it.watchDate,
+                positionMs = it.lastPosition,
+                durationMs = it.totalDuration,
+                path = null,
+                subtitle = it.uploaderName,
+                completed = it.completed,
+            )
+        } + rouvideo.map {
             UnifiedHistoryItem(
                 site = SiteType.ROUVIDEO,
                 code = it.videoCode,

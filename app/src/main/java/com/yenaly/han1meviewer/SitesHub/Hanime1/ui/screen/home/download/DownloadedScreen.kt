@@ -59,6 +59,7 @@ private fun formatAdded(ms: Long): String =
 fun DownloadedScreen(
     uiState: DownloadUiState,
     listState: LazyGridState,
+    folderListState: LazyGridState = androidx.compose.foundation.lazy.grid.rememberLazyGridState(),
     onEvent: (DownloadEvent) -> Unit,
 ) {
     var pendingRename by remember { mutableStateOf<DownloadHeaderNode?>(null) }
@@ -122,6 +123,7 @@ fun DownloadedScreen(
             }
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(150.dp),
+                state = folderListState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(10.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
