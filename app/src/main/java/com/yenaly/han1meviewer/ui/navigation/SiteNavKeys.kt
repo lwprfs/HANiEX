@@ -33,8 +33,11 @@ import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHomeRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSearchRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvVideoRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirHomeRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryHomeRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirSearchRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberrySearchRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirVideoRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryVideoRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsGifRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsHomeRoute
 import com.yenaly.han1meviewer.SitesHub.RedGifs.ui.navigation.RedGifsSearchRoute
@@ -67,6 +70,7 @@ fun siteHomeKey(site: SiteType): NavKey = when (site) {
     SiteType.MISSAV -> MissAvHomeRoute
     SiteType.HENTAIMAMA -> HentaiMamaHomeRoute
     SiteType.ONAIR -> OnAirHomeRoute
+    SiteType.STRAWBERRY -> StrawberryHomeRoute
     SiteType.FAPFOLDER -> FapFolderHomeRoute
     SiteType.SUPJAV -> SupJavHomeRoute
     SiteType.ROUVIDEO -> RouVideoHomeRoute
@@ -125,6 +129,7 @@ fun siteVideoKey(
         resumePosition = resumePosition,
     )
     SiteType.ONAIR -> OnAirVideoRoute(videoId = videoCode)
+    SiteType.STRAWBERRY -> StrawberryVideoRoute(videoId = videoCode)
     SiteType.FAPFOLDER -> FapFolderPostRoute(slugOrId = path ?: videoCode, autoPlay = autoPlay)
     SiteType.SUPJAV -> SupJavVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
     SiteType.ROUVIDEO -> RouVideoVideoRoute(videoCode = videoCode, resumePosition = resumePosition)
@@ -146,6 +151,7 @@ fun siteSearchKey(site: SiteType, query: String?): NavKey = when (site) {
     SiteType.MISSAV -> MissAvSearchRoute(query)
     SiteType.HENTAIMAMA -> HentaiMamaSearchRoute(query)
     SiteType.ONAIR -> OnAirSearchRoute(query = query)
+    SiteType.STRAWBERRY -> StrawberrySearchRoute(query = query)
     SiteType.FAPFOLDER -> FapFolderSearchRoute(query = query)
     SiteType.SUPJAV -> SupJavSearchRoute(query = query)
     SiteType.ROUVIDEO -> RouVideoSearchRoute(query = query)

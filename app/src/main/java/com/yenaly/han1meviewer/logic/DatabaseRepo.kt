@@ -318,6 +318,7 @@ object DatabaseRepo {
             SiteType.MISSAV -> "MissAV"
             SiteType.HENTAIMAMA -> "HentaiMama"
             SiteType.ONAIR -> "OnAir"
+            SiteType.STRAWBERRY -> "Strawberry"
             SiteType.FAPFOLDER -> "FapFolder"
             SiteType.SUPJAV -> "SupJav"
             SiteType.ROUVIDEO -> "rou.video"

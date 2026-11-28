@@ -66,6 +66,7 @@ object CrossSiteNavigator {
         SiteType.MISSAV -> "MissAV"
         SiteType.HENTAIMAMA -> "HentaiMama"
         SiteType.ONAIR -> "OnAir"
+        SiteType.STRAWBERRY -> "Strawberry"
         SiteType.FAPFOLDER -> "FapFolder"
         SiteType.SUPJAV -> "SupJav"
         SiteType.ROUVIDEO -> applicationContext.getString(R.string.site_rouvideo_name)
@@ -83,7 +84,7 @@ object CrossSiteNavigator {
     }
 
     suspend fun validate(site: SiteType): Validation = when (site) {
-        SiteType.ONAIR -> validateOnAir()
+        SiteType.ONAIR, SiteType.STRAWBERRY -> validateOnAir()
         else -> validateReachable(site)
     }
 
@@ -141,7 +142,7 @@ object CrossSiteNavigator {
         }
 
     private fun targetUrl(site: SiteType): String = when (site) {
-        SiteType.ONAIR -> "https://check.torproject.org/"
+        SiteType.ONAIR, SiteType.STRAWBERRY -> "https://check.torproject.org/"
         else -> com.yenaly.han1meviewer.logic.network.SiteNetworkPrefs.homeUrl(site)
     }
 }

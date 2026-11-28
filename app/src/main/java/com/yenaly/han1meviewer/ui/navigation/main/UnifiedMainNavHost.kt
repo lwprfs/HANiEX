@@ -19,6 +19,7 @@ import com.yenaly.han1meviewer.SitesHub.XHamster.ui.navigation.XHamsterNavHost
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaNavHost
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvNavHost
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirNavHost
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryNavHost
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.activity.MainActivity
@@ -86,6 +87,15 @@ fun UnifiedMainNavHost(
                     onDestinationChanged = onDestinationChanged,
                 )
             }
+            SiteType.STRAWBERRY -> {
+                StrawberryNavHost(
+                    activity = activity,
+                    navigator = navigator,
+                    navigationState = navigationState,
+                    onDestinationChanged = onDestinationChanged,
+                )
+            }
+
             SiteType.FAPFOLDER -> {
                 FapFolderNavHost(
                     activity = activity,

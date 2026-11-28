@@ -51,6 +51,7 @@ object DownloadLayout {
         SiteType.MISSAV -> "MissAV"
         SiteType.HENTAIMAMA -> "HentaiMama"
         SiteType.ONAIR -> "OnAir"
+        SiteType.STRAWBERRY -> "Strawberry"
         SiteType.FAPFOLDER -> "FapFolder"
         SiteType.SUPJAV -> "SupJav"
         SiteType.ROUVIDEO -> "RouVideo"
@@ -257,6 +258,8 @@ object SiteDownloadClients {
         when (SiteCheckIn.siteOfDishCode(videoCode)) {
             SiteType.ONAIR -> runCatching { OnAirNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
+            SiteType.STRAWBERRY -> runCatching { com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork.sharedOkHttpClient }
+                .getOrDefault(ServiceCreator.downloadClient)
             SiteType.HENTAIMAMA -> runCatching { HentaiMamaNetwork.sharedOkHttpClient }
                 .getOrDefault(ServiceCreator.downloadClient)
             SiteType.FAPFOLDER -> runCatching { FapFolderNetwork.playbackOkHttpClient }
@@ -325,6 +328,10 @@ object SiteDownloadClients {
                         }
                     }
                 }
+            }
+            SiteType.STRAWBERRY -> {
+                val base = runCatching { com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork.baseUrl.trimEnd('/') }.getOrDefault("")
+                if (base.isBlank()) emptyMap() else mapOf("Referer" to "$base/", "Origin" to base)
             }
             SiteType.FULLVIDEOS -> {
                 val referer = com.yenaly.han1meviewer.SitesHub.FullVideos.data.remote.FullVideosNetwork

@@ -16,6 +16,9 @@ import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaHistoryE
 import com.yenaly.han1meviewer.SitesHub.MissAV.data.local.MissAvDatabase
 import com.yenaly.han1meviewer.SitesHub.MissAV.data.local.MissAvHistoryEntity
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirDatabase
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryDatabase
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryHistoryEntity
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryCookieManager
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirHistoryEntity
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SitesHub.SupJav.data.local.SupJavDatabase
@@ -78,6 +81,7 @@ object BackupManager {
         MISSAV_HISTORY(R.string.backup_section_missav_history, Group.DATA),
         HENTAIMAMA_HISTORY(R.string.backup_section_hentaimama_history, Group.DATA),
         ONAIR_HISTORY(R.string.backup_section_onair_history, Group.DATA),
+        STRAWBERRY_HISTORY(R.string.backup_section_strawberry_history, Group.DATA),
         FAPFOLDER_HISTORY(R.string.backup_section_fapfolder_history, Group.DATA),
         SUPJAV_HISTORY(R.string.backup_section_supjav_history, Group.DATA),
         ROUVIDEO_HISTORY(R.string.backup_section_rouvideo_history, Group.DATA),
@@ -96,6 +100,7 @@ object BackupManager {
         COOKIES_MISSAV(R.string.backup_section_cookies_missav, Group.COOKIES),
         COOKIES_HENTAIMAMA(R.string.backup_section_cookies_hentaimama, Group.COOKIES),
         COOKIES_ONAIR(R.string.backup_section_cookies_onair, Group.COOKIES),
+        COOKIES_STRAWBERRY(R.string.backup_section_cookies_strawberry, Group.COOKIES),
         COOKIES_FAPFOLDER(R.string.backup_section_cookies_fapfolder, Group.COOKIES),
         COOKIES_ROUVIDEO(R.string.backup_section_cookies_rouvideo, Group.COOKIES),
         COOKIES_XHAMSTER(R.string.backup_section_cookies_xhamster, Group.COOKIES);
@@ -104,6 +109,7 @@ object BackupManager {
     }
 
     private const val KEY_ONAIR_COOKIES = "onair_cookies_raw"
+    private const val KEY_STRAWBERRY_COOKIES = "strawberry_cookies_raw"
 
     private fun cookieSectionOfKey(key: String): Section? = when {
         key == com.yenaly.han1meviewer.LOGIN_COOKIE ||
@@ -111,6 +117,7 @@ object BackupManager {
         key.startsWith("missav_cf_") -> Section.COOKIES_MISSAV
         key.startsWith("hm_cf_") -> Section.COOKIES_HENTAIMAMA
         key == KEY_ONAIR_COOKIES -> Section.COOKIES_ONAIR
+        key == KEY_STRAWBERRY_COOKIES -> Section.COOKIES_STRAWBERRY
         key == "rouvideo_auth_cookies" || key.startsWith("rouvideo_user_") -> Section.COOKIES_ROUVIDEO
         key == "xhamster_cookies_v1" || key == "xhamster_user_cache" -> Section.COOKIES_XHAMSTER
         else -> null
@@ -136,6 +143,8 @@ object BackupManager {
         val missAvHistories: List<MissAvHistoryEntity>? = null,
         val hentaiMamaHistories: List<HentaiMamaHistoryEntity>? = null,
         val onAirHistories: List<OnAirHistoryEntity>? = null,
+        val strawberryHistories: List<StrawberryHistoryEntity>? = null,
+        val strawberryCookies: String? = null,
         val fapFolderHistories: List<FapFolderHistoryEntity>? = null,
         val supJavHistories: List<SupJavHistoryEntity>? = null,
         val rouVideoHistories: List<RouVideoHistoryEntity>? = null,
@@ -268,6 +277,14 @@ object BackupManager {
             OnAirDatabase.getInstance(context).onAirHistoryDao().apply {
                 deleteAll(); insertAll(it)
             }
+        }
+        backup.strawberryHistories?.takeIf { Section.STRAWBERRY_HISTORY in sections }?.let {
+            StrawberryDatabase.getInstance(context).strawberryHistoryDao().apply {
+                deleteAll(); insertAll(it)
+            }
+        }
+        backup.strawberryCookies?.takeIf { Section.COOKIES_STRAWBERRY in sections }?.let {
+            StrawberryCookieManager.saveCookies(it)
         }
         backup.fapFolderHistories?.takeIf { Section.FAPFOLDER_HISTORY in sections }?.let {
             FapFolderDatabase.getInstance(context).fapFolderHistoryDao().apply {
@@ -420,6 +437,10 @@ object BackupManager {
                 HentaiMamaDatabase.getInstance(context).historyDao().getAll() else null,
             onAirHistories = if (Section.ONAIR_HISTORY in sections)
                 OnAirDatabase.getInstance(context).onAirHistoryDao().getAll() else null,
+            strawberryHistories = if (Section.STRAWBERRY_HISTORY in sections)
+                StrawberryDatabase.getInstance(context).strawberryHistoryDao().getAll() else null,
+            strawberryCookies = if (Section.COOKIES_STRAWBERRY in sections)
+                StrawberryCookieManager.cookiesRaw else null,
             fapFolderHistories = if (Section.FAPFOLDER_HISTORY in sections)
                 FapFolderDatabase.getInstance(context).fapFolderHistoryDao().getAll() else null,
             supJavHistories = if (Section.SUPJAV_HISTORY in sections)

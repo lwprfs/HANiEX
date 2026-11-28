@@ -118,6 +118,13 @@ val DefaultSiteSwitchOptions: List<SiteSwitchOption> = listOf(
         accentColor = Color(0xFF00897B),
     ),
     SiteSwitchOption(
+        name = "Strawberry",
+        description = applicationContext.getString(R.string.site_strawberry_description),
+        siteType = SiteType.STRAWBERRY,
+        logoRes = R.drawable.s_switch_strawberry,
+        accentColor = Color(0xFFE91E63),
+    ),
+    SiteSwitchOption(
         name = "FapFolder",
         description = applicationContext.getString(R.string.site_community_feed_albums_and_videos),
         siteType = SiteType.FAPFOLDER,

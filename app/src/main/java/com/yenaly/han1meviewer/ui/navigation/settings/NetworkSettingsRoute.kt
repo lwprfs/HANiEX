@@ -38,6 +38,7 @@ import com.yenaly.han1meviewer.SitesHub.FapFolder.data.remote.FapFolderNetwork
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.remote.HentaiMamaNetwork
 import com.yenaly.han1meviewer.SitesHub.MissAV.data.remote.MissAvNetwork
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
@@ -82,6 +83,7 @@ private fun rebuildAllNetworks() {
     runCatching { MissAvNetwork.rebuildNetwork() }
     runCatching { HentaiMamaNetwork.rebuildNetwork() }
     runCatching { OnAirNetwork.rebuildNetwork() }
+    runCatching { StrawberryNetwork.rebuildNetwork() }
     runCatching { SupJavNetwork.rebuildNetwork() }
     runCatching { RouVideoNetwork.rebuildNetwork() }
     runCatching { XHamsterNetwork.rebuildNetwork() }

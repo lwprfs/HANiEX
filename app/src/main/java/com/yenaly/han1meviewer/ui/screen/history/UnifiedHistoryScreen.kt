@@ -69,6 +69,7 @@ import com.yenaly.han1meviewer.SitesHub.XHamster.data.repository.XHamsterHistory
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.MissAV.data.repository.MissAvHistoryRepo
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryHistoryRepo
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.logic.DatabaseRepo
@@ -129,6 +130,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         MissAvHistoryRepo.init(application)
         HentaiMamaHistoryRepo.init(application)
         OnAirHistoryRepo.init(application)
+        StrawberryHistoryRepo.init(application)
         FapFolderHistoryRepo.init(application)
         SupJavHistoryRepo.init(application)
         RouVideoHistoryRepo.init(application)
@@ -156,7 +158,8 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
         safe(HentaiMamaHistoryRepo.loadAll()),
         safe(OnAirHistoryRepo.loadAll()),
         safe(FapFolderHistoryRepo.loadAll()),
-    ) { hanime, missav, mama, onair, fap ->
+        safe(StrawberryHistoryRepo.loadAll()),
+    ) { hanime, missav, mama, onair, fap, strawberry ->
         buildList {
             hanime.forEach { add(it.toItem()) }
             missav.forEach {
@@ -196,6 +199,22 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                 add(
                     UnifiedHistoryItem(
                         site = SiteType.ONAIR,
+                        code = it.videoId,
+                        title = it.title,
+                        coverUrl = it.coverUrl,
+                        watchDate = it.watchDate,
+                        positionMs = it.lastPosition,
+                        durationMs = it.totalDuration,
+                        path = null,
+                        subtitle = it.uploaderName,
+                        completed = it.completed,
+                    )
+                )
+            }
+            strawberry.forEach {
+                add(
+                    UnifiedHistoryItem(
+                        site = SiteType.STRAWBERRY,
                         code = it.videoId,
                         title = it.title,
                         coverUrl = it.coverUrl,
@@ -452,6 +471,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                     SiteType.MISSAV -> MissAvHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.HENTAIMAMA -> HentaiMamaHistoryRepo.deleteByVideoCode(item.code)
                     SiteType.ONAIR -> OnAirHistoryRepo.deleteByVideoId(item.code)
+                    SiteType.STRAWBERRY -> StrawberryHistoryRepo.deleteByVideoId(item.code)
                     SiteType.FAPFOLDER -> item.code.toLongOrNull()?.let {
                         FapFolderHistoryRepo.deleteByPostId(it)
                     }
@@ -481,6 +501,7 @@ class UnifiedHistoryViewModel(application: Application) : AndroidViewModel(appli
                 if (site == null || site == SiteType.MISSAV) MissAvHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.HENTAIMAMA) HentaiMamaHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.ONAIR) OnAirHistoryRepo.deleteAll()
+                if (site == null || site == SiteType.STRAWBERRY) StrawberryHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.FAPFOLDER) FapFolderHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.SUPJAV) SupJavHistoryRepo.deleteAll()
                 if (site == null || site == SiteType.ROUVIDEO) RouVideoHistoryRepo.deleteAll()
@@ -543,6 +564,7 @@ private val filterSites = listOf(
     SiteType.MISSAV,
     SiteType.HENTAIMAMA,
     SiteType.ONAIR,
+    SiteType.STRAWBERRY,
     SiteType.FAPFOLDER,
     SiteType.SUPJAV,
     SiteType.ROUVIDEO,

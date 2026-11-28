@@ -12,6 +12,7 @@ import com.yenaly.han1meviewer.SitesHub.FapFolder.data.local.FapFolderDatabase
 import com.yenaly.han1meviewer.SitesHub.HentaiMama.data.local.HentaiMamaDatabase
 import com.yenaly.han1meviewer.SitesHub.MissAV.data.local.MissAvDatabase
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirDatabase
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryDatabase
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -25,6 +26,7 @@ object SiteCheckIn {
         SiteType.MISSAV -> "missav"
         SiteType.HENTAIMAMA -> "hentaimama"
         SiteType.ONAIR -> "onair"
+        SiteType.STRAWBERRY -> "strawberry"
         SiteType.FAPFOLDER -> "fapfolder"
         SiteType.SUPJAV -> "supjav"
         SiteType.ROUVIDEO -> "rouvideo"
@@ -53,6 +55,7 @@ object SiteCheckIn {
             "missav" -> SiteType.MISSAV
             "hentaimama" -> SiteType.HENTAIMAMA
             "onair" -> SiteType.ONAIR
+            "strawberry" -> SiteType.STRAWBERRY
             "fapfolder" -> SiteType.FAPFOLDER
             "supjav" -> SiteType.SUPJAV
             "rouvideo" -> SiteType.ROUVIDEO
@@ -141,6 +144,17 @@ object SiteCheckIn {
                     releaseDate = 0L,
                     watchDate = it.watchDate,
                     videoCode = dishCode(SiteType.ONAIR, it.videoId),
+                )
+            }
+        }
+        runCatching {
+            StrawberryDatabase.getInstance(context).strawberryHistoryDao().getPage(limit, 0).forEach {
+                result += WatchHistoryEntity(
+                    coverUrl = it.coverUrl,
+                    title = it.title,
+                    releaseDate = 0L,
+                    watchDate = it.watchDate,
+                    videoCode = dishCode(SiteType.STRAWBERRY, it.videoId),
                 )
             }
         }

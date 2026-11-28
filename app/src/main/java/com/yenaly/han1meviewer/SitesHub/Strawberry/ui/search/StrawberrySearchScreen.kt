@@ -1,0 +1,685 @@
+package com.yenaly.han1meviewer.SitesHub.Strawberry.ui.search
+
+import androidx.compose.ui.res.stringResource
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.SiteLoadingContent
+import com.yenaly.han1meviewer.ui.component.SiteErrorContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yenaly.han1meviewer.SitesHub.Strawberry.common.StrawberryConstants
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberrySearchHistoryEntry
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberrySearchHistoryRepo
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.model.StrawberryOptions
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.model.StrawberrySelectOption
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.components.StrawberryVideoCardItem
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.components.rememberStrawberryWatched
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.home.StrawberryPageChip
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.home.pageAt
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.home.InfiniteScrollFooter
+import com.yenaly.han1meviewer.logic.state.PageLoadingState
+import com.yenaly.han1meviewer.ui.component.lazy.LazyVerticalGrid
+import com.yenaly.han1meviewer.ui.screen.rememberSearchGridColumns
+import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.util.applicationContext
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StrawberrySearchScreen(
+    viewModel: StrawberrySearchViewModel,
+    onBack: () -> Unit,
+    onOpenVideo: (String) -> Unit,
+    onOpenTag: (String) -> Unit,
+    onOpenUser: (String) -> Unit,
+    onLoadFailure: (String) -> Unit = {},
+) {
+    val query by viewModel.query.collectAsStateWithLifecycle()
+    val field by viewModel.field.collectAsStateWithLifecycle()
+    val length by viewModel.length.collectAsStateWithLifecycle()
+    val date by viewModel.date.collectAsStateWithLifecycle()
+    val sort by viewModel.sort.collectAsStateWithLifecycle()
+    val tagFilter by viewModel.tagFilter.collectAsStateWithLifecycle()
+    val results by viewModel.results.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val hasSearched by viewModel.hasSearched.collectAsStateWithLifecycle()
+    val pageInfo by viewModel.pageInfo.collectAsStateWithLifecycle()
+    val currentPage by viewModel.currentPage.collectAsStateWithLifecycle()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsStateWithLifecycle()
+    val pageStarts by viewModel.pageStarts.collectAsStateWithLifecycle()
+    val startPage by viewModel.startPage.collectAsStateWithLifecycle()
+    val watched = rememberStrawberryWatched()
+
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+    val gridState = rememberLazyGridState()
+    val scope = rememberCoroutineScope()
+    val columns = rememberSearchGridColumns()
+
+    val displayPage by remember(pageStarts, startPage) {
+        derivedStateOf { pageStarts.pageAt(gridState.firstVisibleItemIndex, startPage) }
+    }
+
+    var showFilterSheet by rememberSaveable { mutableStateOf(false) }
+    var showHistorySheet by rememberSaveable { mutableStateOf(false) }
+    var history by remember { mutableStateOf(StrawberrySearchHistoryRepo.load()) }
+
+    fun runSearch() {
+        focusManager.clearFocus()
+        keyboard?.hide()
+        scope.launch { gridState.scrollToItem(0) }
+        viewModel.performSearch()
+        history = StrawberrySearchHistoryRepo.load()
+    }
+
+    LaunchedEffect(gridState, hasSearched, isLoadingMore, pageInfo) {
+        snapshotFlow {
+            val info = gridState.layoutInfo
+            val total = info.totalItemsCount
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            total to last
+        }
+            .distinctUntilChanged()
+            .collect { (total, last) ->
+                if (hasSearched &&
+                    total > 4 &&
+                    last >= total - 4 &&
+                    !isLoadingMore &&
+                    pageInfo != null &&
+                    currentPage < pageInfo!!.total
+                ) {
+                    viewModel.loadNextPage()
+                }
+            }
+    }
+
+    LaunchedEffect(state) {
+        val s = state
+        if (s is PageLoadingState.Error && results.isEmpty()) {
+            onLoadFailure(s.throwable.message ?: applicationContext.getString(R.string.site_search_failed))
+        }
+    }
+
+    if (showFilterSheet) {
+        SearchFilterSheet(
+            field = field,
+            length = length,
+            date = date,
+            sort = sort,
+            onFieldChange = viewModel::setField,
+            onLengthChange = viewModel::setLength,
+            onDateChange = viewModel::setDate,
+            onSortChange = viewModel::setSort,
+            onApply = {
+                showFilterSheet = false
+                runSearch()
+            },
+            onDismiss = { showFilterSheet = false },
+        )
+    }
+
+    if (showHistorySheet) {
+        SearchHistorySheet(
+            history = history,
+            onPick = { entry ->
+                viewModel.applyFiltersFromHistory(entry)
+                showHistorySheet = false
+                runSearch()
+            },
+            onDelete = { entry ->
+                StrawberrySearchHistoryRepo.remove(entry)
+                history = StrawberrySearchHistoryRepo.load()
+            },
+            onClear = {
+                StrawberrySearchHistoryRepo.clear()
+                history = emptyList()
+            },
+            onDismiss = { showHistorySheet = false },
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+    ) {
+        SearchTopBar(
+            query = query,
+            onQueryChange = viewModel::setQuery,
+            onBack = onBack,
+            onClear = { viewModel.reset() },
+            onSearch = { runSearch() },
+            onOpenFilters = { showFilterSheet = true },
+            onOpenHistory = { showHistorySheet = true },
+            focusRequester = focusRequester,
+        )
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        val filterChips = buildList {
+            val currentTag = tagFilter
+            if (currentTag != null) {
+                add(stringResource(R.string.strawberry_tag, currentTag) to {
+                    viewModel.setTagFilter(null)
+                    runSearch()
+                })
+            }
+            if (field != StrawberryConstants.SEARCH_FIELD_TITLE) {
+                val label = StrawberryOptions.searchFields.firstOrNull { it.value == field }?.label ?: field
+                add(stringResource(R.string.strawberry_field, label) to {
+                    viewModel.setField(StrawberryConstants.SEARCH_FIELD_TITLE)
+                    runSearch()
+                })
+            }
+            if (length != StrawberryConstants.LENGTH_ANY) {
+                val label = StrawberryOptions.lengths.firstOrNull { it.value == length }?.label ?: length
+                add(stringResource(R.string.strawberry_length, label) to {
+                    viewModel.setLength(StrawberryConstants.LENGTH_ANY)
+                    runSearch()
+                })
+            }
+            if (date != StrawberryConstants.DATE_ANY) {
+                val label = StrawberryOptions.dates.firstOrNull { it.value == date }?.label ?: date
+                add(stringResource(R.string.strawberry_date, label) to {
+                    viewModel.setDate(StrawberryConstants.DATE_ANY)
+                    runSearch()
+                })
+            }
+            if (sort != StrawberryConstants.SORT_NEWEST) {
+                val label = StrawberryOptions.sorts.firstOrNull { it.value == sort }?.label ?: sort
+                add(stringResource(R.string.site_sort_3, label) to {
+                    viewModel.setSort(StrawberryConstants.SORT_NEWEST)
+                    runSearch()
+                })
+            }
+        }
+
+        if (filterChips.isNotEmpty()) {
+            FlowRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                filterChips.forEach { (label, onClick) ->
+                    AssistChip(
+                        onClick = onClick,
+                        label = { Text(label, style = MaterialTheme.typography.labelSmall) },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                            )
+                        },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        ),
+                    )
+                }
+                if (filterChips.size > 1) {
+                    AssistChip(
+                        onClick = {
+                            viewModel.reset()
+                            history = StrawberrySearchHistoryRepo.load()
+                        },
+                        label = { Text(stringResource(R.string.watch_history_clear_all)) },
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ),
+                    )
+                }
+            }
+        }
+
+        if (hasSearched && pageInfo != null) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                StrawberryPageChip(
+                    page = displayPage,
+                    total = pageInfo?.total,
+                    showTotal = true,
+                    onJump = { target ->
+                        val ok = viewModel.jumpToPage(target)
+                        if (ok) scope.launch { gridState.scrollToItem(0) }
+                        ok
+                    },
+                )
+            }
+        }
+
+        when {
+            !hasSearched -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = stringResource(R.string.strawberry_type_to_search_or_tap_filters),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(32.dp),
+                    )
+                }
+            }
+
+            state == null || (state is PageLoadingState.Loading && results.isEmpty()) -> {
+                SiteLoadingContent()
+            }
+
+            state is PageLoadingState.Error && results.isEmpty() -> {
+                SiteErrorContent(
+                    message = (state as PageLoadingState.Error).throwable.message ?: stringResource(R.string.site_failed),
+                    onRetry = { runSearch() },
+                )
+            }
+
+            results.isEmpty() -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = stringResource(R.string.search_no_results),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            else -> {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(columns),
+                    state = gridState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(SpacingNormal),
+                    horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+                    verticalArrangement = Arrangement.spacedBy(SpacingNormal),
+                    enableItemAnimation = false,
+                ) {
+                    items(results, key = { it.videoId }) { card ->
+                        StrawberryVideoCardItem(
+                            card = card,
+                            onClick = { onOpenVideo(card.videoId) },
+                            isWatched = card.videoId in watched,
+                        )
+                    }
+                    if (results.isNotEmpty()) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            InfiniteScrollFooter(isLoadingMore = isLoadingMore)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchTopBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onBack: () -> Unit,
+    onClear: () -> Unit,
+    onSearch: () -> Unit,
+    onOpenFilters: () -> Unit,
+    onOpenHistory: () -> Unit,
+    focusRequester: FocusRequester,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 4.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(28.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .focusRequester(focusRequester),
+            ) {
+                BasicTextField(
+                    value = query,
+                    onValueChange = onQueryChange,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    singleLine = true,
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+                    decorationBox = { inner ->
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart,
+                        ) {
+                            if (query.isEmpty()) {
+                                Text(
+                                    text = stringResource(R.string.strawberry_search_strawberry_2),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            inner()
+                        }
+                    },
+                )
+            }
+            if (query.isNotEmpty()) {
+                IconButton(onClick = onClear) {
+                    Icon(
+                        imageVector = Icons.Default.Clear,
+                        contentDescription = stringResource(R.string.site_clear),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            IconButton(onClick = onSearch) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = stringResource(R.string.search),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+            }
+            IconButton(onClick = onOpenFilters) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = stringResource(R.string.strawberry_filters),
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            IconButton(onClick = onOpenHistory) {
+                Icon(
+                    imageVector = Icons.Filled.Search,
+                    contentDescription = stringResource(R.string.site_history),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchFilterSheet(
+    field: String,
+    length: String,
+    date: String,
+    sort: String,
+    onFieldChange: (String) -> Unit,
+    onLengthChange: (String) -> Unit,
+    onDateChange: (String) -> Unit,
+    onSortChange: (String) -> Unit,
+    onApply: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.strawberry_filters),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = {
+                    onFieldChange(StrawberryConstants.SEARCH_FIELD_TITLE)
+                    onLengthChange(StrawberryConstants.LENGTH_ANY)
+                    onDateChange(StrawberryConstants.DATE_ANY)
+                    onSortChange(StrawberryConstants.SORT_NEWEST)
+                }) { Text(stringResource(R.string.reset)) }
+            }
+
+            FilterSection(
+                title = stringResource(R.string.strawberry_field_2),
+                options = StrawberryOptions.searchFields,
+                selected = field,
+                onSelect = onFieldChange,
+            )
+            FilterSection(
+                title = stringResource(R.string.strawberry_length_2),
+                options = StrawberryOptions.lengths,
+                selected = length,
+                onSelect = onLengthChange,
+            )
+            FilterSection(
+                title = stringResource(R.string.strawberry_date_2),
+                options = StrawberryOptions.dates,
+                selected = date,
+                onSelect = onDateChange,
+            )
+            FilterSection(
+                title = stringResource(R.string.site_sort_2),
+                options = StrawberryOptions.sorts,
+                selected = sort,
+                onSelect = onSortChange,
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                TextButton(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.cancel))
+                }
+                TextButton(onClick = onApply, modifier = Modifier.weight(2f)) {
+                    Text(stringResource(R.string.site_apply), fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FilterSection(
+    title: String,
+    options: List<StrawberrySelectOption>,
+    selected: String,
+    onSelect: (String) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            options.forEach { option ->
+                val isSelected = option.value == selected
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onSelect(option.value) },
+                    label = { Text(option.label) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    ),
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchHistorySheet(
+    history: List<StrawberrySearchHistoryEntry>,
+    onPick: (StrawberrySearchHistoryEntry) -> Unit,
+    onDelete: (StrawberrySearchHistoryEntry) -> Unit,
+    onClear: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = stringResource(R.string.recent_searches),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = onClear, enabled = history.isNotEmpty()) {
+                    Text(stringResource(R.string.site_clear))
+                }
+            }
+
+            if (history.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.strawberry_no_recent_searches),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 12.dp),
+                )
+            } else {
+                history.forEach { entry ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable { onPick(entry) },
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = entry.query.ifBlank { entry.tag ?: stringResource(R.string.strawberry_filters) },
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                val subtitle = buildList {
+                                    if (entry.field != StrawberryConstants.SEARCH_FIELD_TITLE) add("field=${entry.field}")
+                                    if (entry.length != StrawberryConstants.LENGTH_ANY) add("len=${entry.length}")
+                                    if (entry.date != StrawberryConstants.DATE_ANY) add("date=${entry.date}")
+                                    if (entry.sort != StrawberryConstants.SORT_NEWEST) add("sort=${entry.sort}")
+                                    if (entry.tag != null) add("tag=${entry.tag}")
+                                }.joinToString(" · ")
+                                if (subtitle.isNotBlank()) {
+                                    Text(
+                                        text = subtitle,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            IconButton(onClick = { onDelete(entry) }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = stringResource(R.string.remove),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+    }
+}

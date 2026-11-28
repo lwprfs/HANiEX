@@ -123,7 +123,7 @@ fun siteMainRows(site: SiteType): List<SiteSettingsRow> {
         SiteType.COOMER -> playback(R.string.coomer_settings_title, R.string.coomer_settings_summary, CoomerSettingsRoute)
         SiteType.LEAKGALLERY -> playback(R.string.leakgallery_settings_title, R.string.leakgallery_settings_summary, LeakGallerySettingsRoute)
 
-        SiteType.HANIME, SiteType.JAVCHU, SiteType.ONAIR, SiteType.FAPFOLDER, SiteType.BUONDUA -> emptyList()
+        SiteType.HANIME, SiteType.JAVCHU, SiteType.ONAIR, SiteType.STRAWBERRY, SiteType.FAPFOLDER, SiteType.BUONDUA -> emptyList()
     }
 }
 
@@ -145,6 +145,12 @@ fun siteAccountRows(site: SiteType, contentAvailable: Boolean): List<SiteSetting
                 add(account(R.string.drawer_account_session, R.string.onair_account_subtitle, OnAirAccountSettingsRoute))
             }
             add(SiteSettingsRow("cookies", R.string.drawer_cookies_sign_in, R.string.onair_cookies_subtitle, Icons.Default.Cookie, OnAirCookieRoute))
+        }
+        SiteType.STRAWBERRY -> buildList {
+            if (contentAvailable) {
+                add(account(R.string.drawer_account_session, R.string.strawberry_account_subtitle, com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryAccountSettingsRoute))
+            }
+            add(SiteSettingsRow("cookies", R.string.drawer_cookies_sign_in, R.string.strawberry_cookies_subtitle, Icons.Default.Cookie, com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryCookieRoute))
         }
         SiteType.FAPFOLDER -> buildList {
             val loggedIn = contentAvailable && FapFolderNetwork.hasAuthCookies()

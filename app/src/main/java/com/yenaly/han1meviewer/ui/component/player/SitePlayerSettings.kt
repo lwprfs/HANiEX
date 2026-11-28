@@ -16,6 +16,7 @@ object SitePlayerSettings {
         SiteType.MISSAV,
         SiteType.HENTAIMAMA,
         SiteType.ONAIR,
+        SiteType.STRAWBERRY,
         SiteType.FAPFOLDER,
         SiteType.SUPJAV,
         SiteType.ROUVIDEO,
@@ -37,6 +38,7 @@ object SitePlayerSettings {
         SiteType.MISSAV -> "MissAV"
         SiteType.HENTAIMAMA -> "HentaiMama"
         SiteType.ONAIR -> "OnAir"
+        SiteType.STRAWBERRY -> "Strawberry"
         SiteType.FAPFOLDER -> "FapFolder"
         SiteType.SUPJAV -> "SupJav"
         SiteType.ROUVIDEO -> applicationContext.getString(R.string.site_rouvideo_name)

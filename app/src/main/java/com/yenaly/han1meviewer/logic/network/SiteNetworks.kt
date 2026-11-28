@@ -3,6 +3,7 @@ package com.yenaly.han1meviewer.logic.network
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.util.applicationContext
 import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirConstants
+import com.yenaly.han1meviewer.SitesHub.Strawberry.common.StrawberryConstants
 import com.yenaly.han1meviewer.SiteType
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
@@ -118,6 +119,14 @@ object SiteNetworks {
             displayName = "OnAir",
             catalogKey = null,
             defaultUrls = { OnAirConstants.ONAIR_URL.toList() },
+            trailingSlash = true,
+            cloudflareFronted = false,
+        ),
+        SiteNetworkProfile(
+            siteType = SiteType.STRAWBERRY,
+            displayName = "Strawberry",
+            catalogKey = null,
+            defaultUrls = { StrawberryConstants.STRAWBERRY_URL.toList() },
             trailingSlash = true,
             cloudflareFronted = false,
         ),

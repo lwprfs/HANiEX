@@ -23,7 +23,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.ExperimentalTime
 
 enum class SiteType {
-    HANIME, MISSAV, HENTAIMAMA, JAVCHU, ONAIR, FAPFOLDER, SUPJAV, ROUVIDEO, XHAMSTER, BUONDUA, COSPLAYTELE, COSER, FULLVIDEOS, FUCKINGSESSION, REDGIFS, WUMAOBI, XXXTUBE, COOMER, LEAKGALLERY
+    HANIME, MISSAV, HENTAIMAMA, JAVCHU, ONAIR, FAPFOLDER, SUPJAV, ROUVIDEO, XHAMSTER, BUONDUA, COSPLAYTELE, COSER, FULLVIDEOS, FUCKINGSESSION, REDGIFS, WUMAOBI, XXXTUBE, COOMER, LEAKGALLERY, STRAWBERRY
 }
 
 object MissAvConstants {
@@ -238,6 +238,9 @@ object Preferences {
 
     val onAirBaseUrl: String
         get() = SiteNetworkPrefs.baseUrl(SiteType.ONAIR)
+
+    val strawberryBaseUrl: String
+        get() = SiteNetworkPrefs.baseUrl(SiteType.STRAWBERRY)
 
     val allowPipMode: Boolean
         get() = preferenceSp.getBoolean(SettingsPreferenceKeys.ALLOW_PIP_MODE, false)

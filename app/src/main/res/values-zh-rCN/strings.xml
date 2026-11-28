@@ -1592,4 +1592,41 @@
     <string name="tag_watched_at">观看至 %s</string>
     <string name="download_folder_by_group">按分组</string>
     <string name="download_folder_by_site">按网站</string>
+
+    <!-- Strawberry -->
+
+    <string name="strawberry_page_only">第 %1$d 页</string>
+
+    <string name="strawberry_page_of">第 %1$d / %2$d 页</string>
+
+    <string name="strawberry_go_to_page">跳转到页面</string>
+
+    <string name="strawberry_page_number">页码</string>
+
+    <string name="strawberry_page_hint">输入 1 到 %1$d 之间的页码</string>
+
+    <string name="strawberry_page_invalid">页码必须介于 1 到 %1$d 之间</string>
+
+    <string name="strawberry_page_invalid_any">请输入有效的页码</string>
+
+    <string name="strawberry_go">前往</string>
+
+    <string name="strawberry_page_empty">第 %1$d 页没有视频</string>
+
+    <string name="strawberry_added_to_github_queue">已加入 links_haniex.txt（GitHub 下载器）</string>
+
+    <string name="strawberry_already_in_github_queue">已在 GitHub 下载列表或已下载</string>
+
+    <string name="strawberry_github_downloader_title">GitHub 下载器</string>
+
+    <string name="strawberry_github_downloader_subtitle">仅限开发者 · 通过 GitHub 工作流下载</string>
+
+    <!-- Strawberry -->
+    <string name="site_strawberry_description">Strawberry onion video site (configure its onion address in Network Settings)</string>
+    <string name="backup_section_strawberry_history">Strawberry history</string>
+    <string name="site_label_strawberry">Strawberry</string>
+
+    <string name="strawberry_account_subtitle">Manage your Strawberry account</string>
+    <string name="strawberry_cookies_subtitle">Manage Strawberry login cookies</string>
+    <string name="backup_section_cookies_strawberry">Strawberry cookies</string>
 </resources>

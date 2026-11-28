@@ -3368,4 +3368,347 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="tag_watched_at">觀看至 %s</string>
     <string name="download_folder_by_group">依群組</string>
     <string name="download_folder_by_site">依網站</string>
+
+    <!-- Strawberry -->
+
+    <string name="strawberry_tor_timeout">Tor 檢查逾時，請確認 Tor 服務正在執行後重試。</string>
+
+    <string name="strawberry_tor_unreachable">無法連線至 Tor 檢查服務，請先連上 Tor 再開啟 Strawberry。</string>
+
+    <string name="strawberry_tor_non_exit">此裝置未透過 Tor 網路連線，請啟用 Tor 後重試。</string>
+
+    <string name="strawberry_tor_required">存取 Strawberry 需要 Tor。</string>
+
+    <string name="strawberry_tor_not_connected">Tor 未連線</string>
+
+    <string name="strawberry_tor_modal_default">Strawberry 只能透過 Tor 網路存取。請啟用 Tor 後重試，或切換到其他站點。</string>
+
+    <string name="strawberry_signed_out">你已登出 Strawberry。</string>
+
+    <string name="strawberry_account_subtitle">個人資料、Strawberry 網域、登出與清除 Strawberry 歷史</string>
+
+    <string name="strawberry_cookies_subtitle">管理 Strawberry 工作階段 Cookies、登入或註冊</string>
+
+    <string name="strawberry_tags_subtitle">瀏覽所有 Strawberry 標籤</string>
+
+    <string name="strawberry_announcements_title">公告</string>
+
+    <string name="strawberry_announcements_subtitle">Strawberry 管理員的最新消息</string>
+
+    <string name="strawberry_chat_subtitle">社群聊天室</string>
+
+    <string name="strawberry_history_title">Strawberry 觀看歷史</string>
+
+    <string name="strawberry_history_subtitle">在 Strawberry 看過的影片</string>
+
+    <string name="strawberry_check_torproject_org_returned_http">check.torproject.org 回傳 HTTP %1$s</string>
+
+    <string name="strawberry_not_routed_through_tor">未經由 Tor 連線（%1$s）</string>
+
+    <string name="strawberry_connected_through_tor">已透過 Tor 連線%1$s</string>
+
+    <string name="strawberry_tor_check_failed">Tor 檢查失敗：%1$s</string>
+
+    <string name="strawberry_no_announcements">沒有公告</string>
+
+    <string name="strawberry_pinned">置頂</string>
+
+    <string name="strawberry_failed_to_load_captcha">無法載入驗證碼</string>
+
+    <string name="strawberry_logged_in_successfully">登入成功</string>
+
+    <string name="strawberry_your_session_was_rejected_try_again">你的工作階段被拒絕，請再試一次。</string>
+
+    <string name="strawberry_network_error">網路錯誤</string>
+
+    <string name="strawberry_log_in_to_strawberry">登入 Strawberry</string>
+
+    <string name="strawberry_sign_in_with_your_strawberry_username">使用你的 Strawberry 使用者名稱與密碼登入。</string>
+
+    <string name="strawberry_quick_check_enter_the_equation_result">快速驗證 — 請輸入下方算式的結果</string>
+
+    <string name="strawberry_refresh_captcha">重新整理驗證碼</string>
+
+    <string name="strawberry_captcha">驗證碼</string>
+
+    <string name="strawberry_captcha_answer">驗證碼答案</string>
+
+    <string name="strawberry_no_account_yet_sign_up">還沒有帳號？註冊</string>
+
+    <string name="strawberry_you_already_have_cookies_saved_logging">你已儲存 Cookies，登入後將會取代它們。</string>
+
+    <string name="strawberry_3_20_letters_numbers_or_underscore">3–20 個字母、數字或底線</string>
+
+    <string name="strawberry_passwords_do_not_match">密碼不一致</string>
+
+    <string name="strawberry_password_must_be_at_least_8">密碼至少需要 8 個字元</string>
+
+    <string name="strawberry_account_created_you_are_logged_in">帳號已建立 — 你已登入</string>
+
+    <string name="strawberry_sign_up_for_strawberry">註冊 Strawberry</string>
+
+    <string name="strawberry_create_a_new_strawberry_account">建立新的 Strawberry 帳號。</string>
+
+    <string name="strawberry_confirm_password">確認密碼</string>
+
+    <string name="strawberry_already_have_an_account_log_in">已有帳號？登入</string>
+
+    <string name="strawberry_refresh_chat">重新整理聊天室</string>
+
+    <string name="strawberry_no_chat_messages_yet">尚無聊天訊息</string>
+
+    <string name="strawberry_say_something">說點什麼…</string>
+
+    <string name="strawberry_send">傳送</string>
+
+    <string name="strawberry_failed_to_load_chat">無法載入聊天室</string>
+
+    <string name="strawberry_your_session_expired_sign_in_again">你的工作階段已過期，請重新登入。</string>
+
+    <string name="strawberry_video_link_copied">已複製影片連結</string>
+
+    <string name="strawberry_getting_ready">準備中</string>
+
+    <string name="strawberry_checking_tor">正在檢查 Tor</string>
+
+    <string name="strawberry_validating_session">正在驗證工作階段</string>
+
+    <string name="strawberry_strawberry_is_not_ready">Strawberry 尚未就緒</string>
+
+    <string name="strawberry_preparing_the_strawberry_workspace">正在準備 Strawberry 工作區…</string>
+
+    <string name="strawberry_making_sure_your_traffic_goes_through">正在確認你的流量經由 Tor…</string>
+
+    <string name="strawberry_confirming_your_strawberry_session_is_still">正在確認你的 Strawberry 工作階段仍然有效…</string>
+
+    <string name="strawberry_strawberry_only_works_over_the_tor">Strawberry 僅能透過 Tor 網路使用。</string>
+
+    <string name="strawberry_we_could_not_load_the_site">目前無法載入網站。</string>
+
+    <string name="strawberry_tor_not_detected">未偵測到 Tor</string>
+
+    <string name="strawberry_cannot_load_strawberry">無法載入 Strawberry</string>
+
+    <string name="strawberry_tor_connection">Tor 連線</string>
+
+    <string name="strawberry_session_check">工作階段檢查</string>
+
+    <string name="strawberry_app_settings">App 設定</string>
+
+    <string name="strawberry_no_watch_history">沒有觀看歷史</string>
+
+    <string name="strawberry_delete_history">刪除歷史</string>
+
+    <string name="strawberry_remove_this_video_from_your_history">要從歷史中移除此影片嗎？</string>
+
+    <string name="strawberry_removed">已移除</string>
+
+    <string name="strawberry_this_will_remove_every_entry_this">這會移除所有記錄，此操作無法復原。</string>
+
+    <string name="strawberry_cleared">已清除</string>
+
+    <string name="strawberry_load_failed">載入失敗</string>
+
+    <string name="strawberry_search_strawberry">搜尋 Strawberry</string>
+
+    <string name="strawberry_members">會員</string>
+
+    <string name="strawberry_pictures_load_failed">圖片載入失敗</string>
+
+    <string name="strawberry_no_pictures">沒有圖片</string>
+
+    <string name="strawberry_tag">標籤：%1$s</string>
+
+    <string name="strawberry_field">欄位：%1$s</string>
+
+    <string name="strawberry_length">長度：%1$s</string>
+
+    <string name="strawberry_date">日期：%1$s</string>
+
+    <string name="strawberry_type_to_search_or_tap_filters">輸入關鍵字搜尋，或點擊「篩選」。</string>
+
+    <string name="strawberry_search_strawberry_2">搜尋 Strawberry…</string>
+
+    <string name="strawberry_filters">篩選</string>
+
+    <string name="strawberry_field_2">欄位</string>
+
+    <string name="strawberry_length_2">長度</string>
+
+    <string name="strawberry_date_2">日期</string>
+
+    <string name="strawberry_no_recent_searches">沒有最近搜尋</string>
+
+    <string name="strawberry_session_cleared_locally">已在本機清除工作階段</string>
+
+    <string name="strawberry_recheck_tor_and_reload">重新檢查 Tor 並重新載入</string>
+
+    <string name="strawberry_strawberry_needs_attention">Strawberry 需要處理</string>
+
+    <string name="strawberry_tor_is_not_connected">Tor 未連線</string>
+
+    <string name="strawberry_cookies_have_been_applied_strawberry_will">Cookies 已套用。Strawberry 現在會使用你的工作階段載入。</string>
+
+    <string name="strawberry_this_will_remove_the_saved_strawberry">這會移除已儲存的 Strawberry Cookies，你需要重新登入。</string>
+
+    <string name="strawberry_log_out_of_strawberry">要登出 Strawberry 嗎？</string>
+
+    <string name="strawberry_refresh_profile">重新整理個人資料</string>
+
+    <string name="strawberry_checking_tor_2">正在檢查 Tor…</string>
+
+    <string name="strawberry_tor_connected">Tor 已連線</string>
+
+    <string name="strawberry_tor_not_detected_tap_to_retry">未偵測到 Tor — 點擊重試</string>
+
+    <string name="strawberry_you_must_be_connected_through_tor">必須透過 Tor 連線才能載入 Strawberry。</string>
+
+    <string name="strawberry_mirror_status">鏡像狀態</string>
+
+    <string name="strawberry_check_all">全部檢查</string>
+
+    <string name="strawberry_uses_torwatch_to_check_whether_each">使用 TorWatch 透過 Tor 網路檢查各鏡像是否可連線。這不會洩露你的 Strawberry 工作階段 — TorWatch 只看得到 .onion 位址。</string>
+
+    <string name="strawberry_change_website_link">變更網站連結</string>
+
+    <string name="strawberry_open_site_switcher">開啟站點切換器</string>
+
+    <string name="strawberry_choose_strawberry_mirror">選擇 Strawberry 鏡像</string>
+
+    <string name="strawberry_switch_strawberry_mirror">要切換 Strawberry 鏡像嗎？</string>
+
+    <string name="strawberry_this_will_switch_the_active_mirror">這會將使用中的鏡像切換為：\n\n%1$s\n\nStrawberry 網路將會重建；若工作階段 Cookies 在新鏡像上無效，你可能需要重新登入。</string>
+
+    <string name="strawberry_not_checked">尚未檢查</string>
+
+    <string name="strawberry_offline_unreachable">離線 / 無法連線</string>
+
+    <string name="strawberry_check_failed">檢查失敗</string>
+
+    <string name="strawberry_selected">已選取</string>
+
+    <string name="strawberry_check">檢查</string>
+
+    <string name="strawberry_strawberry_settings">Strawberry 設定</string>
+
+    <string name="strawberry_followers">%1$s 位追蹤者 ·</string>
+
+    <string name="strawberry_videos">%1$s 部影片 ·</string>
+
+    <string name="strawberry_pictures">%1$s 張圖片</string>
+
+    <string name="strawberry_view_my_profile">檢視我的個人資料</string>
+
+    <string name="strawberry_announcements_chat_and_tags_moved_here">公告、聊天室與標籤已從首頁移至此處。</string>
+
+    <string name="strawberry_site_news_and_mirror_updates">網站消息與鏡像更新</string>
+
+    <string name="strawberry_site_wide_community_chat">全站社群聊天室</string>
+
+    <string name="strawberry_browse_all_tags">瀏覽所有標籤</string>
+
+    <string name="strawberry_mirror_host">鏡像 / 網域</string>
+
+    <string name="strawberry_strawberry_is_a_tor_only_site">Strawberry 是僅限 Tor 的網站。請選擇要使用的 .onion 鏡像。</string>
+
+    <string name="strawberry_change_host">變更網域</string>
+
+    <string name="strawberry_clear_all_watch_history_stored_on">清除此裝置上儲存的所有觀看歷史。</string>
+
+    <string name="strawberry_about_strawberry">關於 Strawberry</string>
+
+    <string name="strawberry_self_hosted_video_site_run_by">由社群自行架設的影片網站。此客戶端是 HANiEX 內的鏡像整合，所有影片內容皆由會員上傳。</string>
+
+    <string name="strawberry_choose_strawberry_host">選擇 Strawberry 網域</string>
+
+    <string name="strawberry_this_will_remove_all_strawberry_watch">這會移除此裝置上所有 Strawberry 觀看歷史。</string>
+
+    <string name="strawberry_tag_load_failed">標籤載入失敗</string>
+
+    <string name="strawberry_no_videos_for_this_tag">此標籤沒有影片</string>
+
+    <string name="strawberry_tags_load_failed">標籤列表載入失敗</string>
+
+    <string name="strawberry_find_a_tag">尋找標籤…</string>
+
+    <string name="strawberry_most_videos">影片最多</string>
+
+    <string name="strawberry_no_tags_found">找不到標籤</string>
+
+    <string name="strawberry_user_profile_failed">使用者資料載入失敗</string>
+
+    <string name="strawberry_user_not_found">找不到使用者</string>
+
+    <string name="strawberry_no_uploads_yet">尚無上傳</string>
+
+    <string name="strawberry_you">你</string>
+
+    <string name="strawberry_uploads">上傳</string>
+
+    <string name="strawberry_video_failed">影片載入失敗</string>
+
+    <string name="strawberry_session_expired_sign_in_again_to">工作階段已過期 — 請重新登入以更新串流網址。</string>
+
+    <string name="strawberry_video_not_found">找不到影片</string>
+
+    <string name="strawberry_restart">重新開始</string>
+
+    <string name="strawberry_more_videos">更多影片</string>
+
+    <string name="strawberry_no_playable_quality_available_for_this">此影片沒有可播放的畫質</string>
+
+    <string name="strawberry_quality_unavailable">%1$s 畫質不可用</string>
+
+    <string name="strawberry_tor_dns_failed">無法解析 check.torproject.org。請開啟 Tor 後再試。</string>
+
+    <string name="strawberry_sign_in_cookies">登入 / Cookies</string>
+
+    <string name="strawberry_session_active_short">登入 Cookies 有效</string>
+
+    <string name="strawberry_no_cookies_device">此裝置上沒有 Cookies</string>
+
+    <string name="strawberry_manage_cookies">管理 Cookies</string>
+
+    <string name="strawberry_add_cookies">新增 Cookies</string>
+
+    <string name="strawberry_quality_auto_hls">自動 (HLS)</string>
+
+    <string name="strawberry_stream_section">串流來源</string>
+
+    <string name="strawberry_stream_preference">優先載入的串流</string>
+
+    <string name="strawberry_stream_preference_hint">影片頁面開啟時優先載入的串流。若該影片沒有此選項，會使用最接近的畫質；影片頁面中仍可隨時切換。預設為原畫。</string>
+
+    <string name="strawberry_page_only">第 %1$d 頁</string>
+
+    <string name="strawberry_page_of">第 %1$d / %2$d 頁</string>
+
+    <string name="strawberry_go_to_page">跳轉到頁面</string>
+
+    <string name="strawberry_page_number">頁碼</string>
+
+    <string name="strawberry_page_hint">輸入 1 到 %1$d 之間的頁碼</string>
+
+    <string name="strawberry_page_invalid">頁碼必須介於 1 到 %1$d 之間</string>
+
+    <string name="strawberry_page_invalid_any">請輸入有效的頁碼</string>
+
+    <string name="strawberry_go">前往</string>
+
+    <string name="strawberry_page_empty">第 %1$d 頁沒有影片</string>
+
+    <string name="strawberry_added_to_github_queue">已加入 links_haniex.txt（GitHub 下載器）</string>
+
+    <string name="strawberry_already_in_github_queue">已在 GitHub 下載清單或已下載</string>
+
+    <string name="strawberry_github_downloader_title">GitHub 下載器</string>
+
+    <string name="strawberry_github_downloader_subtitle">開發者專用 · 透過 GitHub 工作流程下載</string>
+
+    <!-- Strawberry -->
+    <string name="site_strawberry_description">Strawberry onion video site (configure its onion address in Network Settings)</string>
+    <string name="backup_section_strawberry_history">Strawberry history</string>
+    <string name="site_label_strawberry">Strawberry</string>
+
+    <string name="backup_section_cookies_strawberry">Strawberry cookies</string>
 </resources>

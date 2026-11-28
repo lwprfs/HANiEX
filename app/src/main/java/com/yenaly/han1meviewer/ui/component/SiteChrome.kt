@@ -910,6 +910,7 @@ fun SiteLogo(site: com.yenaly.han1meviewer.SiteType, modifier: Modifier = Modifi
         com.yenaly.han1meviewer.SiteType.MISSAV -> R.drawable.s_switch_missav
         com.yenaly.han1meviewer.SiteType.HENTAIMAMA -> R.drawable.s_switch_hentaimama
         com.yenaly.han1meviewer.SiteType.ONAIR -> R.drawable.s_switch_onair
+        com.yenaly.han1meviewer.SiteType.STRAWBERRY -> R.drawable.s_switch_strawberry
         com.yenaly.han1meviewer.SiteType.FAPFOLDER -> R.drawable.s_switch_fapfolder
         com.yenaly.han1meviewer.SiteType.XHAMSTER -> R.drawable.s_switch_xhamster
         com.yenaly.han1meviewer.SiteType.ROUVIDEO -> R.drawable.s_switch_rouvideo

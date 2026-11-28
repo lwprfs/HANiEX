@@ -87,6 +87,14 @@ object LocalWatchRecorder {
                 )
             }
 
+            SiteType.STRAWBERRY -> {
+                com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryHistoryRepo.init(application)
+                com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryHistoryRepo.saveProgress(
+                    videoId = raw, title = e.title, coverUrl = e.coverUrl, uploaderName = null,
+                    position = pos, duration = total, isPlaying = isPlaying,
+                )
+            }
+
             SiteType.FAPFOLDER -> {
                 val postId = raw.toLongOrNull() ?: return
                 FapFolderHistoryRepo.init(application)

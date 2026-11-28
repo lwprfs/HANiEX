@@ -1,0 +1,794 @@
+package com.yenaly.han1meviewer.SitesHub.Strawberry.ui.settings
+
+import androidx.compose.ui.res.stringResource
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.component.SiteBackButton
+import com.yenaly.han1meviewer.ui.component.SiteTopAppBar
+import androidx.compose.animation.animateColorAsState
+import android.content.ClipData
+import androidx.compose.ui.platform.ClipEntry
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil3.compose.AsyncImage
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryProfileCache
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.model.StrawberryUserProfile
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.CookieFormat
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryAuthRepo
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryCookieManager
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetworkRepo
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryTorChecker
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryTorStatus
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.gate.StrawberryGateState
+import com.yenaly.han1meviewer.logic.state.VideoLoadingState
+import com.yenaly.han1meviewer.ui.component.GlobalToasts
+import com.yenaly.han1meviewer.util.applicationContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalClipboard
+
+private enum class TorBubbleState {
+    Checking,
+    Passed,
+    Failed,
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun StrawberryCookieSettingsScreen(
+    onBack: () -> Unit,
+    onOpenLogin: () -> Unit,
+    onOpenRegister: () -> Unit,
+    onSwitchSite: () -> Unit = {},
+    onCookiesSaved: () -> Unit = onBack,
+    onLoggedOut: (() -> Unit)? = null,
+    gateState: StrawberryGateState? = null,
+) {
+    val clipboard = LocalClipboard.current
+    val clipboardScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+
+    val liveCookies by StrawberryCookieManager.cookiesFlow.collectAsState()
+    var cookieInput by remember { mutableStateOf(StrawberryCookieManager.cookiesRaw) }
+    var inputDirty by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
+    var showSavedDialog by remember { mutableStateOf(false) }
+    var showClearDialog by remember { mutableStateOf(false) }
+    var showLogoutDialog by remember { mutableStateOf(false) }
+    var loggingOut by remember { mutableStateOf(false) }
+
+    var torState by remember { mutableStateOf(TorBubbleState.Checking) }
+    var torStatus by remember { mutableStateOf<StrawberryTorStatus?>(null) }
+    var reloadProgress by remember { mutableFloatStateOf(0f) }
+    var showProgressBar by remember { mutableStateOf(false) }
+
+    val hasCookies = liveCookies.isNotBlank()
+    var profile by remember { mutableStateOf<StrawberryUserProfile?>(StrawberryProfileCache.current()) }
+    var profileLoading by remember { mutableIntStateOf(0) }
+    val usernameHint = remember(hasCookies) { StrawberryAuthRepo.currentUsernameHint() }
+
+    LaunchedEffect(liveCookies) {
+        if (!inputDirty || liveCookies.isBlank()) {
+            cookieInput = liveCookies
+            inputDirty = false
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            StrawberryCookieManager.syncFromJar()
+            delay(1_500L)
+        }
+    }
+
+    val detectedFormat = remember(cookieInput) { StrawberryCookieManager.detectFormat(cookieInput) }
+    val formatLabel = when (detectedFormat) {
+        CookieFormat.JSON -> "JSON"
+        CookieFormat.NETSCAPE -> "Netscape"
+        CookieFormat.RAW_STRING -> stringResource(R.string.cookie_format_raw)
+        CookieFormat.UNKNOWN -> stringResource(R.string.unknow)
+    }
+
+    fun refreshProfile() {
+        val name = profile?.username
+            ?: StrawberryProfileCache.getCurrentUsername()
+            ?: usernameHint
+            ?: return
+        profileLoading += 1
+        scope.launch {
+            StrawberryNetworkRepo.getUserProfile(name).collect { s ->
+                when (s) {
+                    is VideoLoadingState.Success -> {
+                        profile = s.info
+                        StrawberryProfileCache.put(s.info.username, s.info)
+                    }
+                    else -> Unit
+                }
+                profileLoading = (profileLoading - 1).coerceAtLeast(0)
+            }
+        }
+    }
+
+    LaunchedEffect(hasCookies) {
+        if (hasCookies && profile == null) refreshProfile()
+    }
+
+    fun runTorAndReload() {
+        scope.launch {
+            torState = TorBubbleState.Checking
+            showProgressBar = false
+            reloadProgress = 0f
+            val status = StrawberryTorChecker.check()
+            torStatus = status
+            if (status.isTorExit) {
+                torState = TorBubbleState.Passed
+                delay(1_000L)
+                showProgressBar = true
+                reloadProgress = 0f
+                runCatching {
+                    StrawberryNetwork.rebuildNetwork()
+                    val url = StrawberryNetwork.baseUrl.trimEnd('/') + "/"
+                    val req = okhttp3.Request.Builder()
+                        .url(url)
+                        .header("Accept", "text/html")
+                        .build()
+                    val call = StrawberryNetwork.sharedOkHttpClient.newCall(req)
+                    val total = 20
+                    for (i in 1..total) {
+                        reloadProgress = i.toFloat() / total
+                        delay(80L)
+                        if (i == total) {
+                            runCatching {
+                                call.execute().use { resp ->
+                                    resp.body.string()
+                                }
+                            }
+                        }
+                    }
+                }
+                reloadProgress = 1f
+                delay(400L)
+                showProgressBar = false
+                reloadProgress = 0f
+            } else {
+                torState = TorBubbleState.Failed
+                showProgressBar = false
+                reloadProgress = 0f
+            }
+        }
+    }
+
+    fun performLogout() {
+        loggingOut = true
+        scope.launch {
+            val result = StrawberryAuthRepo.performLogout()
+            loggingOut = false
+            showLogoutDialog = false
+            StrawberryProfileCache.clearAll()
+            profile = null
+            when (result) {
+                is StrawberryAuthRepo.AuthResult.Success -> {
+                    GlobalToasts.show(applicationContext.getString(R.string.site_logged_out), level = GlobalToasts.ToastLevel.SUCCESS)
+                    onLoggedOut?.invoke()
+                }
+                is StrawberryAuthRepo.AuthResult.FormError,
+                is StrawberryAuthRepo.AuthResult.NetworkError,
+                is StrawberryAuthRepo.AuthResult.LoginRequired -> {
+                    GlobalToasts.show(
+                        applicationContext.getString(R.string.strawberry_session_cleared_locally),
+                        level = GlobalToasts.ToastLevel.WARNING,
+                    )
+                    onLoggedOut?.invoke()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) { runTorAndReload() }
+
+    Scaffold(
+        topBar = {
+            SiteTopAppBar(
+                title = { Text(stringResource(R.string.site_cookies)) },
+                navigationIcon = { SiteBackButton(onClick = onBack) },
+                actions = {
+                    IconButton(onClick = { runTorAndReload() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = stringResource(R.string.strawberry_recheck_tor_and_reload))
+                    }
+                    IconButton(onClick = onSwitchSite) {
+                        Icon(Icons.Default.SwapHoriz, contentDescription = stringResource(R.string.site_switch_site))
+                    }
+                    if (hasCookies) {
+                        TextButton(onClick = {
+                            clipboardScope.launch {
+                clipboard.setClipEntry(
+                    ClipEntry(ClipData.newPlainText("", liveCookies))
+                )
+            }
+                            GlobalToasts.show(
+                                applicationContext.getString(R.string.cookies_copied_toast),
+                                level = GlobalToasts.ToastLevel.SUCCESS,
+                            )
+                        }) { Text(stringResource(R.string.copy_)) }
+                    }
+                },
+            )
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            SignedInCard(
+                hasCookies = hasCookies,
+                profile = profile,
+                usernameHint = usernameHint,
+                profileLoading = profileLoading,
+                onRefresh = { refreshProfile() },
+                onLogout = { showLogoutDialog = true },
+                onOpenLogin = onOpenLogin,
+                onOpenRegister = onOpenRegister,
+            )
+
+            when (val gs = gateState) {
+                is StrawberryGateState.ContentError -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                        ),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.strawberry_strawberry_needs_attention),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                            Text(
+                                text = gs.reason,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                OutlinedButton(onClick = onCookiesSaved) {
+                                    Text(stringResource(R.string.retry))
+                                }
+                                if (gs.suggestSwitchSite) {
+                                    Button(onClick = onSwitchSite) {
+                                        Icon(
+                                            Icons.Default.SwapHoriz,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(stringResource(R.string.site_switch_site))
+                                    }
+                                }
+                                if (gs.suggestRelogin) {
+                                    Button(onClick = onOpenLogin) {
+                                        Text(stringResource(R.string.site_sign_in))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                is StrawberryGateState.TorBlocked -> {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                        ),
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Text(
+                                text = stringResource(R.string.strawberry_tor_is_not_connected),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                            Text(
+                                text = gs.reason,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                            )
+                        }
+                    }
+                }
+
+                else -> Unit
+            }
+
+            TorStatusBlock(
+                torState = torState,
+                torStatus = torStatus,
+                showProgressBar = showProgressBar,
+                reloadProgress = reloadProgress,
+                onClick = { runTorAndReload() },
+            )
+
+            val mirrorStatusVm: StrawberryMirrorStatusViewModel = viewModel()
+            StrawberryMirrorStatusCard(
+                viewModel = mirrorStatusVm,
+                onSwitchSite = onSwitchSite,
+            )
+
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                ),
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = stringResource(R.string.site_supported_formats),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(R.string.site_json_exported_from_browser_dev_tools),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = stringResource(R.string.site_detected_format, formatLabel),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+
+            OutlinedTextField(
+                value = cookieInput,
+                onValueChange = {
+                    cookieInput = it
+                    inputDirty = it != liveCookies
+                },
+                label = { Text(stringResource(R.string.site_cookies)) },
+                placeholder = { Text(stringResource(R.string.site_paste_cookies_here)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 200.dp, max = 400.dp),
+                textStyle = MaterialTheme.typography.bodySmall.copy(
+                    fontFamily = FontFamily.Monospace,
+                ),
+                singleLine = false,
+                maxLines = 20,
+            )
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Button(
+                    onClick = {
+                        isSaving = true
+                        scope.launch {
+                            val result = StrawberryCookieManager.validate(cookieInput)
+                            isSaving = false
+                            if (result.valid) {
+                                StrawberryCookieManager.saveCookies(cookieInput)
+                                inputDirty = false
+                                showSavedDialog = true
+                            } else {
+                                GlobalToasts.show(
+                                    result.message,
+                                    level = GlobalToasts.ToastLevel.ERROR,
+                                )
+                            }
+                        }
+                    },
+                    enabled = cookieInput.isNotBlank() && !isSaving,
+                    modifier = Modifier.weight(1f),
+                ) {
+                    if (isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .width(16.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    }
+                    Text(stringResource(R.string.site_validate_save))
+                }
+                TextButton(
+                    onClick = { showClearDialog = true },
+                    enabled = hasCookies,
+                ) { Text(stringResource(R.string.site_clear)) }
+            }
+        }
+    }
+
+    if (showSavedDialog) {
+        AlertDialog(
+            onDismissRequest = { showSavedDialog = false },
+            title = { Text(stringResource(R.string.site_cookies_saved)) },
+            text = { Text(stringResource(R.string.strawberry_cookies_have_been_applied_strawberry_will)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showSavedDialog = false
+                    onCookiesSaved()
+                }) { Text(stringResource(R.string.site_ok)) }
+            },
+        )
+    }
+
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title = { Text(stringResource(R.string.site_clear_cookies)) },
+            text = { Text(stringResource(R.string.strawberry_this_will_remove_the_saved_strawberry)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showClearDialog = false
+                    StrawberryCookieManager.clearCookies()
+                    StrawberryProfileCache.clearAll()
+                    profile = null
+                    cookieInput = ""
+                    inputDirty = false
+                    GlobalToasts.show(applicationContext.getString(R.string.cookies_cleared_toast), level = GlobalToasts.ToastLevel.INFO)
+                }) { Text(stringResource(R.string.site_clear), color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearDialog = false }) { Text(stringResource(R.string.cancel)) }
+            },
+        )
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!loggingOut) showLogoutDialog = false },
+            title = { Text(stringResource(R.string.strawberry_log_out_of_strawberry)) },
+            text = { Text(stringResource(R.string.site_your_session_cookies_will_be_removed)) },
+            confirmButton = {
+                TextButton(
+                    onClick = { performLogout() },
+                    enabled = !loggingOut,
+                ) {
+                    if (loggingOut) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                        )
+                    } else {
+                        Text(stringResource(R.string.logout), color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showLogoutDialog = false },
+                    enabled = !loggingOut,
+                ) { Text(stringResource(R.string.cancel)) }
+            },
+        )
+    }
+}
+
+@Composable
+private fun SignedInCard(
+    hasCookies: Boolean,
+    profile: StrawberryUserProfile?,
+    usernameHint: String?,
+    profileLoading: Int,
+    onRefresh: () -> Unit,
+    onLogout: () -> Unit,
+    onOpenLogin: () -> Unit,
+    onOpenRegister: () -> Unit,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (hasCookies) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerHigh
+            },
+        ),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    val avatar = profile?.avatarUrl
+                    if (!avatar.isNullOrBlank()) {
+                        AsyncImage(
+                            model = avatar,
+                            contentDescription = profile.displayName,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop,
+                        )
+                    } else {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (hasCookies) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            },
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                val label = profile?.displayName?.firstOrNull()?.uppercase()
+                                    ?: usernameHint?.firstOrNull()?.uppercase()
+                                    ?: if (hasCookies) "?" else "×"
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = if (hasCookies) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = when {
+                                profile != null -> profile.displayName
+                                !usernameHint.isNullOrBlank() -> usernameHint
+                                hasCookies -> stringResource(R.string.site_signed_in)
+                                else -> stringResource(R.string.site_not_signed_in)
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        if (profileLoading > 0) {
+                            Spacer(Modifier.width(8.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(12.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        }
+                    }
+                    Text(
+                        text = if (hasCookies) {
+                            stringResource(R.string.cookies_session_active_device)
+                        } else {
+                            stringResource(R.string.cookies_session_none_device)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (hasCookies) {
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                if (hasCookies) {
+                    OutlinedButton(
+                        onClick = onRefresh,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.strawberry_refresh_profile))
+                    }
+                    Button(
+                        onClick = onLogout,
+                        modifier = Modifier.weight(1f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError,
+                        ),
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(stringResource(R.string.logout))
+                    }
+                } else {
+                    Button(
+                        onClick = onOpenLogin,
+                        modifier = Modifier.weight(1f),
+                    ) { Text(stringResource(R.string.site_log_in)) }
+                    OutlinedButton(
+                        onClick = onOpenRegister,
+                        modifier = Modifier.weight(1f),
+                    ) { Text(stringResource(R.string.site_create_account)) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TorStatusBlock(
+    torState: TorBubbleState,
+    torStatus: StrawberryTorStatus?,
+    showProgressBar: Boolean,
+    reloadProgress: Float,
+    onClick: () -> Unit,
+) {
+    val targetBubbleColor = when (torState) {
+        TorBubbleState.Checking -> MaterialTheme.colorScheme.primary
+        TorBubbleState.Passed -> Color(0xFF2E7D32)
+        TorBubbleState.Failed -> MaterialTheme.colorScheme.error
+    }
+    val bubbleColor by animateColorAsState(
+        targetValue = targetBubbleColor,
+        label = "tor_bubble_color",
+    )
+
+    val infinite = rememberInfiniteTransition(label = "tor_bubble_pulse")
+    val pulseScale by infinite.animateFloat(
+        initialValue = 0.85f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 650, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "tor_bubble_scale",
+    )
+
+    val bubbleScale = if (torState == TorBubbleState.Checking) pulseScale else 1f
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier.size(20.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .graphicsLayer {
+                            scaleX = bubbleScale
+                            scaleY = bubbleScale
+                        }
+                        .clip(CircleShape)
+                        .background(bubbleColor),
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            val label = when (torState) {
+                TorBubbleState.Checking -> stringResource(R.string.strawberry_checking_tor_2)
+                TorBubbleState.Passed -> stringResource(R.string.strawberry_tor_connected) +
+                        (torStatus?.ip?.let { " · $it" } ?: "")
+                TorBubbleState.Failed -> stringResource(R.string.strawberry_tor_not_detected_tap_to_retry)
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+            )
+        }
+
+        if (showProgressBar) {
+            LinearProgressIndicator(
+                progress = { reloadProgress.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(3.dp),
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                trackColor = Color.Transparent,
+            )
+        } else if (torState == TorBubbleState.Failed) {
+            Text(
+                text = stringResource(R.string.strawberry_you_must_be_connected_through_tor),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+    }
+}

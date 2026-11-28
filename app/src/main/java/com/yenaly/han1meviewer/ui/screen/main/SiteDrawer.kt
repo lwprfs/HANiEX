@@ -69,8 +69,11 @@ import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderLoginRo
 import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSearchHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.FapFolder.ui.navigation.FapFolderSearchRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirProfileCache
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryProfileCache
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAccountSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryAccountSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirCookieRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryCookieRoute
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.SitesHub.Buondua.ui.navigation.BuonduaHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.Buondua.ui.navigation.BuonduaSearchRoute
@@ -133,11 +136,18 @@ import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaUpcom
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSettingsHubRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAnnouncementsRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryAnnouncementsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirChatRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryChatRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberrySearchRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirPicturesRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryPicturesRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberrySettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirTagsIndexRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryTagsIndexRoute
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
@@ -235,6 +245,30 @@ fun siteDrawerSections(context: Context, site: SiteType, loggedIn: Boolean): Lis
                 buildList {
                     add(entry(str(R.string.drawer_cookies_sign_in), R.drawable.ic_baseline_cookie_24, OnAirCookieRoute))
                     add(gatedEntry(str(R.string.drawer_account_session), R.drawable.ic_baseline_person_24, OnAirAccountSettingsRoute, loggedIn, OnAirCookieRoute))
+                },
+            ),
+        )
+
+        SiteType.STRAWBERRY -> listOf(
+            SiteDrawerSection(
+                browse,
+                listOf(
+                    home,
+                    checkIn,
+                    entry(str(R.string.search), R.drawable.ic_baseline_search_24, StrawberrySearchRoute()),
+                    entry(str(R.string.drawer_chat), R.drawable.baseline_forum_24, StrawberryChatRoute),
+                    entry(str(R.string.announcement), R.drawable.ic_baseline_newspaper_24, StrawberryAnnouncementsRoute),
+                ),
+            ),
+            SiteDrawerSection(
+                library,
+                listOf(entry(str(R.string.watch_history), history, StrawberryHistoryRoute)),
+            ),
+            SiteDrawerSection(
+                account,
+                buildList {
+                    add(entry(str(R.string.drawer_cookies_sign_in), R.drawable.ic_baseline_cookie_24, StrawberryCookieRoute))
+                    add(gatedEntry(str(R.string.drawer_account_session), R.drawable.ic_baseline_person_24, StrawberryAccountSettingsRoute, loggedIn, StrawberryCookieRoute))
                 },
             ),
         )

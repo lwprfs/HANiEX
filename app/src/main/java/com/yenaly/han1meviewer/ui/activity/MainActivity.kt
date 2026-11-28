@@ -95,6 +95,7 @@ import com.yenaly.han1meviewer.SitesHub.XHamster.data.remote.XHamsterNetwork
 import com.yenaly.han1meviewer.HanimeConstants
 import com.yenaly.han1meviewer.SitesHub.OnAir.common.OnAirSitePreferences
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirNetwork
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryNetwork
 import com.yenaly.han1meviewer.PermissionRequester
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.FirebaseConstants
@@ -397,6 +398,9 @@ class MainActivity : BaseFragmentActivity(), PermissionRequester {
 
             SiteType.ONAIR -> {
                 OnAirNetwork.rebuildNetwork()
+            }
+            SiteType.STRAWBERRY -> {
+                StrawberryNetwork.rebuildNetwork()
             }
 
             SiteType.FAPFOLDER -> {

@@ -1592,4 +1592,41 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="tag_watched_at">視聴 %s</string>
     <string name="download_folder_by_group">グループ別</string>
     <string name="download_folder_by_site">サイト別</string>
+
+    <!-- Strawberry -->
+
+    <string name="strawberry_page_only">%1$d ページ</string>
+
+    <string name="strawberry_page_of">%1$d / %2$d ページ</string>
+
+    <string name="strawberry_go_to_page">ページへ移動</string>
+
+    <string name="strawberry_page_number">ページ番号</string>
+
+    <string name="strawberry_page_hint">1 から %1$d までのページ番号を入力</string>
+
+    <string name="strawberry_page_invalid">ページ番号は 1 から %1$d の間で指定してください</string>
+
+    <string name="strawberry_page_invalid_any">有効なページ番号を入力してください</string>
+
+    <string name="strawberry_go">移動</string>
+
+    <string name="strawberry_page_empty">%1$d ページには動画がありません</string>
+
+    <string name="strawberry_added_to_github_queue">links_haniex.txt に追加しました（GitHubダウンローダー）</string>
+
+    <string name="strawberry_already_in_github_queue">キュー済みまたはダウンロード済み</string>
+
+    <string name="strawberry_github_downloader_title">GitHubダウンローダー</string>
+
+    <string name="strawberry_github_downloader_subtitle">開発者専用 · GitHubワークフローでダウンロード</string>
+
+    <!-- Strawberry -->
+    <string name="site_strawberry_description">Strawberry onion video site (configure its onion address in Network Settings)</string>
+    <string name="backup_section_strawberry_history">Strawberry history</string>
+    <string name="site_label_strawberry">Strawberry</string>
+
+    <string name="strawberry_account_subtitle">Manage your Strawberry account</string>
+    <string name="strawberry_cookies_subtitle">Manage Strawberry login cookies</string>
+    <string name="backup_section_cookies_strawberry">Strawberry cookies</string>
 </resources>

@@ -50,6 +50,7 @@ object SiteSocialStyle {
         SiteType.FAPFOLDER,
         SiteType.XHAMSTER,
         SiteType.ONAIR,
+        SiteType.STRAWBERRY,
         SiteType.REDGIFS,
     )
 

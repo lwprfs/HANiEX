@@ -59,9 +59,13 @@ import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHostSettingsR
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvQualitySettingsRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSubtitleSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.local.OnAirProfileCache
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.local.StrawberryProfileCache
 import com.yenaly.han1meviewer.SitesHub.OnAir.data.remote.OnAirCookieManager
+import com.yenaly.han1meviewer.SitesHub.Strawberry.data.remote.StrawberryCookieManager
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAccountSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryAccountSettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirCookieRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryCookieRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.HomeSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.NetworkSettingsRoute
 import com.yenaly.han1meviewer.ui.navigation.settings.PlayerSettingsRoute
@@ -104,11 +108,17 @@ import com.yenaly.han1meviewer.SitesHub.HentaiMama.ui.navigation.HentaiMamaUpcom
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.MissAV.ui.navigation.MissAvSettingsHubRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirAnnouncementsRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryAnnouncementsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirChatRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryChatRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirHistoryRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryHistoryRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirPicturesRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryPicturesRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirSettingsRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberrySettingsRoute
 import com.yenaly.han1meviewer.SitesHub.OnAir.ui.navigation.OnAirTagsIndexRoute
+import com.yenaly.han1meviewer.SitesHub.Strawberry.ui.navigation.StrawberryTagsIndexRoute
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.SiteType
 import com.yenaly.han1meviewer.ui.navigation.CrossSiteNavigator
@@ -144,6 +154,28 @@ fun siteLoginStatus(context: Context, site: SiteType): SiteLoginStatus = when (s
                 avatarUrl = null,
                 loggedIn = false,
                 onClick = { it.navigateSafely(OnAirCookieRoute) },
+            )
+        }
+    }
+
+    SiteType.STRAWBERRY -> {
+        val profile = StrawberryProfileCache.current()
+        val loggedIn = profile != null || StrawberryCookieManager.hasSessionCookie()
+        if (loggedIn) {
+            SiteLoginStatus(
+                title = profile?.displayName?.takeIf { it.isNotBlank() } ?: context.getString(R.string.login_status_logged_in_site, CrossSiteNavigator.siteLabel(SiteType.STRAWBERRY)),
+                subtitle = profile?.username?.let { "@$it" } ?: context.getString(R.string.login_status_tap_account),
+                avatarUrl = profile?.avatarUrl,
+                loggedIn = true,
+                onClick = { it.navigateSafely(StrawberryAccountSettingsRoute) },
+            )
+        } else {
+            SiteLoginStatus(
+                title = context.getString(R.string.not_logged_in),
+                subtitle = context.getString(R.string.login_status_tap_login_cookies),
+                avatarUrl = null,
+                loggedIn = false,
+                onClick = { it.navigateSafely(StrawberryCookieRoute) },
             )
         }
     }

@@ -1,0 +1,323 @@
+package com.yenaly.han1meviewer.SitesHub.Strawberry.ui.gate
+
+import com.yenaly.han1meviewer.ui.component.animation.SittingCatLoadingAnimation
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Cookie
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.SwapHoriz
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.yenaly.han1meviewer.R
+import com.yenaly.han1meviewer.ui.theme.SpacingLarge
+import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun StrawberryGateScreen(
+    state: StrawberryGateState,
+    onSwitchSite: () -> Unit,
+    onOpenCookies: () -> Unit,
+    onRetry: () -> Unit,
+    onOpenSettings: (() -> Unit)? = null,
+) {
+    val showProgress = state is StrawberryGateState.Initializing ||
+            state is StrawberryGateState.CheckingTor ||
+            state is StrawberryGateState.Probing
+    val headline = when (state) {
+        StrawberryGateState.Initializing -> stringResource(R.string.strawberry_getting_ready)
+        StrawberryGateState.CheckingTor -> stringResource(R.string.strawberry_checking_tor)
+        StrawberryGateState.Probing -> stringResource(R.string.strawberry_validating_session)
+        StrawberryGateState.Passed -> ""
+        is StrawberryGateState.TorBlocked -> "Tor connection required"
+        is StrawberryGateState.ContentError -> stringResource(R.string.strawberry_strawberry_is_not_ready)
+    }
+    val subtitle = when (state) {
+        StrawberryGateState.Initializing -> stringResource(R.string.strawberry_preparing_the_strawberry_workspace)
+        StrawberryGateState.CheckingTor -> stringResource(R.string.strawberry_making_sure_your_traffic_goes_through)
+        StrawberryGateState.Probing -> stringResource(R.string.strawberry_confirming_your_strawberry_session_is_still)
+        StrawberryGateState.Passed -> ""
+        is StrawberryGateState.TorBlocked -> stringResource(R.string.strawberry_strawberry_only_works_over_the_tor)
+        is StrawberryGateState.ContentError -> stringResource(R.string.strawberry_we_could_not_load_the_site)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+
+            if (showProgress) {
+                SittingCatLoadingAnimation(modifier = Modifier.size(70.dp))
+            } else {
+                Image(
+                    modifier = Modifier.size(150.dp),
+                    painter = painterResource(R.drawable.h_chan_sad),
+                    contentDescription = headline,
+                )
+            }
+            Text(
+                text = "Strawberry",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (headline.isNotBlank()) {
+                Text(
+                    text = headline,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (showProgress) {
+                        MaterialTheme.colorScheme.onSurface
+                    } else {
+                        MaterialTheme.colorScheme.error
+                    },
+                    textAlign = TextAlign.Center,
+                )
+            }
+            if (subtitle.isNotBlank()) {
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            if (showProgress) {
+                StepCard(
+                    torDone = state is StrawberryGateState.Probing,
+                    torActive = state is StrawberryGateState.CheckingTor,
+                    sessionActive = state is StrawberryGateState.Probing,
+                )
+            }
+
+            when (state) {
+                is StrawberryGateState.TorBlocked -> {
+                    ReasonCard(
+                        title = stringResource(R.string.strawberry_tor_not_detected),
+                        reason = state.reason,
+                        container = MaterialTheme.colorScheme.errorContainer,
+                        content = MaterialTheme.colorScheme.onErrorContainer,
+                    )
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        ButtonLabel(Icons.Default.Refresh, stringResource(R.string.retry))
+                    }
+                    SecondaryActions(
+                        onSwitchSite = onSwitchSite,
+                        onOpenCookies = onOpenCookies,
+                        onOpenSettings = onOpenSettings,
+                        cookiesLabel = stringResource(R.string.site_cookies),
+                    )
+                }
+
+                is StrawberryGateState.ContentError -> {
+                    ReasonCard(
+                        title = stringResource(R.string.strawberry_cannot_load_strawberry),
+                        reason = state.reason,
+                        container = MaterialTheme.colorScheme.tertiaryContainer,
+                        content = MaterialTheme.colorScheme.onTertiaryContainer,
+                    )
+                    Button(
+                        onClick = onRetry,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        ButtonLabel(
+                            Icons.Default.Refresh,
+                            if (state.suggestWait) stringResource(R.string.site_retry_later) else stringResource(R.string.retry),
+                        )
+                    }
+                    SecondaryActions(
+                        onSwitchSite = if (state.suggestSwitchSite) onSwitchSite else null,
+                        onOpenCookies = onOpenCookies,
+                        onOpenSettings = onOpenSettings,
+                        cookiesLabel = if (state.suggestRelogin) stringResource(R.string.strawberry_sign_in_cookies) else stringResource(R.string.site_cookies),
+                    )
+                }
+
+                StrawberryGateState.Initializing,
+                StrawberryGateState.CheckingTor,
+                StrawberryGateState.Probing,
+                StrawberryGateState.Passed -> Unit
+            }
+        }
+    }
+}
+
+@Composable
+private fun StepCard(torDone: Boolean, torActive: Boolean, sessionActive: Boolean) {
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        tonalElevation = 2.dp,
+        shadowElevation = 1.dp,
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        Column(
+            modifier = Modifier.padding(SpacingLarge),
+            verticalArrangement = Arrangement.spacedBy(SpacingNormal),
+        ) {
+            StepRow(stringResource(R.string.strawberry_tor_connection), done = torDone, active = torActive)
+            StepRow(stringResource(R.string.strawberry_session_check), done = false, active = sessionActive)
+        }
+    }
+}
+
+@Composable
+private fun StepRow(label: String, done: Boolean, active: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+    ) {
+        Box(modifier = Modifier.size(22.dp), contentAlignment = Alignment.Center) {
+            when {
+                done -> Icon(
+                    Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(22.dp),
+                )
+                active -> CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                )
+                else -> Box(
+                    Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.outlineVariant)
+                )
+            }
+        }
+        Text(
+            text = label,
+            style = if (active) {
+                MaterialTheme.typography.titleSmall
+            } else {
+                MaterialTheme.typography.bodyMedium
+            },
+            color = if (active || done) {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        )
+    }
+}
+
+@Composable
+private fun ReasonCard(
+    title: String,
+    reason: String,
+    container: Color,
+    content: Color,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        color = container,
+    ) {
+        Column(
+            modifier = Modifier.padding(SpacingLarge),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = content,
+            )
+            Text(
+                text = reason,
+                style = MaterialTheme.typography.bodyMedium,
+                color = content,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ButtonLabel(icon: ImageVector, text: String) {
+    Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+    Spacer(Modifier.width(SpacingNormal))
+    Text(text, maxLines = 1)
+}
+
+@Composable
+private fun SecondaryActions(
+    onSwitchSite: (() -> Unit)?,
+    onOpenCookies: () -> Unit,
+    onOpenSettings: (() -> Unit)?,
+    cookiesLabel: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
+    ) {
+        FilledTonalButton(
+            onClick = onOpenCookies,
+            modifier = Modifier.weight(1f),
+        ) {
+            ButtonLabel(Icons.Default.Cookie, cookiesLabel)
+        }
+        if (onSwitchSite != null) {
+            OutlinedButton(
+                onClick = onSwitchSite,
+                modifier = Modifier.weight(1f),
+            ) {
+                ButtonLabel(Icons.Default.SwapHoriz, stringResource(R.string.site_switch_site))
+            }
+        }
+    }
+    onOpenSettings?.let { openSettings ->
+        TextButton(onClick = openSettings) {
+            Icon(Icons.Default.Settings, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(SpacingNormal))
+            Text(stringResource(R.string.strawberry_app_settings))
+        }
+    }
+}

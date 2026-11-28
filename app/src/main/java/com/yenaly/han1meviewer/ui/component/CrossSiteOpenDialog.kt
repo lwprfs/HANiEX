@@ -54,7 +54,7 @@ fun CrossSiteOpenDialog(
     var validationJob by remember(request) { mutableStateOf<Job?>(null) }
 
     val siteName = CrossSiteNavigator.siteLabel(request.site)
-    val isTor = request.site == SiteType.ONAIR
+    val isTor = request.site == SiteType.ONAIR || request.site == SiteType.STRAWBERRY
 
     fun startValidation() {
         validationJob?.cancel()

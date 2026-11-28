@@ -3327,4 +3327,347 @@ Found: %1$d video folders, %2$d photo albums, %3$d short folders.</string>
     <string name="tag_watched_at">Watched %s</string>
     <string name="download_folder_by_group">By group</string>
     <string name="download_folder_by_site">By site</string>
+
+    <!-- Strawberry -->
+
+    <string name="strawberry_tor_timeout">Tor check timed out. Make sure the Tor daemon is running, then retry.</string>
+
+    <string name="strawberry_tor_unreachable">Cannot reach the Tor check service. Connect to Tor before opening Strawberry.</string>
+
+    <string name="strawberry_tor_non_exit">This device is not exiting through the Tor network. Enable Tor and try again.</string>
+
+    <string name="strawberry_tor_required">Tor is required to access Strawberry.</string>
+
+    <string name="strawberry_tor_not_connected">Tor not connected</string>
+
+    <string name="strawberry_tor_modal_default">Strawberry is only reachable via the Tor network. Enable Tor and retry, or switch to a different site.</string>
+
+    <string name="strawberry_signed_out">You signed out of Strawberry.</string>
+
+    <string name="strawberry_account_subtitle">Profile, Strawberry host, sign out and clear Strawberry history</string>
+
+    <string name="strawberry_cookies_subtitle">Manage the Strawberry session cookies, log in or register</string>
+
+    <string name="strawberry_tags_subtitle">Browse every Strawberry tag</string>
+
+    <string name="strawberry_announcements_title">Announcements</string>
+
+    <string name="strawberry_announcements_subtitle">News from the Strawberry administrators</string>
+
+    <string name="strawberry_chat_subtitle">Community chat room</string>
+
+    <string name="strawberry_history_title">Strawberry history</string>
+
+    <string name="strawberry_history_subtitle">Videos you\'ve watched on Strawberry</string>
+
+    <string name="strawberry_check_torproject_org_returned_http">check.torproject.org returned HTTP %1$s</string>
+
+    <string name="strawberry_not_routed_through_tor">Not routed through Tor (%1$s)</string>
+
+    <string name="strawberry_connected_through_tor">Connected through Tor%1$s</string>
+
+    <string name="strawberry_tor_check_failed">Tor check failed: %1$s</string>
+
+    <string name="strawberry_no_announcements">No announcements</string>
+
+    <string name="strawberry_pinned">Pinned</string>
+
+    <string name="strawberry_failed_to_load_captcha">Failed to load captcha</string>
+
+    <string name="strawberry_logged_in_successfully">Logged in successfully</string>
+
+    <string name="strawberry_your_session_was_rejected_try_again">Your session was rejected. Try again.</string>
+
+    <string name="strawberry_network_error">Network error</string>
+
+    <string name="strawberry_log_in_to_strawberry">Log in to Strawberry</string>
+
+    <string name="strawberry_sign_in_with_your_strawberry_username">Sign in with your Strawberry username and password.</string>
+
+    <string name="strawberry_quick_check_enter_the_equation_result">Quick check — enter the equation result shown below</string>
+
+    <string name="strawberry_refresh_captcha">Refresh captcha</string>
+
+    <string name="strawberry_captcha">Captcha</string>
+
+    <string name="strawberry_captcha_answer">Captcha answer</string>
+
+    <string name="strawberry_no_account_yet_sign_up">No account yet? Sign up</string>
+
+    <string name="strawberry_you_already_have_cookies_saved_logging">You already have cookies saved. Logging in will replace them.</string>
+
+    <string name="strawberry_3_20_letters_numbers_or_underscore">3-20 letters, numbers or underscore</string>
+
+    <string name="strawberry_passwords_do_not_match">Passwords do not match</string>
+
+    <string name="strawberry_password_must_be_at_least_8">Password must be at least 8 characters</string>
+
+    <string name="strawberry_account_created_you_are_logged_in">Account created — you are logged in</string>
+
+    <string name="strawberry_sign_up_for_strawberry">Sign up for Strawberry</string>
+
+    <string name="strawberry_create_a_new_strawberry_account">Create a new Strawberry account.</string>
+
+    <string name="strawberry_confirm_password">Confirm password</string>
+
+    <string name="strawberry_already_have_an_account_log_in">Already have an account? Log in</string>
+
+    <string name="strawberry_refresh_chat">Refresh chat</string>
+
+    <string name="strawberry_no_chat_messages_yet">No chat messages yet</string>
+
+    <string name="strawberry_say_something">Say something…</string>
+
+    <string name="strawberry_send">Send</string>
+
+    <string name="strawberry_failed_to_load_chat">Failed to load chat</string>
+
+    <string name="strawberry_your_session_expired_sign_in_again">Your session expired. Sign in again.</string>
+
+    <string name="strawberry_video_link_copied">Video link copied</string>
+
+    <string name="strawberry_getting_ready">Getting ready</string>
+
+    <string name="strawberry_checking_tor">Checking Tor</string>
+
+    <string name="strawberry_validating_session">Validating session</string>
+
+    <string name="strawberry_strawberry_is_not_ready">Strawberry is not ready</string>
+
+    <string name="strawberry_preparing_the_strawberry_workspace">Preparing the Strawberry workspace…</string>
+
+    <string name="strawberry_making_sure_your_traffic_goes_through">Making sure your traffic goes through Tor…</string>
+
+    <string name="strawberry_confirming_your_strawberry_session_is_still">Confirming your Strawberry session is still valid…</string>
+
+    <string name="strawberry_strawberry_only_works_over_the_tor">Strawberry only works over the Tor network.</string>
+
+    <string name="strawberry_we_could_not_load_the_site">We could not load the site right now.</string>
+
+    <string name="strawberry_tor_not_detected">Tor not detected</string>
+
+    <string name="strawberry_cannot_load_strawberry">Cannot load Strawberry</string>
+
+    <string name="strawberry_tor_connection">Tor connection</string>
+
+    <string name="strawberry_session_check">Session check</string>
+
+    <string name="strawberry_app_settings">App settings</string>
+
+    <string name="strawberry_no_watch_history">No watch history</string>
+
+    <string name="strawberry_delete_history">Delete history</string>
+
+    <string name="strawberry_remove_this_video_from_your_history">Remove this video from your history?</string>
+
+    <string name="strawberry_removed">Removed</string>
+
+    <string name="strawberry_this_will_remove_every_entry_this">This will remove every entry. This cannot be undone.</string>
+
+    <string name="strawberry_cleared">Cleared</string>
+
+    <string name="strawberry_load_failed">Load failed</string>
+
+    <string name="strawberry_search_strawberry">Search Strawberry</string>
+
+    <string name="strawberry_members">Members</string>
+
+    <string name="strawberry_pictures_load_failed">Pictures load failed</string>
+
+    <string name="strawberry_no_pictures">No pictures</string>
+
+    <string name="strawberry_tag">Tag: %1$s</string>
+
+    <string name="strawberry_field">Field: %1$s</string>
+
+    <string name="strawberry_length">Length: %1$s</string>
+
+    <string name="strawberry_date">Date: %1$s</string>
+
+    <string name="strawberry_type_to_search_or_tap_filters">Type to search, or tap Filters.</string>
+
+    <string name="strawberry_search_strawberry_2">Search Strawberry…</string>
+
+    <string name="strawberry_filters">Filters</string>
+
+    <string name="strawberry_field_2">Field</string>
+
+    <string name="strawberry_length_2">Length</string>
+
+    <string name="strawberry_date_2">Date</string>
+
+    <string name="strawberry_no_recent_searches">No recent searches</string>
+
+    <string name="strawberry_session_cleared_locally">Session cleared locally</string>
+
+    <string name="strawberry_recheck_tor_and_reload">Recheck Tor and reload</string>
+
+    <string name="strawberry_strawberry_needs_attention">Strawberry needs attention</string>
+
+    <string name="strawberry_tor_is_not_connected">Tor is not connected</string>
+
+    <string name="strawberry_cookies_have_been_applied_strawberry_will">Cookies have been applied. Strawberry will now load using your session.</string>
+
+    <string name="strawberry_this_will_remove_the_saved_strawberry">This will remove the saved Strawberry cookies. You will need to log in again.</string>
+
+    <string name="strawberry_log_out_of_strawberry">Log out of Strawberry?</string>
+
+    <string name="strawberry_refresh_profile">Refresh profile</string>
+
+    <string name="strawberry_checking_tor_2">Checking Tor…</string>
+
+    <string name="strawberry_tor_connected">Tor connected</string>
+
+    <string name="strawberry_tor_not_detected_tap_to_retry">Tor not detected — tap to retry</string>
+
+    <string name="strawberry_you_must_be_connected_through_tor">You must be connected through Tor to load Strawberry.</string>
+
+    <string name="strawberry_mirror_status">Mirror status</string>
+
+    <string name="strawberry_check_all">Check all</string>
+
+    <string name="strawberry_uses_torwatch_to_check_whether_each">Uses TorWatch to check whether each mirror is reachable through the Tor network. This does not expose your Strawberry session — TorWatch only sees the .onion address.</string>
+
+    <string name="strawberry_change_website_link">Change website link</string>
+
+    <string name="strawberry_open_site_switcher">Open site switcher</string>
+
+    <string name="strawberry_choose_strawberry_mirror">Choose Strawberry mirror</string>
+
+    <string name="strawberry_switch_strawberry_mirror">Switch Strawberry mirror?</string>
+
+    <string name="strawberry_this_will_switch_the_active_mirror">This will switch the active mirror to:\n\n%1$s\n\nStrawberry network will be rebuilt and you may need to sign in again if the session cookies are not valid on this mirror.</string>
+
+    <string name="strawberry_not_checked">Not checked</string>
+
+    <string name="strawberry_offline_unreachable">Offline / unreachable</string>
+
+    <string name="strawberry_check_failed">Check failed</string>
+
+    <string name="strawberry_selected">Selected</string>
+
+    <string name="strawberry_check">Check</string>
+
+    <string name="strawberry_strawberry_settings">Strawberry Settings</string>
+
+    <string name="strawberry_followers">%1$s followers ·</string>
+
+    <string name="strawberry_videos">%1$s videos ·</string>
+
+    <string name="strawberry_pictures">%1$s pictures</string>
+
+    <string name="strawberry_view_my_profile">View my profile</string>
+
+    <string name="strawberry_announcements_chat_and_tags_moved_here">Announcements, chat and tags moved here from the home screen.</string>
+
+    <string name="strawberry_site_news_and_mirror_updates">Site news and mirror updates</string>
+
+    <string name="strawberry_site_wide_community_chat">Site-wide community chat</string>
+
+    <string name="strawberry_browse_all_tags">Browse all tags</string>
+
+    <string name="strawberry_mirror_host">Mirror / Host</string>
+
+    <string name="strawberry_strawberry_is_a_tor_only_site">Strawberry is a Tor-only site. Choose which .onion mirror to use.</string>
+
+    <string name="strawberry_change_host">Change host</string>
+
+    <string name="strawberry_clear_all_watch_history_stored_on">Clear all watch history stored on this device.</string>
+
+    <string name="strawberry_about_strawberry">About Strawberry</string>
+
+    <string name="strawberry_self_hosted_video_site_run_by">Self-hosted video site run by the community. This client is a mirror integration inside HANiEX. All video content is uploaded by members.</string>
+
+    <string name="strawberry_choose_strawberry_host">Choose Strawberry host</string>
+
+    <string name="strawberry_this_will_remove_all_strawberry_watch">This will remove all Strawberry watch history on this device.</string>
+
+    <string name="strawberry_tag_load_failed">Tag load failed</string>
+
+    <string name="strawberry_no_videos_for_this_tag">No videos for this tag</string>
+
+    <string name="strawberry_tags_load_failed">Tags load failed</string>
+
+    <string name="strawberry_find_a_tag">Find a tag…</string>
+
+    <string name="strawberry_most_videos">Most videos</string>
+
+    <string name="strawberry_no_tags_found">No tags found</string>
+
+    <string name="strawberry_user_profile_failed">User profile failed</string>
+
+    <string name="strawberry_user_not_found">User not found</string>
+
+    <string name="strawberry_no_uploads_yet">No uploads yet</string>
+
+    <string name="strawberry_you">You</string>
+
+    <string name="strawberry_uploads">Uploads</string>
+
+    <string name="strawberry_video_failed">Video failed</string>
+
+    <string name="strawberry_session_expired_sign_in_again_to">Session expired — sign in again to refresh stream URLs.</string>
+
+    <string name="strawberry_video_not_found">Video not found</string>
+
+    <string name="strawberry_restart">Restart</string>
+
+    <string name="strawberry_more_videos">More videos</string>
+
+    <string name="strawberry_no_playable_quality_available_for_this">No playable quality available for this video</string>
+
+    <string name="strawberry_quality_unavailable">Quality %1$s unavailable</string>
+
+    <string name="strawberry_tor_dns_failed">Cannot resolve check.torproject.org. Turn on Tor and try again.</string>
+
+    <string name="strawberry_sign_in_cookies">Sign in / cookies</string>
+
+    <string name="strawberry_session_active_short">Session cookies active</string>
+
+    <string name="strawberry_no_cookies_device">No cookies on this device</string>
+
+    <string name="strawberry_manage_cookies">Manage cookies</string>
+
+    <string name="strawberry_add_cookies">Add cookies</string>
+
+    <string name="strawberry_quality_auto_hls">Auto (HLS)</string>
+
+    <string name="strawberry_stream_section">Stream</string>
+
+    <string name="strawberry_stream_preference">Preferred stream</string>
+
+    <string name="strawberry_stream_preference_hint">Stream loaded first when a video opens. If a video does not offer it, the closest available one is used. You can still switch streams on the video page. Default: Original.</string>
+
+    <string name="strawberry_page_only">Page %1$d</string>
+
+    <string name="strawberry_page_of">Page %1$d / %2$d</string>
+
+    <string name="strawberry_go_to_page">Go to page</string>
+
+    <string name="strawberry_page_number">Page number</string>
+
+    <string name="strawberry_page_hint">Enter a page from 1 to %1$d</string>
+
+    <string name="strawberry_page_invalid">Page must be between 1 and %1$d</string>
+
+    <string name="strawberry_page_invalid_any">Enter a valid page number</string>
+
+    <string name="strawberry_go">Go</string>
+
+    <string name="strawberry_page_empty">Page %1$d has no videos</string>
+
+    <string name="strawberry_added_to_github_queue">Added to links_haniex.txt (GitHub downloader)</string>
+
+    <string name="strawberry_already_in_github_queue">Already queued or downloaded</string>
+
+    <string name="strawberry_github_downloader_title">GitHub downloader</string>
+
+    <string name="strawberry_github_downloader_subtitle">Developer only · download through a GitHub workflow</string>
+
+    <!-- Strawberry -->
+    <string name="site_strawberry_description">Strawberry onion video site (configure its onion address in Network Settings)</string>
+    <string name="backup_section_strawberry_history">Strawberry history</string>
+    <string name="site_label_strawberry">Strawberry</string>
+
+    <string name="backup_section_cookies_strawberry">Strawberry cookies</string>
 </resources>

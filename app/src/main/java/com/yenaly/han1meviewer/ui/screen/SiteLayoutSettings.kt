@@ -20,6 +20,7 @@ object SiteLayoutSettings {
     val gridColumnSites: Set<SiteType> = setOf(
         SiteType.MISSAV,
         SiteType.ONAIR,
+        SiteType.STRAWBERRY,
         SiteType.FAPFOLDER,
         SiteType.SUPJAV,
         SiteType.ROUVIDEO,
@@ -86,6 +87,7 @@ object SiteCardSettings {
     val sites: Set<SiteType> = setOf(
         SiteType.HENTAIMAMA,
         SiteType.ONAIR,
+        SiteType.STRAWBERRY,
         SiteType.SUPJAV,
         SiteType.ROUVIDEO,
         SiteType.XHAMSTER,
@@ -233,6 +235,8 @@ object SiteSearchSettings {
     fun sortChoices(site: SiteType): List<Pair<String, String>>? = when (site) {
         SiteType.ONAIR -> com.yenaly.han1meviewer.SitesHub.OnAir.data.model.OnAirOptions.sorts
             .map { it.label to it.value }
+        SiteType.STRAWBERRY -> com.yenaly.han1meviewer.SitesHub.Strawberry.data.model.StrawberryOptions.sorts
+            .map { it.label to it.value }
         SiteType.MISSAV -> com.yenaly.han1meviewer.SitesHub.MissAV.common.MissAvOptions.sortOptions
             .map { it.name to it.searchKey }
         SiteType.ROUVIDEO -> com.yenaly.han1meviewer.SitesHub.RouVideo.common.RouVideoConstants.Sort.entries
@@ -268,7 +272,7 @@ object SiteImageSettings {
     const val REDUCED_EDGE_PX = 360
 
     val sites: Set<SiteType> = setOf(
-        SiteType.MISSAV, SiteType.HENTAIMAMA, SiteType.ONAIR, SiteType.FAPFOLDER, SiteType.SUPJAV,
+        SiteType.MISSAV, SiteType.HENTAIMAMA, SiteType.ONAIR, SiteType.STRAWBERRY, SiteType.FAPFOLDER, SiteType.SUPJAV,
         SiteType.ROUVIDEO, SiteType.XHAMSTER, SiteType.BUONDUA, SiteType.COSPLAYTELE, SiteType.COSER,
         SiteType.FULLVIDEOS, SiteType.FUCKINGSESSION, SiteType.WUMAOBI, SiteType.XXXTUBE, SiteType.COOMER,
         SiteType.LEAKGALLERY,
